@@ -1,0 +1,10 @@
+{
+  "name": "@petlive/db-schema",
+  "version": "0.1.0",
+  "type": "module",
+  "types": "./shared-types.ts",
+  "exports": {
+    ".": "./shared-types.ts",
+    "./entities": "./entities.ts"
+  }
+}

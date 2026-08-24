@@ -1,0 +1,11 @@
+{
+  "name": "@petlive/vaccine",
+  "version": "0.1.0",
+  "type": "module",
+  "main": "./index.js",
+  "exports": { ".": "./index.js" },
+  "dependencies": {
+    "@petlive/shared": "0.1.0",
+    "@petlive/pet": "0.1.0"
+  }
+}

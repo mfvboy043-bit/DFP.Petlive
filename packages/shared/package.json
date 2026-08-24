@@ -1,0 +1,10 @@
+{
+  "name": "@petlive/shared",
+  "version": "0.1.0",
+  "type": "module",
+  "main": "./result.js",
+  "exports": {
+    ".": "./result.js",
+    "./result.js": "./result.js"
+  }
+}

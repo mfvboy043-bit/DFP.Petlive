@@ -1,0 +1,35 @@
+id: 20260812-ui-html-dock
+title: UI 對接既有 HTML（升級不換皮）
+version: 2
+status: candidate_ready
+# proposed | building | reviewing | revising | candidate_ready | halted | adopted | rejected
+
+gate_a:
+  status: approved
+  note: "Victor 2026-08-12: 確認直接修改（mainline in-place）"
+
+gate_b:
+  status: pending
+  # pending | adopted | rejected
+
+iteration: 1
+max_iterations: 3
+
+candidate:
+  branch: ""
+  path: "apps/web (mainline — Victor explicit 直接修改)"
+  worktree: ""
+
+reviews:
+  pharmacist: skipped
+  qa: skipped
+  ui: skipped
+  # Direct-mainline path per Victor; informal verify on device before Gate B
+
+rerun: []
+blocking_issues: []
+non_blocking: []
+builder_scope:
+  - "apps/web/styles.css — dock §38 + urgency/trust/emergency fixes"
+  - "apps/web/index.html — cache bust ?v=20260812-ui-html-dock"
+halt_reason: ""

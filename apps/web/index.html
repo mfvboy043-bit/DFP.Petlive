@@ -1,0 +1,1516 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="theme-color" content="#ffffff" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+  <meta name="format-detection" content="telephone=no" />
+  <title>火龍果護照 · Dragon Fruit Passport</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,700&family=Noto+Sans+TC:wght@400;500;700&family=Noto+Serif+TC:wght@600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="./styles.css?v=20260824-oauth-layout" />
+</head>
+<body>
+  <div class="atmosphere" aria-hidden="true">
+    <div class="blob blob-a"></div>
+    <div class="blob blob-b"></div>
+    <div class="grain"></div>
+  </div>
+
+  <div class="app" id="app">
+    <!-- INTRO / LANDING -->
+    <section class="screen screen-intro is-active" data-screen="intro" data-i18n-aria="introTitle" aria-label="介紹">
+      <header class="intro-topbar">
+        <p class="brand-mark" data-i18n="brandMark">Dragon Fruit Passport</p>
+        <div class="intro-topbar-actions">
+          <button class="btn btn-ghost btn-small" type="button" id="intro-login-btn" data-i18n="login">
+            登入
+          </button>
+          <div class="intro-account" id="intro-account" hidden>
+            <img class="intro-avatar" id="intro-avatar" alt="" width="28" height="28" />
+            <button class="btn btn-ghost btn-small intro-logout-btn" type="button" id="intro-logout-btn" data-i18n="logout">
+              登出
+            </button>
+          </div>
+        </div>
+      </header>
+
+      <div class="intro-hero">
+        <div class="intro-copy">
+          <p class="intro-eyebrow" data-i18n="introEyebrow">飼主持有的寵物健康護照</p>
+          <h1 class="brand-zh" data-i18n="brand">火龍果護照</h1>
+          <p class="lede intro-lede" data-i18n-html="introLede">
+            紀錄留在你這邊。登入 Google，可把備份寫進<strong>你的</strong>雲端硬碟——不是我們的伺服器。<br />
+            僅供參考，不取代獸醫診斷。
+          </p>
+          <div class="intro-cta-row">
+            <button class="btn btn-primary" type="button" id="intro-start-btn" data-i18n="introStart">
+              開始使用
+            </button>
+            <button class="btn btn-ghost" type="button" id="intro-login-cta" data-i18n="loginWithGoogle">
+              用 Google 登入
+            </button>
+          </div>
+          <p class="intro-status" id="intro-status" role="status"></p>
+          <p class="intro-origin-hint" id="intro-origin-hint" hidden></p>
+        </div>
+        <img
+          class="intro-mascot"
+          src="./assets/mascot-dragonfruit.webp?v=20260819-standing"
+          width="662"
+          height="1015"
+          alt=""
+          decoding="async"
+          aria-hidden="true"
+        />
+      </div>
+    </section>
+
+    <!-- HOME -->
+    <section class="screen" data-screen="home" data-i18n-aria="home" aria-label="首頁" hidden>
+      <header class="topbar">
+        <p class="brand-mark" data-i18n="brandMark">Dragon Fruit Passport</p>
+        <div class="topbar-actions">
+          <button class="text-btn" type="button" data-go="alerts" id="alert-count-btn">警示 2</button>
+          <button
+            class="rainbow-btn"
+            type="button"
+            data-go="archive"
+            id="archive-btn"
+            data-i18n-aria="rainbowArchive"
+            data-i18n-title="rainbowArchive"
+            aria-label="彩虹橋歸檔"
+            title="彩虹橋歸檔"
+          >
+            <span class="rainbow-btn-glow" aria-hidden="true"></span>
+          </button>
+          <button
+            class="settings-btn"
+            type="button"
+            data-go="owner-settings"
+            id="owner-settings-btn"
+            data-i18n-aria="ownerSettingsAria"
+            data-i18n-title="ownerSettingsTitle"
+            aria-label="飼主設定"
+            title="飼主設定"
+          >
+            <span class="settings-btn-ico" aria-hidden="true">
+              <svg viewBox="0 0 24 24" width="18" height="18" focusable="false">
+                <circle cx="12" cy="8" r="3.6" fill="currentColor" />
+                <path
+                  d="M4.8 19.2c0-3.6 3.2-6 7.2-6s7.2 2.4 7.2 6"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2.2"
+                  stroke-linecap="round"
+                />
+              </svg>
+            </span>
+          </button>
+        </div>
+      </header>
+
+      <div class="hero-home">
+        <div class="hero-intro">
+          <div class="hero-intro-copy">
+            <h1 class="brand-zh" data-i18n="brand">火龍果護照</h1>
+            <p class="lede" data-i18n-html="lede">
+              健康紀錄跟著走，換院看診一鍵看。<br />
+              每次紀錄不用 3 分鐘；僅供參考，不取代診斷。
+            </p>
+          </div>
+          <img
+            class="hero-mascot"
+            src="./assets/mascot-dragonfruit.webp?v=20260819-standing"
+            width="662"
+            height="1015"
+            alt=""
+            decoding="async"
+            aria-hidden="true"
+          />
+        </div>
+
+        <div class="pet-switcher" id="pet-switcher">
+          <div class="pet-switcher-head">
+            <div>
+              <p class="pet-switcher-label" data-i18n="petBoard">寵物看板</p>
+              <p class="pet-switcher-hint" id="pet-switcher-hint" data-i18n="petHint">點選頭像切換</p>
+            </div>
+            <div class="pet-switcher-actions">
+              <button
+                class="text-btn pet-add-btn"
+                type="button"
+                id="pet-add-btn"
+                data-i18n="addPet"
+                aria-label="新增寵物"
+                data-i18n-aria="addPetLabel"
+              >
+                新增
+              </button>
+              <button class="text-btn pet-manage-btn" type="button" id="pet-manage-btn" data-i18n="manage">管理</button>
+            </div>
+          </div>
+
+          <div
+            class="pet-picker"
+            id="pet-picker"
+            role="listbox"
+            data-i18n-aria="myPets"
+            aria-label="我的寵物"
+            aria-orientation="horizontal"
+          ></div>
+
+          <div class="pet-current" id="pet-current" aria-live="polite">
+            <p class="pet-name" id="pet-name"></p>
+            <p class="pet-sub" id="pet-sub"></p>
+            <div class="parasite-strip" id="parasite-strip">
+              <button
+                type="button"
+                class="parasite-row"
+                id="parasite-row-vaccine"
+                data-go="vaccines"
+              >
+                <span class="parasite-row-label" data-i18n="vaccinePrevention">疫苗預防</span>
+                <span class="parasite-row-meta" id="parasite-meta-vaccine" translate="no">—</span>
+                <span class="parasite-row-status" id="parasite-status-vaccine" translate="no"></span>
+              </button>
+              <button
+                type="button"
+                class="parasite-row"
+                id="parasite-row-external"
+                data-go="parasite"
+                data-parasite-kind="external"
+              >
+                <span class="parasite-row-label" data-i18n="parasiteExternal" translate="no">體外驅蟲</span>
+                <span class="parasite-row-meta" id="parasite-meta-external" translate="no">—</span>
+                <span class="parasite-row-status" id="parasite-status-external" translate="no"></span>
+              </button>
+              <button
+                type="button"
+                class="parasite-row"
+                id="parasite-row-heartworm"
+                data-go="parasite"
+                data-parasite-kind="heartworm"
+              >
+                <span class="parasite-row-label" data-i18n="parasiteHeartworm" translate="no">心絲蟲預防</span>
+                <span class="parasite-row-meta" id="parasite-meta-heartworm" translate="no">—</span>
+                <span class="parasite-row-status" id="parasite-status-heartworm" translate="no"></span>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <div class="cta-row">
+          <button class="btn btn-primary" type="button" data-go="emergency" data-i18n="openCard">開啟醫療資訊卡</button>
+          <button class="btn btn-ghost" type="button" data-go="add-visit" data-i18n="addVisit">新增就診紀錄</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- RAINBOW ARCHIVE -->
+    <section class="screen" data-screen="archive" data-i18n-aria="rainbowArchive" aria-label="彩虹橋歸檔" hidden>
+      <header class="screen-head">
+        <button class="back" type="button" data-go="home" data-i18n-aria="back" aria-label="返回">←</button>
+        <div>
+          <h2 data-i18n="rainbowTitle">彩虹橋</h2>
+          <p data-i18n="rainbowSub">紀念已離開的毛孩，紀錄仍可回看</p>
+        </div>
+      </header>
+
+      <p class="archive-lede" data-i18n="archiveLede">
+        當寵物離世後，可從看板「管理」將其歸檔到這裡。
+        歸檔後不會出現在日常看板，但健康紀錄會被保留。
+      </p>
+
+      <ul class="archive-list" id="archive-list"></ul>
+    </section>
+
+    <!-- ARCHIVE PET CONFIRM -->
+    <section class="screen" data-screen="archive-pet" data-i18n-aria="archiveToRainbow" aria-label="歸檔至彩虹橋" hidden>
+      <header class="screen-head">
+        <button class="back" type="button" id="archive-pet-back" data-i18n-aria="back" aria-label="返回">←</button>
+        <div>
+          <h2 data-i18n="archiveToRainbow">歸檔至彩虹橋</h2>
+          <p id="archive-pet-sub" data-i18n="archiveSubDefault">溫柔地收存這段一起走過的紀錄</p>
+        </div>
+      </header>
+
+      <form class="form archive-pet-form" id="archive-pet-form">
+        <div class="archive-pet-card">
+          <p class="archive-pet-kicker" data-i18n="archiveSoon">即將歸檔</p>
+          <h3 id="archive-pet-name"></h3>
+          <p id="archive-pet-meta"></p>
+        </div>
+
+        <label class="field">
+          <span data-i18n="passedDate">離開日期（可填大約日期）</span>
+          <input type="date" name="passedAwayDate" id="archive-passed-date" required />
+        </label>
+
+        <label class="field">
+          <span data-i18n="memorialNote">紀念短語（選填）</span>
+          <textarea
+            name="memorialNote"
+            id="archive-memorial-note"
+            rows="2"
+            data-i18n-placeholder="memorialPlaceholder"
+            placeholder="例如：謝謝你來過我們家"
+          ></textarea>
+        </label>
+
+        <p class="remove-note" data-i18n="archiveNote">
+          歸檔後會從日常看板移除，但就診、用藥、疫苗紀錄會保留在彩虹橋。
+        </p>
+
+        <div class="form-actions">
+          <button class="btn btn-ghost" type="button" id="archive-pet-cancel" data-i18n="cancel">取消</button>
+          <button class="btn btn-primary" type="submit" data-i18n="confirmArchive">確認歸檔</button>
+        </div>
+      </form>
+    </section>
+
+    <!-- REMOVE PET -->
+    <section class="screen" data-screen="remove-pet" data-i18n-aria="removePet" aria-label="移除寵物" hidden>
+      <header class="screen-head">
+        <button class="back" type="button" id="remove-pet-back" data-i18n-aria="back" aria-label="返回">←</button>
+        <div>
+          <h2 data-i18n="removePet">移除寵物</h2>
+          <p id="remove-pet-sub" data-i18n="removeSubDefault">需完成三步確認，避免誤刪</p>
+        </div>
+      </header>
+
+      <div class="remove-panel" id="remove-panel">
+        <ol class="remove-steps" aria-label="確認步驟">
+          <li class="remove-step is-active" data-step="1">1</li>
+          <li class="remove-step" data-step="2">2</li>
+          <li class="remove-step" data-step="3">3</li>
+        </ol>
+
+        <div class="remove-card" data-remove-step="1">
+          <h3 data-i18n="step1Title">第一步：確認對象</h3>
+          <p><span data-i18n="step1Body">你即將移除</span> <strong id="remove-pet-name-1"></strong>。</p>
+          <p class="remove-note" data-i18n="step1Note">這隻寵物會從看板消失。</p>
+          <div class="cta-row">
+            <button class="btn btn-ghost" type="button" data-remove-cancel data-i18n="cancel">取消</button>
+            <button class="btn btn-primary" type="button" data-remove-next data-i18n="next">下一步</button>
+          </div>
+        </div>
+
+        <div class="remove-card" data-remove-step="2" hidden>
+          <h3 data-i18n="step2Title">第二步：了解後果</h3>
+          <p data-i18n="step2Body">移除後，以下資料也會一併消失：</p>
+          <ul class="remove-list">
+            <li data-i18n="step2Item1">就診與用藥紀錄</li>
+            <li data-i18n="step2Item2">醫療警示</li>
+            <li data-i18n="step2Item3">疫苗紀錄</li>
+            <li data-i18n="step2Item4">醫療資訊卡內容</li>
+          </ul>
+          <p class="remove-note" data-i18n="step2Note">此操作無法復原（原型示意）。</p>
+          <div class="cta-row">
+            <button class="btn btn-ghost" type="button" data-remove-prev data-i18n="prev">上一步</button>
+            <button class="btn btn-primary" type="button" data-remove-next data-i18n="understandContinue">我了解，繼續</button>
+          </div>
+        </div>
+
+        <div class="remove-card" data-remove-step="3" hidden>
+          <h3 data-i18n="step3Title">第三步：輸入暱稱確認</h3>
+          <p>
+            <span data-i18n="step3BodyBefore">請輸入「</span><strong id="remove-pet-name-3"></strong><span data-i18n="step3BodyAfter">」以確認移除。</span>
+          </p>
+          <label class="field">
+            <span data-i18n="petNickname">寵物暱稱</span>
+            <input
+              type="text"
+              id="remove-pet-confirm-input"
+              data-i18n-placeholder="confirmNamePlaceholder"
+              placeholder="請完整輸入暱稱"
+              autocomplete="off"
+            />
+          </label>
+          <div class="cta-row">
+            <button class="btn btn-ghost" type="button" data-remove-prev data-i18n="prev">上一步</button>
+            <button class="btn btn-danger" type="button" id="remove-pet-confirm-btn" data-i18n="confirmPermanentRemove" disabled>
+              確認永久移除
+            </button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ADD PET -->
+    <section class="screen" data-screen="add-pet" data-i18n-aria="addPetTitle" aria-label="新增寵物" hidden>
+      <header class="screen-head light">
+        <button class="back" type="button" data-back data-i18n-aria="back" aria-label="返回">←</button>
+        <div>
+          <h2 id="pet-form-title" data-i18n="addPetTitle">新增寵物</h2>
+          <p id="pet-form-sub" data-i18n="addPetSub">先建立基本資料，之後再補就診與疫苗</p>
+        </div>
+      </header>
+
+      <form class="form" id="pet-form">
+        <label class="field">
+          <span data-i18n="petName">寵物暱稱</span>
+          <input
+            type="text"
+            name="petName"
+            data-i18n-placeholder="petNamePlaceholder"
+            placeholder="例如：米醬"
+            maxlength="20"
+            required
+          />
+        </label>
+
+        <label class="field">
+          <span data-i18n="species">種類</span>
+          <select name="species" id="pet-species" required>
+            <option value="dog" data-i18n="dog">犬</option>
+            <option value="cat" data-i18n="cat">貓</option>
+            <option value="other" data-i18n="other">其他</option>
+          </select>
+        </label>
+
+        <fieldset class="chip-field" id="breed-select-field">
+          <legend data-i18n="breed">品種</legend>
+          <p class="field-hint" data-i18n="breedSelectPlaceholder">請選擇品種</p>
+          <input type="hidden" name="breedSelect" id="breed-select" value="" />
+          <div class="chips breed-chips" id="breed-chips" role="listbox" aria-label="品種"></div>
+        </fieldset>
+
+        <label class="field" id="breed-custom-field" hidden>
+          <span data-i18n="breedCustom">自訂品種</span>
+          <input
+            type="text"
+            name="breedCustom"
+            id="breed-custom"
+            data-i18n-placeholder="breedCustomPlaceholder"
+            placeholder="請輸入品種名稱"
+            maxlength="40"
+          />
+        </label>
+
+        <div class="field-row">
+          <label class="field">
+            <span data-i18n="gender">性別</span>
+            <select name="gender" required>
+              <option value="female" data-i18n="female">母</option>
+              <option value="male" data-i18n="male">公</option>
+              <option value="unknown" data-i18n="unknown">未知</option>
+            </select>
+          </label>
+          <label class="field">
+            <span data-i18n="neuter">絕育</span>
+            <select name="isNeutered" required>
+              <option value="yes" data-i18n="neutered">已絕育</option>
+              <option value="no" data-i18n="notNeutered">未絕育</option>
+              <option value="unknown" data-i18n="neuterUnknown">不清楚</option>
+            </select>
+          </label>
+        </div>
+
+        <label class="field">
+          <span data-i18n="birthDate">出生日期</span>
+          <input type="date" name="birthDate" required />
+        </label>
+
+        <div class="field-row">
+          <label class="field">
+            <span data-i18n="recentWeight">最近體重（kg）</span>
+            <input type="number" name="weight" step="0.1" min="0.1" placeholder="6.8" required />
+          </label>
+          <label class="field">
+            <span data-i18n="weightDate">體重紀錄日</span>
+            <input type="date" name="weightDate" required />
+          </label>
+        </div>
+
+        <label class="field">
+          <span data-i18n="chipOptional">晶片號碼（選填）</span>
+          <input
+            type="text"
+            name="chipNumber"
+            data-i18n-placeholder="chipPlaceholder"
+            placeholder="若有晶片可填寫"
+            maxlength="30"
+          />
+        </label>
+
+        <div class="form-actions">
+          <button class="btn btn-primary" type="submit" id="pet-form-submit" data-i18n="createPet">建立寵物</button>
+        </div>
+      </form>
+    </section>
+
+    <!-- TIMELINE -->
+    <section class="screen" data-screen="timeline" data-i18n-aria="timelineNav" aria-label="時間軸" hidden>
+      <header class="screen-head light">
+        <button class="back" type="button" data-back data-i18n-aria="back" aria-label="返回">←</button>
+        <div>
+          <h2 data-i18n="timeline">健康時間軸</h2>
+          <p id="timeline-sub">米醬的就診與用藥紀錄</p>
+        </div>
+        <button class="btn btn-small" type="button" data-go="add-visit" data-i18n="add">新增</button>
+      </header>
+
+      <ol class="timeline" id="timeline-list"></ol>
+    </section>
+
+    <!-- ADD VISIT -->
+    <section class="screen" data-screen="add-visit" data-i18n-aria="addVisitTitle" aria-label="新增就診" hidden>
+      <header class="screen-head light">
+        <button class="back" type="button" data-go="home" data-i18n-aria="back" aria-label="返回">←</button>
+        <div>
+          <h2 data-i18n="addVisitTitle">新增就診</h2>
+          <p id="visit-form-sub">為米醬記錄 · 先點選症狀</p>
+        </div>
+      </header>
+
+      <form class="form" id="visit-form">
+        <label class="field">
+          <span data-i18n="visitDate">看診日期</span>
+          <input type="date" name="visitDate" value="2026-08-09" required />
+        </label>
+        <label class="field">
+          <span data-i18n="clinicName">醫院名稱</span>
+          <input
+            type="search"
+            id="clinic-search"
+            name="clinicSearch"
+            data-i18n-placeholder="clinicSearchPlaceholder"
+            placeholder="輸入關鍵字，例如：幸福、夜間"
+            autocomplete="off"
+            required
+          />
+        </label>
+        <ul class="clinic-results" id="clinic-results" hidden></ul>
+        <p class="selected-clinic" id="selected-clinic" hidden></p>
+        <input type="hidden" name="clinicName" id="clinic-name" value="" />
+        <input type="hidden" name="clinicAnonymous" id="clinic-anonymous" value="false" />
+        <label class="field">
+          <span data-i18n="weightAtVisit">當日體重（建議填，kg）</span>
+          <input type="number" name="weightAtVisit" step="0.1" min="0.1" placeholder="6.8" />
+          <small class="field-hint" data-i18n="weightAtVisitHint">可不填先下一步；稍後再補。有填較利急診與用藥參考。</small>
+        </label>
+
+        <fieldset class="chip-field">
+          <legend data-i18n="symptomTags">症狀標籤</legend>
+          <p class="field-hint" data-i18n="symptomTagsHint">大致從頭到腳；咳嗽、打噴嚏等類似感冒請選「呼吸道」。</p>
+          <div class="chips" id="symptom-chips">
+            <!-- Head → trunk → limbs → systemic → visit purpose -->
+            <button type="button" class="chip" data-tag="eye" data-i18n="tagEye">眼睛</button>
+            <button type="button" class="chip" data-tag="ear" data-i18n="tagEar">耳朵</button>
+            <button type="button" class="chip" data-tag="dental" data-i18n="tagDental">牙科／口腔</button>
+            <button type="button" class="chip" data-tag="respiratory" data-i18n="tagRespiratory">呼吸道</button>
+            <button type="button" class="chip" data-tag="gastrointestinal" data-i18n="tagGi">腸胃</button>
+            <button type="button" class="chip" data-tag="urinary" data-i18n="tagUrinary">泌尿</button>
+            <button type="button" class="chip" data-tag="dermatology" data-i18n="tagDerm">皮膚</button>
+            <button type="button" class="chip" data-tag="orthopedic" data-i18n="tagOrtho">骨科</button>
+            <button type="button" class="chip" data-tag="neurology" data-i18n="tagNeuro">神經</button>
+            <button type="button" class="chip" data-tag="autoimmune" data-i18n="tagAutoimmune">自體免疫</button>
+            <button type="button" class="chip" data-tag="checkup" data-i18n="tagCheckup">健康檢查</button>
+            <button type="button" class="chip" data-tag="vaccine" data-i18n="tagVaccine">疫苗</button>
+          </div>
+        </fieldset>
+
+        <label class="field">
+          <span data-i18n="notesOptional">備註（選填）</span>
+          <textarea
+            name="notes"
+            rows="2"
+            data-i18n-placeholder="notesPlaceholder"
+            placeholder="例如：軟便兩天"
+          ></textarea>
+        </label>
+
+        <div class="form-actions">
+          <button class="btn btn-primary" type="submit" data-i18n="nextMed">下一步：記錄用藥</button>
+        </div>
+      </form>
+    </section>
+
+    <!-- ADD MEDICATION -->
+    <section class="screen" data-screen="add-med" data-i18n-aria="addMedTitle" aria-label="記錄用藥" hidden>
+      <header class="screen-head">
+        <button class="back" type="button" data-go="add-visit" data-i18n-aria="back" aria-label="返回">←</button>
+        <div>
+          <h2 data-i18n="addMedTitle">記錄用藥</h2>
+          <p data-i18n="addMedSub">可逐筆填寫，或先拍藥單佐證</p>
+        </div>
+      </header>
+
+      <form class="form" id="med-form">
+        <div class="med-mode-switch" role="tablist" aria-label="用藥記錄方式">
+          <button
+            type="button"
+            class="med-mode-btn is-on"
+            role="tab"
+            aria-selected="true"
+            data-med-mode="photo"
+            data-i18n="medModePhoto"
+          >
+            先拍藥單佐證
+          </button>
+          <button
+            type="button"
+            class="med-mode-btn"
+            role="tab"
+            aria-selected="false"
+            data-med-mode="manual"
+            data-i18n="medModeManual"
+          >
+            逐筆填寫
+          </button>
+        </div>
+        <p class="med-mode-hint" id="med-mode-hint" data-i18n="medModeHintPhoto">
+          先留下藥袋／藥單／藥物照片（皆選填），回家再補藥名亦可。
+        </p>
+        <p class="med-complete-banner" id="med-complete-banner" hidden></p>
+
+        <div id="med-mode-manual" hidden>
+        <div class="pending-meds" id="pending-meds-wrap">
+          <div class="pending-meds-head">
+            <p class="pending-meds-label" data-i18n="pendingMedsTitle">本次藥單</p>
+            <p class="pending-meds-count" id="pending-meds-count" data-i18n="pendingMedsEmpty">尚未加入藥品</p>
+          </div>
+          <p class="pending-compound-hint" id="pending-compound-hint" hidden data-i18n="compoundHint">
+            已選相同調劑標籤的藥會合併為一個餵食單位；可在下方修改。
+          </p>
+          <ul class="pending-med-list" id="pending-med-list"></ul>
+        </div>
+
+        <label class="field">
+          <span data-i18n="searchDrug">搜尋藥品</span>
+          <input
+            type="search"
+            id="drug-search"
+            data-i18n-placeholder="drugSearchPlaceholder"
+            placeholder="中文、英文或別名，例如 Pred / 普力"
+            autocomplete="off"
+          />
+          <small class="field-hint" data-i18n="drugSearchHint">點選下方搜尋結果後，會顯示用途、副作用與警語</small>
+        </label>
+        <ul class="drug-results" id="drug-results" hidden></ul>
+        <p class="selected-drug" id="selected-drug" hidden></p>
+
+        <aside class="drug-info-card" id="drug-info-card" hidden>
+          <p class="drug-info-kicker" data-i18n="drugInfoTitle">藥品說明（僅供參考）</p>
+          <p class="drug-info-purpose" id="drug-info-purpose"></p>
+          <div class="drug-info-block">
+            <h4 data-i18n="drugSideEffects">可能副作用</h4>
+            <ul id="drug-info-side-effects"></ul>
+          </div>
+          <div class="drug-info-block">
+            <h4 data-i18n="drugPrecautions">使用警語</h4>
+            <ul id="drug-info-precautions"></ul>
+          </div>
+          <p class="drug-info-disclaimer" data-i18n="drugInfoDisclaimer">
+            短摘要，非正式仿單 · 請以當次藥袋為準
+          </p>
+        </aside>
+
+        <div class="field-row">
+          <label class="field">
+            <span data-i18n="dosage">劑量（選填）</span>
+            <input type="number" name="dosageAmount" step="0.1" min="0.1" placeholder="5" />
+          </label>
+          <label class="field">
+            <span data-i18n="days">天數（選填）</span>
+            <input type="number" name="durationDays" min="1" step="1" placeholder="5" />
+          </label>
+        </div>
+
+        <fieldset class="chip-field">
+          <legend data-i18n="unit">單位（選填）</legend>
+          <input type="hidden" name="dosageUnit" id="dosage-unit" value="unrecorded" />
+          <div class="chips" id="unit-chips">
+            <button type="button" class="chip is-on" data-unit="unrecorded" data-i18n="unitUnrecorded">未紀錄</button>
+            <button type="button" class="chip" data-unit="mg">mg</button>
+            <button type="button" class="chip" data-unit="ml">ml</button>
+            <button type="button" class="chip" data-unit="tablet">tablet</button>
+            <button type="button" class="chip" data-unit="unknown" data-i18n="unitUnknown">未知</button>
+          </div>
+        </fieldset>
+
+        <fieldset class="chip-field">
+          <legend data-i18n="frequency">頻率（選填）</legend>
+          <input type="hidden" name="frequency" id="med-frequency" value="unrecorded" />
+          <div class="chips" id="freq-chips">
+            <button type="button" class="chip is-on" data-freq="unrecorded" data-i18n="unitUnrecorded">未紀錄</button>
+            <button type="button" class="chip" data-freq="SID" data-i18n="freqLabelSid">一天一次</button>
+            <button type="button" class="chip" data-freq="BID" data-i18n="freqLabelBid">一天兩次</button>
+            <button type="button" class="chip" data-freq="TID" data-i18n="freqLabelTid">一天三次</button>
+            <button type="button" class="chip" data-freq="EOD" data-i18n="freqLabelEod">隔天一次</button>
+          </div>
+        </fieldset>
+
+        <fieldset class="chip-field">
+          <legend data-i18n="compoundGroupLabel">調劑合併（選填）</legend>
+          <p class="field-hint" data-i18n="compoundFormHint">
+            若院所調成同一罐／同一顆，選相同標籤；不選則各自獨立餵食。
+          </p>
+          <input type="hidden" name="compoundGroup" id="compound-group" value="" />
+          <input type="hidden" name="compoundColor" id="compound-color" value="" />
+          <div class="chips compound-form-chips" id="compound-chips">
+            <button type="button" class="chip compound-chip is-liquid-a" data-compound="liquid_a">
+              <span class="compound-ico compound-ico-liquid" aria-hidden="true"></span>
+              <span data-i18n="compoundLiquidA">藥水 A</span>
+            </button>
+            <button type="button" class="chip compound-chip is-liquid-b" data-compound="liquid_b">
+              <span class="compound-ico compound-ico-liquid" aria-hidden="true"></span>
+              <span data-i18n="compoundLiquidB">藥水 B</span>
+            </button>
+            <button type="button" class="chip compound-chip is-liquid-c" data-compound="liquid_c">
+              <span class="compound-ico compound-ico-liquid" aria-hidden="true"></span>
+              <span data-i18n="compoundLiquidC">藥水 C</span>
+            </button>
+            <button type="button" class="chip compound-chip is-capsule-a" data-compound="capsule_a">
+              <span class="compound-ico compound-ico-capsule" aria-hidden="true"></span>
+              <span data-i18n="compoundCapsuleA">膠囊 A</span>
+            </button>
+            <button type="button" class="chip compound-chip is-capsule-b" data-compound="capsule_b">
+              <span class="compound-ico compound-ico-capsule" aria-hidden="true"></span>
+              <span data-i18n="compoundCapsuleB">膠囊 B</span>
+            </button>
+            <button type="button" class="chip compound-chip is-capsule-c" data-compound="capsule_c">
+              <span class="compound-ico compound-ico-capsule" aria-hidden="true"></span>
+              <span data-i18n="compoundCapsuleC">膠囊 C</span>
+            </button>
+          </div>
+          <div class="compound-color-field" id="compound-color-field" hidden>
+            <p class="compound-color-label" data-i18n="compoundColorLabel">標籤顏色（選填）</p>
+            <div class="compound-color-swatches" id="compound-color-swatches" role="group"></div>
+          </div>
+        </fieldset>
+
+        <fieldset class="chip-field">
+          <legend data-i18n="sourceLegend">資料來源標籤</legend>
+          <div class="source-options">
+            <label class="source-opt">
+              <input type="radio" name="sourcePreset" value="owner" checked />
+              <span>
+                <strong data-i18n="sourceOwner">飼主自行記錄</strong>
+                <small data-i18n="sourceOwnerHint">回家後還可補藥袋／藥品照片</small>
+              </span>
+            </label>
+            <label class="source-opt">
+              <input type="radio" name="sourcePreset" value="clinic_ref" />
+              <span>
+                <strong data-i18n="sourceClinicRef">動物醫院協助記錄，僅供參考</strong>
+              </span>
+            </label>
+          </div>
+        </fieldset>
+
+        <div class="med-form-actions">
+          <button class="btn btn-ghost" type="button" id="add-med-to-list" data-i18n="addMedToList">
+            加入此藥
+          </button>
+          <button class="btn btn-primary" type="submit" id="save-meds-btn" data-i18n="saveAllMeds">
+            儲存全部並查看時間軸
+          </button>
+        </div>
+        </div>
+
+        <div id="med-mode-photo">
+          <div class="med-photo-panel">
+            <p class="med-photo-lede" data-i18n="medPhotoLede">
+              院所只願意提供紙本時，可先拍照存檔。三項皆選填，回家後也能再補；之後再自己點選藥名。
+            </p>
+
+            <label class="field">
+              <span data-i18n="medBagPhoto">獸醫院藥袋照片</span>
+              <small class="field-hint" data-i18n="medBagPhotoHint">例如院所藥袋外觀，有助提高可信度</small>
+              <input type="file" id="live-bag-photo" accept="image/*" />
+            </label>
+            <div class="proof-preview" id="live-bag-preview" hidden></div>
+
+            <label class="field">
+              <span data-i18n="medRxPhoto">藥單照片</span>
+              <small class="field-hint" data-i18n="medRxPhotoHint">紙本處方／藥單明細</small>
+              <input type="file" id="live-rx-photo" accept="image/*" />
+            </label>
+            <div class="proof-preview" id="live-rx-preview" hidden></div>
+
+            <label class="field">
+              <span data-i18n="medDrugPhoto">當次藥物照片</span>
+              <small class="field-hint" data-i18n="medDrugPhotoHint">實際領到的藥品外觀</small>
+              <input type="file" id="live-drug-photo" accept="image/*" />
+            </label>
+            <div class="proof-preview" id="live-drug-preview" hidden></div>
+
+            <p class="remove-note" data-i18n="medPhotoOptionalNote">
+              現在可以一張都不傳，先建立「待補藥名」紀錄；之後在時間軸後補照片與藥品明細。
+            </p>
+          </div>
+
+          <div class="med-form-actions">
+            <button class="btn btn-primary" type="button" id="save-photo-rx-btn" data-i18n="savePhotoRx">
+              儲存佐證並查看時間軸
+            </button>
+          </div>
+        </div>
+      </form>
+    </section>
+
+    <!-- MED PROOF PHOTOS -->
+    <section class="screen" data-screen="med-proof" data-i18n-aria="medProofTitle" aria-label="補上佐證照片" hidden>
+      <header class="screen-head">
+        <button class="back" type="button" data-back data-i18n-aria="back" aria-label="返回">←</button>
+        <div>
+          <h2 data-i18n="medProofTitle">補上佐證照片</h2>
+          <p id="med-proof-sub" data-i18n="medProofSub">到家後再補藥袋、藥單與藥物圖也可以</p>
+        </div>
+      </header>
+
+      <form class="form med-proof-form" id="med-proof-form">
+        <div class="archive-pet-card">
+          <p class="archive-pet-kicker" data-i18n="medProofTarget">這筆用藥</p>
+          <h3 id="med-proof-name"></h3>
+          <p id="med-proof-meta"></p>
+        </div>
+
+        <label class="field">
+          <span data-i18n="medBagPhoto">獸醫院藥袋照片</span>
+          <input type="file" id="med-bag-photo" accept="image/*" />
+        </label>
+        <div class="proof-preview" id="med-bag-preview" hidden></div>
+
+        <label class="field">
+          <span data-i18n="medRxPhoto">藥單照片</span>
+          <input type="file" id="med-rx-photo" accept="image/*" />
+        </label>
+        <div class="proof-preview" id="med-rx-preview" hidden></div>
+
+        <label class="field">
+          <span data-i18n="medDrugPhoto">當次藥物照片</span>
+          <input type="file" id="med-drug-photo" accept="image/*" />
+        </label>
+        <div class="proof-preview" id="med-drug-preview" hidden></div>
+
+          <p class="remove-note" data-i18n="medProofNote">
+            三項皆選填。重選檔案可更換；預覽上的「移除」可刪除該張，再按儲存。
+          </p>
+
+        <div class="form-actions">
+          <button class="btn btn-primary" type="submit" data-i18n="medProofSave">儲存佐證照片</button>
+        </div>
+      </form>
+    </section>
+
+    <!-- VISIT IMAGING PHOTOS -->
+    <section class="screen" data-screen="imaging-proof" data-i18n-aria="imagingProofTitle" aria-label="本次就診影像" hidden>
+      <header class="screen-head">
+        <button class="back" type="button" data-back data-i18n-aria="back" aria-label="返回">←</button>
+        <div>
+          <h2 data-i18n="imagingProofTitle">本次就診影像</h2>
+          <p id="imaging-proof-sub" data-i18n="imagingProofSub">到家後再補 X-Ray 與超音波圖也可以</p>
+        </div>
+      </header>
+
+      <form class="form med-proof-form" id="imaging-proof-form">
+        <div class="archive-pet-card">
+          <p class="archive-pet-kicker" data-i18n="timelineVisitImagingTarget">本次就診影像</p>
+          <h3 id="imaging-proof-name"></h3>
+          <p id="imaging-proof-meta"></p>
+        </div>
+
+        <label class="field">
+          <span data-i18n="imagingXrayPhoto">X-Ray 照片</span>
+          <input type="file" id="imaging-xray-photo" accept="image/*" multiple />
+        </label>
+        <div class="lab-photo-previews" id="imaging-xray-previews"></div>
+
+        <label class="field">
+          <span data-i18n="imagingUsPhoto">超音波照片</span>
+          <input type="file" id="imaging-us-photo" accept="image/*" multiple />
+        </label>
+        <div class="lab-photo-previews" id="imaging-us-previews"></div>
+
+        <button
+          type="button"
+          class="med-proof-btn"
+          id="imaging-video-cta"
+          disabled
+          aria-disabled="true"
+          data-i18n="imagingVideoBtn"
+        >
+          上傳影片
+        </button>
+        <p class="remove-note" data-i18n="imagingVideoSoon">即將開放</p>
+
+        <p class="remove-note" data-i18n="imagingProofNote">
+          可多張（每類最多 4 張）。加選檔案可加傳；預覽上的「移除」可刪除該張，再按儲存。僅供對照原件，不判讀影像。
+        </p>
+
+        <div class="form-actions">
+          <button class="btn btn-primary" type="submit" data-i18n="imagingProofSave">儲存影像</button>
+        </div>
+      </form>
+    </section>
+
+    <!-- OWNER SETTINGS -->
+    <section
+      class="screen"
+      data-screen="owner-settings"
+      data-i18n-aria="ownerSettingsTitle"
+      aria-label="飼主設定"
+      hidden
+    >
+      <header class="screen-head">
+        <button class="back" type="button" data-back data-i18n-aria="back" aria-label="返回">←</button>
+        <div>
+          <h2 data-i18n="ownerSettingsTitle">飼主設定</h2>
+          <p data-i18n="ownerSettingsSub">個人化聯絡資料 · 顯示於醫療資訊卡</p>
+        </div>
+      </header>
+
+      <p class="field-hint" data-i18n="ownerSettingsPrivacy">
+        資料僅存在此裝置，不上傳；供急診出示與院所截圖對照。
+      </p>
+
+      <div class="cloud-account-card" id="cloud-account-card">
+        <p class="cloud-account-title" data-i18n="cloudAccountTitle">Google 雲端備份</p>
+        <p class="cloud-account-status" id="cloud-account-status" data-i18n="cloudBackupPending">
+          尚未備份到 Google
+        </p>
+        <p class="cloud-account-email" id="cloud-account-email" hidden></p>
+        <div class="cloud-account-actions">
+          <button class="btn btn-ghost" type="button" id="settings-cloud-login" data-i18n="loginWithGoogle">
+            用 Google 登入
+          </button>
+          <button class="btn btn-ghost" type="button" id="settings-cloud-sync" data-i18n="syncNow" hidden>
+            同步到雲端
+          </button>
+          <button class="btn btn-ghost" type="button" id="settings-cloud-logout" data-i18n="logout" hidden>
+            登出
+          </button>
+        </div>
+        <p class="field-hint" data-i18n="cloudAccountHint">
+          備份寫進你的 Google 雲端硬碟「火龍果護照」資料夾。手機登入需用 HTTPS 網址（GitHub Pages），LAN IP 會被 Google 拒絕。
+        </p>
+      </div>
+
+      <form class="form" id="owner-settings-form">
+        <label class="field">
+          <span data-i18n="ownerName">飼主姓名</span>
+          <input type="text" id="owner-name" name="ownerName" autocomplete="name" data-i18n-placeholder="ownerNamePh" placeholder="例如：王小明" />
+        </label>
+        <label class="field">
+          <span data-i18n="ownerPhone">手機</span>
+          <input type="tel" id="owner-phone" name="ownerPhone" autocomplete="tel" data-i18n-placeholder="ownerPhonePh" placeholder="0912-345-678" />
+        </label>
+        <label class="field">
+          <span data-i18n="ownerEmail">信箱（選填）</span>
+          <input type="email" id="owner-email" name="ownerEmail" autocomplete="email" data-i18n-placeholder="ownerEmailPh" placeholder="you@example.com" />
+        </label>
+        <label class="field">
+          <span data-i18n="ownerEmergencyName">緊急聯絡人（選填）</span>
+          <input type="text" id="owner-emergency-name" name="ownerEmergencyName" data-i18n-placeholder="ownerEmergencyNamePh" placeholder="例如：王太太" />
+        </label>
+        <label class="field">
+          <span data-i18n="ownerEmergencyPhone">緊急聯絡電話（選填）</span>
+          <input type="tel" id="owner-emergency-phone" name="ownerEmergencyPhone" data-i18n-placeholder="ownerEmergencyPhonePh" placeholder="09xx-xxx-xxx" />
+        </label>
+        <label class="field">
+          <span data-i18n="ownerAddress">住址（選填）</span>
+          <textarea id="owner-address" name="ownerAddress" rows="2" data-i18n-placeholder="ownerAddressPh" placeholder="例如：台北市…"></textarea>
+        </label>
+        <p class="field-hint" data-i18n="ownerSettingsFutureHint">
+          未來可支援 QR，讓醫療人員掃碼對照填入院所系統（本版尚未啟用）。
+        </p>
+        <div class="form-actions">
+          <button class="btn btn-primary" type="submit" data-i18n="ownerSettingsSave">儲存飼主資料</button>
+        </div>
+      </form>
+    </section>
+
+    <!-- ALERTS -->
+    <section class="screen" data-screen="alerts" data-i18n-aria="alertsTitle" aria-label="醫療警示" hidden>
+      <header class="screen-head light">
+        <button class="back" type="button" data-back data-i18n-aria="back" aria-label="返回">←</button>
+        <div>
+          <h2 id="alerts-title" data-i18n="alertsTitle">醫療警示</h2>
+          <p id="alerts-sub" data-i18n="alertsSub">急診時優先顯示</p>
+        </div>
+      </header>
+
+      <p class="field-hint alert-disclaimer" data-i18n="alertsDisclaimer">
+        飼主自訂內容僅供急診參考，非醫院確診紀錄。用藥反應請遵照獸醫師指示。
+      </p>
+
+      <div class="alert-sections" id="alert-sections"></div>
+      <ul class="alert-list" id="alert-list" hidden></ul>
+
+      <div class="alert-compose">
+        <h3 class="alert-compose-title" data-i18n="alertComposeTitle">新增／編輯警示</h3>
+        <p class="field-hint" data-i18n="alertComposeHint">平時以查看為主；需要補資料時再往下填寫。</p>
+        <form class="form alert-form" id="alert-form">
+          <fieldset class="chip-field">
+            <legend data-i18n="alertTypeLegend">警示類型</legend>
+            <div class="chips" id="alert-type-chips" role="group" aria-label="警示類型">
+              <button type="button" class="chip is-on" data-alert-type="drug_allergy" data-i18n="alertTypeDrugAllergy">藥物過敏</button>
+              <button type="button" class="chip" data-alert-type="food_allergy" data-i18n="alertTypeFoodAllergy">食物過敏</button>
+              <button type="button" class="chip" data-alert-type="adverse_drug_reaction" data-i18n="alertTypeAdr">用藥不良反應</button>
+              <button type="button" class="chip" data-alert-type="vaccine_reaction" data-i18n="alertTypeVaccineReaction">疫苗反應</button>
+              <button type="button" class="chip" data-alert-type="chronic_disease" data-i18n="alertTypeChronic">慢性病</button>
+              <button type="button" class="chip" data-alert-type="special_note" data-i18n="alertTypeSpecialNote">飼主紀錄注意</button>
+            </div>
+          </fieldset>
+          <fieldset class="chip-field">
+            <legend data-i18n="alertSeverityLegend">嚴重度</legend>
+            <p class="field-hint" data-i18n="alertSeverityHint">類型有預設，可依這隻寵物實際情況調整。</p>
+            <div class="chips" id="alert-severity-chips" role="group" aria-label="嚴重度">
+              <button type="button" class="chip is-on" data-alert-severity="critical" data-i18n="alertSeverityCritical">危險</button>
+              <button type="button" class="chip" data-alert-severity="caution" data-i18n="alertSeverityCaution">需留意</button>
+            </div>
+          </fieldset>
+          <label class="field">
+            <span data-i18n="alertDescription">說明</span>
+            <input
+              type="text"
+              id="alert-description"
+              name="description"
+              required
+              maxlength="120"
+              data-i18n-placeholder="alertDescriptionPlaceholder"
+              placeholder="例如：Penicillin — 臉部腫脹"
+            />
+          </label>
+          <label class="field" id="alert-since-field" hidden>
+            <span data-i18n="alertSinceDate">開始控制（約）</span>
+            <input type="month" id="alert-since-date" name="sinceDate" />
+            <p class="field-hint" data-i18n="alertSinceHint">慢性病可填大約從何時開始持續控制。</p>
+          </label>
+          <label class="field">
+            <span data-i18n="alertSeverityNote">補充注意（選填）</span>
+            <input
+              type="text"
+              id="alert-severity-note"
+              name="severityNote"
+              maxlength="120"
+              data-i18n-placeholder="alertSeverityPlaceholder"
+              placeholder="例如：急診請避免同類抗生素"
+            />
+          </label>
+          <input type="hidden" id="alert-edit-id" value="" />
+          <div class="form-actions alert-form-actions">
+            <button class="btn btn-primary" type="submit" id="alert-submit-btn">新增警示</button>
+            <button class="btn btn-ghost" type="button" id="alert-cancel-edit" hidden data-i18n="cancelEditAlert">取消編輯</button>
+          </div>
+        </form>
+      </div>
+    </section>
+
+    <!-- VACCINES -->
+    <section class="screen" data-screen="vaccines" data-i18n-aria="vaccine" aria-label="疫苗" hidden>
+      <header class="screen-head light">
+        <button class="back" type="button" data-back data-i18n-aria="back" aria-label="返回">←</button>
+        <div>
+          <h2 data-i18n="vaccinesTitle">疫苗紀錄</h2>
+          <p id="vaccine-sub">自行記錄施打項目與日期</p>
+        </div>
+      </header>
+
+      <ul class="vaccine-list" id="vaccine-list"></ul>
+
+      <div class="vaccine-compose">
+        <h3 class="vaccine-compose-title" data-i18n="vaccineComposeTitle">新增疫苗紀錄</h3>
+        <p class="field-hint" data-i18n="vaccineComposeHint">平時以查看保護狀態為主；需要補打紀錄時再往下填寫。</p>
+        <form class="form vaccine-form" id="vaccine-form">
+          <fieldset class="chip-field">
+            <legend data-i18n="vaccineName">疫苗名稱</legend>
+            <p class="field-hint" data-i18n="vaccineMultiHint">多合一疫苗僅能選一種；可另外搭配其他項目，也可在下方自訂</p>
+            <div class="vaccine-chip-groups" id="vaccine-chips"></div>
+          </fieldset>
+          <label class="field" id="vaccine-custom-field">
+            <span data-i18n="customVaccine">自訂／其他名稱</span>
+            <input
+              type="text"
+              name="customVaccineName"
+              id="vaccine-custom-name"
+              data-i18n-placeholder="customVaccinePlaceholder"
+              placeholder="例如：萊姆病"
+            />
+          </label>
+          <div class="field-row">
+            <label class="field">
+              <span data-i18n="administeredDate">施打日期</span>
+              <input type="date" name="administeredDate" id="vaccine-given" required />
+            </label>
+            <label class="field">
+              <span data-i18n="nextDueEditable">下次施打（可改）</span>
+              <input type="date" name="nextDueDate" id="vaccine-next-due" required />
+            </label>
+          </div>
+          <div class="form-actions">
+            <button class="btn btn-primary" type="submit" data-i18n="saveVaccine">儲存疫苗紀錄</button>
+          </div>
+        </form>
+      </div>
+    </section>
+
+    <!-- PARASITE PREVENTION -->
+    <section
+      class="screen"
+      data-screen="parasite"
+      data-i18n-aria="parasiteTitle"
+      aria-label="寄生蟲預防"
+      hidden
+    >
+      <header class="screen-head">
+        <button class="back" type="button" data-back data-i18n-aria="back" aria-label="返回">←</button>
+        <div>
+          <h2 data-i18n="parasiteTitle">寄生蟲預防</h2>
+          <p id="parasite-sub" data-i18n="parasiteSub">記錄體外與心絲蟲預防，並設定下次提醒</p>
+        </div>
+      </header>
+
+      <p class="field-hint parasite-disclaimer" data-i18n="parasiteDisclaimer">
+        僅供飼主追蹤參考，用藥請遵照獸醫師指示。
+      </p>
+
+      <form class="form parasite-block" id="parasite-form-external" data-parasite-kind="external">
+        <h3 data-i18n="parasiteExternal" translate="no">體外驅蟲</h3>
+        <fieldset class="chip-field">
+          <legend data-i18n="parasiteProduct">產品</legend>
+          <div class="chips" id="parasite-chips-external"></div>
+        </fieldset>
+        <label class="field">
+          <span data-i18n="parasiteCustomProduct">自訂產品名</span>
+          <input type="text" id="parasite-custom-external" data-i18n-placeholder="parasiteCustomPlaceholder" placeholder="例如：院內處方" />
+        </label>
+        <div class="field-row">
+          <label class="field">
+            <span data-i18n="parasiteLastGiven">上次投藥</span>
+            <input type="date" id="parasite-last-external" />
+          </label>
+          <label class="field">
+            <span data-i18n="parasiteNextDue">下次投藥（可改）</span>
+            <input type="date" id="parasite-next-external" />
+          </label>
+        </div>
+        <label class="field">
+          <span data-i18n="parasiteCustomDays">自訂天數</span>
+          <input type="number" id="parasite-interval-external" min="1" step="1" placeholder="30" />
+        </label>
+        <p class="field-hint" data-i18n="parasiteCustomDaysHint">填天數後，會依上次投藥算出下次投藥日（仍可改）。</p>
+        <div class="parasite-cal-actions">
+          <button class="btn btn-ghost" type="button" data-parasite-gcal="external" data-i18n="parasiteAddGCal">
+            加入 Google 行事曆
+          </button>
+        </div>
+        <div class="parasite-actions">
+          <button class="btn btn-sun" type="button" data-parasite-dosed="external" data-i18n="parasiteDosedToday">
+            剛投藥（今天）
+          </button>
+          <button class="btn btn-primary" type="submit" data-i18n="parasiteSaveExternal">儲存體外預防</button>
+        </div>
+      </form>
+
+      <form class="form parasite-block" id="parasite-form-heartworm" data-parasite-kind="heartworm">
+        <h3 data-i18n="parasiteHeartworm">心絲蟲預防</h3>
+        <p class="field-hint" id="parasite-heartworm-hint" hidden></p>
+        <fieldset class="chip-field">
+          <legend data-i18n="parasiteProduct">產品</legend>
+          <div class="chips" id="parasite-chips-heartworm"></div>
+        </fieldset>
+        <label class="field">
+          <span data-i18n="parasiteCustomProduct">自訂產品名</span>
+          <input type="text" id="parasite-custom-heartworm" data-i18n-placeholder="parasiteCustomPlaceholder" placeholder="例如：院內處方" />
+        </label>
+        <div class="field-row">
+          <label class="field">
+            <span data-i18n="parasiteLastGiven">上次投藥</span>
+            <input type="date" id="parasite-last-heartworm" />
+          </label>
+          <label class="field">
+            <span data-i18n="parasiteNextDue">下次投藥（可改）</span>
+            <input type="date" id="parasite-next-heartworm" />
+          </label>
+        </div>
+        <label class="field">
+          <span data-i18n="parasiteCustomDays">自訂天數</span>
+          <input type="number" id="parasite-interval-heartworm" min="1" step="1" placeholder="30" />
+        </label>
+        <p class="field-hint" data-i18n="parasiteCustomDaysHint">填天數後，會依上次投藥算出下次投藥日（仍可改）。</p>
+        <div class="parasite-cal-actions">
+          <button class="btn btn-ghost" type="button" data-parasite-gcal="heartworm" data-i18n="parasiteAddGCal">
+            加入 Google 行事曆
+          </button>
+        </div>
+        <div class="parasite-actions">
+          <button class="btn btn-sun" type="button" data-parasite-dosed="heartworm" data-i18n="parasiteDosedToday">
+            剛投藥（今天）
+          </button>
+          <button class="btn btn-primary" type="submit" data-i18n="parasiteSaveHeartworm">儲存心絲蟲預防</button>
+        </div>
+      </form>
+    </section>
+
+    <!-- LAB REPORTS -->
+    <section class="screen" data-screen="labs" data-i18n-aria="eLabTitle" aria-label="血檢報告／檢驗報告" hidden>
+      <header class="screen-head light">
+        <button class="back" type="button" data-back data-i18n-aria="back" aria-label="返回">←</button>
+        <div>
+          <h2 data-i18n="eLabTitle">血檢報告／檢驗報告</h2>
+          <p data-i18n="labSub">給獸醫師對照原件</p>
+        </div>
+        <button class="btn btn-small" type="button" data-go="lab-add" data-i18n="labAdd">拍照存檔</button>
+      </header>
+
+      <p class="field-hint lab-disclaimer" data-i18n="labDisclaimer">
+        僅供對照原件，不判讀數值
+      </p>
+
+      <ul class="lab-list" id="lab-list"></ul>
+    </section>
+
+    <section class="screen" data-screen="imaging" data-i18n-aria="eXrayTitle" aria-label="X-Ray&超音波 影像" hidden>
+      <header class="screen-head light">
+        <button class="back" type="button" data-back data-i18n-aria="back" aria-label="返回">←</button>
+        <div>
+          <h2 data-i18n="eXrayTitle">X-Ray&超音波 影像</h2>
+          <p data-i18n="imagingSub">給獸醫師對照原件</p>
+        </div>
+      </header>
+
+      <p class="field-hint lab-disclaimer" data-i18n="imagingDisclaimer">
+        僅供對照原件，不判讀影像
+      </p>
+
+      <ul class="imaging-list" id="imaging-list"></ul>
+    </section>
+
+    <section class="screen" data-screen="lab-add" data-i18n-aria="labAddTitle" aria-label="新增檢驗報告" hidden>
+      <header class="screen-head light">
+        <button class="back" type="button" data-back data-i18n-aria="back" aria-label="返回">←</button>
+        <div>
+          <h2 data-i18n="labAddTitle">新增檢驗報告</h2>
+          <p data-i18n="labAddSub">先拍照，再補日期與類型</p>
+        </div>
+      </header>
+
+      <form class="form" id="lab-add-form">
+        <label class="field">
+          <span data-i18n="labPhotos">報告照片</span>
+          <input type="file" id="lab-photos-input" accept="image/*" multiple />
+          <small class="field-hint" data-i18n="labPhotosHint">可多張（同一份報告的頁）。請至少拍一張。</small>
+        </label>
+        <div class="lab-photo-previews" id="lab-photo-previews"></div>
+
+        <label class="field">
+          <span data-i18n="labDate">檢驗日期</span>
+          <input type="date" id="lab-date" name="labDate" required />
+        </label>
+
+        <fieldset class="chip-field">
+          <legend data-i18n="labTypes">報告類型</legend>
+          <p class="field-hint" data-i18n="labTypesHint">可複選。血液與生化常在同一份。</p>
+          <div class="chips" id="lab-type-chips" role="group">
+            <button type="button" class="chip" data-lab-type="blood" data-i18n="labTypeBlood">血液</button>
+            <button type="button" class="chip" data-lab-type="chemistry" data-i18n="labTypeChem">生化</button>
+            <button type="button" class="chip" data-lab-type="urine" data-i18n="labTypeUrine">尿液</button>
+            <button type="button" class="chip" data-lab-type="fecal" data-i18n="labTypeFecal">糞便</button>
+            <button type="button" class="chip" data-lab-type="snap" data-i18n="labTypeSnap">快篩／SNAP</button>
+            <button type="button" class="chip" data-lab-type="other" data-i18n="labTypeOther">其他</button>
+          </div>
+        </fieldset>
+
+        <label class="field">
+          <span data-i18n="labClinic">醫院名稱（選填）</span>
+          <input
+            type="search"
+            id="lab-clinic-search"
+            name="labClinicSearch"
+            data-i18n-placeholder="labClinicPlaceholder"
+            placeholder="輸入關鍵字，或略過"
+            autocomplete="off"
+          />
+        </label>
+        <ul class="clinic-results" id="lab-clinic-results" hidden></ul>
+        <p class="selected-clinic" id="lab-selected-clinic" hidden></p>
+        <input type="hidden" id="lab-clinic-name" value="" />
+        <input type="hidden" id="lab-clinic-id" value="" />
+
+        <label class="field">
+          <span data-i18n="labVisit">關聯就診（選填）</span>
+          <select id="lab-visit-link" name="labVisitLink">
+            <option value="" data-i18n="labVisitNone">不關聯就診</option>
+          </select>
+        </label>
+
+        <label class="field">
+          <span data-i18n="labNote">備註（選填）</span>
+          <textarea
+            id="lab-note"
+            name="labNote"
+            rows="2"
+            data-i18n-placeholder="labNotePlaceholder"
+            placeholder="例如：年度健檢那次"
+          ></textarea>
+        </label>
+
+        <div class="form-actions">
+          <button class="btn btn-primary" type="submit" data-i18n="labSave">儲存報告</button>
+        </div>
+      </form>
+    </section>
+
+    <!-- EMERGENCY CARD -->
+    <section class="screen screen-emergency" data-screen="emergency" data-i18n-aria="emergencyTitle" aria-label="醫療資訊卡" hidden>
+      <header class="screen-head light">
+        <button class="back" type="button" data-go="home" data-i18n-aria="back" aria-label="返回">←</button>
+        <div>
+          <h2 data-i18n="emergencyTitle">醫療資訊卡</h2>
+          <p data-i18n="emergencySub">給獸醫師快速參考 · 非電子病歷</p>
+        </div>
+        <button class="btn btn-small" type="button" id="copy-card" data-i18n="copySummary">複製摘要</button>
+      </header>
+
+      <article class="e-card" id="e-card">
+        <header class="e-card-top">
+          <div class="e-card-top-main">
+            <p class="e-brand" data-i18n="eBrand">火龍果護照</p>
+            <div class="e-name-row">
+              <h3 id="e-name">米醬</h3>
+              <button
+                type="button"
+                class="e-pet-photo-edit"
+                id="e-pet-photo-edit"
+                data-i18n-aria="editPetAria"
+                data-i18n-title="editPetAria"
+                aria-label="編輯寵物資料"
+                title="編輯寵物資料"
+              >
+                <span class="e-pet-photo-pen" aria-hidden="true">
+                  <svg viewBox="0 0 24 24" width="14" height="14" focusable="false">
+                    <path
+                      d="M14.1 4.2l5.7 5.7-11.2 11.2H2.9v-5.7L14.1 4.2z"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="1.8"
+                      stroke-linejoin="round"
+                    />
+                    <path
+                      d="M12.2 6.1l5.7 5.7"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="1.8"
+                      stroke-linecap="round"
+                    />
+                  </svg>
+                </span>
+              </button>
+              <p class="e-chip-meta" id="e-chip-line">晶片號碼：未填寫</p>
+            </div>
+            <p class="e-sub" id="e-birth-line">生日：2023-08-09</p>
+            <p class="e-sub" id="e-sub">犬 · 米克斯 · 母 · 已絕育 · 約 3 歲</p>
+            <p class="e-weight" id="e-weight">最近體重 <strong>6.8 kg</strong><span class="e-weight-date"> · 2026-08-02</span></p>
+          </div>
+          <label
+            class="e-pet-frame"
+            for="e-pet-photo-input"
+            id="e-pet-photo"
+            data-i18n-aria="petPhotoUpload"
+            data-i18n-title="petPhotoUpload"
+            aria-label="上傳寵物照片"
+            title="上傳寵物照片"
+          >
+            <input
+              type="file"
+              id="e-pet-photo-input"
+              accept="image/*"
+              hidden
+            />
+            <span class="e-pet-frame-inner" id="e-pet-photo-preview" aria-hidden="true"></span>
+          </label>
+        </header>
+
+        <section class="e-block e-alerts">
+          <h4 data-i18n="alertsPriority">醫療警示（優先）</h4>
+          <ul id="e-alerts"></ul>
+        </section>
+
+        <section class="e-block">
+          <h4 data-i18n="currentMeds">目前用藥（未到期）</h4>
+          <ul id="e-meds"></ul>
+        </section>
+
+        <section class="e-block" id="e-owner-block">
+          <h4 data-i18n="ownerContact">飼主聯絡</h4>
+          <div id="e-owner" class="e-owner"></div>
+        </section>
+
+        <footer class="e-foot">
+          <p data-i18n="eFoot">僅供參考，不取代獸醫師診斷。產生時間 2026-08-09 15:00</p>
+        </footer>
+      </article>
+
+      <nav class="e-quick-nav" data-i18n-aria="detailNav" aria-label="此寵物的詳細紀錄">
+        <button type="button" data-go="timeline">
+          <span data-i18n="timelineNav">時間軸</span>
+          <small data-i18n="timelineNavSub">就診與用藥</small>
+        </button>
+        <button type="button" class="e-nav-alerts" data-go="alerts">
+          <span data-i18n="alertsTitle">醫療警示</span>
+          <small data-i18n="alertsNavSub">過敏／慢性病</small>
+        </button>
+        <div
+          class="e-vax-nav"
+          id="e-vaccine-btn"
+          data-go="vaccines"
+          role="button"
+          tabindex="0"
+        >
+          <span class="e-vaccine-label">
+            <span data-i18n="vaccine">疫苗</span>
+            <span class="e-vax-lights" id="e-vax-lights" role="img" aria-label="">
+              <i class="e-vax-dot is-green" data-status="protected" title="薄荷：防護中"></i>
+              <i class="e-vax-dot is-orange" data-status="approaching" title="暖橘：即將到期"></i>
+              <i class="e-vax-dot is-red" data-status="expired" title="玫瑰：已到期／需留意"></i>
+            </span>
+            <button
+              type="button"
+              class="e-vax-help"
+              id="e-vax-help"
+              data-i18n-aria="vaxLightsHelpAria"
+              data-i18n-title="vaxLightsHelpTitle"
+              aria-label="疫苗燈號說明"
+              aria-expanded="false"
+              aria-controls="e-vax-help-pop"
+              title="燈號說明"
+            >
+              ?
+            </button>
+          </span>
+          <small id="e-vaccine-next" data-i18n="nextDueDash">下次 —</small>
+          <div
+            class="e-vax-help-pop"
+            id="e-vax-help-pop"
+            hidden
+            role="dialog"
+            aria-labelledby="e-vax-help-title"
+          >
+            <p class="e-vax-help-title" id="e-vax-help-title" data-i18n="vaxLightsHelpTitle">
+              燈號說明
+            </p>
+            <ul class="e-vax-help-list">
+              <li>
+                <i class="e-vax-dot is-green is-on" aria-hidden="true"></i>
+                <span data-i18n="vaxLightGreen">薄荷：防護中</span>
+              </li>
+              <li>
+                <i class="e-vax-dot is-orange is-on" aria-hidden="true"></i>
+                <span data-i18n="vaxLightOrange">暖橘：即將到期</span>
+              </li>
+              <li>
+                <i class="e-vax-dot is-red is-on" aria-hidden="true"></i>
+                <span data-i18n="vaxLightRed">玫瑰：已到期／需留意</span>
+              </li>
+            </ul>
+          </div>
+        </div>
+      </nav>
+
+      <nav class="e-docs-nav" data-i18n-aria="eDocsNav" aria-label="影像與檢驗資料">
+        <button type="button" class="e-docs-btn" data-e-doc="xray" data-go="imaging" id="e-xray-btn">
+          <span data-i18n="eXrayTitle">X-Ray&超音波 影像</span>
+          <small id="e-xray-sub" data-i18n="eXraySubEmpty">尚未存檔</small>
+        </button>
+        <button type="button" class="e-docs-btn" data-e-doc="labs" data-go="labs" id="e-lab-btn">
+          <span data-i18n="eLabTitle">血檢報告／檢驗報告</span>
+          <small id="e-lab-sub" data-i18n="eLabSubEmpty">尚未存檔</small>
+        </button>
+      </nav>
+    </section>
+  </div>
+
+  <div class="proof-lightbox" id="proof-lightbox" hidden>
+    <button
+      type="button"
+      class="proof-lightbox-scrim"
+      data-proof-lightbox-close
+      aria-label=""
+      data-i18n-aria="proofLightboxClose"
+    ></button>
+    <div
+      class="proof-lightbox-sheet"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="proof-lightbox-title"
+    >
+      <header class="proof-lightbox-bar">
+        <h3 id="proof-lightbox-title" data-i18n="proofLightboxTitle">藥單照片</h3>
+        <button
+          type="button"
+          class="btn btn-ghost proof-lightbox-close"
+          data-proof-lightbox-close
+          data-i18n="proofLightboxClose"
+        >
+          關閉
+        </button>
+      </header>
+      <div class="proof-lightbox-stage">
+        <img id="proof-lightbox-img" alt="" />
+      </div>
+    </div>
+  </div>
+
+  <div class="photo-crop" id="photo-crop" hidden>
+    <div
+      class="photo-crop-sheet"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="photo-crop-title"
+    >
+      <h3 id="photo-crop-title" data-i18n="petPhotoCropTitle">調整照片</h3>
+      <p class="photo-crop-hint" data-i18n="petPhotoCropHint">拖曳移動位置，拉動滑桿縮放</p>
+      <div class="photo-crop-stage">
+        <div class="photo-crop-viewport" id="photo-crop-viewport">
+          <img id="photo-crop-img" alt="" draggable="false" />
+        </div>
+      </div>
+      <label class="photo-crop-zoom">
+        <span data-i18n="petPhotoZoom">縮放</span>
+        <input type="range" id="photo-crop-zoom" min="1" max="3" step="0.01" value="1" />
+      </label>
+      <div class="cta-row">
+        <button class="btn btn-ghost" type="button" id="photo-crop-cancel" data-i18n="cancel">
+          取消
+        </button>
+        <button class="btn btn-primary" type="button" id="photo-crop-save" data-i18n="petPhotoUse">
+          使用此照片
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <div class="toast" id="toast" hidden role="status"></div>
+
+  <div class="lang-switcher" id="lang-switcher">
+    <div class="lang-menu" id="lang-menu" hidden>
+      <button type="button" data-lang="zh-Hant">繁中</button>
+      <button type="button" data-lang="en">English</button>
+      <button type="button" data-lang="ja">日本語</button>
+      <button type="button" data-lang="ko">한국어</button>
+    </div>
+    <button type="button" class="lang-fab" id="lang-fab" aria-expanded="false" aria-haspopup="true">中</button>
+  </div>
+
+  <script defer src="./config.public.js?v=20260824-client-id"></script>
+  <script defer src="./auth/google-drive.js?v=20260824-intro-drive"></script>
+  <!-- module + defer share parse-order: PetLive is ready before app.js -->
+  <script type="module" src="./runtime/petlive.js?v=20260824-drug-seed-dedupe"></script>
+  <script defer src="./runtime/safe-ui.js?v=20260812-local-first"></script>
+  <script defer src="./i18n.js?v=20260824-oauth-layout"></script>
+  <script defer src="./breeds-database.js?v=20260812-local-first"></script>
+  <script defer src="./core/storage.js?v=20260824-perf-adopt"></script>
+  <script defer src="./core/state.js?v=20260813-layered-adopted"></script>
+  <script defer src="./shell/navigation.js?v=20260813-layered-adopted"></script>
+  <script defer src="./shell/render-coordinator.js?v=20260824-perf-adopt"></script>
+  <script defer src="./domains/pets/controller.js?v=20260813-layered-adopted"></script>
+  <script defer src="./app.js?v=20260824-oauth-layout"></script>
+</body>
+</html>

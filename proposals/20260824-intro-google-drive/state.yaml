@@ -1,0 +1,35 @@
+id: 20260824-intro-google-drive
+title: "介紹頁、Google 登入、飼主 Drive 備份"
+version: 2
+status: candidate_ready
+
+gate_a:
+  status: approved
+  note: "Victor Implement the plan (2026-08-24)"
+
+gate_b:
+  status: pending
+  note: "Await Victor 採用 after smoke on Pages + Client ID"
+
+iteration: 0
+max_iterations: 3
+
+candidate:
+  branch: ""
+  path: "mainline (Victor instructed full implement)"
+  worktree: ""
+
+reviews:
+  pharmacist: skipped
+  qa: pending
+  ui: pending
+
+rerun: []
+blocking_issues: []
+non_blocking: []
+builder_scope:
+  - intro-chrome
+  - persist-local-graph
+  - gis-drive
+  - host-https
+halt_reason: ""

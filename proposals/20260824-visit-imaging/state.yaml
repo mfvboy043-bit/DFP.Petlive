@@ -1,0 +1,44 @@
+id: 20260824-visit-imaging
+title: Visit imaging — X-Ray / ultrasound on timeline (med-proof pattern)
+version: 2
+status: adopted
+# proposed | building | reviewing | revising | candidate_ready | halted | adopted | rejected
+
+gate_a:
+  status: approved
+  # pending | approved | modified | rejected
+
+gate_b:
+  status: adopted
+  # pending | adopted | rejected
+
+iteration: 2
+max_iterations: 3
+
+candidate:
+  branch: ""
+  path: ""  # preview removed after adopt; mainline is source of truth
+  worktree: ""
+
+reviews:
+  pharmacist: skipped
+  qa: conditional
+  ui: conditional
+  # pending | skipped | pass | conditional | reject
+
+rerun: []
+blocking_issues: []
+non_blocking:
+  - QA-001
+  - QA-003
+  - QA-004
+  - UI-001
+  - UI-002
+  - UI-003
+  - UI-004
+  - UI-005
+  - UI-006
+  - UI-007
+  - UI-008
+builder_scope: []
+halt_reason: ""

@@ -1,0 +1,9 @@
+.DS_Store
+*.log
+*.pid
+*.out
+deploy/preview-server.pid
+deploy/preview-access.log
+deploy/preview-server.out
+node_modules/
+.cursor/

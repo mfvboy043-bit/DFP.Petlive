@@ -1,0 +1,37 @@
+id: "20260813-web-perf-smoothness"
+title: "Web performance & smoothness (CSS layers, i18n, timeline, photo writes)"
+version: 2
+status: adopted
+# proposed | building | reviewing | revising | candidate_ready | halted | adopted | rejected
+
+gate_a:
+  status: approved
+  # pending | approved | modified | rejected
+  notes: "Victor 確認 2026-08-13. First build: PERF-02 + PERF-04 only."
+
+gate_b:
+  status: adopted
+  # pending | adopted | rejected
+  notes: "Victor 採用 2026-08-24. Merged PERF-02 + PERF-04 into mainline; PERF-01/03 still deferred."
+
+iteration: 1
+max_iterations: 3
+
+candidate:
+  branch: ""
+  path: ""  # preview removed after adopt; mainline is source of truth
+  worktree: ""
+
+reviews:
+  pharmacist: skipped
+  qa: pass
+  ui: pass
+  # pending | skipped | pass | conditional | reject
+  # First build expected: qa required; pharmacist skipped unless med DOM touched; ui light
+
+rerun: []
+blocking_issues: []
+non_blocking:
+  - "QA-001"
+builder_scope: []
+halt_reason: ""

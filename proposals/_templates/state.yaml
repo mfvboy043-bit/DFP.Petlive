@@ -1,0 +1,33 @@
+id: ""
+title: ""
+version: 2
+status: proposed
+# proposed | building | reviewing | revising | candidate_ready | halted | adopted | rejected
+
+gate_a:
+  status: pending
+  # pending | approved | modified | rejected
+
+gate_b:
+  status: pending
+  # pending | adopted | rejected
+
+iteration: 0
+max_iterations: 3
+
+candidate:
+  branch: ""
+  path: ""
+  worktree: ""
+
+reviews:
+  pharmacist: pending
+  qa: pending
+  ui: pending
+  # pending | skipped | pass | conditional | reject
+
+rerun: []
+blocking_issues: []
+non_blocking: []
+builder_scope: []
+halt_reason: ""

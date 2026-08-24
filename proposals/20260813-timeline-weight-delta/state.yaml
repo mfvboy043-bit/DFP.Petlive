@@ -1,0 +1,39 @@
+id: 20260813-timeline-weight-delta
+title: Timeline visit weight + delta vs previous visit
+version: 2
+status: adopted
+# proposed | building | reviewing | revising | candidate_ready | halted | adopted | rejected
+
+gate_a:
+  status: approved
+  # pending | approved | modified | rejected
+  notes: "Victor 確認並修改 2026-08-13. Locked: same-day=previous record; Δ0=相同; missing weight quiet omit."
+
+gate_b:
+  status: adopted
+  # pending | adopted | rejected
+  notes: "Victor 採用 2026-08-13. Merged weight-delta only (skipped preview compound-chip drift QA-001)."
+
+iteration: 1
+max_iterations: 3
+
+candidate:
+  branch: ""
+  path: ""  # preview removed after adopt; mainline is source of truth
+  worktree: ""
+
+reviews:
+  pharmacist: skipped
+  qa: pass
+  ui: conditional
+  # pending | skipped | pass | conditional | reject
+
+rerun: []
+blocking_issues: []
+non_blocking:
+  - QA-001
+  - UI-001
+  - UI-002
+  - UI-003
+builder_scope: []
+halt_reason: ""

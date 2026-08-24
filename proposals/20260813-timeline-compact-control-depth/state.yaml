@@ -1,0 +1,34 @@
+id: "20260813-timeline-compact-control-depth"
+title: "Timeline compact control depth and state refinement"
+version: 2
+status: adopted
+# proposed | building | reviewing | revising | candidate_ready | halted | adopted | rejected
+
+gate_a:
+  status: approved
+  # pending | approved | modified | rejected
+
+gate_b:
+  status: adopted
+  # pending | adopted | rejected
+
+iteration: 2
+max_iterations: 3
+
+candidate:
+  branch: ""
+  path: ""  # preview removed after adopt; mainline is source of truth
+  worktree: ""
+
+reviews:
+  pharmacist: skipped
+  qa: pass
+  ui: pass
+  # pending | skipped | pass | conditional | reject
+
+rerun: []
+blocking_issues: []
+non_blocking:
+  - "UI-002"
+builder_scope: []
+halt_reason: ""

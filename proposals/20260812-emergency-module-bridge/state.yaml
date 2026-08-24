@@ -1,0 +1,33 @@
+id: 20260812-emergency-module-bridge
+title: 急診卡接到 emergency-card 模組（積木隔離示範）
+version: 2
+status: adopted
+
+gate_a:
+  status: approved
+
+gate_b:
+  status: adopted
+
+iteration: 2
+max_iterations: 3
+
+candidate:
+  branch: ""
+  path: ""  # preview removed after adopt; mainline is source of truth
+  worktree: ""
+
+reviews:
+  pharmacist: pass
+  qa: pass
+  ui: skipped
+
+rerun: []
+blocking_issues: []
+non_blocking:
+  - QA-002
+  - UI-001
+  - UI-002
+  - UI-003
+builder_scope: []
+halt_reason: ""

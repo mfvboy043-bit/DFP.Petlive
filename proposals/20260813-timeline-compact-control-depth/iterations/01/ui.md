@@ -1,0 +1,8 @@
+# UI review
+Verdict: conditional
+
+## Findings
+- [UI-001] [P2] Combined visit prescription hover state — The dual-class `.tl-drug-notes-btn.tl-visit-rx-btn` correctly rests and opens in the green visit-control family, but on hover it matches both hover rules and the later amber `.tl-drug-notes-btn:not(.is-open):hover` border wins (`styles.css:4834-4840`). This creates a brief medication-notes color cue on a green prescription control and breaks state coherence. Give the combined visit button an explicit green hover override, or exclude `.tl-visit-rx-btn` from the amber hover selector.
+- [UI-002] [P2] Mobile touch targets — The controls remain visually compact, but their actual button boxes are only 28px for `.tl-drug-notes-btn` (`styles.css:3065-3068`) and 32px for `.tl-weight.tl-weight-pending` / `.tl-visit-rx-btn` (`styles.css:4655-4658`, `4780-4783`), substantially below the mobile `--tap: 48px` convention (`styles.css:4998-5002`). The new depth improves recognition but not reliable thumb targeting. Preserve the compact visible capsules while expanding their non-overlapping touch hit areas toward 44–48px on phone layouts.
+
+The dimensional treatment is otherwise restrained and consistent with `.e-quick-nav`: subtle gradients, inset highlights, short lift/press movement, and compact shadows establish tactility without promoting these controls into primary actions. Open states remain strongly differentiated after release, reduced-motion handling covers the new transitions, semantic resting colors are preserved, and `.tl-tag` gains only a flat border with no interactive styling. The existing Petlive palette and typography also avoid generic purple-gradient, card-heavy, or system-font AI-default styling.

@@ -1,0 +1,17 @@
+{
+  "name": "petlive",
+  "private": true,
+  "type": "module",
+  "workspaces": [
+    "packages/*",
+    "modules/*",
+    "apps/*",
+    "qa"
+  ],
+  "scripts": {
+    "test": "node --test qa/tests/*.test.js",
+    "test:qa": "node --test qa/tests/*.test.js",
+    "serve": "python3 -m http.server 5173 --bind 0.0.0.0 --directory ."
+  },
+  "description": "Imports use relative paths so tests run without npm install. Workspaces remain for future packaging."
+}
