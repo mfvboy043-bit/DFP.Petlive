@@ -1598,6 +1598,7 @@ select:focus {
   gap: 11px;
   width: 100%;
   min-width: 0;
+  overflow-x: clip;
 }
 
 /* iOS/WebKit date controls have a large intrinsic min-width */
@@ -1615,6 +1616,17 @@ input[type="week"] {
   -webkit-min-logical-width: 0;
 }
 
+/* Half-column rows: force date inputs to shrink past WebKit min-content */
+.field-row input[type="date"],
+.field-row input[type="time"],
+.field-row input[type="month"] {
+  width: 0;
+  min-width: 100%;
+  max-width: 100%;
+  padding-inline: 8px;
+  overflow: hidden;
+}
+
 input[type="date"]::-webkit-datetime-edit,
 input[type="time"]::-webkit-datetime-edit,
 input[type="datetime-local"]::-webkit-datetime-edit,
@@ -1622,6 +1634,13 @@ input[type="month"]::-webkit-datetime-edit,
 input[type="week"]::-webkit-datetime-edit {
   min-width: 0;
   max-width: 100%;
+  overflow: hidden;
+}
+
+input[type="date"]::-webkit-calendar-picker-indicator,
+input[type="month"]::-webkit-calendar-picker-indicator {
+  flex-shrink: 0;
+  margin-inline-start: 2px;
 }
 
 #alert-since-field,
@@ -7063,12 +7082,14 @@ html.is-proof-lightbox-open body {
   .screen[data-screen="add-pet"] .field-row {
     grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 10px;
+    overflow-x: clip;
   }
 
   #pet-form .field-row .field,
   .screen[data-screen="add-pet"] .field-row .field {
     min-width: 0;
     max-width: 100%;
+    overflow-x: clip;
   }
 
   #pet-form .field-row select,
@@ -7079,6 +7100,17 @@ html.is-proof-lightbox-open body {
     min-width: 0;
     max-width: 100%;
     box-sizing: border-box;
+  }
+
+  /* Date in half column: shrink past WebKit intrinsic floor */
+  #pet-form .field-row input[type="date"],
+  .screen[data-screen="add-pet"] .field-row input[type="date"] {
+    width: 0;
+    min-width: 100%;
+    max-width: 100%;
+    padding-inline: 8px;
+    overflow: hidden;
+    -webkit-min-logical-width: 0;
   }
 
   /* Stack date+date pairs — iOS date inputs overflow when forced side-by-side */
