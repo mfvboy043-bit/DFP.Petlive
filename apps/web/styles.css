@@ -1527,16 +1527,21 @@ html[lang="ko"] .hero-intro .brand-zh {
   gap: 17px;
 
   width: 100%;
+  max-width: 100%;
+  min-width: 0;
+  overflow-x: clip;
 }
 
 .field,
 .chip-field {
   min-width: 0;
+  max-width: 100%;
 }
 
 .field {
   display: grid;
   gap: 7px;
+  overflow-x: clip;
 }
 
 .field > span,
@@ -1606,6 +1611,17 @@ input[type="week"] {
   min-width: 0;
   max-width: 100%;
   box-sizing: border-box;
+  /* Kill WebKit’s default ~200–280px floor so fields stay inside .form */
+  -webkit-min-logical-width: 0;
+}
+
+input[type="date"]::-webkit-datetime-edit,
+input[type="time"]::-webkit-datetime-edit,
+input[type="datetime-local"]::-webkit-datetime-edit,
+input[type="month"]::-webkit-datetime-edit,
+input[type="week"]::-webkit-datetime-edit {
+  min-width: 0;
+  max-width: 100%;
 }
 
 #alert-since-field,
@@ -7060,12 +7076,20 @@ html.is-proof-lightbox-open body {
     max-width: 100%;
   }
 
+  .form input[type="date"],
+  .form input[type="month"],
+  .form input[type="time"],
   .vaccine-form input[type="date"],
-  .parasite-block input[type="date"] {
+  .parasite-block input[type="date"],
+  .screen[data-screen="add-visit"] input[type="date"],
+  .screen[data-screen="add-pet"] input[type="date"],
+  .screen[data-screen="labs"] input[type="date"],
+  .screen[data-screen="archive"] input[type="date"] {
     width: 100%;
     min-width: 0;
     max-width: 100%;
     box-sizing: border-box;
+    -webkit-min-logical-width: 0;
   }
 
   .form-actions,
