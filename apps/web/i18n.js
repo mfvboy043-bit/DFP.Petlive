@@ -46,6 +46,8 @@ const I18N = {
     accountSyncConflictHint: "要保留本機還是還原雲端？請選下方按鈕。",
     accountSyncFirstBackup: "尚無雲端備份",
     accountSyncError: "雲端連線逾時，請稍後再試",
+    freshBootHint: "全新測試模式 · 不還原雲端示範資料",
+    restoreBootHint: "還原模式 · 登入後可從雲端載入備份",
     accountRestore: "從雲端還原",
     accountRestoreConfirm:
       "從雲端還原會覆蓋此裝置上的所有寵物資料。確定要還原嗎？",
@@ -719,6 +721,8 @@ const I18N = {
     accountSyncConflictHint: "Keep this device or restore from cloud? Use the buttons below.",
     accountSyncFirstBackup: "No cloud backup yet",
     accountSyncError: "Cloud sync timed out—try again",
+    freshBootHint: "Fresh test mode · demo cloud data ignored",
+    restoreBootHint: "Restore mode · sign in to load your cloud backup",
     accountRestore: "Restore from cloud",
     accountRestoreConfirm:
       "Restore from cloud will overwrite all pet data on this device. Continue?",
@@ -1393,6 +1397,8 @@ const I18N = {
     accountSyncConflictHint: "端末を優先しますか？クラウドから復元しますか？下のボタンを選んでください。",
     accountSyncFirstBackup: "クラウドバックアップなし",
     accountSyncError: "クラウド接続がタイムアウトしました。後でもう一度",
+    freshBootHint: "新規テストモード · デモのクラウドデータは使いません",
+    restoreBootHint: "復元モード · ログイン後にクラウドから読み込み",
     accountRestore: "クラウドから復元",
     accountRestoreConfirm:
       "クラウドから復元すると、この端末のペットデータがすべて上書きされます。続行しますか？",
@@ -2072,6 +2078,8 @@ const I18N = {
     accountSyncConflictHint: "이 기기를 유지할까요, 클라우드에서 복원할까요? 아래 버튼을 선택하세요.",
     accountSyncFirstBackup: "클라우드 백업 없음",
     accountSyncError: "클라우드 연결 시간 초과—다시 시도하세요",
+    freshBootHint: "신규 테스트 모드 · 데모 클라우드 데이터 무시",
+    restoreBootHint: "복원 모드 · 로그인 후 클라우드에서 불러오기",
     accountRestore: "클라우드에서 복원",
     accountRestoreConfirm:
       "클라우드에서 복원하면 이 기기의 모든 반려동물 데이터가 덮어씌워집니다. 계속할까요?",

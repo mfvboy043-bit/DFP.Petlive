@@ -627,6 +627,56 @@ const SYNC_META_KEY = "petlive-sync-meta";
 const INTRO_SEEN_KEY = "petlive-intro-seen";
 const DEMO_TOUR_SEEN_KEY = "petlive-demo-tour-seen";
 
+function isFreshBootMode() {
+  try {
+    return new URLSearchParams(window.location.search || "").get("fresh") === "1";
+  } catch {
+    return false;
+  }
+}
+
+function isRestoreBootMode() {
+  try {
+    return new URLSearchParams(window.location.search || "").get("restore") === "1";
+  } catch {
+    return false;
+  }
+}
+
+const FRESH_BOOT = isFreshBootMode();
+const RESTORE_BOOT = isRestoreBootMode();
+
+function clearLocalPetliveData() {
+  const keys = [
+    PETS_GRAPH_KEY,
+    SYNC_META_KEY,
+    INTRO_SEEN_KEY,
+    DEMO_TOUR_SEEN_KEY,
+    "petlive-pet-alerts",
+    "petlive-suppressed-alerts",
+    "petlive-pet-photos",
+    "petlive-lab-reports",
+    "petlive-owner-profile",
+  ];
+  for (const key of keys) {
+    try {
+      localStorage.removeItem(key);
+    } catch {
+      /* ignore */
+    }
+  }
+  try {
+    sessionStorage.removeItem("petlive-google-token");
+    sessionStorage.removeItem("petlive-google-profile");
+  } catch {
+    /* ignore */
+  }
+}
+
+if (FRESH_BOOT) {
+  clearLocalPetliveData();
+}
+
 function isDemoMode() {
   try {
     return new URLSearchParams(window.location.search || "").get("demo") === "1";
@@ -7505,6 +7555,10 @@ function isSeedOnlyPets(petList) {
   return true;
 }
 
+function isSeedOnlyCloudPayload(payload) {
+  return isSeedOnlyPets(payload?.pets);
+}
+
 function isFreshDevice() {
   if (hasStoredPetsGraph()) return false;
   const meta = readSyncMeta();
@@ -7559,6 +7613,16 @@ function setCloudReconcileState(next, { phase } = {}) {
 function paintReconcileUi() {
   const bar = document.getElementById("cloud-reconcile-status");
   if (!bar) return;
+  if (FRESH_BOOT && liveGoogleSignedIn() && cloudReconcileState !== "running") {
+    bar.hidden = false;
+    bar.textContent = t("freshBootHint");
+    return;
+  }
+  if (RESTORE_BOOT && liveGoogleSignedIn() && cloudReconcileState !== "running") {
+    bar.hidden = false;
+    bar.textContent = t("restoreBootHint");
+    return;
+  }
   if (
     !liveGoogleSignedIn() ||
     cloudReconcileState === "idle" ||
@@ -7671,8 +7735,14 @@ function accountSyncStatusText() {
   return t("accountSyncPending");
 }
 
-async function reconcileCloudOnBoot({ silent } = {}) {
+async function reconcileCloudOnBoot({ silent, skipAutoPull } = {}) {
   if (DEMO_MODE || !googleDriveAuth?.getSession?.().signedIn) return;
+  if (skipAutoPull || FRESH_BOOT) {
+    cloudSyncConflict = false;
+    setCloudReconcileState("done");
+    paintCloudChrome();
+    return;
+  }
   if (cloudReconcileTimeout) {
     clearTimeout(cloudReconcileTimeout);
     cloudReconcileTimeout = null;
@@ -7695,7 +7765,7 @@ async function reconcileCloudOnBoot({ silent } = {}) {
     }
 
     const payload = await googleDriveAuth.downloadJson();
-    if (!payload) {
+    if (!payload || isSeedOnlyCloudPayload(payload)) {
       if (hasRealLocalData()) {
         await pushCloudBackup({ silent: true });
       }
@@ -7790,6 +7860,7 @@ function buildCloudPayload() {
 function applyCloudPayload(payload) {
   if (DEMO_MODE) return false;
   if (!payload || !Array.isArray(payload.pets)) return false;
+  if (isSeedOnlyCloudPayload(payload)) return false;
   pets.length = 0;
   archivedPets.length = 0;
   for (const pet of payload.pets) pets.push(pet);
@@ -8095,7 +8166,7 @@ async function handleGoogleSignIn({ enterApp } = {}) {
             if (isFreshDevice() || isSeedOnlyPets(pets)) {
               clearSeedPetsFromMemory();
             }
-            await reconcileCloudOnBoot({ silent: true });
+            await reconcileCloudOnBoot({ silent: true, skipAutoPull: FRESH_BOOT });
           } catch {
             /* Drive may need explicit Sync later; do not re-prompt here */
           }
@@ -8300,9 +8371,10 @@ function initIntroAndCloud() {
   }
 
   if (!DEMO_MODE && googleDriveAuth?.getSession?.().signedIn) {
-    reconcileCloudOnBoot({ silent: true });
+    reconcileCloudOnBoot({ silent: true, skipAutoPull: FRESH_BOOT });
   } else if (
     !DEMO_MODE &&
+    !FRESH_BOOT &&
     !googleDriveAuth?.getSession?.().signedIn &&
     !pets.length &&
     !hasStoredPetsGraph()
