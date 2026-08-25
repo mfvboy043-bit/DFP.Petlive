@@ -1662,7 +1662,8 @@ input[type="week"] {
 /*
   iOS Safari: native date inputs ignore max-width in half columns.
   Show a normal text face; overlay a transparent date input for the picker.
-  Border lives on the proxy (not the face) so overflow:hidden cannot clip it.
+  Use an inset ring (not border) so mobile overflow clipping cannot erase the
+  bottom edge; keep overflow:hidden only to contain the native control.
 */
 .date-proxy {
   position: relative;
@@ -1672,11 +1673,11 @@ input[type="week"] {
   max-width: 100%;
   overflow: hidden;
   box-sizing: border-box;
-  border: 1px solid var(--line-strong);
+  border: 0;
   border-radius: var(--r-sm);
   background: rgba(255, 255, 255, 0.91);
+  box-shadow: inset 0 0 0 1px var(--line-strong);
   transition:
-    border-color var(--fast),
     box-shadow var(--fast),
     background var(--fast);
 }
@@ -1695,12 +1696,13 @@ input[type="week"] {
 
 .date-proxy-native {
   position: absolute;
-  inset: 0;
+  /* Stay inside the inset ring so the bottom edge stays crisp on mobile */
+  inset: 1px;
   z-index: 1;
-  width: 100% !important;
+  width: auto !important;
   min-width: 0 !important;
-  max-width: 100% !important;
-  height: 100%;
+  max-width: none !important;
+  height: auto !important;
   margin: 0;
   padding: 0;
   border: 0 !important;
@@ -1715,9 +1717,10 @@ input[type="week"] {
 }
 
 .date-proxy:focus-within {
-  border-color: #8fb5a0;
-  box-shadow: 0 0 0 4px rgba(61, 107, 87, 0.08);
   background: white;
+  box-shadow:
+    inset 0 0 0 1px #8fb5a0,
+    0 0 0 4px rgba(61, 107, 87, 0.08);
 }
 
 input[type="date"]::-webkit-datetime-edit,
@@ -7294,6 +7297,14 @@ html.is-proof-lightbox-open body {
     grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 10px;
     overflow-x: clip;
+  }
+
+  /* overflow-x:clip forces overflow-y; keep date rings from losing the bottom edge */
+  #pet-form .field-row:has(.date-proxy),
+  .screen[data-screen="add-pet"] .field-row:has(.date-proxy),
+  .vaccine-form .field-row:has(.date-proxy),
+  .screen[data-screen="vaccines"] .vaccine-form .field-row:has(.date-proxy) {
+    overflow: visible;
   }
 
   #pet-form .field-row--name-species,
