@@ -161,3 +161,21 @@ function breedOptionLabel(breed) {
   const key = breedLangKey();
   return breed.labels[key] || breed.labels.zh || breed.value;
 }
+
+/**
+ * Filter dog/cat breeds by query against all locale labels + stable value.
+ * Empty query → [] (no full dump). Excludes __custom__.
+ */
+function searchBreeds(query, species) {
+  const q = String(query || "")
+    .trim()
+    .toLowerCase();
+  if (!q) return [];
+  if (species !== "dog" && species !== "cat") return [];
+  return getBreedListForSpecies(species).filter((breed) => {
+    if (breed.value === BREED_CUSTOM_VALUE) return false;
+    const labelHay = Object.values(breed.labels || {}).join(" ");
+    const hay = `${labelHay} ${breed.value}`.toLowerCase();
+    return hay.includes(q);
+  });
+}
