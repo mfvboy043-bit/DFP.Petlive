@@ -7489,15 +7489,37 @@ async function handleGoogleSignIn({ enterApp } = {}) {
       t("cloudSignedInAs", { email: session.profile?.email || "" })
     );
     paintCloudChrome();
-    const restored = await pullCloudBackup();
-    if (!restored) await pushCloudBackup({ silent: false });
-    // Always enter app after successful login to avoid intro chrome overflow.
-    enterAppFromIntro();
+    // Enter app immediately — don't block on Drive backup.
+    if (enterApp !== false) {
+      enterAppFromIntro();
+    }
+    // Background restore/backup. Drive consent may appear once if not granted yet.
+    window.setTimeout(() => {
+      Promise.resolve()
+        .then(async () => {
+          const restored = await pullCloudBackup();
+          if (!restored) await pushCloudBackup({ silent: true });
+          paintCloudChrome();
+        })
+        .catch(() => {
+          showToast(t("cloudBackupFail"));
+          paintCloudChrome();
+        });
+    }, 400);
   } catch (err) {
-    if (String(err?.message || err) === "missing_client_id") {
+    const msg = String(err?.message || err);
+    if (msg === "missing_client_id") {
       setIntroStatus(t("cloudBackupNeedConfig"));
+    } else if (
+      msg.includes("popup_closed") ||
+      msg.includes("access_denied") ||
+      msg.includes("popup_failed")
+    ) {
+      setIntroStatus(t("cloudLoginCancelled"));
+      showToast(t("cloudLoginCancelled"));
     } else {
       setIntroStatus(t("cloudBackupFail"));
+      showToast(t("cloudBackupFail"));
     }
     paintCloudChrome();
   }

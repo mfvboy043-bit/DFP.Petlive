@@ -12,6 +12,7 @@ const I18N = {
     introLede:
       "紀錄留在你這邊。登入 Google，可把備份寫進<strong>你的</strong>雲端硬碟——不是我們的伺服器。<br />僅供參考，不取代獸醫診斷。",
     introStart: "開始使用",
+    introTryLocal: "本機試用",
     login: "登入",
     logout: "登出",
     loginWithGoogle: "用 Google 登入",
@@ -19,6 +20,7 @@ const I18N = {
     cloudBackupPending: "尚未備份到 Google",
     cloudBackupNeedConfig: "請先在 config.public.js 填入 Google Client ID",
     cloudBackupFail: "雲端備份失敗，請再試一次",
+    cloudLoginCancelled: "登入已取消，請再試一次",
     cloudRestoreOk: "已從 Google 雲端讀回",
     cloudSignedInAs: "已登入 {email}",
     syncNow: "同步到雲端",
@@ -641,6 +643,7 @@ const I18N = {
     introLede:
       "Your records stay with you. Sign in with Google to back up into <strong>your</strong> Drive—not our servers.<br />Reference only—not a veterinary diagnosis.",
     introStart: "Get started",
+    introTryLocal: "Try offline",
     login: "Sign in",
     logout: "Sign out",
     loginWithGoogle: "Sign in with Google",
@@ -648,6 +651,7 @@ const I18N = {
     cloudBackupPending: "Not backed up to Google yet",
     cloudBackupNeedConfig: "Add your Google Client ID in config.public.js first",
     cloudBackupFail: "Cloud backup failed—try again",
+    cloudLoginCancelled: "Sign-in cancelled—try again",
     cloudRestoreOk: "Restored from Google Drive",
     cloudSignedInAs: "Signed in as {email}",
     syncNow: "Sync to Drive",
@@ -1272,6 +1276,7 @@ const I18N = {
     introLede:
       "記録はあなたの側に残ります。Googleでログインすると、<strong>あなたの</strong>ドライブへバックアップ——当社サーバーではありません。<br />参考用であり、診断の代わりではありません。",
     introStart: "はじめる",
+    introTryLocal: "端末だけで試す",
     login: "ログイン",
     logout: "ログアウト",
     loginWithGoogle: "Googleでログイン",
@@ -1279,6 +1284,7 @@ const I18N = {
     cloudBackupPending: "まだGoogleにバックアップしていません",
     cloudBackupNeedConfig: "先に config.public.js に Client ID を入れてください",
     cloudBackupFail: "バックアップに失敗しました。再試行してください",
+    cloudLoginCancelled: "ログインがキャンセルされました。再試行してください",
     cloudRestoreOk: "Googleドライブから復元しました",
     cloudSignedInAs: "{email} でログイン中",
     syncNow: "ドライブに同期",
@@ -1908,6 +1914,7 @@ const I18N = {
     introLede:
       "기록은 당신 쪽에 남습니다. Google로 로그인하면 <strong>당신의</strong> 드라이브에 백업합니다—저희 서버가 아닙니다.<br />참고용이며 수의사 진단을 대체하지 않습니다.",
     introStart: "시작하기",
+    introTryLocal: "기기로만 체험",
     login: "로그인",
     logout: "로그아웃",
     loginWithGoogle: "Google로 로그인",
@@ -1915,6 +1922,7 @@ const I18N = {
     cloudBackupPending: "아직 Google에 백업되지 않음",
     cloudBackupNeedConfig: "먼저 config.public.js에 Client ID를 넣으세요",
     cloudBackupFail: "클라우드 백업 실패—다시 시도하세요",
+    cloudLoginCancelled: "로그인이 취소되었습니다—다시 시도하세요",
     cloudRestoreOk: "Google 드라이브에서 복원됨",
     cloudSignedInAs: "{email}로 로그인됨",
     syncNow: "드라이브에 동기화",

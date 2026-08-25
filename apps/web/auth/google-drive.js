@@ -7,7 +7,8 @@
   const TOKEN_KEY = "petlive-google-token";
   const PROFILE_KEY = "petlive-google-profile";
 
-  let tokenClient = null;
+  let identityTokenClient = null;
+  let driveTokenClient = null;
   let gisReady = null;
   let listeners = new Set();
 
@@ -27,10 +28,17 @@
     return cfg().driveFileName || "petlive-passport.json";
   }
 
-  function scopes() {
+  function identityScopes() {
+    return "openid email profile";
+  }
+
+  function driveScope() {
+    return "https://www.googleapis.com/auth/drive.file";
+  }
+
+  function allScopes() {
     return (
-      cfg().googleScopes ||
-      "openid email profile https://www.googleapis.com/auth/drive.file"
+      cfg().googleScopes || `${identityScopes()} ${driveScope()}`
     );
   }
 
@@ -126,29 +134,51 @@
     return gisReady;
   }
 
-  async function ensureTokenClient() {
+  async function ensureIdentityClient() {
     const id = clientId();
-    if (!id) {
-      throw new Error("missing_client_id");
-    }
+    if (!id) throw new Error("missing_client_id");
     await loadGis();
-    if (!tokenClient) {
-      tokenClient = global.google.accounts.oauth2.initTokenClient({
+    if (!identityTokenClient) {
+      identityTokenClient = global.google.accounts.oauth2.initTokenClient({
         client_id: id,
-        scope: scopes(),
+        scope: identityScopes(),
         callback: () => {},
       });
     }
-    return tokenClient;
+    return identityTokenClient;
   }
 
-  function requestToken(prompt) {
-    return ensureTokenClient().then(
+  async function ensureDriveClient() {
+    const id = clientId();
+    if (!id) throw new Error("missing_client_id");
+    await loadGis();
+    if (!driveTokenClient) {
+      driveTokenClient = global.google.accounts.oauth2.initTokenClient({
+        client_id: id,
+        scope: allScopes(),
+        callback: () => {},
+      });
+    }
+    return driveTokenClient;
+  }
+
+  function requestTokenFrom(clientPromise, prompt) {
+    return clientPromise.then(
       (client) =>
         new Promise((resolve, reject) => {
+          let settled = false;
+          const finish = (fn, value) => {
+            if (settled) return;
+            settled = true;
+            fn(value);
+          };
           client.callback = (response) => {
             if (response.error) {
-              reject(new Error(response.error));
+              finish(reject, new Error(response.error));
+              return;
+            }
+            if (!response.access_token) {
+              finish(reject, new Error("no_access_token"));
               return;
             }
             const expiresIn = Number(response.expires_in || 3600) * 1000;
@@ -157,9 +187,13 @@
               expires_at: Date.now() + expiresIn,
             };
             writeStoredToken(token);
-            resolve(token);
+            finish(resolve, token);
           };
-          client.requestAccessToken({ prompt: prompt || "" });
+          try {
+            client.requestAccessToken({ prompt: prompt || "" });
+          } catch (err) {
+            finish(reject, err instanceof Error ? err : new Error(String(err)));
+          }
         })
     );
   }
@@ -180,9 +214,22 @@
     return profile;
   }
 
+  /**
+   * What'Sub-like: account chooser with identity scopes only.
+   * Drive is requested later (settings sync / background) so login isn't blocked.
+   */
   async function signIn() {
-    const token = await requestToken("consent");
+    const token = await requestTokenFrom(
+      ensureIdentityClient(),
+      "select_account"
+    );
     await fetchProfile(token.access_token);
+    notify();
+    return getSession();
+  }
+
+  async function ensureDriveAccess() {
+    await requestTokenFrom(ensureDriveClient(), "");
     notify();
     return getSession();
   }
@@ -203,8 +250,17 @@
 
   async function ensureAccessToken() {
     let token = readStoredToken();
-    if (token?.access_token) return token.access_token;
-    token = await requestToken("");
+    if (token?.access_token) {
+      // Prefer a token that can talk to Drive; refresh silently if possible.
+      try {
+        await requestTokenFrom(ensureDriveClient(), "");
+        token = readStoredToken();
+      } catch {
+        /* keep identity token */
+      }
+      return token.access_token;
+    }
+    token = await requestTokenFrom(ensureDriveClient(), "select_account");
     if (!readProfile()) await fetchProfile(token.access_token);
     notify();
     return token.access_token;
@@ -333,6 +389,7 @@
       getSession,
       signIn,
       signOut,
+      ensureDriveAccess,
       uploadJson,
       downloadJson,
       onSessionChange,
