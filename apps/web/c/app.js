@@ -4916,6 +4916,12 @@ function initAppNavMenu() {
   const panel = document.getElementById("app-nav-panel");
   if (!panel) return;
 
+  // C has no demo shell; open formal B 說明書 / 操作示範.
+  document.getElementById("nav-manual-btn")?.addEventListener("click", () => {
+    closeAppNavMenu();
+    window.location.assign("../?demo=1");
+  });
+
   document.addEventListener("click", (event) => {
     const btn = event.target.closest?.(".js-app-nav-btn");
     if (btn) {
