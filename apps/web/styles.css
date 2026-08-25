@@ -7058,7 +7058,30 @@ html.is-proof-lightbox-open body {
     grid-template-columns: 1fr;
   }
 
-  /* Stack date fields — iOS date inputs overflow when forced side-by-side */
+  /* Pet form: keep gender/neuter and weight/date as side-by-side pairs */
+  #pet-form .field-row,
+  .screen[data-screen="add-pet"] .field-row {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px;
+  }
+
+  #pet-form .field-row .field,
+  .screen[data-screen="add-pet"] .field-row .field {
+    min-width: 0;
+    max-width: 100%;
+  }
+
+  #pet-form .field-row select,
+  #pet-form .field-row input,
+  .screen[data-screen="add-pet"] .field-row select,
+  .screen[data-screen="add-pet"] .field-row input {
+    width: 100%;
+    min-width: 0;
+    max-width: 100%;
+    box-sizing: border-box;
+  }
+
+  /* Stack date+date pairs — iOS date inputs overflow when forced side-by-side */
   .vaccine-form .field-row,
   .screen[data-screen="vaccines"] .vaccine-form .field-row {
     grid-template-columns: 1fr;
