@@ -1,0 +1,29 @@
+id: "20260825-demo-tutorial"
+title: "Demo mode + 操作導覽"
+version: 2
+status: adopted
+gate_a:
+  status: approved
+  note: "Victor confirmed plan 操作教學設計方向 (implement MVP)"
+gate_b:
+  status: adopted
+  note: "Victor 採用 2026-08-25"
+iteration: 1
+max_iterations: 3
+candidate:
+  branch: "proposal/demo-tutorial"
+  path: "apps/web"
+  worktree: ".worktrees/demo-tutorial"
+reviews:
+  pharmacist: skipped
+  qa: skipped
+  ui: skipped
+rerun: []
+blocking_issues: []
+non_blocking: []
+builder_scope:
+  - demo-mode-flag
+  - demo-banner-reset
+  - demo-tour
+  - demo-i18n-entry
+halt_reason: ""

@@ -74,6 +74,7 @@ https://<user>.github.io
 ```bash
 python3 -m http.server 5173 --bind 0.0.0.0 --directory .
 # http://127.0.0.1:5173/apps/web/
+# 操作示範（唯讀）：http://127.0.0.1:5173/apps/web/?demo=1
 ```
 
 OAuth 本機也要在 Client 的 JS 來源白名單裡有 `http://localhost:5173`。
