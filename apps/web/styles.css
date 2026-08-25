@@ -1603,10 +1603,16 @@ select:focus {
 
 /* Unified control height inside add-pet pairs */
 #pet-form .field-row select,
-#pet-form .field-row input,
-#pet-form .field-row .date-proxy-face {
+#pet-form .field-row input:not(.date-proxy-face):not(.date-proxy-native),
+#pet-form .field-row .date-proxy {
   min-height: 50px;
   height: 50px;
+  box-sizing: border-box;
+}
+
+#pet-form .field-row .date-proxy-face {
+  height: 100%;
+  min-height: 0;
   box-sizing: border-box;
 }
 
@@ -1644,6 +1650,7 @@ input[type="week"] {
 /*
   iOS Safari: native date inputs ignore max-width in half columns.
   Show a normal text face; overlay a transparent date input for the picker.
+  Border lives on the proxy (not the face) so overflow:hidden cannot clip it.
 */
 .date-proxy {
   position: relative;
@@ -1652,6 +1659,14 @@ input[type="week"] {
   min-width: 0;
   max-width: 100%;
   overflow: hidden;
+  box-sizing: border-box;
+  border: 1px solid var(--line-strong);
+  border-radius: var(--r-sm);
+  background: rgba(255, 255, 255, 0.91);
+  transition:
+    border-color var(--fast),
+    box-shadow var(--fast),
+    background var(--fast);
 }
 
 .date-proxy-face {
@@ -1660,6 +1675,10 @@ input[type="week"] {
   min-width: 0;
   max-width: 100%;
   pointer-events: none;
+  border: 0 !important;
+  border-radius: 0;
+  box-shadow: none !important;
+  background: transparent !important;
 }
 
 .date-proxy-native {
@@ -1673,7 +1692,7 @@ input[type="week"] {
   margin: 0;
   padding: 0;
   border: 0 !important;
-  border-radius: var(--r-sm);
+  border-radius: 0;
   opacity: 0.01;
   background: transparent !important;
   box-shadow: none !important;
@@ -1683,7 +1702,7 @@ input[type="week"] {
   cursor: pointer;
 }
 
-.date-proxy:focus-within .date-proxy-face {
+.date-proxy:focus-within {
   border-color: #8fb5a0;
   box-shadow: 0 0 0 4px rgba(61, 107, 87, 0.08);
   background: white;
@@ -1853,7 +1872,8 @@ input[type="month"]::-webkit-calendar-picker-indicator {
    --------------------------------------------------------- */
 
 .clinic-results,
-.drug-results {
+.drug-results,
+.breed-results {
   position: relative;
   z-index: 24;
 
@@ -1879,19 +1899,22 @@ input[type="month"]::-webkit-calendar-picker-indicator {
 }
 
 .clinic-results[hidden],
-.drug-results[hidden] {
+.drug-results[hidden],
+.breed-results[hidden] {
   display: none;
 }
 
 .clinic-results li,
-.drug-results li {
+.drug-results li,
+.breed-results li {
   margin: 0;
   padding: 0;
   list-style: none;
 }
 
 .clinic-results button,
-.drug-results button {
+.drug-results button,
+.breed-results button {
   display: grid;
   gap: 2px;
   align-content: start;
@@ -1918,20 +1941,24 @@ input[type="month"]::-webkit-calendar-picker-indicator {
 
 .clinic-results button:hover,
 .drug-results button:hover,
+.breed-results button:hover,
 .clinic-results button:focus-visible,
-.drug-results button:focus-visible {
+.drug-results button:focus-visible,
+.breed-results button:focus-visible {
   background: var(--leaf-pale);
   border-color: color-mix(in srgb, var(--leaf) 22%, transparent);
   outline: 0;
 }
 
 .clinic-results button:active,
-.drug-results button:active {
+.drug-results button:active,
+.breed-results button:active {
   transform: scale(0.99);
 }
 
 .clinic-results button strong,
-.drug-results button strong {
+.drug-results button strong,
+.breed-results button strong {
   display: block;
   font-size: 0.95rem;
   font-weight: 700;
@@ -7187,9 +7214,15 @@ html.is-proof-lightbox-open body {
     border-radius: 14px;
   }
 
-  .date-proxy,
-  .date-proxy-face {
+  .date-proxy {
     min-height: var(--tap);
+    height: var(--tap);
+    border-radius: 14px;
+  }
+
+  .date-proxy-face {
+    min-height: 0;
+    height: 100%;
   }
 
   .chip {
@@ -7222,12 +7255,18 @@ html.is-proof-lightbox-open body {
     overflow-x: clip;
   }
 
+  /* Let focus ring on date-proxy paint outside the field clip */
+  #pet-form .field-row .field:has(.date-proxy),
+  .screen[data-screen="add-pet"] .field-row .field:has(.date-proxy) {
+    overflow: visible;
+  }
+
   #pet-form .field-row select,
-  #pet-form .field-row input,
-  #pet-form .field-row .date-proxy-face,
+  #pet-form .field-row input:not(.date-proxy-face):not(.date-proxy-native),
+  #pet-form .field-row .date-proxy,
   .screen[data-screen="add-pet"] .field-row select,
-  .screen[data-screen="add-pet"] .field-row input,
-  .screen[data-screen="add-pet"] .field-row .date-proxy-face {
+  .screen[data-screen="add-pet"] .field-row input:not(.date-proxy-face):not(.date-proxy-native),
+  .screen[data-screen="add-pet"] .field-row .date-proxy {
     width: 100%;
     min-width: 0;
     max-width: 100%;
@@ -7236,10 +7275,20 @@ html.is-proof-lightbox-open body {
     box-sizing: border-box;
   }
 
+  #pet-form .field-row .date-proxy-face,
+  .screen[data-screen="add-pet"] .field-row .date-proxy-face {
+    width: 100%;
+    min-width: 0;
+    max-width: 100%;
+    min-height: 0;
+    height: 100%;
+    box-sizing: border-box;
+  }
+
   .date-proxy-native {
     min-height: 0 !important;
     height: 100% !important;
-    border-radius: 14px;
+    border-radius: 0;
   }
 
   /* Date in half column: shrink past WebKit intrinsic floor */
