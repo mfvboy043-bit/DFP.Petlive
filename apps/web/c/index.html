@@ -11,7 +11,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,700&family=Noto+Sans+TC:wght@400;500;700&family=Noto+Serif+TC:wght@600;700&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="./styles.css?v=20260825-c-breed-sync-lang" />
+  <link rel="stylesheet" href="./styles.css?v=20260825-vaccine-date-side" />
 </head>
 <body>
   <div
@@ -386,23 +386,6 @@
           </label>
         </div>
 
-        <fieldset class="chip-field" id="breed-select-field">
-          <legend data-i18n="breed">品種</legend>
-          <p class="field-hint" data-i18n="breedSelectPlaceholder">請選擇品種</p>
-          <input type="hidden" name="breedSelect" id="breed-select" value="" />
-          <div class="chips breed-chips" id="breed-chips" role="listbox" aria-label="品種"></div>
-          <button
-            type="button"
-            class="breed-expand-toggle"
-            id="breed-expand-toggle"
-            aria-expanded="false"
-            aria-controls="breed-chips"
-            hidden
-          >
-            <span data-i18n="breedExpandAll">展開全部品種</span>
-          </button>
-        </fieldset>
-
         <label class="field" id="breed-search-field">
           <span data-i18n="breedSearch">搜尋品種</span>
           <input
@@ -419,6 +402,25 @@
           >
         </label>
         <ul class="drug-results breed-results" id="breed-results" hidden></ul>
+
+        <fieldset class="chip-field" id="breed-select-field">
+          <legend data-i18n="breed">品種</legend>
+          <div class="breed-field-head">
+            <p class="field-hint" data-i18n="breedSelectPlaceholder">請選擇品種</p>
+            <button
+              type="button"
+              class="breed-expand-toggle"
+              id="breed-expand-toggle"
+              aria-expanded="false"
+              aria-controls="breed-chips"
+              hidden
+            >
+              <span data-i18n="breedExpandAll">展開全部品種</span>
+            </button>
+          </div>
+          <input type="hidden" name="breedSelect" id="breed-select" value="" />
+          <div class="chips breed-chips" id="breed-chips" role="listbox" aria-label="品種"></div>
+        </fieldset>
 
         <div class="field-row">
           <label class="field">
@@ -1052,11 +1054,17 @@
           <div class="field-row">
             <label class="field">
               <span data-i18n="administeredDate">施打日期</span>
-              <input type="date" name="administeredDate" id="vaccine-given" required />
+              <span class="date-proxy">
+                <input type="text" class="date-proxy-face" readonly tabindex="-1" aria-hidden="true" placeholder="YYYY-MM-DD" />
+                <input type="date" name="administeredDate" id="vaccine-given" class="date-proxy-native" required />
+              </span>
             </label>
             <label class="field">
               <span data-i18n="nextDueEditable">下次施打（可改）</span>
-              <input type="date" name="nextDueDate" id="vaccine-next-due" required />
+              <span class="date-proxy">
+                <input type="text" class="date-proxy-face" readonly tabindex="-1" aria-hidden="true" placeholder="YYYY-MM-DD" />
+                <input type="date" name="nextDueDate" id="vaccine-next-due" class="date-proxy-native" required />
+              </span>
             </label>
           </div>
           <div class="form-actions">
@@ -1674,6 +1682,6 @@
   <script defer src="../shell/navigation.js?v=20260813-layered-adopted"></script>
   <script defer src="../shell/render-coordinator.js?v=20260824-perf-adopt"></script>
   <script defer src="../domains/pets/controller.js?v=20260813-layered-adopted"></script>
-  <script defer src="./app.js?v=20260825-c-breed-sync"></script>
+  <script defer src="./app.js?v=20260825-vaccine-date-side"></script>
 </body>
 </html>

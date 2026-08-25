@@ -1611,16 +1611,18 @@ select:focus {
   overflow-x: clip;
 }
 
-/* Unified control height inside add-pet pairs */
+/* Unified control height inside add-pet / vaccine date pairs */
 #pet-form .field-row select,
 #pet-form .field-row input:not(.date-proxy-face):not(.date-proxy-native),
-#pet-form .field-row .date-proxy {
+#pet-form .field-row .date-proxy,
+.vaccine-form .field-row .date-proxy {
   min-height: 50px;
   height: 50px;
   box-sizing: border-box;
 }
 
-#pet-form .field-row .date-proxy-face {
+#pet-form .field-row .date-proxy-face,
+.vaccine-form .field-row .date-proxy-face {
   height: 100%;
   min-height: 0;
   box-sizing: border-box;
@@ -1795,28 +1797,46 @@ input[type="month"]::-webkit-calendar-picker-indicator {
   gap: 8px;
 }
 
+.breed-field-head {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  flex-wrap: wrap;
+  gap: 8px 10px;
+  margin-top: 2px;
+  min-width: 0;
+}
+
+.breed-field-head .field-hint {
+  margin: 0;
+  flex: 0 1 auto;
+  min-width: 0;
+}
+
 .breed-expand-toggle {
   display: inline-flex;
   align-items: center;
   justify-content: center;
+  flex: 0 0 auto;
 
-  margin-top: 10px;
-  min-height: 36px;
-  padding: 6px 4px;
+  margin-top: 0;
+  min-height: 32px;
+  padding: 5px 11px;
 
-  border: 0;
+  border: 1px solid var(--line-strong);
   border-radius: var(--r-sm);
 
   color: var(--leaf-deep);
-  background: transparent;
+  background: rgba(255, 255, 255, 0.91);
 
-  font-size: 13px;
+  font-size: 12px;
   font-weight: 700;
-  text-decoration: underline;
-  text-underline-offset: 3px;
+  text-decoration: none;
+  white-space: nowrap;
 }
 
 .breed-expand-toggle:hover {
+  border-color: #b8cbbf;
   background: rgba(61, 107, 87, 0.08);
 }
 
@@ -7290,7 +7310,9 @@ html.is-proof-lightbox-open body {
 
   /* Let focus ring on date-proxy paint outside the field clip */
   #pet-form .field-row .field:has(.date-proxy),
-  .screen[data-screen="add-pet"] .field-row .field:has(.date-proxy) {
+  .screen[data-screen="add-pet"] .field-row .field:has(.date-proxy),
+  .vaccine-form .field-row .field:has(.date-proxy),
+  .screen[data-screen="vaccines"] .vaccine-form .field-row .field:has(.date-proxy) {
     overflow: visible;
   }
 
@@ -7299,7 +7321,9 @@ html.is-proof-lightbox-open body {
   #pet-form .field-row .date-proxy,
   .screen[data-screen="add-pet"] .field-row select,
   .screen[data-screen="add-pet"] .field-row input:not(.date-proxy-face):not(.date-proxy-native),
-  .screen[data-screen="add-pet"] .field-row .date-proxy {
+  .screen[data-screen="add-pet"] .field-row .date-proxy,
+  .vaccine-form .field-row .date-proxy,
+  .screen[data-screen="vaccines"] .vaccine-form .field-row .date-proxy {
     width: 100%;
     min-width: 0;
     max-width: 100%;
@@ -7309,7 +7333,9 @@ html.is-proof-lightbox-open body {
   }
 
   #pet-form .field-row .date-proxy-face,
-  .screen[data-screen="add-pet"] .field-row .date-proxy-face {
+  .screen[data-screen="add-pet"] .field-row .date-proxy-face,
+  .vaccine-form .field-row .date-proxy-face,
+  .screen[data-screen="vaccines"] .vaccine-form .field-row .date-proxy-face {
     width: 100%;
     min-width: 0;
     max-width: 100%;
@@ -7335,11 +7361,11 @@ html.is-proof-lightbox-open body {
     -webkit-min-logical-width: 0;
   }
 
-  /* Stack date+date pairs — iOS date inputs overflow when forced side-by-side */
+  /* Keep vaccine date pair side-by-side (date-proxy prevents iOS overflow) */
   .vaccine-form .field-row,
   .screen[data-screen="vaccines"] .vaccine-form .field-row {
-    grid-template-columns: 1fr;
-    gap: 12px;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px;
   }
 
   .parasite-block .field-row {
@@ -7681,8 +7707,8 @@ html.is-proof-lightbox-open body {
   }
 
   .screen[data-screen="vaccines"] .vaccine-form .field-row {
-    grid-template-columns: 1fr;
-    gap: 12px;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px;
   }
 
   .screen[data-screen="vaccines"] .vaccine-form .form-actions {
