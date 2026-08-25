@@ -873,30 +873,8 @@
       </header>
 
       <p class="field-hint" data-i18n="ownerSettingsPrivacy">
-        資料僅存在此裝置，不上傳；供急診出示與院所截圖對照。
+        聯絡資料供急診出示與醫療資訊卡；雲端備份請從帳號選單操作。
       </p>
-
-      <div class="cloud-account-card" id="cloud-account-card">
-        <p class="cloud-account-title" data-i18n="cloudAccountTitle">Google 雲端備份</p>
-        <p class="cloud-account-status" id="cloud-account-status" data-i18n="cloudBackupPending">
-          尚未備份到 Google
-        </p>
-        <p class="cloud-account-email" id="cloud-account-email" hidden></p>
-        <div class="cloud-account-actions">
-          <button class="btn btn-ghost" type="button" id="settings-cloud-login" data-i18n="loginWithGoogle">
-            用 Google 登入
-          </button>
-          <button class="btn btn-ghost" type="button" id="settings-cloud-sync" data-i18n="syncNow" hidden>
-            同步到雲端
-          </button>
-          <button class="btn btn-ghost" type="button" id="settings-cloud-logout" data-i18n="logout" hidden>
-            登出
-          </button>
-        </div>
-        <p class="field-hint" data-i18n="cloudAccountHint">
-          備份寫進你的 Google 雲端硬碟「火龍果護照」資料夾。手機登入需用 HTTPS 網址（GitHub Pages），LAN IP 會被 Google 拒絕。
-        </p>
-      </div>
 
       <form class="form" id="owner-settings-form">
         <label class="field">
@@ -1579,9 +1557,9 @@
           class="account-popover-edit"
           type="button"
           id="account-popover-edit"
-          data-i18n="accountEdit"
+          data-i18n="accountSync"
         >
-          編輯
+          同步到雲端
         </button>
       </div>
 
@@ -1591,6 +1569,15 @@
           本機（討論版）
         </p>
       </div>
+
+      <button
+        class="account-popover-restore"
+        type="button"
+        id="account-popover-restore"
+        data-i18n="accountRestore"
+      >
+        從雲端還原
+      </button>
 
       <button
         class="account-popover-primary"

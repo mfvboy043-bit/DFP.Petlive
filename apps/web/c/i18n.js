@@ -20,6 +20,14 @@ const I18N = {
     accountChipAria: "帳號選單",
     accountFallback: "帳號",
     accountEdit: "編輯",
+    accountSync: "同步到雲端",
+    accountSyncDirty: "本機有未同步變更",
+    accountSyncOk: "已同步到雲端",
+    accountSyncPending: "尚未備份到雲端",
+    accountRestore: "從雲端還原",
+    accountRestoreConfirm:
+      "從雲端還原會覆蓋此裝置上的所有寵物資料。確定要還原嗎？",
+    accountSyncPreview: "討論版：正式 A/B 登入後可同步到 Google 雲端",
     accountPlanLabel: "資料",
     accountPlanLocal: "本機（討論版）",
     accountPlanCloud: "雲端已連線",
@@ -486,7 +494,8 @@ const I18N = {
     ownerSettingsTitle: "飼主設定",
     ownerSettingsAria: "飼主設定",
     ownerSettingsSub: "個人化聯絡資料 · 顯示於醫療資訊卡",
-    ownerSettingsPrivacy: "資料僅存在此裝置，不上傳；供急診出示與院所截圖對照。",
+    ownerSettingsPrivacy:
+      "聯絡資料供急診出示與醫療資訊卡；雲端備份請從帳號選單操作。",
     ownerSettingsFutureHint: "未來可支援 QR，讓醫療人員掃碼對照填入院所系統（本版尚未啟用）。",
     ownerSettingsSave: "儲存飼主資料",
     ownerName: "飼主姓名",
@@ -663,6 +672,14 @@ const I18N = {
     accountChipAria: "Account menu",
     accountFallback: "Account",
     accountEdit: "Edit",
+    accountSync: "Sync to cloud",
+    accountSyncDirty: "Unsynced changes on this device",
+    accountSyncOk: "Synced to cloud",
+    accountSyncPending: "Not backed up to cloud yet",
+    accountRestore: "Restore from cloud",
+    accountRestoreConfirm:
+      "Restore from cloud will overwrite all pet data on this device. Continue?",
+    accountSyncPreview: "Draft: sign in on A/B to sync to Google Drive",
     accountPlanLabel: "Data",
     accountPlanLocal: "Local (draft)",
     accountPlanCloud: "Cloud connected",
@@ -1130,7 +1147,7 @@ const I18N = {
     ownerSettingsAria: "Owner settings",
     ownerSettingsSub: "Contact details · shown on the medical info card",
     ownerSettingsPrivacy:
-      "Stored on this device only—not uploaded. For emergency display and clinic screenshots.",
+      "Contact info for emergency display and the medical card. Cloud backup is in the account menu.",
     ownerSettingsFutureHint:
       "QR for clinic scan-and-import may come later (not in this version).",
     ownerSettingsSave: "Save owner profile",
@@ -1307,6 +1324,14 @@ const I18N = {
     accountChipAria: "アカウントメニュー",
     accountFallback: "アカウント",
     accountEdit: "編集",
+    accountSync: "クラウドに同期",
+    accountSyncDirty: "端末に未同期の変更あり",
+    accountSyncOk: "クラウドに同期済み",
+    accountSyncPending: "まだクラウドに未バックアップ",
+    accountRestore: "クラウドから復元",
+    accountRestoreConfirm:
+      "クラウドから復元すると、この端末のペットデータがすべて上書きされます。続行しますか？",
+    accountSyncPreview: "検討版：正式 A/B でログイン後に Google ドライブへ同期",
     accountPlanLabel: "データ",
     accountPlanLocal: "端末（検討版）",
     accountPlanCloud: "クラウド接続済",
@@ -1779,7 +1804,7 @@ const I18N = {
     ownerSettingsAria: "飼い主設定",
     ownerSettingsSub: "連絡先 · 医療情報カードに表示",
     ownerSettingsPrivacy:
-      "この端末のみに保存（アップロードなし）。救急提示・病院での截図用。",
+      "連絡先は緊急時表示・医療カード用。クラウドバックアップはアカウントメニューから。",
     ownerSettingsFutureHint:
       "将来QRで院内システム連携できる可能性があります（本版未対応）。",
     ownerSettingsSave: "飼い主情報を保存",
@@ -1956,6 +1981,14 @@ const I18N = {
     accountChipAria: "계정 메뉴",
     accountFallback: "계정",
     accountEdit: "편집",
+    accountSync: "클라우드에 동기화",
+    accountSyncDirty: "기기에 동기화되지 않은 변경 있음",
+    accountSyncOk: "클라우드에 동기화됨",
+    accountSyncPending: "아직 클라우드에 백업되지 않음",
+    accountRestore: "클라우드에서 복원",
+    accountRestoreConfirm:
+      "클라우드에서 복원하면 이 기기의 모든 반려동물 데이터가 덮어씌워집니다. 계속할까요?",
+    accountSyncPreview: "논의판: 정식 A/B 로그인 후 Google Drive 동기화",
     accountPlanLabel: "데이터",
     accountPlanLocal: "로컬（논의판）",
     accountPlanCloud: "클라우드 연결됨",
@@ -2428,7 +2461,7 @@ const I18N = {
     ownerSettingsAria: "보호자 설정",
     ownerSettingsSub: "연락처 · 의료 정보 카드에 표시",
     ownerSettingsPrivacy:
-      "이 기기에만 저장되며 업로드되지 않습니다. 응급 제시·병원 캡처용.",
+      "연락처는 응급 표시·의료 카드용. 클라우드 백업은 계정 메뉴에서.",
     ownerSettingsFutureHint:
       "향후 QR로 병원 시스템 연동을 지원할 수 있습니다(이번 버전 미지원).",
     ownerSettingsSave: "보호자 정보 저장",

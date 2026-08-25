@@ -5211,6 +5211,25 @@ html.is-photo-crop-open body {
   line-height: 1.2;
 }
 
+.account-popover-restore {
+  display: block;
+  width: calc(100% - 32px);
+  margin: 0 16px 12px;
+  padding: 10px 14px;
+  border: 1px solid rgba(40, 36, 32, 0.14);
+  border-radius: 10px;
+  background: #fff;
+  color: rgba(40, 36, 32, 0.72);
+  font-size: 13px;
+  font-weight: 600;
+  text-align: center;
+  cursor: pointer;
+}
+
+.account-popover-restore:hover {
+  background: rgba(40, 36, 32, 0.04);
+}
+
 .account-popover-primary {
   display: block;
   width: calc(100% - 32px);

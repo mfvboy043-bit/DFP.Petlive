@@ -7561,10 +7561,13 @@ function paintAccountMenu(session) {
     popEmail.hidden = !email;
   }
   if (planValue) {
-    planValue.textContent = liveGoogleSignedIn()
-      ? t("accountPlanCloud")
-      : t("accountPlanLocal");
+    planValue.textContent = t("accountPlanLocal");
   }
+
+  const popSyncBtn = document.getElementById("account-popover-edit");
+  const popRestoreBtn = document.getElementById("account-popover-restore");
+  if (popSyncBtn) popSyncBtn.hidden = !signedIn;
+  if (popRestoreBtn) popRestoreBtn.hidden = !signedIn;
 
   setAccountAvatar(popAvatar, popFallback, picture, initial);
 }
@@ -7579,11 +7582,6 @@ function paintCloudChrome() {
   const account = document.getElementById("intro-account");
   const avatar = document.getElementById("intro-avatar");
   const originHint = document.getElementById("intro-origin-hint");
-  const settingsStatus = document.getElementById("cloud-account-status");
-  const settingsEmail = document.getElementById("cloud-account-email");
-  const settingsLogin = document.getElementById("settings-cloud-login");
-  const settingsSync = document.getElementById("settings-cloud-sync");
-  const settingsLogout = document.getElementById("settings-cloud-logout");
 
   paintAccountMenu(session);
 
@@ -7617,30 +7615,6 @@ function paintCloudChrome() {
       originHint.textContent = t("oauthOriginHint", { origin });
     }
   }
-
-  if (settingsStatus) {
-    if (!session.configured) {
-      settingsStatus.textContent = t("cloudBackupNeedConfig");
-    } else if (!liveGoogleSignedIn()) {
-      settingsStatus.textContent = t("cloudBackupPending");
-    } else if (lastCloudBackupAt) {
-      settingsStatus.textContent = t("cloudBackupOk");
-    } else {
-      settingsStatus.textContent = t("syncNow");
-    }
-  }
-  if (settingsEmail) {
-    if (liveGoogleSignedIn() && session.profile?.email) {
-      settingsEmail.hidden = false;
-      settingsEmail.textContent = session.profile.email;
-    } else {
-      settingsEmail.hidden = true;
-      settingsEmail.textContent = "";
-    }
-  }
-  if (settingsLogin) settingsLogin.hidden = liveGoogleSignedIn();
-  if (settingsSync) settingsSync.hidden = !liveGoogleSignedIn();
-  if (settingsLogout) settingsLogout.hidden = !liveGoogleSignedIn();
 }
 
 function scheduleCloudBackup() {
@@ -7782,14 +7756,14 @@ function initIntroAndCloud() {
   const loginBtn = document.getElementById("intro-login-btn");
   const enterAppBtn = document.getElementById("intro-enter-app-btn");
   const logoutBtn = document.getElementById("intro-logout-btn");
-  const settingsLogin = document.getElementById("settings-cloud-login");
-  const settingsSync = document.getElementById("settings-cloud-sync");
-  const settingsLogout = document.getElementById("settings-cloud-logout");
   const accountPopover = document.getElementById("account-popover");
   const accountPopoverSettings = document.getElementById(
     "account-popover-settings"
   );
-  const accountPopoverEdit = document.getElementById("account-popover-edit");
+  const accountPopoverSync = document.getElementById("account-popover-edit");
+  const accountPopoverRestore = document.getElementById(
+    "account-popover-restore"
+  );
   const accountPopoverHome = document.getElementById("account-popover-home");
   const accountPopoverSwitch = document.getElementById(
     "account-popover-switch"
@@ -7842,19 +7816,6 @@ function initIntroAndCloud() {
     enterAppFromIntro();
   });
   logoutBtn?.addEventListener("click", doSignOut);
-  settingsLogin?.addEventListener("click", () => {
-    handleGoogleSignIn({ enterApp: false });
-  });
-  settingsSync?.addEventListener("click", async () => {
-    try {
-      await googleDriveAuth.ensureDriveAccess?.();
-    } catch {
-      showToast(t("cloudBackupFail"));
-      return;
-    }
-    await pushCloudBackup({ silent: false });
-  });
-  settingsLogout?.addEventListener("click", doSignOut);
 
   document.addEventListener("click", (event) => {
     const chip = event.target.closest?.(".js-account-chip");
@@ -7869,7 +7830,14 @@ function initIntroAndCloud() {
   });
 
   accountPopoverSettings?.addEventListener("click", openOwnerSettingsFromAccount);
-  accountPopoverEdit?.addEventListener("click", openOwnerSettingsFromAccount);
+  accountPopoverSync?.addEventListener("click", () => {
+    closeAccountMenu();
+    showToast(t("accountSyncPreview"));
+  });
+  accountPopoverRestore?.addEventListener("click", () => {
+    closeAccountMenu();
+    showToast(t("accountSyncPreview"));
+  });
   accountPopoverHome?.addEventListener("click", () => {
     closeAccountMenu();
     go("home");

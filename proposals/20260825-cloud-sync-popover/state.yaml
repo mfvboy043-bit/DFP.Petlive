@@ -1,0 +1,30 @@
+id: 20260825-cloud-sync-popover
+title: "雲端同步 UI 整合 + 本機優先衝突處理"
+version: 2
+status: adopted
+
+gate_a:
+  status: approved
+
+gate_b:
+  status: adopted
+
+iteration: 0
+max_iterations: 3
+
+candidate:
+  branch: "proposal/cloud-sync-popover"
+  path: "proposals/20260825-cloud-sync-popover"
+  worktree: ""
+
+reviews:
+  pharmacist: skipped
+  qa: skipped
+  ui: skipped
+  arbiter: skipped
+
+rerun: []
+blocking_issues: []
+non_blocking: []
+builder_scope: []
+halt_reason: ""

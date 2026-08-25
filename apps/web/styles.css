@@ -108,11 +108,13 @@ html {
   min-height: 100%;
   background: #f4f1ea;
   -webkit-text-size-adjust: 100%;
+  overflow-x: clip;
 }
 
 body {
   min-height: 100vh;
   margin: 0;
+  overflow-x: clip;
 
   font-family:
     "Noto Sans TC",
@@ -245,11 +247,15 @@ ol {
   width: min(100%, var(--content-max));
   min-height: 100vh;
   margin: 0 auto;
+  overflow-x: clip;
+  max-width: 100%;
 }
 
 .screen {
   width: 100%;
+  max-width: 100%;
   min-height: 100vh;
+  overflow-x: clip;
   padding:
     max(18px, env(safe-area-inset-top))
     var(--screen-padding)
@@ -5196,6 +5202,25 @@ html.is-photo-crop-open body {
   line-height: 1.2;
 }
 
+.account-popover-restore {
+  display: block;
+  width: calc(100% - 32px);
+  margin: 0 16px 12px;
+  padding: 10px 14px;
+  border: 1px solid rgba(40, 36, 32, 0.14);
+  border-radius: 10px;
+  background: #fff;
+  color: rgba(40, 36, 32, 0.72);
+  font-size: 13px;
+  font-weight: 600;
+  text-align: center;
+  cursor: pointer;
+}
+
+.account-popover-restore:hover {
+  background: rgba(40, 36, 32, 0.04);
+}
+
 .account-popover-primary {
   display: block;
   width: calc(100% - 32px);
@@ -6590,6 +6615,9 @@ html.is-proof-lightbox-open body {
   .pet-switcher {
     padding: 14px 14px 16px;
     border-radius: 22px;
+    /* Clip ::after glow + selected-card scale bleed; pet-picker keeps its own pan */
+    overflow-x: clip;
+    overflow-y: visible;
     background:
       linear-gradient(
         155deg,
@@ -7353,3 +7381,162 @@ html.is-proof-lightbox-open body {
    (alerts, parasite-row, pills, e-quick-nav, e-alerts, e-card).
    Edit those sections; do not re-append duplicate overrides here.
    ========================================================= */
+
+/* —— Demo mode banner + tour (?demo=1) —— */
+.demo-banner {
+  position: sticky;
+  top: 0;
+  z-index: 80;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px 12px;
+  padding: 8px max(14px, env(safe-area-inset-right))
+    8px max(14px, env(safe-area-inset-left));
+  padding-top: calc(8px + env(safe-area-inset-top, 0px));
+  background: color-mix(in srgb, #1a3a2f 92%, transparent);
+  color: #f4faf6;
+  font-family: "Noto Sans TC", system-ui, sans-serif;
+  font-size: 13px;
+  line-height: 1.35;
+  backdrop-filter: blur(10px);
+}
+
+.demo-banner[hidden] {
+  display: none !important;
+}
+
+.demo-banner-label {
+  font-weight: 600;
+  letter-spacing: 0.02em;
+}
+
+.demo-banner-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px 10px;
+}
+
+.demo-banner-btn {
+  appearance: none;
+  border: 1px solid color-mix(in srgb, #fff 35%, transparent);
+  background: color-mix(in srgb, #fff 12%, transparent);
+  color: inherit;
+  border-radius: 8px;
+  padding: 5px 10px;
+  font: inherit;
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+}
+
+.demo-banner-btn:hover {
+  background: color-mix(in srgb, #fff 20%, transparent);
+}
+
+.demo-banner-exit {
+  color: inherit;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.intro-demo-entry {
+  margin: 18px 0 0;
+}
+
+.intro-demo-link {
+  color: color-mix(in srgb, var(--ink, #1a2e24) 78%, transparent);
+  font-size: 14px;
+  font-weight: 500;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.intro-demo-link:hover {
+  color: var(--ink, #1a2e24);
+}
+
+.demo-tour {
+  position: fixed;
+  inset: 0;
+  z-index: 90;
+  pointer-events: none;
+}
+
+.demo-tour[hidden] {
+  display: none !important;
+}
+
+.demo-tour-backdrop {
+  position: absolute;
+  inset: 0;
+  background: color-mix(in srgb, #0b1a14 55%, transparent);
+  pointer-events: auto;
+  opacity: 1;
+  transition: opacity 0.15s ease;
+}
+
+.demo-tour:has(#demo-tour-spot:not([hidden])) .demo-tour-backdrop {
+  opacity: 0;
+  pointer-events: none;
+}
+
+.demo-tour-spot {
+  position: fixed;
+  z-index: 1;
+  border-radius: 14px;
+  box-shadow:
+    0 0 0 9999px color-mix(in srgb, #0b1a14 55%, transparent),
+    0 0 0 2px color-mix(in srgb, #e8f5ee 80%, transparent);
+  pointer-events: none;
+  transition: top 0.2s ease, left 0.2s ease, width 0.2s ease, height 0.2s ease;
+}
+
+.demo-tour-card {
+  position: absolute;
+  left: 50%;
+  bottom: max(24px, calc(24px + env(safe-area-inset-bottom)));
+  transform: translateX(-50%);
+  width: min(420px, calc(100% - 28px));
+  padding: 16px 18px;
+  border-radius: 16px;
+  background: #f7faf8;
+  color: #1a2e24;
+  box-shadow: 0 12px 40px color-mix(in srgb, #0b1a14 28%, transparent);
+  pointer-events: auto;
+  font-family: "Noto Sans TC", system-ui, sans-serif;
+}
+
+.demo-tour-step {
+  margin: 0 0 6px;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  color: color-mix(in srgb, #1a2e24 55%, transparent);
+}
+
+.demo-tour-text {
+  margin: 0 0 14px;
+  font-size: 15px;
+  line-height: 1.45;
+}
+
+.demo-tour-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+.demo-tour-target {
+  position: relative;
+  z-index: 91;
+  pointer-events: auto !important;
+}
+
+body.demo-tour-active .demo-tour-target {
+  isolation: isolate;
+}

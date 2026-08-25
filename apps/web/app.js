@@ -623,7 +623,19 @@ const pets = [];
 const archivedPets = [];
 
 const PETS_GRAPH_KEY = "petlive-pets-graph";
+const SYNC_META_KEY = "petlive-sync-meta";
 const INTRO_SEEN_KEY = "petlive-intro-seen";
+const DEMO_TOUR_SEEN_KEY = "petlive-demo-tour-seen";
+
+function isDemoMode() {
+  try {
+    return new URLSearchParams(window.location.search || "").get("demo") === "1";
+  } catch {
+    return false;
+  }
+}
+
+const DEMO_MODE = isDemoMode();
 
 function cloneSeedPets() {
   try {
@@ -655,6 +667,12 @@ const petsGraphSlot = PetLiveWeb.storage.createJsonSlot({
 });
 
 function hydratePetsGraphFromStorage() {
+  if (DEMO_MODE) {
+    pets.length = 0;
+    archivedPets.length = 0;
+    for (const pet of cloneSeedPets()) pets.push(pet);
+    return pets[0]?.id || null;
+  }
   const data = petsGraphSlot.read();
   const nextPets = data.pets?.length ? data.pets : cloneSeedPets();
   pets.length = 0;
@@ -665,6 +683,7 @@ function hydratePetsGraphFromStorage() {
 }
 
 function schedulePetsGraphPersist() {
+  if (DEMO_MODE) return;
   const id =
     typeof appState !== "undefined" && appState?.getCurrentPetId
       ? appState.getCurrentPetId()
@@ -675,9 +694,7 @@ function schedulePetsGraphPersist() {
     archivedPets,
     currentPetId: id || null,
   });
-  if (typeof scheduleCloudBackup === "function") {
-    scheduleCloudBackup();
-  }
+  bumpLocalDataRevision();
 }
 
 hydratePetsGraphFromStorage();
@@ -780,6 +797,16 @@ function showPersistenceFailure() {
         ? "저장하지 못했습니다. 다시 시도해 주세요"
         : "儲存失敗，請再試一次";
   showToast(message);
+}
+
+function notifyDemoReadOnly() {
+  showToast(t("demoReadOnlyToast"));
+}
+
+function demoBlocksWrite() {
+  if (!DEMO_MODE) return false;
+  notifyDemoReadOnly();
+  return true;
 }
 
 function getCurrentPet() {
@@ -1653,7 +1680,10 @@ function loadOwnerAlertsMap() {
 }
 
 function saveOwnerAlertsMap(map) {
-  return ownerAlertsSlot.write(map);
+  if (DEMO_MODE) return false;
+  const ok = ownerAlertsSlot.write(map);
+  if (ok) bumpLocalDataRevision();
+  return ok;
 }
 
 function loadSuppressedAlertsMap() {
@@ -1661,7 +1691,10 @@ function loadSuppressedAlertsMap() {
 }
 
 function saveSuppressedAlertsMap(map) {
-  return suppressedAlertsSlot.write(map);
+  if (DEMO_MODE) return false;
+  const ok = suppressedAlertsSlot.write(map);
+  if (ok) bumpLocalDataRevision();
+  return ok;
 }
 
 function getSuppressedAlertIds(petId) {
@@ -1933,6 +1966,7 @@ function renderAlerts(pet) {
 }
 
 function saveAlertFromForm() {
+  if (demoBlocksWrite()) return;
   const pet = getCurrentPet();
   if (!pet) return;
   const description = alertDescriptionInput?.value.trim() || "";
@@ -2336,6 +2370,7 @@ function readParasiteForm(kind) {
 }
 
 function saveParasiteKind(kind, { dosedToday = false } = {}) {
+  if (demoBlocksWrite()) return;
   const pet = getCurrentPet();
   if (!pet) return false;
   const pp = ensureParasitePrevention(pet);
@@ -2936,9 +2971,12 @@ function getLabReportsForPet(petId) {
 
 function writeLabReportsForPet(petId, reports) {
   if (!petId) return false;
+  if (DEMO_MODE) return false;
   const map = labReportsSlot.read();
   map[petId] = reports;
-  return labReportsSlot.write(map);
+  const ok = labReportsSlot.write(map);
+  if (ok) bumpLocalDataRevision();
+  return ok;
 }
 
 function renderEmergencyLabNav(pet) {
@@ -3262,7 +3300,10 @@ function loadPetPhotosMap() {
 }
 
 function savePetPhotosMap(map) {
-  return petPhotosSlot.scheduleWrite(map);
+  if (DEMO_MODE) return false;
+  const ok = petPhotosSlot.scheduleWrite(map);
+  if (ok) bumpLocalDataRevision();
+  return ok;
 }
 
 function flushPetPhotosMap() {
@@ -3905,7 +3946,10 @@ function loadOwnerProfile() {
 }
 
 function saveOwnerProfile(profile) {
-  return ownerProfileSlot.write(profile);
+  if (DEMO_MODE) return false;
+  const ok = ownerProfileSlot.write(profile);
+  if (ok) bumpLocalDataRevision();
+  return ok;
 }
 
 function ownerProfileHasAny(profile) {
@@ -4712,6 +4756,30 @@ const VIEWPORT_DEFAULT =
 const VIEWPORT_LOCKED =
   "width=device-width, initial-scale=1, minimum-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover";
 
+function resetPageScroll() {
+  window.scrollTo(0, 0);
+  document.documentElement.scrollLeft = 0;
+  document.body.scrollLeft = 0;
+  if (window.visualViewport) {
+    window.scrollTo(0, Math.max(0, window.visualViewport.offsetTop || 0));
+  }
+}
+
+function resetPetPickerScroll() {
+  if (!petPicker) return;
+  const selected = currentPetId
+    ? petPicker.querySelector(`.pet-option[data-pet-id="${currentPetId}"]`)
+    : null;
+  if (selected) {
+    const target =
+      selected.offsetLeft -
+      (petPicker.clientWidth - selected.offsetWidth) / 2;
+    petPicker.scrollLeft = Math.max(0, target);
+  } else {
+    petPicker.scrollLeft = 0;
+  }
+}
+
 /**
  * Every SPA screen change must land at the default page width (scale=1),
  * not the user's previous pinch-zoom. iOS/Android keep zoom across
@@ -4720,16 +4788,17 @@ const VIEWPORT_LOCKED =
  */
 function resetViewportZoom() {
   const meta = document.querySelector('meta[name="viewport"]');
-  if (!meta) return;
+  if (!meta) {
+    resetPageScroll();
+    return;
+  }
 
   meta.setAttribute("content", VIEWPORT_LOCKED);
-  window.scrollTo(0, 0);
-  if (window.visualViewport) {
-    window.scrollTo(0, window.visualViewport.pageTop || 0);
-  }
+  resetPageScroll();
 
   window.setTimeout(() => {
     meta.setAttribute("content", VIEWPORT_DEFAULT);
+    resetPageScroll();
   }, 300);
 }
 
@@ -4759,6 +4828,12 @@ const shellNavigation = PetLiveWeb.shell.createNavigation({
   },
   onEnter: (screen) => {
     renderCoordinator.flush(screen);
+    if (screen === "home") {
+      closeAppNavMenu();
+      closeAccountMenu();
+      resetPageScroll();
+      resetPetPickerScroll();
+    }
     if (screen === "parasite") {
       const pet = getCurrentPet();
       if (pet) safeRender("parasiteScreen", () => fillParasiteScreen(pet));
@@ -4769,10 +4844,11 @@ const shellNavigation = PetLiveWeb.shell.createNavigation({
 
 function go(screen, options = {}) {
   closeAppNavMenu();
+  closeAccountMenu();
   const changed = shellNavigation.go(screen, options);
   if (!changed) return false;
   // Instant jump — smooth scroll made every screen change feel delayed on phone.
-  window.scrollTo(0, 0);
+  resetPageScroll();
   resetViewportZoom();
   return true;
 }
@@ -4785,7 +4861,7 @@ function goBack() {
   }
   const changed = shellNavigation.back();
   if (changed) {
-    window.scrollTo(0, 0);
+    resetPageScroll();
     resetViewportZoom();
   }
   return changed;
@@ -6590,6 +6666,7 @@ function toggleVisitWeightButton(toggle) {
 }
 
 function saveVisitWeightAtIndex(visitIndex) {
+  if (demoBlocksWrite()) return false;
   const pet = getCurrentPet();
   const visit = pet?.visits?.[visitIndex];
   if (!visit) return false;
@@ -7343,6 +7420,7 @@ window.onLanguageChange = () => {
   // Home (+ active non-home) only; inactive groups stay dirty until go()/flush.
   renderCoordinator.refreshLanguage();
   paintCloudChrome();
+  if (DEMO_MODE && demoTourIndex >= 0) paintDemoTourStep();
   const activeScreen =
     app.querySelector(".screen.is-active")?.dataset.screen || "home";
   if (activeScreen === "parasite") {
@@ -7387,6 +7465,112 @@ const googleDriveAuth =
 let cloudBackupTimer = null;
 let lastCloudBackupAt = null;
 let cloudBusy = false;
+let suppressSyncMetaBump = false;
+
+function emptySyncMeta() {
+  return { localRevision: 0, lastSyncedRevision: 0, lastCloudUpdatedAt: null };
+}
+
+function readSyncMeta() {
+  try {
+    const raw = localStorage.getItem(SYNC_META_KEY);
+    if (!raw) {
+      try {
+        const graphRaw = localStorage.getItem(PETS_GRAPH_KEY);
+        if (graphRaw) {
+          const graph = JSON.parse(graphRaw);
+          if (graph?.pets?.length) {
+            return {
+              localRevision: 1,
+              lastSyncedRevision: 0,
+              lastCloudUpdatedAt: null,
+            };
+          }
+        }
+      } catch {
+        /* ignore */
+      }
+      return emptySyncMeta();
+    }
+    const parsed = JSON.parse(raw);
+    return {
+      localRevision: Number(parsed.localRevision) || 0,
+      lastSyncedRevision: Number(parsed.lastSyncedRevision) || 0,
+      lastCloudUpdatedAt: parsed.lastCloudUpdatedAt || null,
+    };
+  } catch {
+    return emptySyncMeta();
+  }
+}
+
+function writeSyncMeta(meta) {
+  try {
+    localStorage.setItem(SYNC_META_KEY, JSON.stringify(meta));
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+function isLocalDirty() {
+  const meta = readSyncMeta();
+  return meta.localRevision !== meta.lastSyncedRevision;
+}
+
+function bumpLocalDataRevision() {
+  if (DEMO_MODE || suppressSyncMetaBump) return;
+  const meta = readSyncMeta();
+  meta.localRevision += 1;
+  writeSyncMeta(meta);
+  if (typeof scheduleCloudBackup === "function") scheduleCloudBackup();
+}
+
+function markCloudSynced(cloudUpdatedAt) {
+  const meta = readSyncMeta();
+  meta.lastSyncedRevision = meta.localRevision;
+  if (cloudUpdatedAt) meta.lastCloudUpdatedAt = cloudUpdatedAt;
+  writeSyncMeta(meta);
+}
+
+function accountSyncStatusText() {
+  if (!liveGoogleSignedIn()) return t("accountPlanLocal");
+  if (isLocalDirty()) return t("accountSyncDirty");
+  if (readSyncMeta().lastCloudUpdatedAt || lastCloudBackupAt) {
+    return t("accountSyncOk");
+  }
+  return t("accountSyncPending");
+}
+
+async function reconcileCloudOnBoot({ silent } = {}) {
+  if (DEMO_MODE || !googleDriveAuth?.getSession?.().signedIn) return;
+  try {
+    const payload = await googleDriveAuth.downloadJson();
+    if (!payload) {
+      await pushCloudBackup({ silent: true });
+      return;
+    }
+    if (isLocalDirty()) {
+      paintCloudChrome();
+      return;
+    }
+    const cloudAt = String(payload.updatedAt || "");
+    const lastCloud = String(readSyncMeta().lastCloudUpdatedAt || "");
+    if (cloudAt && (!lastCloud || cloudAt > lastCloud)) {
+      suppressSyncMetaBump = true;
+      try {
+        applyCloudPayload(payload);
+        markCloudSynced(cloudAt);
+        lastCloudBackupAt = Date.now();
+        if (!silent) showToast(t("cloudRestoreOk"));
+      } finally {
+        suppressSyncMetaBump = false;
+      }
+    }
+    paintCloudChrome();
+  } catch {
+    paintCloudChrome();
+  }
+}
 
 function stripHeavyMedia(value) {
   if (Array.isArray(value)) return value.map(stripHeavyMedia);
@@ -7428,6 +7612,7 @@ function buildCloudPayload() {
 }
 
 function applyCloudPayload(payload) {
+  if (DEMO_MODE) return false;
   if (!payload || !Array.isArray(payload.pets)) return false;
   pets.length = 0;
   archivedPets.length = 0;
@@ -7554,10 +7739,13 @@ function paintAccountMenu(session) {
     popEmail.hidden = !email;
   }
   if (planValue) {
-    planValue.textContent = liveGoogleSignedIn()
-      ? t("accountPlanCloud")
-      : t("accountPlanLocal");
+    planValue.textContent = accountSyncStatusText();
   }
+
+  const popSyncBtn = document.getElementById("account-popover-edit");
+  const popRestoreBtn = document.getElementById("account-popover-restore");
+  if (popSyncBtn) popSyncBtn.hidden = !signedIn;
+  if (popRestoreBtn) popRestoreBtn.hidden = !signedIn;
 
   setAccountAvatar(popAvatar, popFallback, picture, initial);
 }
@@ -7572,11 +7760,6 @@ function paintCloudChrome() {
   const account = document.getElementById("intro-account");
   const avatar = document.getElementById("intro-avatar");
   const originHint = document.getElementById("intro-origin-hint");
-  const settingsStatus = document.getElementById("cloud-account-status");
-  const settingsEmail = document.getElementById("cloud-account-email");
-  const settingsLogin = document.getElementById("settings-cloud-login");
-  const settingsSync = document.getElementById("settings-cloud-sync");
-  const settingsLogout = document.getElementById("settings-cloud-logout");
 
   paintAccountMenu(session);
 
@@ -7610,33 +7793,10 @@ function paintCloudChrome() {
       originHint.textContent = "";
     }
   }
-
-  if (settingsStatus) {
-    if (!session.configured) {
-      settingsStatus.textContent = t("cloudBackupNeedConfig");
-    } else if (!liveGoogleSignedIn()) {
-      settingsStatus.textContent = t("cloudBackupPending");
-    } else if (lastCloudBackupAt) {
-      settingsStatus.textContent = t("cloudBackupOk");
-    } else {
-      settingsStatus.textContent = t("syncNow");
-    }
-  }
-  if (settingsEmail) {
-    if (liveGoogleSignedIn() && session.profile?.email) {
-      settingsEmail.hidden = false;
-      settingsEmail.textContent = session.profile.email;
-    } else {
-      settingsEmail.hidden = true;
-      settingsEmail.textContent = "";
-    }
-  }
-  if (settingsLogin) settingsLogin.hidden = liveGoogleSignedIn();
-  if (settingsSync) settingsSync.hidden = !liveGoogleSignedIn();
-  if (settingsLogout) settingsLogout.hidden = !liveGoogleSignedIn();
 }
 
 function scheduleCloudBackup() {
+  if (DEMO_MODE) return;
   if (!googleDriveAuth?.getSession?.().signedIn) return;
   if (cloudBackupTimer) clearTimeout(cloudBackupTimer);
   cloudBackupTimer = setTimeout(() => {
@@ -7646,6 +7806,7 @@ function scheduleCloudBackup() {
 }
 
 async function pushCloudBackup({ silent } = {}) {
+  if (DEMO_MODE) return false;
   if (!googleDriveAuth) return false;
   const session = googleDriveAuth.getSession();
   if (!session.configured) {
@@ -7663,8 +7824,10 @@ async function pushCloudBackup({ silent } = {}) {
   if (cloudBusy) return false;
   cloudBusy = true;
   try {
-    await googleDriveAuth.uploadJson(buildCloudPayload());
+    const payload = buildCloudPayload();
+    await googleDriveAuth.uploadJson(payload);
     lastCloudBackupAt = Date.now();
+    markCloudSynced(payload.updatedAt);
     if (!silent) {
       setIntroStatus(t("cloudBackupOk"));
       showToast(t("cloudBackupOk"));
@@ -7683,18 +7846,24 @@ async function pushCloudBackup({ silent } = {}) {
   }
 }
 
-async function pullCloudBackup() {
+async function pullCloudBackup({ silent } = {}) {
   if (!googleDriveAuth) return false;
   try {
     const payload = await googleDriveAuth.downloadJson();
     if (!payload) return false;
-    applyCloudPayload(payload);
+    suppressSyncMetaBump = true;
+    try {
+      applyCloudPayload(payload);
+      markCloudSynced(payload.updatedAt);
+    } finally {
+      suppressSyncMetaBump = false;
+    }
     lastCloudBackupAt = Date.now();
-    showToast(t("cloudRestoreOk"));
+    if (!silent) showToast(t("cloudRestoreOk"));
     paintCloudChrome();
     return true;
   } catch {
-    showToast(t("cloudBackupFail"));
+    if (!silent) showToast(t("cloudBackupFail"));
     return false;
   }
 }
@@ -7727,8 +7896,7 @@ async function handleGoogleSignIn({ enterApp } = {}) {
       Promise.resolve()
         .then(async () => {
           try {
-            const restored = await pullCloudBackup();
-            if (!restored) await pushCloudBackup({ silent: true });
+            await reconcileCloudOnBoot({ silent: true });
           } catch {
             /* Drive may need explicit Sync later; do not re-prompt here */
           }
@@ -7774,14 +7942,14 @@ function enterAppFromIntro() {
 function initIntroAndCloud() {
   const loginBtn = document.getElementById("intro-login-btn");
   const logoutBtn = document.getElementById("intro-logout-btn");
-  const settingsLogin = document.getElementById("settings-cloud-login");
-  const settingsSync = document.getElementById("settings-cloud-sync");
-  const settingsLogout = document.getElementById("settings-cloud-logout");
   const accountPopover = document.getElementById("account-popover");
   const accountPopoverSettings = document.getElementById(
     "account-popover-settings"
   );
-  const accountPopoverEdit = document.getElementById("account-popover-edit");
+  const accountPopoverSync = document.getElementById("account-popover-edit");
+  const accountPopoverRestore = document.getElementById(
+    "account-popover-restore"
+  );
   const accountPopoverHome = document.getElementById("account-popover-home");
   const accountPopoverSwitch = document.getElementById(
     "account-popover-switch"
@@ -7833,19 +8001,6 @@ function initIntroAndCloud() {
 
   loginBtn?.addEventListener("click", startWithGoogleOrEnter);
   logoutBtn?.addEventListener("click", doSignOut);
-  settingsLogin?.addEventListener("click", () => {
-    handleGoogleSignIn({ enterApp: false });
-  });
-  settingsSync?.addEventListener("click", async () => {
-    try {
-      await googleDriveAuth.ensureDriveAccess?.();
-    } catch {
-      showToast(t("cloudBackupFail"));
-      return;
-    }
-    await pushCloudBackup({ silent: false });
-  });
-  settingsLogout?.addEventListener("click", doSignOut);
 
   document.addEventListener("click", (event) => {
     const chip = event.target.closest?.(".js-account-chip");
@@ -7860,7 +8015,27 @@ function initIntroAndCloud() {
   });
 
   accountPopoverSettings?.addEventListener("click", openOwnerSettingsFromAccount);
-  accountPopoverEdit?.addEventListener("click", openOwnerSettingsFromAccount);
+  accountPopoverSync?.addEventListener("click", async () => {
+    closeAccountMenu();
+    try {
+      await googleDriveAuth?.ensureDriveAccess?.();
+    } catch {
+      showToast(t("cloudBackupFail"));
+      return;
+    }
+    await pushCloudBackup({ silent: false });
+  });
+  accountPopoverRestore?.addEventListener("click", async () => {
+    if (!window.confirm(t("accountRestoreConfirm"))) return;
+    closeAccountMenu();
+    try {
+      await googleDriveAuth?.ensureDriveAccess?.();
+    } catch {
+      showToast(t("cloudBackupFail"));
+      return;
+    }
+    await pullCloudBackup({ silent: false });
+  });
   accountPopoverHome?.addEventListener("click", () => {
     closeAccountMenu();
     go("home");
@@ -7895,10 +8070,13 @@ function initIntroAndCloud() {
 
   // Boot: A (intro) by default → Google login enters B.
   // Already signed in → B. Escape hatch: ?app=1 skips A for local debug.
+  // ?demo=1 → B in read-only demo mode (no cloud pull).
   try {
     const params = new URLSearchParams(window.location.search || "");
     const forceApp =
-      params.get("app") === "1" || params.get("screen") === "home";
+      DEMO_MODE ||
+      params.get("app") === "1" ||
+      params.get("screen") === "home";
     const intro = app.querySelector('[data-screen="intro"]');
     const home = app.querySelector('[data-screen="home"]');
     const signedIn = Boolean(googleDriveAuth?.getSession?.().signedIn);
@@ -7920,10 +8098,254 @@ function initIntroAndCloud() {
     /* ignore */
   }
 
-  if (googleDriveAuth?.getSession?.().signedIn) {
-    pullCloudBackup();
+  if (!DEMO_MODE && googleDriveAuth?.getSession?.().signedIn) {
+    reconcileCloudOnBoot({ silent: true });
   }
 }
+
+
+/* —— Demo mode (?demo=1): browse-only seed + optional tour —— */
+
+let demoTourIndex = -1;
+let demoTourTargetEl = null;
+
+function getDemoTourSteps() {
+  return [
+    {
+      screen: "home",
+      selector: "#pet-picker",
+      textKey: "demoTourStepPet",
+    },
+    {
+      screen: "home",
+      selector: '.cta-row [data-go="emergency"]',
+      textKey: "demoTourStepCard",
+      allowGo: "emergency",
+    },
+    {
+      screen: "emergency",
+      selector: 'button[data-go="timeline"]',
+      textKey: "demoTourStepTimeline",
+      allowGo: "timeline",
+    },
+    {
+      screen: "home",
+      selector: '.cta-row [data-go="add-visit"]',
+      textKey: "demoTourStepVisit",
+      allowGo: "add-visit",
+    },
+    {
+      screen: "home",
+      selector: "#demo-banner",
+      textKey: "demoTourStepDone",
+    },
+  ];
+}
+
+function resetDemoSeed() {
+  pets.length = 0;
+  archivedPets.length = 0;
+  for (const pet of cloneSeedPets()) pets.push(pet);
+  const nextId = pets[0]?.id || null;
+  currentPetId = nextId;
+  if (nextId) appState.setCurrentPetId(nextId);
+  pendingMeds = [];
+  if (typeof clearLiveProofPhotos === "function") clearLiveProofPhotos();
+  completingVisitRef = null;
+  latestRxUserCollapsed = false;
+  hydratePetPhotos();
+  applySelectedPet();
+  go("home", { replace: true });
+  showToast(t("demoResetDone"));
+}
+
+function clearDemoTourHighlight() {
+  demoTourTargetEl?.classList.remove("demo-tour-target");
+  demoTourTargetEl = null;
+  const spot = document.getElementById("demo-tour-spot");
+  if (spot) spot.hidden = true;
+}
+
+function positionDemoTourSpot(el) {
+  const spot = document.getElementById("demo-tour-spot");
+  if (!spot || !el) {
+    if (spot) spot.hidden = true;
+    return;
+  }
+  const rect = el.getBoundingClientRect();
+  const pad = 8;
+  spot.hidden = false;
+  spot.style.top = `${Math.max(0, rect.top - pad)}px`;
+  spot.style.left = `${Math.max(0, rect.left - pad)}px`;
+  spot.style.width = `${rect.width + pad * 2}px`;
+  spot.style.height = `${rect.height + pad * 2}px`;
+}
+
+function endDemoTour({ markSeen = true } = {}) {
+  demoTourIndex = -1;
+  clearDemoTourHighlight();
+  const overlay = document.getElementById("demo-tour");
+  if (overlay) overlay.hidden = true;
+  document.body.classList.remove("demo-tour-active");
+  if (markSeen) {
+    try {
+      sessionStorage.setItem(DEMO_TOUR_SEEN_KEY, "1");
+    } catch {
+      /* ignore */
+    }
+  }
+}
+
+function paintDemoTourStep() {
+  const steps = getDemoTourSteps();
+  const overlay = document.getElementById("demo-tour");
+  const textEl = document.getElementById("demo-tour-text");
+  const stepEl = document.getElementById("demo-tour-step");
+  const nextBtn = document.getElementById("demo-tour-next");
+  if (!overlay || demoTourIndex < 0) return;
+
+  if (demoTourIndex >= steps.length) {
+    endDemoTour();
+    return;
+  }
+
+  const step = steps[demoTourIndex];
+  clearDemoTourHighlight();
+  if (step.screen) go(step.screen, { replace: true });
+
+  window.requestAnimationFrame(() => {
+    const target = step.selector
+      ? document.querySelector(step.selector)
+      : null;
+    if (target) {
+      demoTourTargetEl = target;
+      target.classList.add("demo-tour-target");
+      target.scrollIntoView({ block: "nearest", behavior: "smooth" });
+      positionDemoTourSpot(target);
+    } else {
+      positionDemoTourSpot(null);
+    }
+    if (textEl) textEl.textContent = t(step.textKey);
+    if (stepEl) {
+      stepEl.textContent = t("demoTourProgress", {
+        current: String(demoTourIndex + 1),
+        total: String(steps.length),
+      });
+    }
+    if (nextBtn) {
+      nextBtn.textContent =
+        demoTourIndex >= steps.length - 1 ? t("demoTourDone") : t("demoTourNext");
+    }
+    overlay.hidden = false;
+    document.body.classList.add("demo-tour-active");
+  });
+}
+
+function startDemoTour() {
+  if (!DEMO_MODE) return;
+  demoTourIndex = 0;
+  paintDemoTourStep();
+}
+
+function advanceDemoTour() {
+  if (demoTourIndex < 0) return;
+  demoTourIndex += 1;
+  paintDemoTourStep();
+}
+
+function initDemoMode() {
+  if (!DEMO_MODE) return;
+
+  document.documentElement.classList.add("is-demo-mode");
+  document.body.classList.add("is-demo-mode");
+
+  const banner = document.getElementById("demo-banner");
+  if (banner) banner.hidden = false;
+
+  document.getElementById("demo-reset-btn")?.addEventListener("click", () => {
+    endDemoTour({ markSeen: false });
+    resetDemoSeed();
+  });
+  document.getElementById("demo-tour-btn")?.addEventListener("click", () => {
+    startDemoTour();
+  });
+  document.getElementById("demo-tour-skip")?.addEventListener("click", () => {
+    endDemoTour();
+  });
+  document.getElementById("demo-tour-next")?.addEventListener("click", () => {
+    advanceDemoTour();
+  });
+
+  window.addEventListener(
+    "resize",
+    () => {
+      if (demoTourTargetEl) positionDemoTourSpot(demoTourTargetEl);
+    },
+    { passive: true }
+  );
+
+  document.addEventListener(
+    "submit",
+    (event) => {
+      if (!DEMO_MODE) return;
+      event.preventDefault();
+      event.stopImmediatePropagation();
+      notifyDemoReadOnly();
+    },
+    true
+  );
+
+  document.addEventListener(
+    "click",
+    (event) => {
+      if (!DEMO_MODE) return;
+      const writeBtn = event.target.closest?.(
+        "#save-photo-rx-btn, #photo-crop-save, [data-parasite-dosed]"
+      );
+      if (!writeBtn) return;
+      if (writeBtn.closest("#demo-banner, #demo-tour")) return;
+      event.preventDefault();
+      event.stopImmediatePropagation();
+      notifyDemoReadOnly();
+    },
+    true
+  );
+
+  document.addEventListener(
+    "click",
+    (event) => {
+      if (!DEMO_MODE || demoTourIndex < 0) return;
+      if (event.target.closest("#demo-tour, #demo-banner")) return;
+      const steps = getDemoTourSteps();
+      const step = steps[demoTourIndex];
+      const target = demoTourTargetEl;
+      const onTarget = target && target.contains(event.target);
+      if (onTarget) {
+        const goTo = event.target
+          .closest?.("[data-go]")
+          ?.getAttribute("data-go");
+        if (step?.allowGo && goTo === step.allowGo) {
+          window.setTimeout(() => advanceDemoTour(), 280);
+        }
+        return;
+      }
+      event.preventDefault();
+      event.stopImmediatePropagation();
+    },
+    true
+  );
+
+  let tourSeen = false;
+  try {
+    tourSeen = sessionStorage.getItem(DEMO_TOUR_SEEN_KEY) === "1";
+  } catch {
+    tourSeen = false;
+  }
+  if (!tourSeen) {
+    window.setTimeout(() => startDemoTour(), 480);
+  }
+}
+
 
 applyI18n();
 syncAlertSubmitLabel();
@@ -7937,6 +8359,7 @@ enhanceGlassScreenHeads();
 applyI18n();
 initAppNavMenu();
 initIntroAndCloud();
+initDemoMode();
 
 PetLiveWeb.metrics = {
   getSnapshot() {
