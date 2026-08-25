@@ -11,7 +11,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,700&family=Noto+Sans+TC:wght@400;500;700&family=Noto+Serif+TC:wght@600;700&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="./styles.css?v=20260825-add-pet-sticky" />
+  <link rel="stylesheet" href="./styles.css?v=20260825-manual-guide" />
 </head>
 <body>
   <div class="atmosphere" aria-hidden="true">
@@ -1015,6 +1015,149 @@
       </form>
     </section>
 
+    <!-- MANUAL / GUIDE -->
+    <section
+      class="screen screen-manual"
+      data-screen="manual"
+      data-i18n-aria="manualTitle"
+      aria-label="說明書"
+      hidden
+    >
+      <header class="screen-head light">
+        <button class="back" type="button" data-go="home" data-i18n-aria="back" aria-label="返回">←</button>
+        <div>
+          <p class="manual-eyebrow" data-i18n="manualEyebrow">GUIDE</p>
+          <h2 data-i18n="manualPageTitle">怎麼開始用火龍果護照</h2>
+        </div>
+      </header>
+
+      <div class="manual-body">
+        <section class="manual-misconception" aria-labelledby="manual-misconception-title">
+          <h3 id="manual-misconception-title" class="manual-misconception-main" data-i18n="manualMisconception">
+            資料在你這邊，儲存在你的雲端帳戶
+          </h3>
+          <p class="manual-misconception-note" data-i18n="manualMisconceptionNote">
+            僅供參考，不取代獸醫診斷。
+          </p>
+        </section>
+
+        <section class="manual-steps" aria-labelledby="manual-steps-title">
+          <h3 id="manual-steps-title" class="manual-section-title" data-i18n="manualStepsTitle">五步上手</h3>
+          <ol class="manual-step-list">
+            <li class="manual-step">
+              <span class="manual-step-num" aria-hidden="true">1</span>
+              <div>
+                <h4 data-i18n="manualStep1Title">登入／開始使用</h4>
+                <p data-i18n="manualStep1Body">從介紹頁用 Google 登入進入護照；紀錄綁在你的帳號。</p>
+              </div>
+            </li>
+            <li class="manual-step">
+              <span class="manual-step-num" aria-hidden="true">2</span>
+              <div>
+                <h4 data-i18n="manualStep2Title">新增第一隻寵物</h4>
+                <p data-i18n="manualStep2Body">護照以寵物為單位。空帳號請先新增，才能開資訊卡與紀錄。</p>
+              </div>
+            </li>
+            <li class="manual-step">
+              <span class="manual-step-num" aria-hidden="true">3</span>
+              <div>
+                <h4 data-i18n="manualStep3Title">記一筆就診（或用藥）</h4>
+                <p data-i18n="manualStep3Body">有可回看的紀錄，護照才不是空殼。可從首頁新增就診或記錄用藥。</p>
+              </div>
+            </li>
+            <li class="manual-step">
+              <span class="manual-step-num" aria-hidden="true">4</span>
+              <div>
+                <h4 data-i18n="manualStep4Title">打開醫療資訊卡</h4>
+                <p data-i18n="manualStep4Body">急診／換院時快速出示重點：警示、疫苗狀態與近期紀錄。</p>
+              </div>
+            </li>
+            <li class="manual-step">
+              <span class="manual-step-num" aria-hidden="true">5</span>
+              <div>
+                <h4 data-i18n="manualStep5Title">雲端備份／換機</h4>
+                <p data-i18n="manualStep5Body">備份寫進你的 Google 雲端硬碟資料夾——不是我們的伺服器。換機登入即可讀回。</p>
+              </div>
+            </li>
+          </ol>
+        </section>
+
+        <section class="manual-boundaries" aria-labelledby="manual-boundaries-title">
+          <h3 id="manual-boundaries-title" class="manual-section-title" data-i18n="manualBoundariesTitle">這是什麼／不是什麼</h3>
+          <p class="manual-boundary-is" data-i18n="manualBoundaryIs">
+            飼主持有的寵物健康護照：幫你整理就診、用藥與急診參考資訊。
+          </p>
+          <p class="manual-boundary-isnt" data-i18n="manualBoundaryIsnt">
+            不是電子病歷系統，也不取代獸醫師的診斷或處方。
+          </p>
+        </section>
+
+        <section class="manual-faq" aria-labelledby="manual-faq-title">
+          <h3 id="manual-faq-title" class="manual-section-title" data-i18n="manualFaqTitle">常見問題</h3>
+          <details class="manual-faq-item">
+            <summary data-i18n="manualFaqVaccinesQ">疫苗與寄生蟲要記嗎？</summary>
+            <p data-i18n="manualFaqVaccinesA">
+              建議記錄，方便預防狀態一眼看懂。它們是預防條，不是第一次上手必做的五步之一；可從選單進入疫苗／寄生蟲頁。
+            </p>
+          </details>
+          <details class="manual-faq-item">
+            <summary data-i18n="manualFaqAlertsQ">醫療警示是什麼？</summary>
+            <p data-i18n="manualFaqAlertsA">
+              急診卡會優先顯示的注意事項（例如過敏、特殊狀況）。細節可之後再補；選單有「醫療警示」。
+            </p>
+          </details>
+          <details class="manual-faq-item">
+            <summary data-i18n="manualFaqCloudQ">資料存在哪裡？</summary>
+            <p data-i18n="manualFaqCloudA">
+              本機先寫入；登入後可備份到你自己的 Google 雲端硬碟「火龍果護照」資料夾。不是 Petlive 伺服器上的病歷庫。
+            </p>
+          </details>
+          <details class="manual-faq-item">
+            <summary data-i18n="manualFaqDemoQ">體驗範例護照會改到我的帳號嗎？</summary>
+            <p data-i18n="manualFaqDemoA">
+              不會。示範模式唯讀、無法儲存，也不會寫入你的帳號或雲端。
+            </p>
+          </details>
+        </section>
+
+        <footer class="manual-cta">
+          <button
+            class="btn btn-primary"
+            type="button"
+            id="manual-cta-primary"
+            data-go="home"
+            data-i18n="manualCtaHome"
+          >
+            回到護照
+          </button>
+          <button
+            class="btn btn-ghost"
+            type="button"
+            id="manual-cta-add-alt"
+            data-go="add-pet"
+            data-i18n="manualCtaAddPet"
+          >
+            去新增寵物
+          </button>
+          <a class="btn btn-ghost manual-cta-demo" href="?demo=1" data-i18n="manualCtaDemo">
+            體驗範例護照（唯讀・不寫入帳號）
+          </a>
+          <button
+            class="btn btn-ghost manual-cta-tour"
+            type="button"
+            id="manual-cta-tour"
+            disabled
+            aria-disabled="true"
+            data-i18n-title="manualTourDisabledHint"
+            title="導覽功能即將開放"
+          >
+            <span data-i18n="manualCtaTour">開始導覽</span>
+            <span class="manual-cta-tour-soon" data-i18n="manualCtaTourSoon">即將開放</span>
+          </button>
+        </footer>
+      </div>
+    </section>
+
     <!-- ALERTS -->
     <section class="screen" data-screen="alerts" data-i18n-aria="alertsTitle" aria-label="醫療警示" hidden>
       <header class="screen-head light">
@@ -1650,6 +1793,7 @@
         type="button"
         role="menuitem"
         id="nav-manual-btn"
+        data-go="manual"
         data-i18n="manualTitle"
       >
         說明書
@@ -1766,13 +1910,13 @@
   <script defer src="./auth/google-drive.js?v=20260825-one-popup"></script>
   <script type="module" src="./runtime/petlive.js?v=20260824-drug-seed-dedupe"></script>
   <script defer src="./runtime/safe-ui.js?v=20260812-local-first"></script>
-  <script defer src="./i18n.js?v=20260825-breed-typeahead-adopt"></script>
+  <script defer src="./i18n.js?v=20260825-manual-guide"></script>
   <script defer src="./breeds-database.js?v=20260825-breed-typeahead-adopt"></script>
   <script defer src="./core/storage.js?v=20260824-perf-adopt"></script>
   <script defer src="./core/state.js?v=20260813-layered-adopted"></script>
   <script defer src="./shell/navigation.js?v=20260813-layered-adopted"></script>
   <script defer src="./shell/render-coordinator.js?v=20260824-perf-adopt"></script>
   <script defer src="./domains/pets/controller.js?v=20260813-layered-adopted"></script>
-  <script defer src="./app.js?v=20260825-add-pet-sticky"></script>
+  <script defer src="./app.js?v=20260825-manual-guide"></script>
 </body>
 </html>

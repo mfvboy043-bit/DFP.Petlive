@@ -1,0 +1,35 @@
+id: "20260825-manual-guide"
+title: "說明書頁（What'Sub 風格指南）"
+version: 2
+status: adopted
+gate_a:
+  status: approved
+  note: "Victor 確認 2026-08-25"
+gate_b:
+  status: adopted
+  note: "Victor 採用 2026-08-25"
+iteration: 1
+max_iterations: 3
+candidate:
+  branch: "proposal/manual-guide"
+  path: "apps/web"
+  worktree: ".worktrees/manual-guide"
+reviews:
+  pharmacist: skipped
+  qa: conditional
+  ui: conditional
+  arbiter: candidate_ready
+rerun: []
+blocking_issues: []
+non_blocking:
+  - QA-001
+  - QA-002
+  - UI-001
+  - UI-002
+  - UI-003
+  - UI-004
+  - UI-005
+builder_scope: []
+halt_reason: ""
+build_note: >-
+  Adopted 2026-08-25. Merged proposal/manual-guide into main after Gate B.
