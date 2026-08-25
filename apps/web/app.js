@@ -5166,6 +5166,14 @@ function initAppNavMenu() {
   const panel = document.getElementById("app-nav-panel");
   if (!panel) return;
 
+  document.getElementById("nav-manual-btn")?.addEventListener("click", () => {
+    closeAppNavMenu();
+    const url = new URL(window.location.href);
+    url.searchParams.set("demo", "1");
+    url.hash = "";
+    window.location.assign(url.pathname + url.search + url.hash);
+  });
+
   document.addEventListener("click", (event) => {
     const btn = event.target.closest?.(".js-app-nav-btn");
     if (btn) {
