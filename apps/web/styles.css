@@ -3065,7 +3065,7 @@ input[type="month"]::-webkit-calendar-picker-indicator {
 
 .e-name-row {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   gap: 7px;
   min-width: 0;
 }
@@ -3082,10 +3082,27 @@ input[type="month"]::-webkit-calendar-picker-indicator {
   color: var(--text-strong);
 }
 
+.e-name-aside {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 6px;
+  margin-left: auto;
+  flex: 0 1 auto;
+  min-width: 0;
+}
+
+.e-copy-summary {
+  min-height: 34px;
+  padding: 6px 11px;
+  font-size: 0.8rem;
+}
+
 .e-pet-photo-edit {
   display: grid;
   place-items: center;
   flex: 0 0 auto;
+  margin-top: 5px;
 
   width: 27px;
   height: 27px;
@@ -3116,8 +3133,7 @@ input[type="month"]::-webkit-calendar-picker-indicator {
 }
 
 .e-chip-meta {
-  align-self: flex-end;
-  margin: 0 0 0 auto;
+  margin: 0;
   min-width: 0;
   padding-bottom: 2px;
   font-size: 0.78rem;
@@ -7334,6 +7350,45 @@ html.is-proof-lightbox-open body {
   html[lang="en"] .screen > .screen-head h2,
   html[lang="ja"] .screen > .screen-head h2 {
     font-size: 15px;
+  }
+
+  /* Action btn + glass chrome: keep title on row 1, move btn-small to row 2 */
+  .screen > .screen-head:has(> .btn-small) {
+    flex-wrap: wrap;
+    row-gap: 6px;
+    border-radius: 18px;
+    padding-bottom: 8px;
+  }
+
+  .screen > .screen-head:has(> .btn-small) > div {
+    flex: 1 1 0;
+    min-width: 0;
+  }
+
+  .screen > .screen-head:has(> .btn-small) h2 {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  html[lang="ja"] .screen > .screen-head:has(> .btn-small) h2,
+  html[lang="ko"] .screen > .screen-head:has(> .btn-small) h2 {
+    line-break: strict;
+    word-break: keep-all;
+  }
+
+  .screen > .screen-head > .btn-small {
+    order: 10;
+    flex: 1 1 100%;
+    width: 100%;
+    box-sizing: border-box;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .screen:has(> .screen-head > .btn-small) {
+    --e-head-float-h: 108px;
   }
 
   .back {
