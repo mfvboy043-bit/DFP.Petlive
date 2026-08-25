@@ -1728,6 +1728,64 @@ input[type="month"]::-webkit-calendar-picker-indicator {
   margin-top: 9px;
 }
 
+.breed-chips.is-expanded {
+  display: grid;
+  gap: 12px;
+}
+
+.breed-group {
+  display: grid;
+  gap: 7px;
+  min-width: 0;
+}
+
+.breed-group-label {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  color: var(--text-muted);
+}
+
+.breed-group-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.breed-expand-toggle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  margin-top: 10px;
+  min-height: 36px;
+  padding: 6px 4px;
+
+  border: 0;
+  border-radius: var(--r-sm);
+
+  color: var(--leaf-deep);
+  background: transparent;
+
+  font-size: 13px;
+  font-weight: 700;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.breed-expand-toggle:hover {
+  background: rgba(61, 107, 87, 0.08);
+}
+
+.breed-expand-toggle:focus-visible {
+  outline: 2px solid color-mix(in srgb, var(--leaf-deep) 55%, transparent);
+  outline-offset: 2px;
+}
+
+.breed-expand-toggle[hidden] {
+  display: none;
+}
+
 #parasite-chips-external,
 #parasite-chips-heartworm {
   flex-direction: column;

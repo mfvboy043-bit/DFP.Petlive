@@ -67,10 +67,85 @@ const CAT_BREEDS = [
   },
 ];
 
+/** Group order for dog chips (Taiwan-common first). Values only — no new breeds. */
+const DOG_BREED_GROUPS = [
+  { id: "common-tw", i18nKey: "breedGroupCommonTw", members: ["mixed", "taiwan-dog", "shiba"] },
+  {
+    id: "toy-companion",
+    i18nKey: "breedGroupToyCompanion",
+    members: [
+      "maltese",
+      "pomeranian",
+      "chihuahua",
+      "yorkshire",
+      "bichon",
+      "pug",
+      "shihtzu",
+      "poodle",
+    ],
+  },
+  {
+    id: "herding-working",
+    i18nKey: "breedGroupHerdingWorking",
+    members: ["corgi", "border-collie", "husky", "samoyed", "akita"],
+  },
+  {
+    id: "hunting-retriever",
+    i18nKey: "breedGroupHuntingRetriever",
+    members: ["golden", "labrador", "beagle", "dachshund"],
+  },
+  { id: "bully", i18nKey: "breedGroupBully", members: ["french-bulldog", "bulldog"] },
+  { id: "other", i18nKey: "breedGroupOther", members: ["schnauzer"] },
+  { id: "custom", i18nKey: "breedGroupCustom", members: [BREED_CUSTOM_VALUE] },
+];
+
+/** Group order for cat chips (common home first). */
+const CAT_BREED_GROUPS = [
+  { id: "common-home", i18nKey: "breedGroupCommonHome", members: ["mixed", "orange-tabby"] },
+  {
+    id: "shorthair",
+    i18nKey: "breedGroupShorthair",
+    members: [
+      "american-shorthair",
+      "british-shorthair",
+      "siamese",
+      "russian-blue",
+      "exotic",
+      "bengal",
+      "abyssinian",
+      "scottish-fold",
+      "munchkin",
+      "sphynx",
+    ],
+  },
+  {
+    id: "longhair",
+    i18nKey: "breedGroupLonghair",
+    members: ["persian", "ragdoll", "maine-coon", "norwegian"],
+  },
+  { id: "custom", i18nKey: "breedGroupCustom", members: [BREED_CUSTOM_VALUE] },
+];
+
 function getBreedListForSpecies(species) {
   if (species === "dog") return DOG_BREEDS;
   if (species === "cat") return CAT_BREEDS;
   return [];
+}
+
+function getBreedGroupsForSpecies(species) {
+  if (species === "dog") return DOG_BREED_GROUPS;
+  if (species === "cat") return CAT_BREED_GROUPS;
+  return [];
+}
+
+function getCommonBreedGroupId(species) {
+  if (species === "dog") return "common-tw";
+  if (species === "cat") return "common-home";
+  return "";
+}
+
+function findBreedByValue(species, value) {
+  return getBreedListForSpecies(species).find((breed) => breed.value === value) || null;
 }
 
 function breedLangKey() {

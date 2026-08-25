@@ -4598,12 +4598,14 @@ function toggleBreedCustomField() {
   const breedCustomField = document.getElementById("breed-custom-field");
   const breedSelect = document.getElementById("breed-select");
   const breedCustom = document.getElementById("breed-custom");
+  const breedExpandToggle = document.getElementById("breed-expand-toggle");
   if (!speciesEl || !breedSelect || !breedCustom) return;
 
   if (speciesEl.value === "other") {
     breedSelectField.hidden = true;
     breedCustomField.hidden = false;
     breedCustom.required = true;
+    if (breedExpandToggle) breedExpandToggle.hidden = true;
     return;
   }
 
@@ -4612,6 +4614,85 @@ function toggleBreedCustomField() {
   breedCustomField.hidden = !showCustom;
   breedCustom.required = showCustom;
   if (!showCustom) breedCustom.value = "";
+  if (breedExpandToggle) breedExpandToggle.hidden = false;
+}
+
+/** Default collapsed; reset on species change. */
+let breedChipsExpanded = false;
+
+function breedChipButtonHtml(breed) {
+  return `
+      <button
+        type="button"
+        class="chip"
+        role="option"
+        data-breed="${breed.value}"
+        aria-selected="false"
+      >${breedOptionLabel(breed)}</button>`;
+}
+
+function updateBreedExpandToggle() {
+  const toggle = document.getElementById("breed-expand-toggle");
+  if (!toggle) return;
+  const speciesEl = document.getElementById("pet-species");
+  const species = speciesEl ? speciesEl.value : "";
+  const show = species === "dog" || species === "cat";
+  toggle.hidden = !show;
+  toggle.setAttribute("aria-expanded", breedChipsExpanded ? "true" : "false");
+  const label = toggle.querySelector("[data-i18n]") || toggle;
+  const key = breedChipsExpanded ? "breedCollapse" : "breedExpandAll";
+  label.setAttribute("data-i18n", key);
+  label.textContent = typeof t === "function" ? t(key) : label.textContent;
+}
+
+function renderCollapsedBreedChips(species, selectedValue) {
+  const groups = getBreedGroupsForSpecies(species);
+  const commonId = getCommonBreedGroupId(species);
+  const commonGroup = groups.find((g) => g.id === commonId);
+  const seen = new Set();
+  const chips = [];
+
+  const pushValue = (value) => {
+    if (!value || seen.has(value)) return;
+    const breed = findBreedByValue(species, value);
+    if (!breed) return;
+    seen.add(value);
+    chips.push(breedChipButtonHtml(breed));
+  };
+
+  if (commonGroup) {
+    commonGroup.members.forEach(pushValue);
+  }
+  if (
+    selectedValue &&
+    selectedValue !== BREED_CUSTOM_VALUE &&
+    !(commonGroup && commonGroup.members.includes(selectedValue))
+  ) {
+    pushValue(selectedValue);
+  }
+  pushValue(BREED_CUSTOM_VALUE);
+
+  return chips.join("");
+}
+
+function renderExpandedBreedChips(species) {
+  const groups = getBreedGroupsForSpecies(species);
+  return groups
+    .map((group) => {
+      const label =
+        typeof t === "function" ? t(group.i18nKey) : group.id;
+      const chips = group.members
+        .map((value) => findBreedByValue(species, value))
+        .filter(Boolean)
+        .map(breedChipButtonHtml)
+        .join("");
+      return `
+      <div class="breed-group" data-breed-group="${group.id}">
+        <div class="breed-group-label">${label}</div>
+        <div class="breed-group-chips">${chips}</div>
+      </div>`;
+    })
+    .join("");
 }
 
 function setSelectedBreed(value) {
@@ -4620,6 +4701,17 @@ function setSelectedBreed(value) {
   if (!breedSelect || !breedChips) return;
 
   breedSelect.value = value || "";
+
+  // Collapsed preview must pin the selected breed — rebuild if it's not visible yet.
+  if (
+    !breedChipsExpanded &&
+    value &&
+    !breedChips.querySelector(`.chip[data-breed="${value}"]`)
+  ) {
+    syncBreedFields({ keepSelection: true });
+    return;
+  }
+
   breedChips.querySelectorAll(".chip").forEach((chip) => {
     const on = chip.dataset.breed === value;
     chip.classList.toggle("is-on", on);
@@ -4628,7 +4720,7 @@ function setSelectedBreed(value) {
   toggleBreedCustomField();
 }
 
-function syncBreedFields({ keepSelection = true } = {}) {
+function syncBreedFields({ keepSelection = true, resetExpanded = false } = {}) {
   const speciesEl = document.getElementById("pet-species");
   const breedSelect = document.getElementById("breed-select");
   const breedCustom = document.getElementById("breed-custom");
@@ -4641,32 +4733,39 @@ function syncBreedFields({ keepSelection = true } = {}) {
     return;
   }
 
+  if (resetExpanded) breedChipsExpanded = false;
+
   const species = speciesEl.value;
   const list = getBreedListForSpecies(species);
   const previous = keepSelection ? breedSelect.value : "";
 
   if (species === "other") {
     breedChips.innerHTML = "";
+    breedChips.classList.remove("is-expanded", "is-collapsed");
     breedSelect.value = BREED_CUSTOM_VALUE;
+    updateBreedExpandToggle();
     toggleBreedCustomField();
     return;
   }
 
-  breedChips.innerHTML = list
-    .map(
-      (breed) => `
-      <button
-        type="button"
-        class="chip"
-        role="option"
-        data-breed="${breed.value}"
-        aria-selected="false"
-      >${breedOptionLabel(breed)}</button>`
-    )
-    .join("");
-
   const stillValid = list.some((breed) => breed.value === previous);
-  setSelectedBreed(stillValid ? previous : "");
+  const selectedValue = stillValid ? previous : "";
+
+  if (breedChipsExpanded && typeof getBreedGroupsForSpecies === "function") {
+    breedChips.innerHTML = renderExpandedBreedChips(species);
+    breedChips.classList.add("is-expanded");
+    breedChips.classList.remove("is-collapsed");
+  } else if (typeof getBreedGroupsForSpecies === "function") {
+    breedChips.innerHTML = renderCollapsedBreedChips(species, selectedValue);
+    breedChips.classList.add("is-collapsed");
+    breedChips.classList.remove("is-expanded");
+  } else {
+    breedChips.innerHTML = list.map(breedChipButtonHtml).join("");
+    breedChips.classList.remove("is-expanded", "is-collapsed");
+  }
+
+  setSelectedBreed(selectedValue);
+  updateBreedExpandToggle();
 }
 
 function resolveBreedFromForm(form) {
@@ -4776,7 +4875,7 @@ function fillPetFormFromPet(pet) {
   form.weightDate.value = pet.weightDate || todayISODate();
   form.chipNumber.value = pet.chipNumber || "";
   syncDateProxies(form);
-  syncBreedFields({ keepSelection: false });
+  syncBreedFields({ keepSelection: false, resetExpanded: true });
   const breedKey = pet.breedKey || "";
   if (pet.species === "other" || breedKey === BREED_CUSTOM_VALUE) {
     setSelectedBreed(BREED_CUSTOM_VALUE);
@@ -4801,7 +4900,7 @@ function openCreatePetForm() {
   form.weightDate.value = todayISODate();
   form.birthDate.value = "";
   syncDateProxies(form);
-  syncBreedFields();
+  syncBreedFields({ keepSelection: false, resetExpanded: true });
   paintPetFormMode();
   go("add-pet");
 }
@@ -5554,13 +5653,18 @@ document.getElementById("visit-form").addEventListener("submit", (event) => {
 document.getElementById("pet-species").addEventListener("change", () => {
   const custom = document.getElementById("breed-custom");
   if (custom) custom.value = "";
-  syncBreedFields({ keepSelection: false });
+  syncBreedFields({ keepSelection: false, resetExpanded: true });
 });
 
 document.getElementById("breed-chips").addEventListener("click", (event) => {
   const chip = event.target.closest("[data-breed]");
   if (!chip) return;
   setSelectedBreed(chip.dataset.breed);
+});
+
+document.getElementById("breed-expand-toggle")?.addEventListener("click", () => {
+  breedChipsExpanded = !breedChipsExpanded;
+  syncBreedFields({ keepSelection: true });
 });
 
 document.getElementById("pet-form").addEventListener("submit", (event) => {

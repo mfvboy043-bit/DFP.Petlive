@@ -1,0 +1,33 @@
+id: "20260825-breed-groups-collapse"
+title: "品種 chip 預設摺疊＋犬／貓分組"
+version: 2
+status: reviewing
+# proposed | building | reviewing | revising | candidate_ready | halted | adopted | rejected
+
+gate_a:
+  status: approved
+  # pending | approved | modified | rejected
+
+gate_b:
+  status: pending
+  # pending | adopted | rejected
+
+iteration: 1
+max_iterations: 3
+
+candidate:
+  branch: "proposal/breed-groups-collapse"
+  path: "proposals/20260825-breed-groups-collapse"
+  worktree: ""
+
+reviews:
+  pharmacist: skipped
+  qa: pending
+  ui: pending
+  # pending | skipped | pass | conditional | reject
+
+rerun: []
+blocking_issues: []
+non_blocking: []
+builder_scope: []
+halt_reason: ""
