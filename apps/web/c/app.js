@@ -622,8 +622,8 @@ const SEED_PETS = [
 const pets = [];
 const archivedPets = [];
 
-const PETS_GRAPH_KEY = "petlive-pets-graph";
-const INTRO_SEEN_KEY = "petlive-intro-seen";
+const PETS_GRAPH_KEY = "petlive-c-pets-graph";
+const INTRO_SEEN_KEY = "petlive-c-intro-seen";
 
 function cloneSeedPets() {
   try {
@@ -1552,8 +1552,8 @@ const ALERT_SECTION_DEFS = [
   },
 ];
 
-const OWNER_ALERTS_KEY = "petlive-pet-alerts";
-const SUPPRESSED_ALERTS_KEY = "petlive-suppressed-alerts";
+const OWNER_ALERTS_KEY = "petlive-c-pet-alerts";
+const SUPPRESSED_ALERTS_KEY = "petlive-c-suppressed-alerts";
 const isStorageMap = (value) =>
   Boolean(value && typeof value === "object" && !Array.isArray(value));
 const ownerAlertsSlot = PetLiveWeb.storage.createJsonSlot({
@@ -2824,7 +2824,7 @@ function setManageMode(on) {
   renderPetPicker();
 }
 
-const PET_PHOTOS_KEY = "petlive-pet-photos";
+const PET_PHOTOS_KEY = "petlive-c-pet-photos";
 const PET_PHOTOS_COALESCE_MS = 80;
 const petPhotosSlot = PetLiveWeb.storage.createJsonSlot({
   key: PET_PHOTOS_KEY,
@@ -2836,7 +2836,7 @@ const petPhotosSlot = PetLiveWeb.storage.createJsonSlot({
   },
 });
 
-const LAB_REPORTS_KEY = "petlive-lab-reports";
+const LAB_REPORTS_KEY = "petlive-c-lab-reports";
 const LAB_PHOTOS_MAX = 6;
 const LAB_TYPE_ORDER = [
   "blood",
@@ -3869,7 +3869,7 @@ function renderAlertBadge(pet) {
   syncAlertNavTone(alerts);
 }
 
-const OWNER_PROFILE_KEY = "petlive-owner-profile";
+const OWNER_PROFILE_KEY = "petlive-c-owner-profile";
 
 /** Showcase / field-demo sample owner (not real PII). */
 function demoOwnerProfile() {
@@ -7470,14 +7470,21 @@ function closeAccountMenu() {
   });
 }
 
+/** C discussion: preview signed-in Google chrome without live OAuth. */
+const DESIGN_ACCOUNT_PREVIEW = {
+  signedIn: true,
+  configured: false,
+  profile: {
+    name: "示範飼主",
+    email: "owner@example.com",
+    picture: "",
+  },
+};
+
 function getAccountSessionForChrome() {
   const live = googleDriveAuth?.getSession?.();
-  if (live) return live;
-  return {
-    configured: false,
-    signedIn: false,
-    profile: null,
-  };
+  if (live?.signedIn) return live;
+  return DESIGN_ACCOUNT_PREVIEW;
 }
 
 function setAccountAvatar(imgEl, fallbackEl, picture, initial) {
@@ -7773,6 +7780,7 @@ function enterAppFromIntro() {
 
 function initIntroAndCloud() {
   const loginBtn = document.getElementById("intro-login-btn");
+  const enterAppBtn = document.getElementById("intro-enter-app-btn");
   const logoutBtn = document.getElementById("intro-logout-btn");
   const settingsLogin = document.getElementById("settings-cloud-login");
   const settingsSync = document.getElementById("settings-cloud-sync");
@@ -7796,10 +7804,8 @@ function initIntroAndCloud() {
     lastCloudBackupAt = null;
     setIntroStatus("");
     paintCloudChrome();
-    showToast(t("logout"));
-    const introEl = app.querySelector('[data-screen="intro"]');
-    if (introEl) go("intro", { replace: true });
-    else go("home", { replace: true });
+    showToast(t("accountLogoutPreview"));
+    go("home", { replace: true });
   }
 
   function openOwnerSettingsFromAccount() {
@@ -7832,6 +7838,9 @@ function initIntroAndCloud() {
   }
 
   loginBtn?.addEventListener("click", startWithGoogleOrEnter);
+  enterAppBtn?.addEventListener("click", () => {
+    enterAppFromIntro();
+  });
   logoutBtn?.addEventListener("click", doSignOut);
   settingsLogin?.addEventListener("click", () => {
     handleGoogleSignIn({ enterApp: false });
@@ -7867,11 +7876,7 @@ function initIntroAndCloud() {
   });
   accountPopoverSwitch?.addEventListener("click", () => {
     closeAccountMenu();
-    if (googleDriveAuth) {
-      handleGoogleSignIn({ enterApp: false });
-    } else {
-      showToast(t("accountSwitchPreview"));
-    }
+    showToast(t("accountSwitchPreview"));
   });
   accountPopoverLogout?.addEventListener("click", doSignOut);
 
@@ -7893,36 +7898,23 @@ function initIntroAndCloud() {
   googleDriveAuth?.onSessionChange?.(paintCloudChrome);
   paintCloudChrome();
 
-  // Boot: A (intro) by default → Google login enters B.
-  // Already signed in → B. Escape hatch: ?app=1 skips A for local debug.
+  // C discussion surface: always boot to home; no intro, no cloud restore.
   try {
-    const params = new URLSearchParams(window.location.search || "");
-    const forceApp =
-      params.get("app") === "1" || params.get("screen") === "home";
     const intro = app.querySelector('[data-screen="intro"]');
     const home = app.querySelector('[data-screen="home"]');
-    const signedIn = Boolean(googleDriveAuth?.getSession?.().signedIn);
-    if (intro && home) {
-      if (signedIn || forceApp) {
-        intro.classList.remove("is-active");
-        intro.hidden = true;
-        home.hidden = false;
-        home.classList.add("is-active");
-        markIntroSeen();
-      } else {
-        home.classList.remove("is-active");
-        home.hidden = true;
-        intro.hidden = false;
-        intro.classList.add("is-active");
-      }
+    if (intro) {
+      intro.classList.remove("is-active");
+      intro.hidden = true;
+    }
+    if (home) {
+      home.hidden = false;
+      home.classList.add("is-active");
+      markIntroSeen();
     }
   } catch {
     /* ignore */
   }
-
-  if (googleDriveAuth?.getSession?.().signedIn) {
-    pullCloudBackup();
-  }
+  // Auth omitted on C — skip cloud restore even if a stub were present.
 }
 
 applyI18n();

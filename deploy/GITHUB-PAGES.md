@@ -20,10 +20,20 @@ Google OAuth **不接受** `http://192.168.x.x` 這類區網 IP 當「授權的 
 請在 OAuth 用戶端加上：
 
 ```text
+# 授權的 JavaScript 來源（不要加路徑、不要結尾 /）
+http://127.0.0.1:5173
+http://localhost:5173
+https://<user>.github.io
+
+# 授權的重新導向 URI（建議一併加上，同樣不要路徑）
 http://127.0.0.1:5173
 http://localhost:5173
 https://<user>.github.io
 ```
+
+**不要**在 Cursor 內建預覽裡測 Google 登入——選完帳號後常無法回跳。請用系統的 Chrome / Safari 開：
+
+`http://127.0.0.1:5173/apps/web/`
 
 不要指望加 `http://192.168.0.24:5173` 就能讓手機過——Google 會擋。
 

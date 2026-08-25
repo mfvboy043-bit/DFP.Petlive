@@ -319,7 +319,8 @@ const I18N = {
     toastImagingBusy: "請稍候",
     saveTimeline: "儲存並查看時間軸",
     alertsNavSub: "過敏／慢性病",
-    alertsDisclaimer: "飼主自訂內容僅供急診參考，非醫院確診紀錄。用藥反應請遵照獸醫師指示。",
+    alertsDisclaimer:
+      "飼主自訂內容僅供急診參考，非醫院確診紀錄。<br /><span class=\"alert-disclaimer-vet\">用藥請遵照獸醫師指示。</span>",
     alertTypeLegend: "警示類型",
     alertTypeDrugAllergy: "藥物過敏",
     alertTypeFoodAllergy: "食物過敏",
@@ -958,7 +959,7 @@ const I18N = {
     alertsSub: "Shown first in emergencies",
     alertsNavSub: "Allergy / chronic",
     alertsDisclaimer:
-      "Owner-added notes are for emergency reference only—not a clinic diagnosis. Follow your veterinarian for reactions.",
+      "Owner-added notes are for emergency reference only—not a clinic diagnosis.<br /><span class=\"alert-disclaimer-vet\">Follow your veterinarian’s medication instructions.</span>",
     alertTypeLegend: "Alert type",
     alertTypeDrugAllergy: "Drug allergy",
     alertTypeFoodAllergy: "Food allergy",
@@ -1607,7 +1608,7 @@ const I18N = {
     alertsSub: "救急時に優先表示",
     alertsNavSub: "アレルギー／慢性",
     alertsDisclaimer:
-      "飼い主記入は救急時の参考用であり、病院の確定診断ではありません。反応については獣医師の指示に従ってください。",
+      "飼い主記入は救急時の参考用であり、病院の確定診断ではありません。<br /><span class=\"alert-disclaimer-vet\">お薬は獣医師の指示に従ってください。</span>",
     alertTypeLegend: "アラート種類",
     alertTypeDrugAllergy: "薬物アレルギー",
     alertTypeFoodAllergy: "食物アレルギー",
@@ -2256,7 +2257,7 @@ const I18N = {
     alertsSub: "응급 시 우선 표시",
     alertsNavSub: "알레르기/만성",
     alertsDisclaimer:
-      "보호자 추가는 응급 참고용이며 병원 확진 기록이 아닙니다. 약물 반응은 수의사 지시를 따르세요.",
+      "보호자 추가는 응급 참고용이며 병원 확진 기록이 아닙니다.<br /><span class=\"alert-disclaimer-vet\">약은 수의사 지시를 따르세요.</span>",
     alertTypeLegend: "알림 유형",
     alertTypeDrugAllergy: "약물 알레르기",
     alertTypeFoodAllergy: "음식 알레르기",
@@ -2585,7 +2586,7 @@ const I18N = {
   },
 };
 
-let currentLang = localStorage.getItem("petlive-lang") || "zh-Hant";
+let currentLang = localStorage.getItem("petlive-c-lang") || "zh-Hant";
 if (!I18N[currentLang]) currentLang = "zh-Hant";
 
 function t(key, vars = {}) {
@@ -2636,7 +2637,7 @@ function applyI18n() {
 function setLanguage(lang) {
   if (!I18N[lang]) return;
   currentLang = lang;
-  localStorage.setItem("petlive-lang", lang);
+  localStorage.setItem("petlive-c-lang", lang);
   applyI18n();
   if (typeof window.onLanguageChange === "function") {
     window.onLanguageChange(lang);

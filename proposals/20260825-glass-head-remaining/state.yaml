@@ -1,0 +1,35 @@
+id: 20260825-glass-head-remaining
+title: "C：剩餘頁面對齊浮動玻璃 screen-head"
+version: 2
+status: building
+# proposed | building | reviewing | revising | candidate_ready | halted | adopted | rejected
+
+gate_a:
+  status: approved
+  # pending | approved | modified | rejected
+
+gate_b:
+  status: pending
+  # pending | adopted | rejected
+
+iteration: 0
+max_iterations: 3
+
+candidate:
+  branch: "proposal/glass-head-remaining"
+  path: "proposals/20260825-glass-head-remaining"
+  worktree: ""
+  surface: "apps/web/c"
+
+reviews:
+  pharmacist: skipped
+  qa: pending
+  ui: pending
+  # pending | skipped | pass | conditional | reject
+  # After Gate A: pharmacist skip (layout/chrome only); QA + UI required
+
+rerun: []
+blocking_issues: []
+non_blocking: []
+builder_scope: []
+halt_reason: ""
