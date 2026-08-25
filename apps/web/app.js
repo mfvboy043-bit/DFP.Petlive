@@ -5161,6 +5161,7 @@ const shellNavigation = PetLiveWeb.shell.createNavigation({
       if (pet) safeRender("parasiteScreen", () => fillParasiteScreen(pet));
     }
     if (screen === "owner-settings") fillOwnerSettingsForm();
+    if (screen === "manual") paintManualScreen();
   },
 });
 
@@ -5306,17 +5307,26 @@ function setAppNavMenuOpen(open, anchorBtn) {
   }
 }
 
+function paintManualScreen() {
+  const empty = !pets.length || isSeedOnlyPets(pets);
+  const primary = document.getElementById("manual-cta-primary");
+  const addAlt = document.getElementById("manual-cta-add-alt");
+  if (primary) {
+    primary.setAttribute("data-go", empty ? "add-pet" : "home");
+    primary.setAttribute("data-i18n", empty ? "manualCtaAddPet" : "manualCtaHome");
+    primary.textContent = t(empty ? "manualCtaAddPet" : "manualCtaHome");
+  }
+  if (addAlt) {
+    // When account is empty, primary already goes to add-pet; offer home as alt.
+    addAlt.setAttribute("data-go", empty ? "home" : "add-pet");
+    addAlt.setAttribute("data-i18n", empty ? "manualCtaHome" : "manualCtaAddPet");
+    addAlt.textContent = t(empty ? "manualCtaHome" : "manualCtaAddPet");
+  }
+}
+
 function initAppNavMenu() {
   const panel = document.getElementById("app-nav-panel");
   if (!panel) return;
-
-  document.getElementById("nav-manual-btn")?.addEventListener("click", () => {
-    closeAppNavMenu();
-    const url = new URL(window.location.href);
-    url.searchParams.set("demo", "1");
-    url.hash = "";
-    window.location.assign(url.pathname + url.search + url.hash);
-  });
 
   document.addEventListener("click", (event) => {
     const btn = event.target.closest?.(".js-app-nav-btn");
@@ -7864,6 +7874,9 @@ window.onLanguageChange = () => {
   // Home (+ active non-home) only; inactive groups stay dirty until go()/flush.
   renderCoordinator.refreshLanguage();
   paintCloudChrome();
+  if (app.querySelector('[data-screen="manual"]')?.classList.contains("is-active")) {
+    paintManualScreen();
+  }
   if (DEMO_MODE && demoTourIndex >= 0) paintDemoTourStep();
   const activeScreen =
     app.querySelector(".screen.is-active")?.dataset.screen || "home";
