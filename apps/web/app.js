@@ -666,12 +666,25 @@ const petsGraphSlot = PetLiveWeb.storage.createJsonSlot({
   coalesceMs: 220,
 });
 
+function hasStoredPetsGraph() {
+  try {
+    return Boolean(localStorage.getItem(PETS_GRAPH_KEY));
+  } catch {
+    return false;
+  }
+}
+
 function hydratePetsGraphFromStorage() {
   if (DEMO_MODE) {
     pets.length = 0;
     archivedPets.length = 0;
     for (const pet of cloneSeedPets()) pets.push(pet);
     return pets[0]?.id || null;
+  }
+  if (!hasStoredPetsGraph()) {
+    pets.length = 0;
+    archivedPets.length = 0;
+    return null;
   }
   const data = petsGraphSlot.read();
   const nextPets = data.pets?.length ? data.pets : cloneSeedPets();
@@ -680,6 +693,18 @@ function hydratePetsGraphFromStorage() {
   for (const pet of nextPets) pets.push(pet);
   for (const pet of data.archivedPets || []) archivedPets.push(pet);
   return data.currentPetId || pets[0]?.id || null;
+}
+
+function loadSeedPetsIntoMemory() {
+  pets.length = 0;
+  archivedPets.length = 0;
+  for (const pet of cloneSeedPets()) pets.push(pet);
+  const nextId = pets[0]?.id || null;
+  if (nextId) {
+    currentPetId = nextId;
+    appState.setCurrentPetId(nextId);
+  }
+  return nextId;
 }
 
 function schedulePetsGraphPersist() {
@@ -7466,6 +7491,103 @@ let cloudBackupTimer = null;
 let lastCloudBackupAt = null;
 let cloudBusy = false;
 let suppressSyncMetaBump = false;
+let cloudReconcileState = "idle";
+let cloudReconcilePhase = "";
+let cloudSyncConflict = false;
+let cloudReconcileTimeout = null;
+
+function isSeedOnlyPets(petList) {
+  if (!petList?.length) return true;
+  if (petList.length !== SEED_PETS.length) return false;
+  for (let i = 0; i < SEED_PETS.length; i += 1) {
+    if (petList[i]?.id !== SEED_PETS[i]?.id) return false;
+  }
+  return true;
+}
+
+function isFreshDevice() {
+  if (hasStoredPetsGraph()) return false;
+  const meta = readSyncMeta();
+  return meta.localRevision === 0 && meta.lastSyncedRevision === 0;
+}
+
+function hasRealLocalData() {
+  const meta = readSyncMeta();
+  if (meta.localRevision > 0) return true;
+  if (hasStoredPetsGraph()) {
+    try {
+      const graph = JSON.parse(localStorage.getItem(PETS_GRAPH_KEY) || "{}");
+      if (graph?.pets?.length && !isSeedOnlyPets(graph.pets)) return true;
+    } catch {
+      /* ignore */
+    }
+  }
+  if (pets.length && !isSeedOnlyPets(pets)) return true;
+  return false;
+}
+
+function localCloudGraphFingerprint(petList) {
+  const first = petList?.[0];
+  return `${petList?.length || 0}:${first?.id || ""}`;
+}
+
+function cloudPayloadGraphFingerprint(payload) {
+  const petList = payload?.pets || [];
+  const first = petList[0];
+  return `${petList.length}:${first?.id || ""}`;
+}
+
+function hasCloudGraphConflict(payload) {
+  if (!payload?.pets?.length) return false;
+  if (isFreshDevice() || isSeedOnlyPets(pets)) return false;
+  if (!hasRealLocalData()) return false;
+  return (
+    localCloudGraphFingerprint(pets) !== cloudPayloadGraphFingerprint(payload)
+  );
+}
+
+function isCloudReconcileBusy() {
+  return cloudReconcileState === "running";
+}
+
+function setCloudReconcileState(next, { phase } = {}) {
+  cloudReconcileState = next;
+  cloudReconcilePhase = phase || "";
+  paintReconcileUi();
+}
+
+function paintReconcileUi() {
+  const bar = document.getElementById("cloud-reconcile-status");
+  if (!bar) return;
+  if (
+    !liveGoogleSignedIn() ||
+    cloudReconcileState === "idle" ||
+    cloudReconcileState === "done"
+  ) {
+    bar.hidden = true;
+    bar.textContent = "";
+    return;
+  }
+  bar.hidden = false;
+  if (cloudReconcileState === "running") {
+    bar.textContent =
+      cloudReconcilePhase === "restoring"
+        ? t("accountSyncRestoring")
+        : t("accountSyncChecking");
+  } else if (cloudReconcileState === "error") {
+    bar.textContent = t("accountSyncError");
+  }
+}
+
+function clearSeedPetsFromMemory() {
+  if (!pets.length) return;
+  if (!isSeedOnlyPets(pets)) return;
+  pets.length = 0;
+  archivedPets.length = 0;
+  currentPetId = null;
+  appState.setCurrentPetId(null);
+  applySelectedPet();
+}
 
 function emptySyncMeta() {
   return { localRevision: 0, lastSyncedRevision: 0, lastCloudUpdatedAt: null };
@@ -7534,40 +7656,94 @@ function markCloudSynced(cloudUpdatedAt) {
 
 function accountSyncStatusText() {
   if (!liveGoogleSignedIn()) return t("accountPlanLocal");
+  if (cloudReconcileState === "running") {
+    return cloudReconcilePhase === "restoring"
+      ? t("accountSyncRestoring")
+      : t("accountSyncChecking");
+  }
+  if (cloudReconcileState === "error") return t("accountSyncError");
+  if (cloudSyncConflict) return t("accountSyncConflict");
   if (isLocalDirty()) return t("accountSyncDirty");
   if (readSyncMeta().lastCloudUpdatedAt || lastCloudBackupAt) {
     return t("accountSyncOk");
   }
+  if (!hasRealLocalData()) return t("accountSyncFirstBackup");
   return t("accountSyncPending");
 }
 
 async function reconcileCloudOnBoot({ silent } = {}) {
   if (DEMO_MODE || !googleDriveAuth?.getSession?.().signedIn) return;
+  if (cloudReconcileTimeout) {
+    clearTimeout(cloudReconcileTimeout);
+    cloudReconcileTimeout = null;
+  }
+  cloudSyncConflict = false;
+  setCloudReconcileState("running", { phase: "checking" });
+  paintCloudChrome();
+
+  cloudReconcileTimeout = setTimeout(() => {
+    if (cloudReconcileState === "running") {
+      setCloudReconcileState("error");
+      paintCloudChrome();
+    }
+  }, 15000);
+
+  let didPull = false;
   try {
+    if (isFreshDevice() || isSeedOnlyPets(pets)) {
+      clearSeedPetsFromMemory();
+    }
+
     const payload = await googleDriveAuth.downloadJson();
     if (!payload) {
-      await pushCloudBackup({ silent: true });
+      if (hasRealLocalData()) {
+        await pushCloudBackup({ silent: true });
+      }
+      setCloudReconcileState("done");
       return;
     }
+
     if (isLocalDirty()) {
-      paintCloudChrome();
+      setCloudReconcileState("done");
       return;
     }
+
     const cloudAt = String(payload.updatedAt || "");
     const lastCloud = String(readSyncMeta().lastCloudUpdatedAt || "");
-    if (cloudAt && (!lastCloud || cloudAt > lastCloud)) {
+    const cloudNewer = cloudAt && (!lastCloud || cloudAt > lastCloud);
+
+    if (hasCloudGraphConflict(payload) && !cloudNewer) {
+      cloudSyncConflict = true;
+      setCloudReconcileState("done");
+      return;
+    }
+
+    if (cloudNewer) {
+      setCloudReconcileState("running", { phase: "restoring" });
+      paintCloudChrome();
       suppressSyncMetaBump = true;
       try {
         applyCloudPayload(payload);
         markCloudSynced(cloudAt);
         lastCloudBackupAt = Date.now();
+        didPull = true;
         if (!silent) showToast(t("cloudRestoreOk"));
       } finally {
         suppressSyncMetaBump = false;
       }
     }
-    paintCloudChrome();
+
+    setCloudReconcileState("done");
   } catch {
+    setCloudReconcileState("error");
+  } finally {
+    if (cloudReconcileTimeout) {
+      clearTimeout(cloudReconcileTimeout);
+      cloudReconcileTimeout = null;
+    }
+    if (didPull || cloudReconcileState === "done") {
+      applySelectedPet();
+    }
     paintCloudChrome();
   }
 }
@@ -7744,8 +7920,20 @@ function paintAccountMenu(session) {
 
   const popSyncBtn = document.getElementById("account-popover-edit");
   const popRestoreBtn = document.getElementById("account-popover-restore");
-  if (popSyncBtn) popSyncBtn.hidden = !signedIn;
-  if (popRestoreBtn) popRestoreBtn.hidden = !signedIn;
+  const conflictHint = document.getElementById("account-popover-conflict-hint");
+  const busy = isCloudReconcileBusy();
+  if (popSyncBtn) {
+    popSyncBtn.hidden = !signedIn;
+    popSyncBtn.disabled = busy;
+  }
+  if (popRestoreBtn) {
+    popRestoreBtn.hidden = !signedIn;
+    popRestoreBtn.disabled = busy;
+  }
+  if (conflictHint) {
+    conflictHint.hidden = !cloudSyncConflict || busy;
+    conflictHint.textContent = cloudSyncConflict ? t("accountSyncConflictHint") : "";
+  }
 
   setAccountAvatar(popAvatar, popFallback, picture, initial);
 }
@@ -7762,6 +7950,7 @@ function paintCloudChrome() {
   const originHint = document.getElementById("intro-origin-hint");
 
   paintAccountMenu(session);
+  paintReconcileUi();
 
   if (loginBtn) loginBtn.hidden = Boolean(session.signedIn);
   if (account) account.hidden = !session.signedIn;
@@ -7822,12 +8011,18 @@ async function pushCloudBackup({ silent } = {}) {
     return false;
   }
   if (cloudBusy) return false;
+  if (!hasRealLocalData()) {
+    if (!silent) showToast(t("accountSyncFirstBackup"));
+    paintCloudChrome();
+    return false;
+  }
   cloudBusy = true;
   try {
     const payload = buildCloudPayload();
     await googleDriveAuth.uploadJson(payload);
     lastCloudBackupAt = Date.now();
     markCloudSynced(payload.updatedAt);
+    cloudSyncConflict = false;
     if (!silent) {
       setIntroStatus(t("cloudBackupOk"));
       showToast(t("cloudBackupOk"));
@@ -7859,6 +8054,7 @@ async function pullCloudBackup({ silent } = {}) {
       suppressSyncMetaBump = false;
     }
     lastCloudBackupAt = Date.now();
+    cloudSyncConflict = false;
     if (!silent) showToast(t("cloudRestoreOk"));
     paintCloudChrome();
     return true;
@@ -7896,6 +8092,9 @@ async function handleGoogleSignIn({ enterApp } = {}) {
       Promise.resolve()
         .then(async () => {
           try {
+            if (isFreshDevice() || isSeedOnlyPets(pets)) {
+              clearSeedPetsFromMemory();
+            }
             await reconcileCloudOnBoot({ silent: true });
           } catch {
             /* Drive may need explicit Sync later; do not re-prompt here */
@@ -8016,6 +8215,7 @@ function initIntroAndCloud() {
 
   accountPopoverSettings?.addEventListener("click", openOwnerSettingsFromAccount);
   accountPopoverSync?.addEventListener("click", async () => {
+    if (isCloudReconcileBusy()) return;
     closeAccountMenu();
     try {
       await googleDriveAuth?.ensureDriveAccess?.();
@@ -8026,6 +8226,7 @@ function initIntroAndCloud() {
     await pushCloudBackup({ silent: false });
   });
   accountPopoverRestore?.addEventListener("click", async () => {
+    if (isCloudReconcileBusy()) return;
     if (!window.confirm(t("accountRestoreConfirm"))) return;
     closeAccountMenu();
     try {
@@ -8100,6 +8301,14 @@ function initIntroAndCloud() {
 
   if (!DEMO_MODE && googleDriveAuth?.getSession?.().signedIn) {
     reconcileCloudOnBoot({ silent: true });
+  } else if (
+    !DEMO_MODE &&
+    !googleDriveAuth?.getSession?.().signedIn &&
+    !pets.length &&
+    !hasStoredPetsGraph()
+  ) {
+    loadSeedPetsIntoMemory();
+    applySelectedPet();
   }
 }
 

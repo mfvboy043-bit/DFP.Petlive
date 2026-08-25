@@ -5191,6 +5191,30 @@ html.is-photo-crop-open body {
   background: rgba(40, 36, 32, 0.04);
 }
 
+.account-popover-edit:disabled,
+.account-popover-restore:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.cloud-reconcile-status {
+  margin: 0 16px 10px;
+  padding: 10px 12px;
+  border-radius: 10px;
+  background: rgba(53, 95, 84, 0.1);
+  color: #355f54;
+  font-size: 13px;
+  font-weight: 600;
+  text-align: center;
+}
+
+.account-popover-conflict-hint {
+  margin: 8px 0 0;
+  font-size: 12px;
+  line-height: 1.45;
+  color: rgba(40, 36, 32, 0.62);
+}
+
 .account-popover-plan {
   padding: 16px 16px 8px;
 }

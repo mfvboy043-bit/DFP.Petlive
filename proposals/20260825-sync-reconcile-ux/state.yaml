@@ -1,0 +1,30 @@
+id: 20260825-sync-reconcile-ux
+title: "換機／首次登入同步 UX + 三態衝突防護"
+version: 2
+status: candidate_ready
+
+gate_a:
+  status: approved
+
+gate_b:
+  status: pending
+
+iteration: 0
+max_iterations: 3
+
+candidate:
+  branch: "proposal/sync-reconcile-ux"
+  path: "proposals/20260825-sync-reconcile-ux"
+  worktree: ""
+
+reviews:
+  pharmacist: skipped
+  qa: pending
+  ui: pending
+  arbiter: pending
+
+rerun: []
+blocking_issues: []
+non_blocking: []
+builder_scope: []
+halt_reason: ""

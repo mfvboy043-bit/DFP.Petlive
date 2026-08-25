@@ -7515,6 +7515,14 @@ function positionAccountPopover(anchorChip) {
   popover.style.right = "auto";
 }
 
+function paintReconcileUi() {
+  const bar = document.getElementById("cloud-reconcile-status");
+  if (bar) {
+    bar.hidden = true;
+    bar.textContent = "";
+  }
+}
+
 function paintAccountMenu(session) {
   const ownerBtn = document.getElementById("owner-settings-btn");
   const homeMenu = document.getElementById("account-menu");
@@ -7566,8 +7574,16 @@ function paintAccountMenu(session) {
 
   const popSyncBtn = document.getElementById("account-popover-edit");
   const popRestoreBtn = document.getElementById("account-popover-restore");
-  if (popSyncBtn) popSyncBtn.hidden = !signedIn;
-  if (popRestoreBtn) popRestoreBtn.hidden = !signedIn;
+  const conflictHint = document.getElementById("account-popover-conflict-hint");
+  if (popSyncBtn) {
+    popSyncBtn.hidden = !signedIn;
+    popSyncBtn.disabled = false;
+  }
+  if (popRestoreBtn) {
+    popRestoreBtn.hidden = !signedIn;
+    popRestoreBtn.disabled = false;
+  }
+  if (conflictHint) conflictHint.hidden = true;
 
   setAccountAvatar(popAvatar, popFallback, picture, initial);
 }
@@ -7584,6 +7600,7 @@ function paintCloudChrome() {
   const originHint = document.getElementById("intro-origin-hint");
 
   paintAccountMenu(session);
+  paintReconcileUi();
 
   if (loginBtn) loginBtn.hidden = Boolean(session.signedIn);
   if (account) account.hidden = !session.signedIn;
