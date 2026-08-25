@@ -2341,6 +2341,31 @@ function fillParasiteScreen(pet) {
   }
 }
 
+function paintParasiteStripRowEmpty(kind) {
+  const row = document.getElementById(`parasite-row-${kind}`);
+  const meta = document.getElementById(`parasite-meta-${kind}`);
+  const statusEl = document.getElementById(`parasite-status-${kind}`);
+  if (!row || !meta || !statusEl) return;
+  row.classList.remove(
+    "is-protected",
+    "is-approaching",
+    "is-unprotected",
+    "is-optional"
+  );
+  row.classList.add("is-unprotected");
+  meta.textContent =
+    kind === "vaccine" ? t("vaccineNotSet") : t("parasiteNotSet");
+  statusEl.textContent = t("parasiteUnprotected");
+}
+
+/** No pet (or shell only): same CTA cues as unset records on a pet. */
+function paintParasiteStripEmpty() {
+  if (!document.getElementById("parasite-strip")) return;
+  paintParasiteStripRowEmpty("vaccine");
+  paintParasiteStripRowEmpty("external");
+  paintParasiteStripRowEmpty("heartworm");
+}
+
 function renderParasiteStrip(pet) {
   ensureParasitePrevention(pet);
   PARASITE_KINDS.forEach((kind) => {
@@ -2399,9 +2424,7 @@ function renderVaccineStrip(pet) {
 
   const nextVaccine = getNextVaccine(pet);
   if (!nextVaccine) {
-    row.classList.add("is-unprotected");
-    meta.textContent = t("vaccineNotSet");
-    statusEl.textContent = t("parasiteUnprotected");
+    paintParasiteStripRowEmpty("vaccine");
     return;
   }
 
@@ -4446,14 +4469,7 @@ renderCoordinator.register("home", "petHeader", (pet) => {
 });
 renderCoordinator.register("home", "parasiteStrip", (pet) => {
   if (pet) renderParasiteStrip(pet);
-  else if (document.getElementById("parasite-strip")) {
-    ["vaccine", "external", "internal"].forEach((kind) => {
-      const meta = document.getElementById(`parasite-meta-${kind}`);
-      const status = document.getElementById(`parasite-status-${kind}`);
-      if (meta) meta.textContent = "—";
-      if (status) status.textContent = "";
-    });
-  }
+  else paintParasiteStripEmpty();
 });
 renderCoordinator.register(
   "home",
