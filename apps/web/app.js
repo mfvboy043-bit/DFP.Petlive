@@ -2830,6 +2830,7 @@ function vaccineStatusForNext(next) {
 function syncVaccineNextDueFromGiven() {
   if (!vaccineGivenInput.value) return;
   vaccineNextDueInput.value = addYears(vaccineGivenInput.value, 1);
+  syncDateProxies(vaccineForm || document);
 }
 
 function resetVaccineForm(pet) {
@@ -2837,6 +2838,7 @@ function resetVaccineForm(pet) {
   fillVaccineNameOptions(pet);
   vaccineGivenInput.value = todayISODate();
   syncVaccineNextDueFromGiven();
+  syncDateProxies(vaccineForm || document);
 }
 
 let vaccineFormPetId = null;
@@ -2862,6 +2864,7 @@ function refreshVaccineForm(pet) {
   if (vaccineCustomName) vaccineCustomName.value = draft.customName;
   vaccineGivenInput.value = draft.given;
   vaccineNextDueInput.value = draft.nextDue;
+  syncDateProxies(vaccineForm || document);
 }
 
 function renderVaccineList(pet) {
