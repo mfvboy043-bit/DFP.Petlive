@@ -1,0 +1,39 @@
+id: 20260825-design-surface-c
+title: "A／B／C 分層：討論用 C 復刻、確認後覆蓋 B"
+version: 2
+status: adopted
+# proposed | building | reviewing | revising | candidate_ready | halted | adopted | rejected
+
+gate_a:
+  status: approved
+  # pending | approved | modified | rejected
+
+gate_b:
+  status: adopted
+  # pending | adopted | rejected
+
+iteration: 1
+max_iterations: 3
+
+candidate:
+  branch: "proposal/design-surface-c"
+  path: "proposals/20260825-design-surface-c"
+  worktree: ""
+  surface: "apps/web/c"
+  # Adopted: C UI covered into apps/web/ (B) on 2026-08-25
+
+reviews:
+  pharmacist: skipped
+  qa: pass
+  ui: conditional
+  arbiter: conditional
+  # pending | skipped | pass | conditional | reject
+
+rerun: []
+blocking_issues: []
+non_blocking:
+  - UI-001
+  - UI-002
+  - UI-003
+builder_scope: []
+halt_reason: ""

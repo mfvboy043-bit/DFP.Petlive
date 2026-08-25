@@ -1,0 +1,42 @@
+id: 20260825-account-menu
+title: "登入後頂欄 Google 帳號 chip + 登出 popover"
+version: 2
+status: candidate_ready
+# proposed | building | reviewing | revising | candidate_ready | halted | adopted | rejected
+
+gate_a:
+  status: approved
+  # pending | approved | modified | rejected
+
+gate_b:
+  status: pending
+  # pending | adopted | rejected
+
+iteration: 1
+max_iterations: 3
+
+candidate:
+  branch: "proposal/account-menu"
+  path: "proposals/20260825-account-menu"
+  worktree: ""
+
+reviews:
+  pharmacist: skipped
+  qa: conditional
+  ui: conditional
+  arbiter: candidate_ready
+  # pending | skipped | pass | conditional | reject
+
+rerun: []
+blocking_issues: []
+non_blocking:
+  - QA-001
+  - QA-002
+  - QA-003
+  - UI-001
+  - UI-002
+  - UI-003
+  - UI-004
+  - UI-005
+builder_scope: []
+halt_reason: ""

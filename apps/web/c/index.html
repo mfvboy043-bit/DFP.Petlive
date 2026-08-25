@@ -7,13 +7,20 @@
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="default" />
   <meta name="format-detection" content="telephone=no" />
-  <title>火龍果護照 · Dragon Fruit Passport</title>
+  <title>火龍果護照 · C 討論版</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,700&family=Noto+Sans+TC:wght@400;500;700&family=Noto+Serif+TC:wght@600;700&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="./styles.css?v=20260825-a-to-b" />
+  <link rel="stylesheet" href="./styles.css?v=20260825-alert-break" />
 </head>
 <body>
+  <div
+    class="surface-c-banner"
+    role="status"
+    aria-label="C discussion surface · Design draft"
+  >
+    C · 討論版
+  </div>
   <div class="atmosphere" aria-hidden="true">
     <div class="blob blob-a"></div>
     <div class="blob blob-b"></div>
@@ -21,69 +28,8 @@
   </div>
 
   <div class="app" id="app">
-    <!-- INTRO / LANDING (A) — default entry; Google login → B -->
-    <section class="screen screen-intro is-active" data-screen="intro" data-i18n-aria="introTitle" aria-label="介紹">
-      <header class="intro-topbar">
-        <p class="brand-mark" data-i18n="brandMark">Dragon Fruit Passport</p>
-        <div class="intro-topbar-actions">
-          <button class="intro-login-btn" type="button" id="intro-login-btn">
-            <span class="intro-login-g" aria-hidden="true">
-              <svg viewBox="0 0 24 24" width="18" height="18" focusable="false" aria-hidden="true">
-                <!-- Google “G” brand colors (blue / green / yellow / red) -->
-                <path
-                  fill="#4285F4"
-                  d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
-                />
-                <path
-                  fill="#34A853"
-                  d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"
-                />
-                <path
-                  fill="#FBBC05"
-                  d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"
-                />
-                <path
-                  fill="#EA4335"
-                  d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"
-                />
-              </svg>
-            </span>
-            <span data-i18n="login">登入</span>
-          </button>
-          <div class="intro-account" id="intro-account" hidden>
-            <img class="intro-avatar" id="intro-avatar" alt="" width="28" height="28" />
-            <button class="btn btn-ghost btn-small intro-logout-btn" type="button" id="intro-logout-btn" data-i18n="logout">
-              登出
-            </button>
-          </div>
-        </div>
-      </header>
-
-      <div class="intro-hero">
-        <div class="intro-copy">
-          <p class="intro-eyebrow" data-i18n="introEyebrow">飼主持有的寵物健康護照</p>
-          <h1 class="brand-zh" data-i18n="brand">火龍果護照</h1>
-          <p class="lede intro-lede" data-i18n-html="introLede">
-            紀錄留在你這邊。登入 Google，可把備份寫進<strong>你的</strong>雲端硬碟——不是我們的伺服器。<br />
-            僅供參考，不取代獸醫診斷。
-          </p>
-          <p class="intro-status" id="intro-status" role="status"></p>
-          <p class="intro-origin-hint" id="intro-origin-hint" hidden></p>
-        </div>
-        <img
-          class="intro-mascot"
-          src="./assets/mascot-dragonfruit.webp?v=20260819-standing"
-          width="662"
-          height="1015"
-          alt=""
-          decoding="async"
-          aria-hidden="true"
-        />
-      </div>
-    </section>
-
-    <!-- HOME / MAIN APP (B) — after Google login -->
-    <section class="screen" data-screen="home" data-i18n-aria="home" aria-label="首頁" hidden>
+    <!-- HOME / MAIN APP (C discussion replica of B) -->
+    <section class="screen is-active" data-screen="home" data-i18n-aria="home" aria-label="首頁">
       <header class="topbar">
         <p class="brand-mark" data-i18n="brandMark">Dragon Fruit Passport</p>
         <div class="topbar-actions">
@@ -123,7 +69,7 @@
               </span>
             </button>
           </div>
-          <div class="account-menu" id="account-menu" hidden>
+          <div class="account-menu" id="account-menu">
             <button
               class="account-chip js-account-chip"
               type="button"
@@ -155,6 +101,7 @@
             data-i18n-title="ownerSettingsTitle"
             aria-label="飼主設定"
             title="飼主設定"
+            hidden
           >
             <span class="settings-btn-ico" aria-hidden="true">
               <svg viewBox="0 0 24 24" width="18" height="18" focusable="false">
@@ -183,7 +130,7 @@
           </div>
           <img
             class="hero-mascot"
-            src="./assets/mascot-dragonfruit.webp?v=20260819-standing"
+            src="../assets/mascot-dragonfruit.webp?v=20260819-standing"
             width="662"
             height="1015"
             alt=""
@@ -995,8 +942,9 @@
         </div>
       </header>
 
-      <p class="field-hint alert-disclaimer" data-i18n="alertsDisclaimer">
-        飼主自訂內容僅供急診參考，非醫院確診紀錄。用藥反應請遵照獸醫師指示。
+      <p class="field-hint alert-disclaimer" data-i18n-html="alertsDisclaimer">
+        飼主自訂內容僅供急診參考，非醫院確診紀錄。<br />
+        <span class="alert-disclaimer-vet">用藥請遵照獸醫師指示。</span>
       </p>
 
       <div class="alert-sections" id="alert-sections"></div>
@@ -1693,18 +1641,17 @@
     <button type="button" class="lang-fab" id="lang-fab" aria-expanded="false" aria-haspopup="true">中</button>
   </div>
 
-    <!-- module + defer share parse-order: PetLive is ready before app.js -->
-  <script defer src="./config.public.js?v=20260824-client-id"></script>
-  <script defer src="./auth/google-drive.js?v=20260825-one-popup"></script>
-  <script type="module" src="./runtime/petlive.js?v=20260824-drug-seed-dedupe"></script>
-  <script defer src="./runtime/safe-ui.js?v=20260812-local-first"></script>
-  <script defer src="./i18n.js?v=20260825-c-to-b"></script>
-  <script defer src="./breeds-database.js?v=20260812-local-first"></script>
-  <script defer src="./core/storage.js?v=20260824-perf-adopt"></script>
-  <script defer src="./core/state.js?v=20260813-layered-adopted"></script>
-  <script defer src="./shell/navigation.js?v=20260813-layered-adopted"></script>
-  <script defer src="./shell/render-coordinator.js?v=20260824-perf-adopt"></script>
-  <script defer src="./domains/pets/controller.js?v=20260813-layered-adopted"></script>
-  <script defer src="./app.js?v=20260825-a-to-b"></script>
+  <!-- C: no Google auth (discussion surface) -->
+  <!-- module + defer share parse-order: PetLive is ready before app.js -->
+  <script type="module" src="../runtime/petlive.js?v=20260824-drug-seed-dedupe"></script>
+  <script defer src="../runtime/safe-ui.js?v=20260812-local-first"></script>
+  <script defer src="./i18n.js?v=20260825-alert-break"></script>
+  <script defer src="../breeds-database.js?v=20260812-local-first"></script>
+  <script defer src="../core/storage.js?v=20260824-perf-adopt"></script>
+  <script defer src="../core/state.js?v=20260813-layered-adopted"></script>
+  <script defer src="../shell/navigation.js?v=20260813-layered-adopted"></script>
+  <script defer src="../shell/render-coordinator.js?v=20260824-perf-adopt"></script>
+  <script defer src="../domains/pets/controller.js?v=20260813-layered-adopted"></script>
+  <script defer src="./app.js?v=20260825-glass-head-remaining"></script>
 </body>
 </html>
