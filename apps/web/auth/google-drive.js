@@ -7,7 +7,6 @@
   const TOKEN_KEY = "petlive-google-token";
   const PROFILE_KEY = "petlive-google-profile";
 
-  let identityTokenClient = null;
   let driveTokenClient = null;
   let gisReady = null;
   let listeners = new Set();
@@ -28,17 +27,10 @@
     return cfg().driveFileName || "petlive-passport.json";
   }
 
-  function identityScopes() {
-    return "openid email profile";
-  }
-
-  function driveScope() {
-    return "https://www.googleapis.com/auth/drive.file";
-  }
-
   function allScopes() {
     return (
-      cfg().googleScopes || `${identityScopes()} ${driveScope()}`
+      cfg().googleScopes ||
+      "openid email profile https://www.googleapis.com/auth/drive.file"
     );
   }
 
@@ -134,20 +126,6 @@
     return gisReady;
   }
 
-  async function ensureIdentityClient() {
-    const id = clientId();
-    if (!id) throw new Error("missing_client_id");
-    await loadGis();
-    if (!identityTokenClient) {
-      identityTokenClient = global.google.accounts.oauth2.initTokenClient({
-        client_id: id,
-        scope: identityScopes(),
-        callback: () => {},
-      });
-    }
-    return identityTokenClient;
-  }
-
   async function ensureDriveClient() {
     const id = clientId();
     if (!id) throw new Error("missing_client_id");
@@ -228,15 +206,14 @@
   }
 
   /**
-   * What'Sub-like: account chooser with identity scopes only.
-   * Drive is requested later (settings sync / background) so login isn't blocked.
+   * One GIS popup: account chooser + Drive (if needed) in a single token request.
+   * Do not chain a second requestAccessToken after this — that causes extra popups on mobile.
    */
   async function signIn() {
     const token = await requestTokenFrom(
-      ensureIdentityClient(),
+      ensureDriveClient(),
       "select_account"
     );
-    // Token is enough to enter the app; profile is best-effort chrome.
     try {
       await fetchProfile(token.access_token);
     } catch {
@@ -246,6 +223,7 @@
     return getSession();
   }
 
+  /** Explicit Drive re-auth (owner-settings Sync). Avoid calling from silent backup. */
   async function ensureDriveAccess() {
     await requestTokenFrom(ensureDriveClient(), "");
     notify();
@@ -266,31 +244,35 @@
     notify();
   }
 
-  async function ensureAccessToken() {
-    let token = readStoredToken();
-    if (token?.access_token) {
-      // Prefer a token that can talk to Drive; refresh silently if possible.
+  /**
+   * @param {{ interactive?: boolean }} [opts]
+   * interactive:false (default) — never open a popup; use stored token only.
+   */
+  async function ensureAccessToken(opts = {}) {
+    const interactive = Boolean(opts.interactive);
+    const token = readStoredToken();
+    if (token?.access_token) return token.access_token;
+    if (!interactive) throw new Error("not_signed_in");
+    const next = await requestTokenFrom(ensureDriveClient(), "select_account");
+    if (!readProfile()) {
       try {
-        await requestTokenFrom(ensureDriveClient(), "");
-        token = readStoredToken();
+        await fetchProfile(next.access_token);
       } catch {
-        /* keep identity token */
+        /* ignore */
       }
-      return token.access_token;
     }
-    token = await requestTokenFrom(ensureDriveClient(), "select_account");
-    if (!readProfile()) await fetchProfile(token.access_token);
     notify();
-    return token.access_token;
+    return next.access_token;
   }
 
   async function driveFetch(path, options = {}) {
-    const accessToken = await ensureAccessToken();
+    const { interactive = false, ...fetchOptions } = options;
+    const accessToken = await ensureAccessToken({ interactive: Boolean(interactive) });
     const res = await fetch(`${DRIVE_API}${path}`, {
-      ...options,
+      ...fetchOptions,
       headers: {
         Authorization: `Bearer ${accessToken}`,
-        ...(options.headers || {}),
+        ...(fetchOptions.headers || {}),
       },
     });
     if (res.status === 401) {

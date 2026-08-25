@@ -7489,20 +7489,23 @@ async function handleGoogleSignIn({ enterApp } = {}) {
       t("cloudSignedInAs", { email: session.profile?.email || "" })
     );
     paintCloudChrome();
-    // Enter app immediately — don't block on Drive backup.
+    // Enter app immediately after the single login popup.
     if (enterApp !== false) {
       enterAppFromIntro();
     }
-    // Background restore/backup. Drive consent may appear once if not granted yet.
+    // Silent backup only — never opens another Google popup.
     window.setTimeout(() => {
       Promise.resolve()
         .then(async () => {
-          const restored = await pullCloudBackup();
-          if (!restored) await pushCloudBackup({ silent: true });
+          try {
+            const restored = await pullCloudBackup();
+            if (!restored) await pushCloudBackup({ silent: true });
+          } catch {
+            /* Drive may need explicit Sync later; do not re-prompt here */
+          }
           paintCloudChrome();
         })
         .catch(() => {
-          showToast(t("cloudBackupFail"));
           paintCloudChrome();
         });
     }, 400);
@@ -7568,6 +7571,12 @@ function initIntroAndCloud() {
     handleGoogleSignIn({ enterApp: false });
   });
   settingsSync?.addEventListener("click", async () => {
+    try {
+      await googleDriveAuth.ensureDriveAccess?.();
+    } catch {
+      showToast(t("cloudBackupFail"));
+      return;
+    }
     await pushCloudBackup({ silent: false });
   });
   settingsLogout?.addEventListener("click", doSignOut);
