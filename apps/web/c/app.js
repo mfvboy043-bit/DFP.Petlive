@@ -4593,6 +4593,24 @@ function readPetIdentityFromForm(form) {
   };
 }
 
+/** Keep visible date faces in sync; native type=date stays for iOS picker + form values. */
+function syncDateProxies(root = document) {
+  root.querySelectorAll(".date-proxy").forEach((proxy) => {
+    const native = proxy.querySelector("input.date-proxy-native, input[type='date']");
+    const face = proxy.querySelector("input.date-proxy-face");
+    if (!native || !face) return;
+    const sync = () => {
+      face.value = native.value || "";
+    };
+    if (proxy.dataset.proxyBound !== "1") {
+      native.addEventListener("input", sync);
+      native.addEventListener("change", sync);
+      proxy.dataset.proxyBound = "1";
+    }
+    sync();
+  });
+}
+
 function createPetFromForm(form) {
   return {
     id: `p${Date.now()}`,
@@ -4638,6 +4656,7 @@ function fillPetFormFromPet(pet) {
   form.weight.value = pet.weight ?? "";
   form.weightDate.value = pet.weightDate || todayISODate();
   form.chipNumber.value = pet.chipNumber || "";
+  syncDateProxies(form);
   syncBreedFields({ keepSelection: false });
   const breedKey = pet.breedKey || "";
   if (pet.species === "other" || breedKey === BREED_CUSTOM_VALUE) {
@@ -4662,6 +4681,7 @@ function openCreatePetForm() {
   form.reset();
   form.weightDate.value = todayISODate();
   form.birthDate.value = "";
+  syncDateProxies(form);
   syncBreedFields();
   paintPetFormMode();
   go("add-pet");
@@ -7916,6 +7936,7 @@ enhanceGlassScreenHeads();
 applyI18n();
 initAppNavMenu();
 initIntroAndCloud();
+syncDateProxies();
 
 PetLiveWeb.metrics = {
   getSnapshot() {

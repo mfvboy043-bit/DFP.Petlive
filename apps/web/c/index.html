@@ -11,7 +11,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,700&family=Noto+Sans+TC:wght@400;500;700&family=Noto+Serif+TC:wght@600;700&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="./styles.css?v=20260825-nav-dashed" />
+  <link rel="stylesheet" href="./styles.css?v=20260825-add-pet-fields" />
 </head>
 <body>
   <div
@@ -423,10 +423,25 @@
           </label>
         </div>
 
-        <label class="field">
-          <span data-i18n="birthDate">出生日期</span>
-          <input type="date" name="birthDate" required />
-        </label>
+        <div class="field-row">
+          <label class="field">
+            <span data-i18n="birthDate">出生日期</span>
+            <span class="date-proxy">
+              <input type="text" class="date-proxy-face" readonly tabindex="-1" aria-hidden="true" placeholder="YYYY-MM-DD" />
+              <input type="date" name="birthDate" class="date-proxy-native" required />
+            </span>
+          </label>
+          <label class="field">
+            <span data-i18n="chipOptional">晶片號碼（選填）</span>
+            <input
+              type="text"
+              name="chipNumber"
+              data-i18n-placeholder="chipPlaceholder"
+              placeholder="若有晶片可填寫"
+              maxlength="30"
+            />
+          </label>
+        </div>
 
         <div class="field-row">
           <label class="field">
@@ -435,20 +450,12 @@
           </label>
           <label class="field">
             <span data-i18n="weightDate">體重紀錄日</span>
-            <input type="date" name="weightDate" required />
+            <span class="date-proxy">
+              <input type="text" class="date-proxy-face" readonly tabindex="-1" aria-hidden="true" placeholder="YYYY-MM-DD" />
+              <input type="date" name="weightDate" class="date-proxy-native" required />
+            </span>
           </label>
         </div>
-
-        <label class="field">
-          <span data-i18n="chipOptional">晶片號碼（選填）</span>
-          <input
-            type="text"
-            name="chipNumber"
-            data-i18n-placeholder="chipPlaceholder"
-            placeholder="若有晶片可填寫"
-            maxlength="30"
-          />
-        </label>
 
         <div class="form-actions">
           <button class="btn btn-primary" type="submit" id="pet-form-submit" data-i18n="createPet">建立寵物</button>
@@ -1651,6 +1658,6 @@
   <script defer src="../shell/navigation.js?v=20260813-layered-adopted"></script>
   <script defer src="../shell/render-coordinator.js?v=20260824-perf-adopt"></script>
   <script defer src="../domains/pets/controller.js?v=20260813-layered-adopted"></script>
-  <script defer src="./app.js?v=20260825-allow-empty-pets"></script>
+  <script defer src="./app.js?v=20260825-add-pet-fields"></script>
 </body>
 </html>

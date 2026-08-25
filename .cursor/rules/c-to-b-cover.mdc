@@ -1,0 +1,33 @@
+---
+description: Surface C discussion drafts must only cover onto formal B after Victor confirms
+alwaysApply: true
+---
+
+# C → B cover (confirm first)
+
+## Surfaces
+
+| Surface | Path | Role |
+|---------|------|------|
+| **A** | `apps/web/` intro | Formal login / landing |
+| **B** | `apps/web/` passport | Formal product (Pages) |
+| **C** | `apps/web/c/` | Discussion / experiment replica — separate `petlive-c-*` storage, no Google auth scripts |
+
+## Standing agreement (Victor)
+
+1. **Iterate on C** for design / UI discussion when that is the working surface.
+2. **C changes are not live B.** Editing `apps/web/c/` alone does **not** update formal B or Pages A/B.
+3. **Cover C → B only after Victor confirms** (e.g. 覆蓋 / 覆蓋到 B / cover to B / 採用到正式版). Do **not** silently copy C into `apps/web/` root (B) “to keep them in sync.”
+4. After a confirmed cover: mirror the agreed C deltas onto B (`index.html` / `app.js` / `styles.css` / `i18n.js` as needed), restore B-only pieces C deliberately omits (Google auth, formal storage keys, intro A wiring), bump cache `?v=`, then follow **auto-publish-pages** for A/B.
+
+## What AI must do
+
+- When Victor asks for a UI tweak while on C (or points at `apps/web/c/`), **default to editing C only**, then **ask whether to cover onto B** — do not assume.
+- When covering: list what will be copied vs left B-only; wait for confirm if scope is unclear.
+- Tiny in-chat fixes Victor explicitly scopes to B (or “兩邊都改”) may touch B directly without a full Self-Iteration loop; still do not invent a cover.
+
+## What AI must not do
+
+- Auto-sync every C edit into B
+- Cover C → B because “they should match” without Victor’s go-ahead
+- Drop B’s auth / `petlive-*` keys / intro when applying a C cover

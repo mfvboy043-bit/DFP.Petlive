@@ -1596,6 +1596,15 @@ select:focus {
   min-width: 0;
 }
 
+/* Unified control height inside add-pet pairs */
+#pet-form .field-row select,
+#pet-form .field-row input,
+#pet-form .field-row .date-proxy-face {
+  min-height: 50px;
+  height: 50px;
+  box-sizing: border-box;
+}
+
 /* iOS/WebKit date controls have a large intrinsic min-width */
 input[type="date"],
 input[type="time"],
@@ -1607,6 +1616,54 @@ input[type="week"] {
   min-width: 0;
   max-width: 100%;
   box-sizing: border-box;
+}
+
+/*
+  iOS Safari: native date inputs ignore max-width in half columns.
+  Show a normal text face; overlay a transparent date input for the picker.
+*/
+.date-proxy {
+  position: relative;
+  display: block;
+  width: 100%;
+  min-width: 0;
+  max-width: 100%;
+  overflow: hidden;
+}
+
+.date-proxy-face {
+  display: block;
+  width: 100%;
+  min-width: 0;
+  max-width: 100%;
+  pointer-events: none;
+}
+
+.date-proxy-native {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  width: 100% !important;
+  min-width: 0 !important;
+  max-width: 100% !important;
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  border: 0 !important;
+  border-radius: var(--r-sm);
+  opacity: 0.01;
+  background: transparent !important;
+  box-shadow: none !important;
+  color: transparent;
+  -webkit-appearance: none;
+  appearance: none;
+  cursor: pointer;
+}
+
+.date-proxy:focus-within .date-proxy-face {
+  border-color: #8fb5a0;
+  box-shadow: 0 0 0 4px rgba(61, 107, 87, 0.08);
+  background: white;
 }
 
 #alert-since-field,
@@ -7045,6 +7102,56 @@ html.is-proof-lightbox-open body {
 
   .field-row {
     grid-template-columns: 1fr;
+  }
+
+  /* Pet form: keep paired rows side-by-side on phone (match formal B / screenshot) */
+  #pet-form .field-row,
+  .screen[data-screen="add-pet"] .field-row {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px;
+    overflow-x: clip;
+  }
+
+  #pet-form .field-row .field,
+  .screen[data-screen="add-pet"] .field-row .field {
+    min-width: 0;
+    max-width: 100%;
+    overflow-x: clip;
+  }
+
+  #pet-form .field-row select,
+  #pet-form .field-row input,
+  #pet-form .field-row .date-proxy-face,
+  .screen[data-screen="add-pet"] .field-row select,
+  .screen[data-screen="add-pet"] .field-row input,
+  .screen[data-screen="add-pet"] .field-row .date-proxy-face {
+    width: 100%;
+    min-width: 0;
+    max-width: 100%;
+    min-height: var(--tap);
+    height: var(--tap);
+    box-sizing: border-box;
+  }
+
+  .date-proxy,
+  .date-proxy-face {
+    min-height: var(--tap);
+  }
+
+  .date-proxy-native {
+    min-height: 0 !important;
+    height: 100% !important;
+  }
+
+  /* Date in half column: shrink past WebKit intrinsic floor */
+  #pet-form .field-row input[type="date"],
+  .screen[data-screen="add-pet"] .field-row input[type="date"] {
+    width: 0;
+    min-width: 100%;
+    max-width: 100%;
+    padding-inline: 8px;
+    overflow: hidden;
+    -webkit-min-logical-width: 0;
   }
 
   .vaccine-form .field-row,

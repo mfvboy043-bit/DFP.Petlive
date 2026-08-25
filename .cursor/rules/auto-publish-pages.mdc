@@ -10,7 +10,7 @@ Victor (2026-08-25): After iterating the **formal** surfaces **A** (intro/login)
 ## When to publish
 
 - Changes that land on formal `apps/web/` (index/app/styles/i18n/auth/config used by A or B)
-- After covering C → B, or any A↔B wiring / login / chrome fix meant for the live site
+- After covering C → B **(only when Victor confirmed cover)** , or any A↔B wiring / login / chrome fix meant for the live site
 
 ## When not required
 
