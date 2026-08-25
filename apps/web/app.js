@@ -3772,6 +3772,7 @@ function syncPetPickerSelection() {
 
 function petPickerNeedsRebuild() {
   if (!petPicker) return true;
+  if (!petPicker.querySelector("#add-pet-btn")) return true;
   const buttons = [...petPicker.querySelectorAll(".pet-option[data-pet-id]")];
   if (buttons.length !== pets.length) return true;
   return pets.some((pet, i) => buttons[i]?.dataset.petId !== pet.id);
@@ -5084,10 +5085,17 @@ function resetPetPickerScroll() {
   const selected = currentPetId
     ? petPicker.querySelector(`.pet-option[data-pet-id="${currentPetId}"]`)
     : null;
+  const addBtn = petPicker.querySelector("#add-pet-btn");
   if (selected) {
-    const target =
+    let target =
       selected.offsetLeft -
       (petPicker.clientWidth - selected.offsetWidth) / 2;
+    // Keep the trailing “+ 新增” card reachable (don’t scroll it fully away).
+    if (addBtn) {
+      const maxKeepAdd =
+        addBtn.offsetLeft + addBtn.offsetWidth - petPicker.clientWidth + 12;
+      if (maxKeepAdd > 0) target = Math.min(target, maxKeepAdd);
+    }
     petPicker.scrollLeft = Math.max(0, target);
   } else {
     petPicker.scrollLeft = 0;

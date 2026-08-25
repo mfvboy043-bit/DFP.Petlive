@@ -5081,12 +5081,20 @@ html.is-photo-crop-open body {
   border-width: 1.5px;
   border-color: color-mix(in srgb, var(--leaf) 42%, rgba(255, 255, 255, 0.55));
   color: var(--text-muted);
+  flex-shrink: 0;
+  /* Stay visible at the trailing edge while the pet row pans */
+  position: sticky;
+  right: 0;
+  z-index: 4;
   background:
     linear-gradient(
       155deg,
-      rgba(255, 253, 250, 0.14) 0%,
-      rgba(255, 255, 255, 0.05) 100%
+      rgba(255, 253, 250, 0.96) 0%,
+      rgba(244, 248, 245, 0.94) 100%
     );
+  box-shadow:
+    -10px 0 16px rgba(255, 253, 250, 0.9),
+    0 1px 0 rgba(255, 255, 255, 0.7) inset;
 }
 
 .pet-option-add .pet-option-photo {
@@ -7013,13 +7021,19 @@ html.is-proof-lightbox-open body {
   .pet-option.pet-option-add {
     border: 1.5px dashed #8aa092;
     border-style: dashed;
+    position: sticky;
+    right: 0;
+    z-index: 4;
+    flex-shrink: 0;
     background:
       linear-gradient(
         155deg,
-        rgba(255, 253, 250, 0.16) 0%,
-        rgba(255, 255, 255, 0.06) 100%
+        rgba(255, 253, 250, 0.98) 0%,
+        rgba(244, 248, 245, 0.96) 100%
       );
-    box-shadow: none;
+    box-shadow:
+      -12px 0 18px rgba(255, 253, 250, 0.92),
+      0 1px 0 rgba(255, 255, 255, 0.75) inset;
   }
 
   .pet-name {
