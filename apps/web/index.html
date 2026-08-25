@@ -11,7 +11,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,700&family=Noto+Sans+TC:wght@400;500;700&family=Noto+Serif+TC:wght@600;700&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="./styles.css?v=20260825-pet-form-side-by-side" />
+  <link rel="stylesheet" href="./styles.css?v=20260825-pet-birth-chip-row" />
 </head>
 <body>
   <div class="atmosphere" aria-hidden="true">
@@ -498,10 +498,22 @@
           </label>
         </div>
 
-        <label class="field">
-          <span data-i18n="birthDate">出生日期</span>
-          <input type="date" name="birthDate" required />
-        </label>
+        <div class="field-row">
+          <label class="field">
+            <span data-i18n="birthDate">出生日期</span>
+            <input type="date" name="birthDate" required />
+          </label>
+          <label class="field">
+            <span data-i18n="chipOptional">晶片號碼（選填）</span>
+            <input
+              type="text"
+              name="chipNumber"
+              data-i18n-placeholder="chipPlaceholder"
+              placeholder="若有晶片可填寫"
+              maxlength="30"
+            />
+          </label>
+        </div>
 
         <div class="field-row">
           <label class="field">
@@ -513,17 +525,6 @@
             <input type="date" name="weightDate" required />
           </label>
         </div>
-
-        <label class="field">
-          <span data-i18n="chipOptional">晶片號碼（選填）</span>
-          <input
-            type="text"
-            name="chipNumber"
-            data-i18n-placeholder="chipPlaceholder"
-            placeholder="若有晶片可填寫"
-            maxlength="30"
-          />
-        </label>
 
         <div class="form-actions">
           <button class="btn btn-primary" type="submit" id="pet-form-submit" data-i18n="createPet">建立寵物</button>
