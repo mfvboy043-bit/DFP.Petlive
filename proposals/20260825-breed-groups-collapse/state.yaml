@@ -22,12 +22,20 @@ candidate:
 
 reviews:
   pharmacist: skipped
-  qa: pending
-  ui: pending
+  qa: conditional
+  ui: conditional
   # pending | skipped | pass | conditional | reject
 
-rerun: []
-blocking_issues: []
-non_blocking: []
-builder_scope: []
+decision: revision_required
+rerun:
+  - qa
+blocking_issues:
+  - QA-001
+non_blocking:
+  - UI-001
+  - UI-002
+  - UI-003
+  - UI-004
+builder_scope:
+  - QA-001
 halt_reason: ""

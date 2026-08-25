@@ -4702,14 +4702,17 @@ function setSelectedBreed(value) {
 
   breedSelect.value = value || "";
 
-  // Collapsed preview must pin the selected breed — rebuild if it's not visible yet.
-  if (
-    !breedChipsExpanded &&
-    value &&
-    !breedChips.querySelector(`.chip[data-breed="${value}"]`)
-  ) {
-    syncBreedFields({ keepSelection: true });
-    return;
+  // Collapsed preview = common ∪ current selected ∪ __custom__ (deduped).
+  // Rebuild on every selection change so a previously pinned non-common chip
+  // is dropped when the user picks another visible chip (QA-001).
+  if (!breedChipsExpanded && typeof getBreedGroupsForSpecies === "function") {
+    const speciesEl = document.getElementById("pet-species");
+    const species = speciesEl ? speciesEl.value : "";
+    if (species && species !== "other") {
+      breedChips.innerHTML = renderCollapsedBreedChips(species, value || "");
+      breedChips.classList.add("is-collapsed");
+      breedChips.classList.remove("is-expanded");
+    }
   }
 
   breedChips.querySelectorAll(".chip").forEach((chip) => {
