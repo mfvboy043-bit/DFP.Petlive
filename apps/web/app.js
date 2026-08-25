@@ -708,7 +708,7 @@ const petsGraphSlot = PetLiveWeb.storage.createJsonSlot({
   key: PETS_GRAPH_KEY,
   fallback: () => ({
     version: 1,
-    pets: cloneSeedPets(),
+    pets: [],
     archivedPets: [],
     currentPetId: null,
   }),
@@ -737,11 +737,29 @@ function hydratePetsGraphFromStorage() {
     return null;
   }
   const data = petsGraphSlot.read();
-  const nextPets = data.pets?.length ? data.pets : cloneSeedPets();
+  // Never rehydrate prototype seed when the stored graph is empty.
+  const nextPets = Array.isArray(data.pets) ? data.pets : [];
+  const nextArchived = Array.isArray(data.archivedPets) ? data.archivedPets : [];
   pets.length = 0;
   archivedPets.length = 0;
   for (const pet of nextPets) pets.push(pet);
-  for (const pet of data.archivedPets || []) archivedPets.push(pet);
+  for (const pet of nextArchived) archivedPets.push(pet);
+  // Drop leftover prototype seed graphs left from unsigned browsing.
+  if (isSeedOnlyPets(pets) && !DEMO_MODE) {
+    pets.length = 0;
+    archivedPets.length = 0;
+    try {
+      petsGraphSlot.write({
+        version: 1,
+        pets: [],
+        archivedPets: [],
+        currentPetId: null,
+      });
+    } catch {
+      /* ignore */
+    }
+    return null;
+  }
   return data.currentPetId || pets[0]?.id || null;
 }
 
@@ -4028,12 +4046,34 @@ function emptyOwnerProfile() {
 
 const ownerProfileSlot = PetLiveWeb.storage.createJsonSlot({
   key: OWNER_PROFILE_KEY,
-  fallback: demoOwnerProfile,
+  fallback: emptyOwnerProfile,
   validate: isStorageMap,
 });
 
 function loadOwnerProfile() {
+  if (DEMO_MODE) {
+    return { ...emptyOwnerProfile(), ...demoOwnerProfile() };
+  }
+  scrubDemoOwnerProfileFromStorage();
   return { ...emptyOwnerProfile(), ...ownerProfileSlot.read() };
+}
+
+/** Remove leftover showcase owner (王陽明) written by older prototype builds. */
+function scrubDemoOwnerProfileFromStorage() {
+  try {
+    const raw = localStorage.getItem(OWNER_PROFILE_KEY);
+    if (!raw) return;
+    const profile = JSON.parse(raw);
+    const isDemo =
+      profile?.email === "wang.yangming@demo.petlive" ||
+      (profile?.name === "王陽明" && profile?.phone === "0912345678");
+    if (!isDemo) return;
+    localStorage.removeItem(OWNER_PROFILE_KEY);
+    ownerProfileSlot.clear?.();
+    ownerProfileSlot.invalidate?.();
+  } catch {
+    /* ignore */
+  }
 }
 
 function saveOwnerProfile(profile) {
@@ -5058,6 +5098,24 @@ const shellNavigation = PetLiveWeb.shell.createNavigation({
 });
 
 function go(screen, options = {}) {
+  const needsPet = [
+    "emergency",
+    "add-visit",
+    "timeline",
+    "alerts",
+    "vaccines",
+    "parasite",
+    "labs",
+    "imaging",
+    "add-med",
+    "med-proof",
+    "imaging-proof",
+    "lab-add",
+  ];
+  if (!DEMO_MODE && needsPet.includes(screen) && !getCurrentPet()) {
+    showToast(t("toastNeedPetFirst"));
+    return false;
+  }
   closeAppNavMenu();
   closeAccountMenu();
   const changed = shellNavigation.go(screen, options);
@@ -7803,6 +7861,16 @@ function clearSeedPetsFromMemory() {
   archivedPets.length = 0;
   currentPetId = null;
   appState.setCurrentPetId(null);
+  try {
+    petsGraphSlot.write({
+      version: 1,
+      pets: [],
+      archivedPets: [],
+      currentPetId: null,
+    });
+  } catch {
+    /* ignore */
+  }
   applySelectedPet();
 }
 
@@ -8525,16 +8593,8 @@ function initIntroAndCloud() {
 
   if (!DEMO_MODE && googleDriveAuth?.getSession?.().signedIn) {
     reconcileCloudOnBoot({ silent: true, skipAutoPull: FRESH_BOOT });
-  } else if (
-    !DEMO_MODE &&
-    !FRESH_BOOT &&
-    !googleDriveAuth?.getSession?.().signedIn &&
-    !pets.length &&
-    !hasStoredPetsGraph()
-  ) {
-    loadSeedPetsIntoMemory();
-    applySelectedPet();
   }
+  // Formal B: never inject prototype seed pets except ?demo=1.
 }
 
 
