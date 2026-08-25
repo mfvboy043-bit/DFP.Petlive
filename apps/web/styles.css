@@ -1967,12 +1967,22 @@ input[type="month"]::-webkit-calendar-picker-indicator {
 }
 
 .clinic-results button small,
-.drug-results button small {
+.drug-results button small,
+.breed-results button small {
   display: block;
   font-size: 0.78rem;
   font-weight: 500;
   line-height: 1.4;
   color: var(--text-muted);
+}
+
+
+.breed-results .breed-results-empty {
+  margin: 0;
+  padding: 10px 12px;
+  color: var(--text-muted);
+  font-size: 0.85rem;
+  line-height: 1.4;
 }
 
 .clinic-results button.is-anonymous {
