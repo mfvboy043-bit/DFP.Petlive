@@ -401,6 +401,59 @@ h4 {
   min-width: 0;
 }
 
+.intro-login-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  flex: 0 0 auto;
+  min-height: 40px;
+  padding: 0 14px 0 12px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 999px;
+  background: #121212;
+  color: #fff;
+  font: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  cursor: pointer;
+  box-shadow: 0 6px 16px rgba(18, 18, 18, 0.18);
+  transition:
+    transform 160ms var(--ease, ease),
+    background 160ms var(--ease, ease),
+    box-shadow 160ms var(--ease, ease);
+}
+
+.intro-login-btn:hover {
+  background: #1c1c1c;
+  box-shadow: 0 8px 20px rgba(18, 18, 18, 0.22);
+}
+
+.intro-login-btn:active {
+  transform: translateY(1px);
+}
+
+.intro-login-btn:focus-visible {
+  outline: 2px solid rgba(127, 175, 160, 0.9);
+  outline-offset: 2px;
+}
+
+.intro-login-g {
+  display: inline-flex;
+  width: 18px;
+  height: 18px;
+  color: #fff;
+}
+
+.intro-login-g svg {
+  display: block;
+}
+
+.intro-login-btn[hidden] {
+  display: none !important;
+}
+
 .intro-account {
   display: inline-flex;
   align-items: center;
