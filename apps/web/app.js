@@ -7377,7 +7377,6 @@ function paintCloudChrome() {
       originHint.hidden = false;
       originHint.textContent = t("oauthLanBlocked", { origin });
     } else {
-      // Origin already registered in Google Console — no setup reminder on Pages/localhost.
       originHint.hidden = true;
       originHint.textContent = "";
     }
