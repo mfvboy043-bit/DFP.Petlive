@@ -1,0 +1,49 @@
+---
+description: Phone cannot open local Petlive preview — LAN IP, dead http.server, router isolation
+alwaysApply: true
+---
+
+# Local phone preview (LAN) — quick debug
+
+When Victor says the phone URL does not open, **do not guess the IP**. Diagnose in this order.
+
+## Known failure modes (2026-08-12)
+
+1. **Dead / hung `python -m http.server`** — process still `LISTEN` but curl gets `Empty reply from server` (exit 52). **Fix:** kill and restart with `--bind 0.0.0.0`.
+2. **Wrong NIC IP** — This Mac often has **two** LAN addresses on the same subnet:
+   - `en0` Ethernet (e.g. `192.168.0.10`) — often the **default route**
+   - `en1` Wi‑Fi (e.g. `192.168.0.24`) — **phone must use this** when on Wi‑Fi
+   Giving only the Ethernet IP while the phone is on Wi‑Fi fails even if the server is fine.
+3. **Router client isolation / guest Wi‑Fi / cellular** — Mac curl to both IPs returns 200, but **no request ever arrives from the phone**. Workarounds: same SSID (not guest), Personal Hotspot, or (only if Victor asks) a temporary public tunnel.
+
+## Checklist (run before giving a URL)
+
+```bash
+# 1) Is anything healthy on the port?
+lsof -iTCP:5173 -sTCP:LISTEN -P
+curl -s -o /dev/null -w "%{http_code}\n" --connect-timeout 2 http://127.0.0.1:5173/apps/web/
+# If empty reply / 000 → restart server (do not reuse hung PID)
+
+# 2) Which IP is Wi‑Fi?
+networksetup -listallhardwareports   # find Device for "Wi-Fi"
+ipconfig getifaddr en1               # typical Wi‑Fi on this machine
+ipconfig getifaddr en0               # often Ethernet
+
+# 3) Bind all interfaces, serve repo root
+python3 -m http.server 5173 --bind 0.0.0.0 --directory /Users/victorwu/Desktop/petlive
+```
+
+**Phone URL shape:** `http://<Wi‑Fi-IP>:5173/apps/web/`  
+(Not repo root `/`, not Ethernet IP unless the phone is somehow on that path.)
+
+## Prove phone packets arrive
+
+If still failing after restart + Wi‑Fi IP: run a short request-logging `python3 -m http.server` wrapper that appends client IP / User-Agent to a log, and have the phone hit the URL.  
+- **No non-loopback / non-Mac client in logs** → network isolation (not an app bug).  
+- **Safari/Mobile UA appears** → LAN OK; debug the page (cache `?v=`, JS errors).
+
+## Do not
+
+- Re-offer the same dead port without `curl` proof of 200.
+- Default to Ethernet/`en0` just because it is the default gateway interface.
+- Open a public tunnel unless Victor explicitly asks.

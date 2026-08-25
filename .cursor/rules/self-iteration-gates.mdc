@@ -1,0 +1,42 @@
+---
+description: Petlive self-iteration v2 gates — confirm before build, closed-loop review, never overwrite mainline without adopt
+alwaysApply: true
+---
+
+# Self-iteration gates (v2)
+
+Two human gates are mandatory for product changes to `apps/web`, `contracts/`, or `packages/`:
+
+1. **Confirm before build** — After Planner proposal, stop. Do not edit mainline until Victor says confirm / 確認 / go build (or equivalent).
+2. **Confirm before merge** — After candidate_ready (reviews + Arbiter), stop. Do not merge until Victor says adopt / 採用.
+
+Between gates, AI may Builder → parallel Review → Arbiter → revise (max 3 iterations). AI must not choose *what* to build or *whether to adopt*.
+
+## State
+
+Read `proposals/<id>/state.yaml` as source of truth for `gate_a`, `gate_b`, `iteration`, `builder_scope`.
+
+## Non-overwrite
+
+- Write candidates on `proposal/<slug>` branch, worktree, or `proposals/<YYYYMMDD-topic>/` — never overwrite mainline in place “to show later”.
+- Do not `git checkout` / reset that discards Victor’s worktree without explicit ask.
+- Reviewers and Arbiter report only; they do not patch `apps/web/`.
+- Builder implements only approved scope; on revision, only `builder_scope` IDs. No drive-by refactors.
+
+## Loop order
+
+Intent → Planner → **Gate A** → Version Steward path → Builder → parallel Reviewers → Arbiter → (revise loop or halt) → **Gate B** → Version Steward merge.
+
+If halted at `max_iterations`: ask Victor to change the proposal, accept limits, or abandon. Do not start iteration 4.
+
+## Exceptions (no full loop)
+
+- Typos, comments, or explicitly requested tiny fixes Victor scoped in-chat.
+- Creating/updating Rules, Skills, Agents, or `proposals/` scaffolding itself.
+
+## Roles
+
+- Orchestrate with skill `petlive-orchestrator`.
+- Delegate to `.cursor/agents/petlive-*` (Planner, Builder, Reviewers, Arbiter).
+- Version Steward remains skill `petlive-version-steward`.
+- v1 skills under `.cursor/skills/petlive-*` are knowledge backups if a subagent is unavailable.
