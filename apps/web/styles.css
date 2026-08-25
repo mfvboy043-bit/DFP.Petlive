@@ -695,6 +695,15 @@ h4 {
   display: none !important;
 }
 
+/* Portal host must not invent an invisible hit layer over the FAB */
+#chrome-portals {
+  pointer-events: none;
+}
+
+#chrome-portals > * {
+  pointer-events: auto;
+}
+
 .app-nav-panel {
   position: fixed;
   top: calc(max(10px, env(safe-area-inset-top, 0px)) + var(--topbar-float-h, 56px) + 10px);
@@ -3821,7 +3830,7 @@ html[lang="en"] .e-owner-k::after {
 }
 
 .photo-crop[hidden] {
-  display: none;
+  display: none !important;
 }
 
 .photo-crop-sheet {
@@ -3915,7 +3924,7 @@ html[lang="en"] .e-owner-k::after {
 }
 
 .toast[hidden] {
-  display: none;
+  display: none !important;
 }
 
 /* ---------------------------------------------------------
@@ -3924,7 +3933,10 @@ html[lang="en"] .e-owner-k::after {
 
 .lang-switcher {
   position: fixed;
-  z-index: 300;
+  /* Above toast/photo-crop/lightbox (≤1000) so add-pet never eats the FAB */
+  z-index: 1200;
+  pointer-events: auto;
+  isolation: isolate;
 
   right: max(16px, env(safe-area-inset-right));
   bottom: max(18px, calc(18px + env(safe-area-inset-bottom)));
@@ -3933,6 +3945,7 @@ html[lang="en"] .e-owner-k::after {
 .lang-fab {
   display: grid;
   place-items: center;
+  pointer-events: auto;
 
   width: 45px;
   height: 45px;
@@ -6633,7 +6646,7 @@ html.is-photo-crop-open body {
 }
 
 .proof-lightbox[hidden] {
-  display: none;
+  display: none !important;
 }
 
 .proof-lightbox-scrim {

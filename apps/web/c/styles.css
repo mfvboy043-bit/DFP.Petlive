@@ -696,6 +696,15 @@ h4 {
   display: none !important;
 }
 
+/* Portal host must not invent an invisible hit layer over the FAB */
+#chrome-portals {
+  pointer-events: none;
+}
+
+#chrome-portals > * {
+  pointer-events: auto;
+}
+
 .app-nav-panel {
   position: fixed;
   top: calc(max(10px, env(safe-area-inset-top, 0px)) + var(--topbar-float-h, 56px) + 10px);
@@ -1728,6 +1737,64 @@ input[type="week"] {
   margin-top: 9px;
 }
 
+.breed-chips.is-expanded {
+  display: grid;
+  gap: 12px;
+}
+
+.breed-group {
+  display: grid;
+  gap: 7px;
+  min-width: 0;
+}
+
+.breed-group-label {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  color: var(--text-muted);
+}
+
+.breed-group-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.breed-expand-toggle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  margin-top: 10px;
+  min-height: 36px;
+  padding: 6px 4px;
+
+  border: 0;
+  border-radius: var(--r-sm);
+
+  color: var(--leaf-deep);
+  background: transparent;
+
+  font-size: 13px;
+  font-weight: 700;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.breed-expand-toggle:hover {
+  background: rgba(61, 107, 87, 0.08);
+}
+
+.breed-expand-toggle:focus-visible {
+  outline: 2px solid color-mix(in srgb, var(--leaf-deep) 55%, transparent);
+  outline-offset: 2px;
+}
+
+.breed-expand-toggle[hidden] {
+  display: none;
+}
+
 #parasite-chips-external,
 #parasite-chips-heartworm {
   flex-direction: column;
@@ -1781,7 +1848,8 @@ input[type="week"] {
    --------------------------------------------------------- */
 
 .clinic-results,
-.drug-results {
+.drug-results,
+.breed-results {
   position: relative;
   z-index: 24;
 
@@ -1807,19 +1875,22 @@ input[type="week"] {
 }
 
 .clinic-results[hidden],
-.drug-results[hidden] {
+.drug-results[hidden],
+.breed-results[hidden] {
   display: none;
 }
 
 .clinic-results li,
-.drug-results li {
+.drug-results li,
+.breed-results li {
   margin: 0;
   padding: 0;
   list-style: none;
 }
 
 .clinic-results button,
-.drug-results button {
+.drug-results button,
+.breed-results button {
   display: grid;
   gap: 2px;
   align-content: start;
@@ -1846,20 +1917,24 @@ input[type="week"] {
 
 .clinic-results button:hover,
 .drug-results button:hover,
+.breed-results button:hover,
 .clinic-results button:focus-visible,
-.drug-results button:focus-visible {
+.drug-results button:focus-visible,
+.breed-results button:focus-visible {
   background: var(--leaf-pale);
   border-color: color-mix(in srgb, var(--leaf) 22%, transparent);
   outline: 0;
 }
 
 .clinic-results button:active,
-.drug-results button:active {
+.drug-results button:active,
+.breed-results button:active {
   transform: scale(0.99);
 }
 
 .clinic-results button strong,
-.drug-results button strong {
+.drug-results button strong,
+.breed-results button strong {
   display: block;
   font-size: 0.95rem;
   font-weight: 700;
@@ -1868,12 +1943,22 @@ input[type="week"] {
 }
 
 .clinic-results button small,
-.drug-results button small {
+.drug-results button small,
+.breed-results button small {
   display: block;
   font-size: 0.78rem;
   font-weight: 500;
   line-height: 1.4;
   color: var(--text-muted);
+}
+
+
+.breed-results .breed-results-empty {
+  margin: 0;
+  padding: 10px 12px;
+  color: var(--text-muted);
+  font-size: 0.85rem;
+  line-height: 1.4;
 }
 
 .clinic-results button.is-anonymous {
@@ -3718,7 +3803,7 @@ html[lang="en"] .e-owner-k::after {
 }
 
 .photo-crop[hidden] {
-  display: none;
+  display: none !important;
 }
 
 .photo-crop-sheet {
@@ -3812,7 +3897,7 @@ html[lang="en"] .e-owner-k::after {
 }
 
 .toast[hidden] {
-  display: none;
+  display: none !important;
 }
 
 /* ---------------------------------------------------------
@@ -3821,7 +3906,10 @@ html[lang="en"] .e-owner-k::after {
 
 .lang-switcher {
   position: fixed;
-  z-index: 300;
+  /* Above toast/photo-crop/lightbox (≤1000) so add-pet never eats the FAB */
+  z-index: 1200;
+  pointer-events: auto;
+  isolation: isolate;
 
   right: max(16px, env(safe-area-inset-right));
   bottom: max(18px, calc(18px + env(safe-area-inset-bottom)));
@@ -3830,6 +3918,7 @@ html[lang="en"] .e-owner-k::after {
 .lang-fab {
   display: grid;
   place-items: center;
+  pointer-events: auto;
 
   width: 45px;
   height: 45px;
@@ -6530,7 +6619,7 @@ html.is-photo-crop-open body {
 }
 
 .proof-lightbox[hidden] {
-  display: none;
+  display: none !important;
 }
 
 .proof-lightbox-scrim {

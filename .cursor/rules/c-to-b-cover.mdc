@@ -1,5 +1,7 @@
 ---
-description: Surface C discussion drafts must only cover onto formal B after Victor confirms
+description: >-
+  Default edit surface C first; cover onto formal B only after Victor confirms.
+  Clarify ambiguous surface/problem before any edit.
 alwaysApply: true
 ---
 
@@ -13,21 +15,45 @@ alwaysApply: true
 | **B** | `apps/web/` passport | Formal product (Pages) |
 | **C** | `apps/web/c/` | Discussion / experiment replica — separate `petlive-c-*` storage, no Google auth scripts |
 
-## Standing agreement (Victor)
+## Standing agreement (Victor, 2026-08-25)
 
-1. **Iterate on C** for design / UI discussion when that is the working surface.
-2. **C changes are not live B.** Editing `apps/web/c/` alone does **not** update formal B or Pages A/B.
-3. **Cover C → B only after Victor confirms** (e.g. 覆蓋 / 覆蓋到 B / cover to B / 採用到正式版). Do **not** silently copy C into `apps/web/` root (B) “to keep them in sync.”
+1. **Always edit C first** for passport-shell work (UI, nav, forms, styles, and ordinary logic / bugfixes). Do **not** split “visual → C, bugfix → B.”
+2. **C is not live B.** Editing `apps/web/c/` alone does **not** update formal B or Pages A/B.
+3. **Cover C → B only after Victor confirms** the C result is correct (e.g. 覆蓋 / 覆蓋到 B / cover to B / 蓋到 B / 採用到正式版). Do **not** silently copy C into `apps/web/` root (B).
 4. After a confirmed cover: mirror the agreed C deltas onto B (`index.html` / `app.js` / `styles.css` / `i18n.js` as needed), restore B-only pieces C deliberately omits (Google auth, formal storage keys, intro A wiring), bump cache `?v=`, then follow **auto-publish-pages** for A/B.
+
+## Default loop
+
+1. Understand the request (ask if Dom / wording / surface is unclear).
+2. Edit **C only** (`apps/web/c/`).
+3. Reply with an explicit surface line, e.g. `已改：C only`，and ask whether to cover onto B.
+4. Stop. Do **not** edit B or push formal Pages A/B until Victor confirms cover.
+
+## Ambiguous surface or problem
+
+If Victor’s Dom / screenshot / path does not clearly show C vs B, or the request is incomplete:
+
+1. **Ask and confirm** which surface and what the intended change is.
+2. **Do not edit** (neither C nor B) until understanding is confirmed.
+3. Then edit **C first** per the default loop.
+
+Do **not** guess “you’re on C” and start editing. Do **not** treat “looks like formal chrome” as permission to edit B.
 
 ## What AI must do
 
-- When Victor asks for a UI tweak while on C (or points at `apps/web/c/`), **default to editing C only**, then **ask whether to cover onto B** — do not assume.
+- After any passport-shell edit, state the surface: `已改：C only` / `已改：B only（原因：…）` / `已改：C，待確認是否覆蓋 B`.
 - When covering: list what will be copied vs left B-only; wait for confirm if scope is unclear.
-- Tiny in-chat fixes Victor explicitly scopes to B (or “兩邊都改”) may touch B directly without a full Self-Iteration loop; still do not invent a cover.
+
+## Direct B (exceptions only)
+
+Touch `apps/web/` root (B) **without** a prior C pass only when Victor **explicitly** says e.g. 改 B / 正式版 / Pages / 兩邊都改, **or** after a confirmed C → B cover.
+
+Narrow B-only / A work (intro login, Google auth scripts, formal `petlive-*` keys, Pages A wiring) may edit A/B directly when that is clearly the scoped ask — say so in the reply. Still do not invent a C → B cover.
 
 ## What AI must not do
 
+- Edit B first for a general passport UI / nav / form / style / logic tweak “because it looked like B”
 - Auto-sync every C edit into B
 - Cover C → B because “they should match” without Victor’s go-ahead
 - Drop B’s auth / `petlive-*` keys / intro when applying a C cover
+- Push formal Pages A/B for work that has only landed on C
