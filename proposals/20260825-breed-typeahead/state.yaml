@@ -1,0 +1,40 @@
+id: "20260825-breed-typeahead"
+title: "品種輸入型別提示（對齊藥品搜尋）"
+version: 2
+status: adopted
+# proposed | building | reviewing | revising | candidate_ready | halted | adopted | rejected
+
+gate_a:
+  status: approved
+  # pending | approved | modified | rejected
+
+gate_b:
+  status: adopted
+  # pending | adopted | rejected
+
+iteration: 2
+max_iterations: 3
+
+candidate:
+  branch: "proposal/breed-typeahead"
+  path: "proposals/20260825-breed-typeahead"
+  worktree: ""
+
+reviews:
+  pharmacist: skipped
+  qa: pass
+  ui: conditional
+  # pending | skipped | pass | conditional | reject
+
+decision: candidate_ready
+rerun: []
+blocking_issues: []
+non_blocking:
+  - QA-002
+  - UI-001
+  - UI-002
+  - UI-003
+  - UI-004
+  - UI-005
+builder_scope: []
+halt_reason: ""
