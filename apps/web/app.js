@@ -5819,20 +5819,28 @@ document.getElementById("breed-expand-toggle")?.addEventListener("click", () => 
     }
   });
 
-  breedResults.addEventListener("mousedown", (event) => {
-    // Keep focus long enough for click to register before blur closes the list.
-    if (event.target.closest("[data-breed-suggest]")) {
-      event.preventDefault();
-    }
+  function commitBreedSuggestion(btn) {
+    const value = btn?.dataset?.breedSuggest;
+    if (!value) return;
+    window.clearTimeout(breedResultsBlurTimer);
+    setSelectedBreed(value);
+    hideBreedResults();
+  }
+
+  // pointerdown (not only mousedown): on touch, blur schedules hide at 180ms and
+  // can clear the list before the delayed synthetic click, leaving __custom__.
+  breedResults.addEventListener("pointerdown", (event) => {
+    const btn = event.target.closest("[data-breed-suggest]");
+    if (!btn) return;
+    event.preventDefault();
+    commitBreedSuggestion(btn);
   });
 
   breedResults.addEventListener("click", (event) => {
     const btn = event.target.closest("[data-breed-suggest]");
     if (!btn) return;
-    const value = btn.dataset.breedSuggest;
-    if (!value) return;
-    setSelectedBreed(value);
-    hideBreedResults();
+    // Keyboard activation / fallback if pointerdown did not commit.
+    commitBreedSuggestion(btn);
   });
 })();
 

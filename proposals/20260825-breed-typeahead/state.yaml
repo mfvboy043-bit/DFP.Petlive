@@ -12,7 +12,7 @@ gate_b:
   status: pending
   # pending | adopted | rejected
 
-iteration: 1
+iteration: 2
 max_iterations: 3
 
 candidate:
@@ -23,11 +23,21 @@ candidate:
 reviews:
   pharmacist: skipped
   qa: pending
-  ui: pending
+  ui: skipped
   # pending | skipped | pass | conditional | reject
 
-rerun: []
-blocking_issues: []
-non_blocking: []
-builder_scope: []
+decision: ""
+rerun:
+  - qa
+blocking_issues:
+  - QA-001
+non_blocking:
+  - QA-002
+  - UI-001
+  - UI-002
+  - UI-003
+  - UI-004
+  - UI-005
+builder_scope:
+  - QA-001
 halt_reason: ""
