@@ -3769,10 +3769,6 @@ function getPendingArchivePet() {
 }
 
 function openArchivePetFlow(petId) {
-  if (pets.length <= 1) {
-    showToast(t("toastKeepOneBoard"));
-    return;
-  }
   const pet = pets.find((item) => item.id === petId);
   if (!pet) return;
   pendingArchivePetId = petId;
@@ -3799,10 +3795,6 @@ function confirmArchivePet(event) {
   event.preventDefault();
   const pet = getPendingArchivePet();
   if (!pet) return;
-  if (pets.length <= 1) {
-    showToast(t("toastKeepOneBoard"));
-    return;
-  }
 
   const passedAwayDate = document.getElementById("archive-passed-date").value;
   const memorialNote = document
@@ -3824,7 +3816,7 @@ function confirmArchivePet(event) {
   pendingArchivePetId = null;
   setManageMode(false);
   if (wasCurrent || !pets.some((item) => item.id === currentPetId)) {
-    currentPetId = pets[0].id;
+    currentPetId = pets[0]?.id || null;
     appState.setCurrentPetId(currentPetId);
   }
   applySelectedPet();
@@ -3868,10 +3860,6 @@ function setRemoveStep(step) {
 }
 
 function openRemovePetFlow(petId) {
-  if (pets.length <= 1) {
-    showToast(t("toastKeepOne"));
-    return;
-  }
   const pet = pets.find((item) => item.id === petId);
   if (!pet) return;
   pendingRemovePetId = petId;
@@ -3890,10 +3878,6 @@ function cancelRemovePetFlow() {
 function confirmRemovePet() {
   const pet = getPendingRemovePet();
   if (!pet) return;
-  if (pets.length <= 1) {
-    showToast(t("toastKeepOne"));
-    return;
-  }
 
   const input = document.getElementById("remove-pet-confirm-input");
   if (input.value.trim() !== pet.name) {
@@ -3911,7 +3895,7 @@ function confirmRemovePet() {
   setManageMode(false);
 
   if (wasCurrent || !pets.some((item) => item.id === currentPetId)) {
-    currentPetId = pets[0].id;
+    currentPetId = pets[0]?.id || null;
     appState.setCurrentPetId(currentPetId);
   }
   applySelectedPet();
@@ -3941,6 +3925,15 @@ function renderPetHeader(pet) {
   requestAnimationFrame(() => {
     petCurrentEl.classList.remove("is-updating");
   });
+
+  if (!pet) {
+    petNameEl.textContent = t("emptyPetsTitle");
+    petSubEl.textContent = t("emptyPetsSub");
+    if (timelineSub) timelineSub.textContent = "";
+    if (visitFormSub) visitFormSub.textContent = "";
+    if (vaccineSub) vaccineSub.textContent = "";
+    return;
+  }
 
   petNameEl.textContent = pet.name;
   petSubEl.textContent = t("petSub", {
@@ -4449,16 +4442,25 @@ renderCoordinator.register("home", "petPicker", () => {
   else syncPetPickerSelection();
 });
 renderCoordinator.register("home", "petHeader", (pet) => {
-  if (pet) renderPetHeader(pet);
+  renderPetHeader(pet);
 });
 renderCoordinator.register("home", "parasiteStrip", (pet) => {
   if (pet) renderParasiteStrip(pet);
+  else if (document.getElementById("parasite-strip")) {
+    ["vaccine", "external", "internal"].forEach((kind) => {
+      const meta = document.getElementById(`parasite-meta-${kind}`);
+      const status = document.getElementById(`parasite-status-${kind}`);
+      if (meta) meta.textContent = "—";
+      if (status) status.textContent = "";
+    });
+  }
 });
 renderCoordinator.register(
   "home",
   "alertBadge",
   (pet) => {
     if (pet) renderAlertBadge(pet);
+    else if (alertCountBtn) alertCountBtn.textContent = t("noAlerts");
   },
   () => {
     if (alertCountBtn) alertCountBtn.textContent = t("noAlerts");
