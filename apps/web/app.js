@@ -7342,7 +7342,6 @@ function paintCloudChrome() {
     profile: null,
   };
   const loginBtn = document.getElementById("intro-login-btn");
-  const loginCta = document.getElementById("intro-login-cta");
   const account = document.getElementById("intro-account");
   const avatar = document.getElementById("intro-avatar");
   const originHint = document.getElementById("intro-origin-hint");
@@ -7353,7 +7352,6 @@ function paintCloudChrome() {
   const settingsLogout = document.getElementById("settings-cloud-logout");
 
   if (loginBtn) loginBtn.hidden = Boolean(session.signedIn);
-  if (loginCta) loginCta.hidden = Boolean(session.signedIn);
   if (account) account.hidden = !session.signedIn;
   if (avatar) {
     if (session.profile?.picture) {
@@ -7519,9 +7517,7 @@ function enterAppFromIntro() {
 }
 
 function initIntroAndCloud() {
-  const startBtn = document.getElementById("intro-start-btn");
   const loginBtn = document.getElementById("intro-login-btn");
-  const loginCta = document.getElementById("intro-login-cta");
   const logoutBtn = document.getElementById("intro-logout-btn");
   const settingsLogin = document.getElementById("settings-cloud-login");
   const settingsSync = document.getElementById("settings-cloud-sync");
@@ -7535,15 +7531,15 @@ function initIntroAndCloud() {
     showToast(t("logout"));
   }
 
-  startBtn?.addEventListener("click", () => {
-    enterAppFromIntro();
-  });
-  loginBtn?.addEventListener("click", () => {
+  function startWithGoogleOrEnter() {
+    if (googleDriveAuth?.getSession?.().signedIn) {
+      enterAppFromIntro();
+      return;
+    }
     handleGoogleSignIn({ enterApp: true });
-  });
-  loginCta?.addEventListener("click", () => {
-    handleGoogleSignIn({ enterApp: true });
-  });
+  }
+
+  loginBtn?.addEventListener("click", startWithGoogleOrEnter);
   logoutBtn?.addEventListener("click", doSignOut);
   settingsLogin?.addEventListener("click", () => {
     handleGoogleSignIn({ enterApp: false });
@@ -7556,8 +7552,9 @@ function initIntroAndCloud() {
   googleDriveAuth?.onSessionChange?.(paintCloudChrome);
   paintCloudChrome();
 
+  // Skip intro when already signed in.
   try {
-    if (localStorage.getItem(INTRO_SEEN_KEY) === "1") {
+    if (googleDriveAuth?.getSession?.().signedIn) {
       const intro = app.querySelector('[data-screen="intro"]');
       const home = app.querySelector('[data-screen="home"]');
       if (intro && home) {
