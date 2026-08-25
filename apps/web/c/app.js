@@ -3615,6 +3615,7 @@ function syncPetPickerSelection() {
 
 function petPickerNeedsRebuild() {
   if (!petPicker) return true;
+  if (!petPicker.querySelector("#add-pet-btn")) return true;
   const buttons = [...petPicker.querySelectorAll(".pet-option[data-pet-id]")];
   if (buttons.length !== pets.length) return true;
   return pets.some((pet, i) => buttons[i]?.dataset.petId !== pet.id);

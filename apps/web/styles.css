@@ -1317,6 +1317,7 @@ html[lang="ko"] .hero-intro .brand-zh {
   overflow-y: visible;
   overscroll-behavior-x: contain;
   -webkit-overflow-scrolling: touch;
+  touch-action: pan-x pinch-zoom;
   scroll-snap-type: x mandatory;
   scroll-padding-inline: 16px;
 
@@ -5082,10 +5083,7 @@ html.is-photo-crop-open body {
   border-color: color-mix(in srgb, var(--leaf) 42%, rgba(255, 255, 255, 0.55));
   color: var(--text-muted);
   flex-shrink: 0;
-  /* Stay visible at the trailing edge while the pet row pans */
-  position: sticky;
-  right: 0;
-  z-index: 4;
+  /* Do not use position:sticky here — it breaks horizontal pan on iOS Safari */
   background:
     linear-gradient(
       155deg,
@@ -5093,8 +5091,8 @@ html.is-photo-crop-open body {
       rgba(244, 248, 245, 0.94) 100%
     );
   box-shadow:
-    -10px 0 16px rgba(255, 253, 250, 0.9),
-    0 1px 0 rgba(255, 255, 255, 0.7) inset;
+    0 1px 0 rgba(255, 255, 255, 0.7) inset,
+    0 3px 10px rgba(40, 48, 44, 0.05);
 }
 
 .pet-option-add .pet-option-photo {
@@ -6844,8 +6842,8 @@ html.is-proof-lightbox-open body {
   .pet-switcher {
     padding: 14px 14px 16px;
     border-radius: 22px;
-    /* Clip ::after glow + selected-card scale bleed; pet-picker keeps its own pan */
-    overflow-x: clip;
+    /* visible: overflow-x clip on this ancestor broke pet-picker touch pan on iOS */
+    overflow-x: visible;
     overflow-y: visible;
     background:
       linear-gradient(
@@ -6975,6 +6973,7 @@ html.is-proof-lightbox-open body {
     overflow-x: auto;
     overflow-y: visible;
     overscroll-behavior-x: contain;
+    touch-action: pan-x pinch-zoom;
     scroll-snap-type: x mandatory;
     scroll-padding-inline: 16px;
     -webkit-overflow-scrolling: touch;
@@ -7021,9 +7020,6 @@ html.is-proof-lightbox-open body {
   .pet-option.pet-option-add {
     border: 1.5px dashed #8aa092;
     border-style: dashed;
-    position: sticky;
-    right: 0;
-    z-index: 4;
     flex-shrink: 0;
     background:
       linear-gradient(
@@ -7032,8 +7028,8 @@ html.is-proof-lightbox-open body {
         rgba(244, 248, 245, 0.96) 100%
       );
     box-shadow:
-      -12px 0 18px rgba(255, 253, 250, 0.92),
-      0 1px 0 rgba(255, 255, 255, 0.75) inset;
+      0 1px 0 rgba(255, 255, 255, 0.75) inset,
+      0 3px 10px rgba(40, 48, 44, 0.05);
   }
 
   .pet-name {

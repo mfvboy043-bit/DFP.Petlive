@@ -1318,6 +1318,7 @@ html[lang="ko"] .hero-intro .brand-zh {
   overflow-y: visible;
   overscroll-behavior-x: contain;
   -webkit-overflow-scrolling: touch;
+  touch-action: pan-x pinch-zoom;
   scroll-snap-type: x mandatory;
   scroll-padding-inline: 16px;
 
@@ -4978,12 +4979,17 @@ html.is-photo-crop-open body {
   border-width: 1.5px;
   border-color: color-mix(in srgb, var(--leaf) 42%, rgba(255, 255, 255, 0.55));
   color: var(--text-muted);
+  flex-shrink: 0;
+  /* Do not use position:sticky here — it breaks horizontal pan on iOS Safari */
   background:
     linear-gradient(
       155deg,
-      rgba(255, 253, 250, 0.14) 0%,
-      rgba(255, 255, 255, 0.05) 100%
+      rgba(255, 253, 250, 0.96) 0%,
+      rgba(244, 248, 245, 0.94) 100%
     );
+  box-shadow:
+    0 1px 0 rgba(255, 255, 255, 0.7) inset,
+    0 3px 10px rgba(40, 48, 44, 0.05);
 }
 
 .pet-option-add .pet-option-photo {
@@ -6861,6 +6867,7 @@ html.is-proof-lightbox-open body {
     overflow-x: auto;
     overflow-y: visible;
     overscroll-behavior-x: contain;
+    touch-action: pan-x pinch-zoom;
     scroll-snap-type: x mandatory;
     scroll-padding-inline: 16px;
     -webkit-overflow-scrolling: touch;
@@ -6907,13 +6914,16 @@ html.is-proof-lightbox-open body {
   .pet-option.pet-option-add {
     border: 1.5px dashed #8aa092;
     border-style: dashed;
+    flex-shrink: 0;
     background:
       linear-gradient(
         155deg,
-        rgba(255, 253, 250, 0.16) 0%,
-        rgba(255, 255, 255, 0.06) 100%
+        rgba(255, 253, 250, 0.98) 0%,
+        rgba(244, 248, 245, 0.96) 100%
       );
-    box-shadow: none;
+    box-shadow:
+      0 1px 0 rgba(255, 255, 255, 0.75) inset,
+      0 3px 10px rgba(40, 48, 44, 0.05);
   }
 
   .pet-name {
