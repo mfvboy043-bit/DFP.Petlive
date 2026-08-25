@@ -4995,27 +4995,11 @@ function glassChromeActionsMarkup() {
           data-i18n-aria="navMenuAria"
           aria-label="頁面選單"
         >
-          <span class="app-nav-ico app-nav-ico-bars" aria-hidden="true">
-            <svg viewBox="0 0 24 24" width="18" height="18" focusable="false">
-              <path
-                d="M7 9.5h10M7 14.5h10"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="2.2"
-                stroke-linecap="round"
-              />
-            </svg>
+          <span class="app-nav-label app-nav-label-closed" aria-hidden="true">
+            <span class="app-nav-flank">＝</span><span class="app-nav-word" data-i18n="navMenuLabel">選單</span><span class="app-nav-flank">＝</span>
           </span>
-          <span class="app-nav-ico app-nav-ico-close" aria-hidden="true" hidden>
-            <svg viewBox="0 0 24 24" width="18" height="18" focusable="false">
-              <path
-                d="M8 8l8 8M16 8l-8 8"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="2.2"
-                stroke-linecap="round"
-              />
-            </svg>
+          <span class="app-nav-label app-nav-label-open" aria-hidden="true" hidden>
+            <span class="app-nav-flank">×</span><span class="app-nav-word" data-i18n="navMenuLabel">選單</span><span class="app-nav-flank">×</span>
           </span>
         </button>
       </div>
@@ -5050,10 +5034,10 @@ function enhanceGlassScreenHeads() {
 function syncAppNavBtnIcons(open) {
   document.querySelectorAll(".js-app-nav-btn").forEach((btn) => {
     btn.setAttribute("aria-expanded", open ? "true" : "false");
-    const bars = btn.querySelector(".app-nav-ico-bars");
-    const closeIco = btn.querySelector(".app-nav-ico-close");
-    if (bars) bars.hidden = !!open;
-    if (closeIco) closeIco.hidden = !open;
+    const closed = btn.querySelector(".app-nav-label-closed");
+    const opened = btn.querySelector(".app-nav-label-open");
+    if (closed) closed.hidden = !!open;
+    if (opened) opened.hidden = !open;
   });
 }
 
