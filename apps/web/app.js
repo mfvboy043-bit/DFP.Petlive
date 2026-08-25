@@ -7513,7 +7513,8 @@ async function handleGoogleSignIn({ enterApp } = {}) {
     } else if (
       msg.includes("popup_closed") ||
       msg.includes("access_denied") ||
-      msg.includes("popup_failed")
+      msg.includes("popup_failed") ||
+      msg.includes("auth_timeout")
     ) {
       setIntroStatus(t("cloudLoginCancelled"));
       showToast(t("cloudLoginCancelled"));

@@ -167,9 +167,14 @@
       (client) =>
         new Promise((resolve, reject) => {
           let settled = false;
+          let timer = null;
           const finish = (fn, value) => {
             if (settled) return;
             settled = true;
+            if (timer) {
+              global.clearTimeout(timer);
+              timer = null;
+            }
             fn(value);
           };
           client.callback = (response) => {
@@ -189,6 +194,14 @@
             writeStoredToken(token);
             finish(resolve, token);
           };
+          // GIS fires this when the popup/overlay closes without an OAuth response.
+          client.error_callback = (err) => {
+            const type = err?.type || err?.message || "popup_failed";
+            finish(reject, new Error(String(type)));
+          };
+          timer = global.setTimeout(() => {
+            finish(reject, new Error("auth_timeout"));
+          }, 120_000);
           try {
             client.requestAccessToken({ prompt: prompt || "" });
           } catch (err) {
@@ -223,7 +236,12 @@
       ensureIdentityClient(),
       "select_account"
     );
-    await fetchProfile(token.access_token);
+    // Token is enough to enter the app; profile is best-effort chrome.
+    try {
+      await fetchProfile(token.access_token);
+    } catch {
+      /* ignore — avatar/email can stay empty */
+    }
     notify();
     return getSession();
   }

@@ -443,7 +443,7 @@ h4 {
   display: inline-flex;
   width: 18px;
   height: 18px;
-  color: #fff;
+  flex: 0 0 auto;
 }
 
 .intro-login-g svg {
