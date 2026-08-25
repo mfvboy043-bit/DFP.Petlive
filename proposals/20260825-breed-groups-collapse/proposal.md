@@ -1,7 +1,7 @@
 ---
 id: 20260825-breed-groups-collapse
 title: "品種 chip 預設摺疊＋犬／貓分組"
-status: proposed
+status: adopted
 author: planner
 candidate_branch: "proposal/breed-groups-collapse"
 candidate_path: "proposals/20260825-breed-groups-collapse"

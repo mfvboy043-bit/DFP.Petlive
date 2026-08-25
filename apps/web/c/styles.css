@@ -1605,6 +1605,11 @@ select:focus {
   box-sizing: border-box;
 }
 
+/* Nickname needs a bit more room than species select */
+#pet-form .field-row--name-species {
+  grid-template-columns: minmax(0, 1.35fr) minmax(0, 0.85fr);
+}
+
 /* iOS/WebKit date controls have a large intrinsic min-width */
 input[type="date"],
 input[type="time"],
@@ -7110,6 +7115,11 @@ html.is-proof-lightbox-open body {
     grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 10px;
     overflow-x: clip;
+  }
+
+  #pet-form .field-row--name-species,
+  .screen[data-screen="add-pet"] .field-row--name-species {
+    grid-template-columns: minmax(0, 1.35fr) minmax(0, 0.85fr);
   }
 
   #pet-form .field-row .field,

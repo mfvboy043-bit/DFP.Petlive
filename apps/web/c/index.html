@@ -11,7 +11,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,700&family=Noto+Sans+TC:wght@400;500;700&family=Noto+Serif+TC:wght@600;700&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="./styles.css?v=20260825-add-pet-fields" />
+  <link rel="stylesheet" href="./styles.css?v=20260825-name-species-row" />
 </head>
 <body>
   <div
@@ -364,26 +364,27 @@
       </header>
 
       <form class="form" id="pet-form">
-        <label class="field">
-          <span data-i18n="petName">寵物暱稱</span>
-          <input
-            type="text"
-            name="petName"
-            data-i18n-placeholder="petNamePlaceholder"
-            placeholder="例如：米醬"
-            maxlength="20"
-            required
-          />
-        </label>
-
-        <label class="field">
-          <span data-i18n="species">種類</span>
-          <select name="species" id="pet-species" required>
-            <option value="dog" data-i18n="dog">犬</option>
-            <option value="cat" data-i18n="cat">貓</option>
-            <option value="other" data-i18n="other">其他</option>
-          </select>
-        </label>
+        <div class="field-row field-row--name-species">
+          <label class="field">
+            <span data-i18n="petName">寵物暱稱</span>
+            <input
+              type="text"
+              name="petName"
+              data-i18n-placeholder="petNamePlaceholder"
+              placeholder="例如：米醬"
+              maxlength="20"
+              required
+            />
+          </label>
+          <label class="field">
+            <span data-i18n="species">種類</span>
+            <select name="species" id="pet-species" required>
+              <option value="dog" data-i18n="dog">犬</option>
+              <option value="cat" data-i18n="cat">貓</option>
+              <option value="other" data-i18n="other">其他</option>
+            </select>
+          </label>
+        </div>
 
         <fieldset class="chip-field" id="breed-select-field">
           <legend data-i18n="breed">品種</legend>
