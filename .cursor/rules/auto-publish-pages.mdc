@@ -1,0 +1,30 @@
+---
+description: Auto-push A/B (apps/web formal) to GitHub Pages without asking Victor
+alwaysApply: true
+---
+
+# Auto-publish A／B to GitHub Pages
+
+Victor (2026-08-25): After iterating the **formal** surfaces **A** (intro/login) or **B** (main passport under `apps/web/`), **commit and push to `origin/main` so GitHub Pages updates — do not ask first.**
+
+## When to publish
+
+- Changes that land on formal `apps/web/` (index/app/styles/i18n/auth/config used by A or B)
+- After covering C → B, or any A↔B wiring / login / chrome fix meant for the live site
+
+## When not required
+
+- **C-only** drafts under `apps/web/c/` that have not been adopted onto B (unless Victor also asks to publish C)
+- Rules / skills / agents / proposals scaffolding with no `apps/web/` product change
+- Pure local debug that Victor did not intend as the latest A/B version
+
+## How
+
+1. Commit relevant files (concise message; include `apps/web/` product files; skip secrets)
+2. Integrate onto `main` (merge current work or cherry-pick) and `git push origin main`
+3. Confirm Pages URL still serves the new cache `?v=` if checked
+4. Tell Victor the Pages URL briefly — **no “要我推嗎？”**
+
+Live URL: `https://mfvboy043-bit.github.io/DFP.Petlive/apps/web/`
+
+This standing instruction **overrides** the default “only commit/push when asked” for A/B Pages publishes only.

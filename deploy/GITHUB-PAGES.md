@@ -6,6 +6,11 @@ Petlive 是靜態站：Pages 必須從 **repo 根目錄** 發佈，才能同時�
 
 `https://<user>.github.io/<repo>/apps/web/`
 
+## 自動發佈（Victor 偏好）
+
+A／B（`apps/web/` 正式面）迭代完成後，**直接 commit 並 push `main` 更新 GitHub Pages，不必再詢問**。  
+C 討論面未覆蓋進 B 前，不強制上 Pages。
+
 ## 手機為什麼 LAN IP 登不了？
 
 Google OAuth **不接受** `http://192.168.x.x` 這類區網 IP 當「授權的 JavaScript 來源」（非 localhost 必須是 **https**）。

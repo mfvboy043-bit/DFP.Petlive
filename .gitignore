@@ -7,3 +7,5 @@ deploy/preview-access.log
 deploy/preview-server.out
 node_modules/
 .cursor/
+!.cursor/rules/
+!.cursor/rules/**/*.mdc
