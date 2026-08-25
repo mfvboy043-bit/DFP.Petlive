@@ -1,7 +1,7 @@
 ---
 id: 20260825-sync-reconcile-ux
 title: "換機／首次登入同步 UX + 三態衝突防護"
-status: candidate_ready
+status: adopted
 author: planner
 candidate_branch: "proposal/sync-reconcile-ux"
 candidate_path: "proposals/20260825-sync-reconcile-ux"

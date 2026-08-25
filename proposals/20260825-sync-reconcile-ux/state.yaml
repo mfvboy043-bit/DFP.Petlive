@@ -1,13 +1,13 @@
 id: 20260825-sync-reconcile-ux
 title: "換機／首次登入同步 UX + 三態衝突防護"
 version: 2
-status: candidate_ready
+status: adopted
 
 gate_a:
   status: approved
 
 gate_b:
-  status: pending
+  status: adopted
 
 iteration: 0
 max_iterations: 3
