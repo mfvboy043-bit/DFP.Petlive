@@ -8361,6 +8361,16 @@ initAppNavMenu();
 initIntroAndCloud();
 initDemoMode();
 
+window.addEventListener("pageshow", (event) => {
+  if (!event.persisted) return;
+  closeAppNavMenu();
+  closeAccountMenu();
+  resetPageScroll();
+  if (app.querySelector('[data-screen="home"]')?.classList.contains("is-active")) {
+    resetPetPickerScroll();
+  }
+});
+
 PetLiveWeb.metrics = {
   getSnapshot() {
     return {
