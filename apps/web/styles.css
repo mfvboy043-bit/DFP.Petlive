@@ -1627,6 +1627,54 @@ input[type="week"] {
   overflow: hidden;
 }
 
+/*
+  iOS Safari: native date inputs ignore max-width in half columns.
+  Show a normal text face; overlay a transparent date input for the picker.
+*/
+.date-proxy {
+  position: relative;
+  display: block;
+  width: 100%;
+  min-width: 0;
+  max-width: 100%;
+  overflow: hidden;
+}
+
+.date-proxy-face {
+  display: block;
+  width: 100%;
+  min-width: 0;
+  max-width: 100%;
+  pointer-events: none;
+}
+
+.date-proxy-native {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  width: 100% !important;
+  min-width: 0 !important;
+  max-width: 100% !important;
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  border: 0 !important;
+  border-radius: var(--r-sm);
+  opacity: 0.01;
+  background: transparent !important;
+  box-shadow: none !important;
+  color: transparent;
+  -webkit-appearance: none;
+  appearance: none;
+  cursor: pointer;
+}
+
+.date-proxy:focus-within .date-proxy-face {
+  border-color: #8fb5a0;
+  box-shadow: 0 0 0 4px rgba(61, 107, 87, 0.08);
+  background: white;
+}
+
 input[type="date"]::-webkit-datetime-edit,
 input[type="time"]::-webkit-datetime-edit,
 input[type="datetime-local"]::-webkit-datetime-edit,
@@ -7064,6 +7112,15 @@ html.is-proof-lightbox-open body {
   select {
     min-height: var(--tap);
     font-size: 16px; /* iOS: avoid zoom-on-focus */
+    border-radius: 14px;
+  }
+
+  .date-proxy,
+  .date-proxy-face {
+    min-height: var(--tap);
+  }
+
+  .date-proxy-native {
     border-radius: 14px;
   }
 
