@@ -2962,7 +2962,10 @@ function getPetPhoto(petId) {
 }
 
 function setPetPhoto(petId, dataUrl) {
-  return petsMedia.setPetPhoto(petId, dataUrl);
+  const ok = petsMedia.setPetPhoto(petId, dataUrl);
+  // Local graph + Drive backup (schedulePetsGraphPersist → scheduleCloudBackup).
+  if (ok) schedulePetsGraphPersist();
+  return ok;
 }
 
 function flushPetPhotosOrToast() {
