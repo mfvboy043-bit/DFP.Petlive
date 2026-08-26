@@ -3128,8 +3128,18 @@ input[type="month"]::-webkit-calendar-picker-indicator {
   border-bottom: 1px solid #e2ddd4;
 }
 
-.e-brand {
+.e-brand-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
   margin-bottom: 7px;
+  min-width: 0;
+}
+
+.e-brand {
+  margin: 0;
+  min-width: 0;
 
   font-family: "Noto Serif TC", serif;
   font-size: 12px;
@@ -3157,17 +3167,8 @@ input[type="month"]::-webkit-calendar-picker-indicator {
   color: var(--text-strong);
 }
 
-.e-name-aside {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-end;
-  gap: 6px;
-  margin-left: auto;
-  flex: 0 1 auto;
-  min-width: 0;
-}
-
 .e-copy-summary {
+  flex: 0 0 auto;
   min-height: 34px;
   padding: 6px 11px;
   font-size: 0.8rem;
@@ -3208,15 +3209,15 @@ input[type="month"]::-webkit-calendar-picker-indicator {
 }
 
 .e-chip-meta {
-  margin: 0;
+  margin: 4px 0 0;
   min-width: 0;
   padding-bottom: 2px;
   font-size: 0.78rem;
   font-weight: 500;
   font-style: italic;
-  line-height: 1;
+  line-height: 1.25;
   letter-spacing: 0.01em;
-  text-align: right;
+  text-align: left;
   color: var(--text-muted);
 }
 
