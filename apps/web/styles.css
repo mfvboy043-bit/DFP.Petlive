@@ -353,7 +353,8 @@ html[lang="ko"] .lede {
   display: none;
 }
 
-html:not([lang="en"]):not([lang="ja"]) .e-title-stack {
+html[lang="zh-Hant"] .e-title-stack,
+html[lang="ko"] .e-title-stack {
   flex-direction: row;
   gap: 0;
 }
@@ -362,6 +363,17 @@ html[lang="en"] .screen-emergency > .screen-head h2,
 html[lang="ja"] .screen-emergency > .screen-head h2 {
   font-size: 12px;
   line-height: 1.1;
+}
+
+html[lang="en"] .screen-emergency .e-title-stack,
+html[lang="ja"] .screen-emergency .e-title-stack {
+  flex-direction: column;
+}
+
+html[lang="en"] .screen-emergency .e-title-stack > span,
+html[lang="ja"] .screen-emergency .e-title-stack > span {
+  display: block;
+  white-space: nowrap;
 }
 
 .screen-head p {
