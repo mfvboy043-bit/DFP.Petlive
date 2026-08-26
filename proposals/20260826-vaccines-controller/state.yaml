@@ -21,7 +21,7 @@ candidate:
   branch: "proposal/vaccines-controller"
   path: "proposals/20260826-vaccines-controller"
   worktree: ""
-  note: "Adopted onto main via main-adopt worktree; source commit 3b97a72"
+  note: "Adopted onto main via main-adopt worktree; source commit 3b97a72; C→B cover 2026-08-27 (Victor 覆蓋)"
 
 reviews:
   pharmacist: conditional

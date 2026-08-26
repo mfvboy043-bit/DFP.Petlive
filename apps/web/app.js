@@ -2062,46 +2062,11 @@ function deleteAlertById(alertId) {
   applySelectedPet();
 }
 
-function getNextVaccine(pet) {
-  const currents = [...getCurrentVaccinesByGroup(pet).values()];
-  if (!currents.length) return null;
-  return currents.slice().sort(compareVaccinesForStatusDisplay)[0];
-}
-
 function daysUntil(isoDate) {
   const today = new Date();
   today.setHours(0, 0, 0, 0);
   const target = new Date(`${isoDate}T00:00:00`);
   return Math.ceil((target - today) / (1000 * 60 * 60 * 24));
-}
-
-/** @returns {"protected"|"approaching"|"expired"} */
-function getVaccineProtectionStatus(nextDate) {
-  const days = daysUntil(nextDate);
-  if (days <= 0) return "expired";
-  if (days <= 90) return "approaching";
-  return "protected";
-}
-
-function isVaccineApproaching(nextDate) {
-  return getVaccineProtectionStatus(nextDate) === "approaching";
-}
-
-function addYears(isoDate, years) {
-  const date = new Date(`${isoDate}T00:00:00`);
-  date.setFullYear(date.getFullYear() + years);
-  const yyyy = date.getFullYear();
-  const mm = String(date.getMonth() + 1).padStart(2, "0");
-  const dd = String(date.getDate()).padStart(2, "0");
-  return `${yyyy}-${mm}-${dd}`;
-}
-
-function todayISODate() {
-  const date = new Date();
-  const yyyy = date.getFullYear();
-  const mm = String(date.getMonth() + 1).padStart(2, "0");
-  const dd = String(date.getDate()).padStart(2, "0");
-  return `${yyyy}-${mm}-${dd}`;
 }
 
 const PARASITE_APPROACHING_DAYS = 7;
@@ -2681,145 +2646,10 @@ const VACCINE_PRESETS = {
   ],
 };
 
-/**
- * Same group = series progression (later shot supersedes earlier for that line).
- * displayRank: lower = higher priority for home/emergency status surfacing & list order.
- *   10 core combo → 20 heartworm inj → 30 rabies → 40 standalone lepto → 50 lyme → 80 custom
- */
-const VACCINE_PROTECTION_META = {
-  v5in1: { group: "coreCombo", tier: 5, displayRank: 10 },
-  v7in1: { group: "coreCombo", tier: 7, displayRank: 10 },
-  v8in1: { group: "coreCombo", tier: 8, displayRank: 10 },
-  v10in1: { group: "coreCombo", tier: 10, displayRank: 10 },
-  v11in1: { group: "coreCombo", tier: 11, displayRank: 10 },
-  v3in1: { group: "felineCore", tier: 3, displayRank: 10 },
-  v5in1Cat: { group: "felineCore", tier: 5, displayRank: 10 },
-  vHeartwormInj: { group: "heartwormInj", tier: 1, displayRank: 20 },
-  vRabies: { group: "rabies", tier: 1, displayRank: 30 },
-  vLepto: { group: "lepto", tier: 1, displayRank: 40 },
-  vLyme: { group: "lyme", tier: 1, displayRank: 50 },
-  vFelv: { group: "felv", tier: 1, displayRank: 45 },
-  vChlamydia: { group: "chlamydia", tier: 1, displayRank: 46 },
-};
-
-function resolveVaccineKey(vaccine) {
-  if (vaccine?.key && VACCINE_PROTECTION_META[vaccine.key]) return vaccine.key;
-  const name = vaccine?.name;
-  if (!name || typeof I18N !== "object") return "";
-  for (const table of Object.values(I18N)) {
-    for (const key of Object.keys(VACCINE_PROTECTION_META)) {
-      if (table[key] === name) return key;
-    }
-  }
-  return "";
-}
-
 function vaccineLabelOf(vaccine) {
   const key = resolveVaccineKey(vaccine);
   if (key) return t(key);
   return vaccine?.name || "";
-}
-
-function getVaccineProtectionGroup(vaccine) {
-  const key = resolveVaccineKey(vaccine);
-  if (key) return VACCINE_PROTECTION_META[key].group;
-  return `name:${vaccine?.name || ""}`;
-}
-
-function getVaccineTier(vaccine) {
-  const key = resolveVaccineKey(vaccine);
-  return key ? VACCINE_PROTECTION_META[key].tier : 0;
-}
-
-function getVaccineDisplayRank(vaccine) {
-  const key = resolveVaccineKey(vaccine);
-  if (key) return VACCINE_PROTECTION_META[key].displayRank;
-  return 80;
-}
-
-/** Higher = more current within a protection group. */
-function compareVaccineCurrency(a, b) {
-  if (a.given !== b.given) return a.given < b.given ? -1 : 1;
-  const tierDiff = getVaccineTier(a) - getVaccineTier(b);
-  if (tierDiff) return tierDiff;
-  if (a.next !== b.next) return a.next < b.next ? -1 : 1;
-  return 0;
-}
-
-function getCurrentVaccinesByGroup(pet) {
-  const map = new Map();
-  (pet?.vaccines || []).forEach((vaccine) => {
-    const group = getVaccineProtectionGroup(vaccine);
-    const current = map.get(group);
-    if (!current || compareVaccineCurrency(current, vaccine) < 0) {
-      map.set(group, vaccine);
-    }
-  });
-  return map;
-}
-
-function getVaccineSuccessor(pet, vaccine) {
-  const current = getCurrentVaccinesByGroup(pet).get(getVaccineProtectionGroup(vaccine));
-  return current && current !== vaccine ? current : null;
-}
-
-/** Urgency: expired > approaching > protected (lower score = more urgent). */
-function vaccineStatusUrgency(nextDate) {
-  const status = getVaccineProtectionStatus(nextDate);
-  if (status === "expired") return 0;
-  if (status === "approaching") return 1;
-  return 2;
-}
-
-/**
- * Status strip / emergency nav: urgent first, then combo before rabies/add-ons,
- * then sooner next-due date.
- */
-function compareVaccinesForStatusDisplay(a, b) {
-  const urgency = vaccineStatusUrgency(a.next) - vaccineStatusUrgency(b.next);
-  if (urgency) return urgency;
-  const rank = getVaccineDisplayRank(a) - getVaccineDisplayRank(b);
-  if (rank) return rank;
-  if (a.next !== b.next) return a.next < b.next ? -1 : 1;
-  return 0;
-}
-
-/** List order: active combo → heartworm inj → rabies → rarer; history last. */
-function compareVaccinesForList(pet, a, b) {
-  const aSup = Boolean(getVaccineSuccessor(pet, a));
-  const bSup = Boolean(getVaccineSuccessor(pet, b));
-  if (aSup !== bSup) return aSup ? 1 : -1;
-  if (!aSup) {
-    const rank = getVaccineDisplayRank(a) - getVaccineDisplayRank(b);
-    if (rank) return rank;
-    if (a.next !== b.next) return a.next < b.next ? -1 : 1;
-    return getVaccineTier(b) - getVaccineTier(a);
-  }
-  if (a.given !== b.given) return a.given < b.given ? 1 : -1;
-  return 0;
-}
-
-function isRabiesVaccineEntry(entry) {
-  if (!entry) return false;
-  if (entry.key === "vRabies") return true;
-  const name = String(entry.name || "").trim().toLowerCase();
-  if (!name) return false;
-  if (name === "狂犬病" || name.includes("狂犬")) return true;
-  if (name.includes("rabies")) return true;
-  if (name.includes("광견병")) return true;
-  // Match localized preset labels
-  if (typeof I18N === "object") {
-    for (const table of Object.values(I18N)) {
-      const label = String(table?.vRabies || "").trim().toLowerCase();
-      if (label && name === label) return true;
-    }
-  }
-  return false;
-}
-
-function vaccineAllowedForPet(pet, entry) {
-  if (pet?.species === "cat" && isRabiesVaccineEntry(entry)) return false;
-  return true;
 }
 
 function syncVaccineFormHint(pet) {
@@ -2866,11 +2696,6 @@ function getSelectedVaccineEntries() {
   const custom = vaccineCustomName?.value.trim() || "";
   if (custom) entries.push({ key: "", name: custom });
   return entries;
-}
-
-function vaccineStatusForNext(next) {
-  const s = getVaccineProtectionStatus(next);
-  return s === "approaching" ? "soon" : s === "expired" ? "expired" : "ok";
 }
 
 function syncVaccineNextDueFromGiven() {
@@ -5146,6 +4971,101 @@ const medicationsController = PetLiveWeb.domains.medications.createController({
   formatDraftDoseLineOf: (draft) =>
     medicationsSelectors.formatDraftDoseLine(draft),
 });
+
+const VACCINE_PROTECTION_META = PetLiveWeb.domains.vaccines.PROTECTION_META;
+
+function findKeyByLocalizedName(name) {
+  if (!name || typeof I18N !== "object") return "";
+  for (const table of Object.values(I18N)) {
+    for (const key of Object.keys(VACCINE_PROTECTION_META)) {
+      if (table[key] === name) return key;
+    }
+  }
+  return "";
+}
+
+function isRabiesLocalizedName(name) {
+  const lower = String(name || "").trim().toLowerCase();
+  if (!lower) return false;
+  if (lower === "狂犬病" || lower.includes("狂犬")) return true;
+  if (lower.includes("rabies")) return true;
+  if (lower.includes("광견병")) return true;
+  if (typeof I18N === "object") {
+    for (const table of Object.values(I18N)) {
+      const label = String(table?.vRabies || "").trim().toLowerCase();
+      if (label && lower === label) return true;
+    }
+  }
+  return false;
+}
+
+const vaccinesSelectors = PetLiveWeb.domains.vaccines.createSelectors({
+  daysUntil,
+  findKeyByLocalizedName,
+  isRabiesLocalizedName,
+});
+const vaccinesController = PetLiveWeb.domains.vaccines.createController({
+  selectors: vaccinesSelectors,
+});
+
+function getNextVaccine(pet) {
+  return vaccinesSelectors.getNextVaccine(pet);
+}
+function getVaccineProtectionStatus(nextDate) {
+  return vaccinesSelectors.getVaccineProtectionStatus(nextDate);
+}
+function isVaccineApproaching(nextDate) {
+  return vaccinesSelectors.isVaccineApproaching(nextDate);
+}
+function addYears(isoDate, years) {
+  return vaccinesSelectors.addYears(isoDate, years);
+}
+function todayISODate() {
+  return vaccinesSelectors.todayISODate();
+}
+function resolveVaccineKey(vaccine) {
+  return vaccinesSelectors.resolveVaccineKey(vaccine);
+}
+function getVaccineProtectionGroup(vaccine) {
+  return vaccinesSelectors.getVaccineProtectionGroup(vaccine);
+}
+function getVaccineTier(vaccine) {
+  return vaccinesSelectors.getVaccineTier(vaccine);
+}
+function getVaccineDisplayRank(vaccine) {
+  return vaccinesSelectors.getVaccineDisplayRank(vaccine);
+}
+function compareVaccineCurrency(a, b) {
+  return vaccinesSelectors.compareVaccineCurrency(a, b);
+}
+function getCurrentVaccinesByGroup(pet) {
+  return vaccinesSelectors.getCurrentVaccinesByGroup(pet);
+}
+function getVaccineSuccessor(pet, vaccine) {
+  return vaccinesSelectors.getVaccineSuccessor(pet, vaccine);
+}
+function vaccineStatusUrgency(nextDate) {
+  return vaccinesSelectors.vaccineStatusUrgency(nextDate);
+}
+function compareVaccinesForStatusDisplay(a, b) {
+  return vaccinesSelectors.compareVaccinesForStatusDisplay(a, b);
+}
+function compareVaccinesForList(pet, a, b) {
+  return vaccinesSelectors.compareVaccinesForList(pet, a, b);
+}
+function isRabiesVaccineEntry(entry) {
+  return vaccinesSelectors.isRabiesVaccineEntry(entry);
+}
+function vaccineAllowedForPet(pet, entry) {
+  return vaccinesSelectors.vaccineAllowedForPet(pet, entry);
+}
+function vaccineStatusForNext(next) {
+  return vaccinesSelectors.vaccineStatusForNext(next);
+}
+function upsertPetVaccines(pet, entries) {
+  return vaccinesController.upsertPetVaccines(pet, entries);
+}
+
 const IMAGING_PHOTOS_MAX = visitsController.IMAGING_PHOTOS_MAX;
 
 const VIEWPORT_DEFAULT =
@@ -7482,23 +7402,6 @@ document.getElementById("lab-list")?.addEventListener("click", (event) => {
   }
 });
 
-function upsertPetVaccines(pet, entries) {
-  if (!Array.isArray(pet.vaccines)) pet.vaccines = [];
-  const keys = new Set(entries.map((entry) => entry.key).filter(Boolean));
-  const names = new Set(entries.map((entry) => entry.name));
-  pet.vaccines = pet.vaccines.filter((vaccine) => {
-    if (vaccine.key && keys.has(vaccine.key)) return false;
-    if (names.has(vaccine.name)) return false;
-    return true;
-  });
-  entries
-    .slice()
-    .reverse()
-    .forEach((entry) => {
-      pet.vaccines.unshift(entry);
-    });
-}
-
 vaccineChipsEl?.addEventListener("click", (event) => {
   const chip = event.target.closest("[data-vaccine-key]");
   if (!chip || !vaccineChipsEl.contains(chip)) return;
@@ -7601,41 +7504,26 @@ vaccineForm.addEventListener("submit", (event) => {
   const given = vaccineGivenInput.value;
   const next = vaccineNextDueInput.value;
 
-  if (!selected.length) {
-    showToast(t("toastNeedVaccineName"));
-    return;
-  }
-  const blocked = selected.filter((entry) => !vaccineAllowedForPet(pet, entry));
-  if (blocked.length) {
-    showToast(t("toastVaccineNotForCat", { name: blocked[0].name }));
-    return;
-  }
-  if (!given || !next) {
-    showToast(t("toastNeedVaccineDates"));
-    return;
-  }
-  if (next < given) {
-    showToast(t("toastVaccineOrder"));
+  const saveResult = vaccinesController.buildSaveEntries({
+    pet,
+    selected,
+    given,
+    next,
+  });
+  if (!saveResult.ok) {
+    if (saveResult.reason === "need_name") {
+      showToast(t("toastNeedVaccineName"));
+    } else if (saveResult.reason === "species_blocked") {
+      showToast(t("toastVaccineNotForCat", { name: saveResult.blocked.name }));
+    } else if (saveResult.reason === "need_dates") {
+      showToast(t("toastNeedVaccineDates"));
+    } else if (saveResult.reason === "date_order") {
+      showToast(t("toastVaccineOrder"));
+    }
     return;
   }
 
-  const status = vaccineStatusForNext(next);
-  const updated = selected.some((entry) =>
-    pet.vaccines?.some(
-      (vaccine) =>
-        (entry.key && vaccine.key === entry.key) || vaccine.name === entry.name
-    )
-  );
-  upsertPetVaccines(
-    pet,
-    selected.map((entry) => ({
-      key: entry.key || "",
-      name: entry.name,
-      given,
-      next,
-      status,
-    }))
-  );
+  upsertPetVaccines(pet, saveResult.entries);
 
   const calPayload = buildVaccineCalendarPayload(pet, {
     vaccines: selected,
@@ -7647,7 +7535,7 @@ vaccineForm.addEventListener("submit", (event) => {
   resetVaccineForm(pet);
   vaccineFormPetId = pet.id;
   showToast(
-    t(updated ? "toastVaccinesUpdated" : "toastVaccinesAdded", {
+    t(saveResult.updated ? "toastVaccinesUpdated" : "toastVaccinesAdded", {
       name: pet.name,
       count: selected.length,
       vaccines: selected.map((entry) => entry.name).join("、"),

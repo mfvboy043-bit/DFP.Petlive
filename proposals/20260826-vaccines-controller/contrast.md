@@ -49,4 +49,4 @@
 - [x] Surgical copy from `3b97a72` VC files onto main (no blind-merge of proposal branch)
 - [x] Exclude unrelated C styles/i18n WIP unless Victor wants bundled
 - [x] Set proposal `status: adopted`
-- [ ] Ask Victor separately for C → B cover / Pages
+- [x] C → B cover (Victor 覆蓋 2026-08-27): formal B loads `domains/vaccines` + app.js facades/`buildSaveEntries`; B-only auth kept; Pages cache `?v=20260826-vc-cover`
