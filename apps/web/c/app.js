@@ -1849,36 +1849,37 @@ function daysUntil(isoDate) {
   return Math.ceil((target - today) / (1000 * 60 * 60 * 24));
 }
 
-const PARASITE_APPROACHING_DAYS = 7;
-const PARASITE_KINDS = ["external", "heartworm"];
-/** covers: which tracking slots this product can fill; dual = external+heartworm */
-const PARASITE_PRODUCT_CATALOG = {
-  ppRevolution: { intervalDays: 30, covers: ["external", "heartworm"] },
-  ppFrontline: { intervalDays: 30, covers: ["external"] },
-  ppAdvantix: { intervalDays: 30, covers: ["external"] },
-  ppNexGardSpectra: { intervalDays: 30, covers: ["external", "heartworm"] },
-  ppMilbemax: { intervalDays: 30, covers: ["heartworm"] },
-  ppProHeart: { intervalDays: 365, covers: ["heartworm"] },
-};
+function parasiteTodayISODate() {
+  const date = new Date();
+  const yyyy = date.getFullYear();
+  const mm = String(date.getMonth() + 1).padStart(2, "0");
+  const dd = String(date.getDate()).padStart(2, "0");
+  return `${yyyy}-${mm}-${dd}`;
+}
 
+const parasiteController = PetLiveWeb.domains.parasite.createController({
+  daysUntil,
+  addDays,
+  todayISODate: parasiteTodayISODate,
+  labelOf: (key) => t(key),
+});
+const parasiteSelectors = PetLiveWeb.domains.parasite.createSelectors({
+  parasite: parasiteController,
+});
+
+const PARASITE_APPROACHING_DAYS = parasiteController.APPROACHING_DAYS;
+const PARASITE_KINDS = parasiteController.KINDS;
+const PARASITE_PRODUCT_CATALOG = parasiteController.PRODUCT_CATALOG;
 const PARASITE_PRODUCTS = {
-  external: ["ppFrontline", "ppAdvantix", "ppRevolution", "ppNexGardSpectra"].map(
-    (key) => ({ key, ...PARASITE_PRODUCT_CATALOG[key] })
-  ),
-  heartworm: [
-    "ppRevolution",
-    "ppNexGardSpectra",
-    "ppMilbemax",
-    "ppProHeart",
-  ].map((key) => ({ key, ...PARASITE_PRODUCT_CATALOG[key] })),
+  external: parasiteController.productsForKind("external"),
+  heartworm: parasiteController.productsForKind("heartworm"),
 };
 
 let pendingParasiteFocus = null;
 const selectedParasiteProduct = { external: "", heartworm: "" };
 
 function isParasiteDualProduct(productKey) {
-  const covers = PARASITE_PRODUCT_CATALOG[productKey]?.covers || [];
-  return covers.includes("external") && covers.includes("heartworm");
+  return parasiteController.isParasiteDualProduct(productKey);
 }
 
 function parasiteProductChipLabel(item) {
@@ -1889,24 +1890,22 @@ function parasiteProductChipLabel(item) {
 }
 
 function ensureParasitePrevention(pet) {
-  if (!pet.parasitePrevention) {
-    pet.parasitePrevention = { external: null, heartworm: null };
-  }
-  return pet.parasitePrevention;
+  return parasiteController.ensureParasitePrevention(pet);
 }
 
 /** @returns {"protected"|"approaching"|"unprotected"} */
 function getParasiteStatus(nextDue) {
-  if (!nextDue) return "unprotected";
-  const days = daysUntil(nextDue);
-  if (days < 0) return "unprotected";
-  if (days <= PARASITE_APPROACHING_DAYS) return "approaching";
-  return "protected";
+  return parasiteController.getParasiteStatus(nextDue);
+}
+
+function getParasiteSlotStatus(pet, kind) {
+  return parasiteSelectors.getParasiteSlotStatus(pet, kind);
 }
 
 function parasiteStatusLabel(status) {
   if (status === "protected") return t("parasiteProtected");
   if (status === "approaching") return t("parasiteApproaching");
+  if (status === "optional") return t("parasiteOptional");
   return t("parasiteUnprotected");
 }
 
@@ -1915,15 +1914,11 @@ function parasiteKindTitle(kind) {
 }
 
 function getParasiteRecord(pet, kind) {
-  const pp = ensureParasitePrevention(pet);
-  return pp[kind] || null;
+  return parasiteController.getParasiteRecord(pet, kind);
 }
 
 function resolveParasiteProductName(kind, productKey, customValue) {
-  const custom = (customValue || "").trim();
-  if (custom) return custom;
-  if (productKey) return t(productKey);
-  return "";
+  return parasiteController.resolveProductName({ productKey, customValue });
 }
 
 function syncParasiteNextFromLast(kind) {
@@ -1931,9 +1926,12 @@ function syncParasiteNextFromLast(kind) {
   const intervalEl = document.getElementById(`parasite-interval-${kind}`);
   const nextEl = document.getElementById(`parasite-next-${kind}`);
   if (!lastEl?.value || !intervalEl?.value || !nextEl) return;
-  const days = Number(intervalEl.value);
-  if (!Number.isFinite(days) || days < 1) return;
-  nextEl.value = addDays(lastEl.value, days);
+  const nextDue = parasiteController.computeNextDue(
+    lastEl.value,
+    Number(intervalEl.value)
+  );
+  if (!nextDue) return;
+  nextEl.value = nextDue;
   syncDateProxies(document.getElementById(`parasite-form-${kind}`) || document);
 }
 
@@ -2014,15 +2012,15 @@ function renderParasiteStrip(pet) {
       "is-optional"
     );
 
+    const status = getParasiteSlotStatus(pet, kind);
     // Cats: heartworm is optional — unset = no alarm; set = normal status UI.
-    if (pet.species === "cat" && kind === "heartworm" && !record?.nextDue) {
+    if (status === "optional") {
       row.classList.add("is-optional");
       meta.textContent = t("parasiteHeartwormOptional");
       statusEl.textContent = t("parasiteOptional");
       return;
     }
 
-    const status = getParasiteStatus(record?.nextDue);
     row.classList.add(`is-${status}`);
 
     if (!record?.nextDue) {
@@ -2082,30 +2080,23 @@ function renderVaccineStrip(pet) {
 function readParasiteForm(kind) {
   const productKey = selectedParasiteProduct[kind] || "";
   const custom = document.getElementById(`parasite-custom-${kind}`)?.value || "";
-  const product = resolveParasiteProductName(kind, productKey, custom);
   const lastGiven = document.getElementById(`parasite-last-${kind}`)?.value || "";
   const intervalRaw = document.getElementById(`parasite-interval-${kind}`)?.value;
-  const intervalDays = Number(intervalRaw);
-  let nextDue = document.getElementById(`parasite-next-${kind}`)?.value || "";
+  const nextDue = document.getElementById(`parasite-next-${kind}`)?.value || "";
 
-  if (lastGiven && Number.isFinite(intervalDays) && intervalDays >= 1 && !nextDue) {
-    nextDue = addDays(lastGiven, intervalDays);
-  }
-
-  return {
-    productKey: custom.trim() ? "" : productKey,
-    product,
+  return parasiteController.normalizeDraft({
+    productKey,
+    customValue: custom,
     lastGiven,
-    intervalDays: Number.isFinite(intervalDays) && intervalDays >= 1 ? intervalDays : 30,
+    intervalDays: Number(intervalRaw),
     nextDue,
-  };
+  });
 }
 
 function saveParasiteKind(kind, { dosedToday = false, quiet = false } = {}) {
   const pet = getCurrentPet();
   if (!pet) return false;
-  const pp = ensureParasitePrevention(pet);
-  const draft = readParasiteForm(kind);
+  let draft = readParasiteForm(kind);
 
   if (dosedToday) {
     const lastEl = document.getElementById(`parasite-last-${kind}`);
@@ -2115,61 +2106,43 @@ function saveParasiteKind(kind, { dosedToday = false, quiet = false } = {}) {
     const intervalDays =
       Number.isFinite(typedDays) && typedDays >= 1 ? typedDays : draft.intervalDays || 30;
 
-    draft.lastGiven = todayISODate();
-    draft.intervalDays = intervalDays;
-    draft.nextDue = addDays(draft.lastGiven, intervalDays);
+    draft = parasiteController.applyDosedToday(
+      { ...draft, intervalDays },
+      { today: parasiteTodayISODate() }
+    );
 
     if (lastEl) lastEl.value = draft.lastGiven;
     if (intervalEl) intervalEl.value = String(intervalDays);
     if (nextEl) nextEl.value = draft.nextDue;
   }
 
-  if (!draft.product) {
-    showToast(t("toastParasiteNeedProduct"));
+  const result = parasiteController.saveParasiteKind(pet, kind, draft);
+  if (!result.ok) {
+    if (result.reason === "needProduct") showToast(t("toastParasiteNeedProduct"));
+    else if (result.reason === "needDates") showToast(t("toastParasiteNeedDates"));
+    else if (result.reason === "order") showToast(t("toastParasiteOrder"));
     return false;
   }
-  if (!draft.lastGiven || !draft.nextDue) {
-    showToast(t("toastParasiteNeedDates"));
-    return false;
-  }
-  if (draft.nextDue < draft.lastGiven) {
-    showToast(t("toastParasiteOrder"));
-    return false;
-  }
-
-  pp[kind] = {
-    productKey: draft.productKey,
-    product: draft.product,
-    lastGiven: draft.lastGiven,
-    intervalDays: draft.intervalDays,
-    nextDue: draft.nextDue,
-  };
 
   // Dual-cover products (e.g. 寵愛 / 全能狗Ｓ) keep both strips in sync.
-  if (draft.productKey && isParasiteDualProduct(draft.productKey)) {
-    const other = kind === "external" ? "heartworm" : "external";
-    pp[other] = {
-      productKey: draft.productKey,
-      product: draft.product,
-      lastGiven: draft.lastGiven,
-      intervalDays: draft.intervalDays,
-      nextDue: draft.nextDue,
-    };
-    fillParasiteKindForm(pet, other);
+  if (result.syncedOtherKind) {
+    fillParasiteKindForm(pet, result.syncedOtherKind);
   }
 
   fillParasiteKindForm(pet, kind);
   renderParasiteStrip(pet);
+  // Preserve pre-extract persist pattern: no applySelectedPet / schedulePetsGraphPersist here.
   if (!quiet) {
+    const saved = result.draft || draft;
     showToast(
       t(
-        draft.productKey && isParasiteDualProduct(draft.productKey)
+        saved.productKey && isParasiteDualProduct(saved.productKey)
           ? "toastParasiteSavedDual"
           : "toastParasiteSaved",
         {
           name: pet.name,
           kind: parasiteKindTitle(kind),
-          product: draft.product,
+          product: saved.product,
         }
       )
     );
@@ -2204,16 +2177,18 @@ function prepareParasiteNextDueFromLast(kind) {
     days = 30;
     if (intervalEl) intervalEl.value = "30";
   }
-  const nextDue = addDays(lastGiven, days);
+  const nextDue = parasiteController.computeNextDue(lastGiven, days);
+  if (!nextDue) return false;
   if (nextEl) nextEl.value = nextDue;
   syncDateProxies(document.getElementById(`parasite-form-${kind}`) || document);
   return true;
 }
 
 function buildParasiteCalendarPayload(pet, kind) {
+  if (!pet) return null;
+  const kindTitle = parasiteKindTitle(kind);
   const record = getParasiteRecord(pet, kind);
   if (!record?.nextDue) return null;
-  const kindTitle = parasiteKindTitle(kind);
   const title = t("parasiteCalTitle", {
     name: pet.name,
     kind: kindTitle,
@@ -2226,7 +2201,10 @@ function buildParasiteCalendarPayload(pet, kind) {
     last: record.lastGiven || "—",
     next: record.nextDue,
   });
-  return { title, details, nextDue: record.nextDue };
+  return parasiteController.buildParasiteCalendarPayload(pet, kind, {
+    title,
+    details,
+  });
 }
 
 let pendingCalendarPayload = null;

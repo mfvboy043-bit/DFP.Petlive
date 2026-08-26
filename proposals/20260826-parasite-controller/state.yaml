@@ -1,0 +1,36 @@
+id: "20260826-parasite-controller"
+title: "Parasite controller building blocks"
+version: 2
+status: adopted
+
+gate_a:
+  status: approved
+  note: "Victor 確認 2026-08-26"
+
+gate_b:
+  status: adopted
+  note: "Victor 採用 2026-08-26；C + domains/parasite on main; formal B cover separate"
+
+iteration: 1
+max_iterations: 3
+
+candidate:
+  branch: "proposal/parasite-controller"
+  path: "proposals/20260826-parasite-controller"
+  worktree: ""
+  note: "Cherry-pick de6c13d onto main; index conflicts kept main UI WIP"
+
+reviews:
+  pharmacist: pass
+  qa: pass
+  ui: pass
+
+rerun: []
+blocking_issues: []
+non_blocking:
+  - QA-002
+  - QA-003
+  - MED-001
+  - UI-001
+builder_scope: []
+halt_reason: ""

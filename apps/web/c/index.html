@@ -1276,7 +1276,12 @@
       <header class="screen-head light">
         <button class="back" type="button" data-go="home" data-i18n-aria="back" aria-label="返回">←</button>
         <div>
-          <h2 data-i18n="emergencyTitle">醫療資訊卡</h2>
+          <h2 data-i18n-aria="emergencyTitle" aria-label="醫療資訊卡">
+            <span class="e-title-stack" aria-hidden="true">
+              <span data-i18n="emergencyTitleLine1">醫療資訊卡</span>
+              <span data-i18n="emergencyTitleLine2"></span>
+            </span>
+          </h2>
         </div>
         <div class="screen-head-actions" data-glass-chrome>
           <button class="btn btn-small e-copy-summary" type="button" id="copy-card" data-i18n="copySummary">
@@ -1727,6 +1732,8 @@
   <script defer src="../domains/medications/selectors.js?v=20260826-meds-ctrl"></script>
   <script defer src="../domains/vaccines/selectors.js?v=20260826-vc-ctrl"></script>
   <script defer src="../domains/vaccines/controller.js?v=20260826-vc-ctrl"></script>
-  <script defer src="./app.js?v=20260826-vc-adopt"></script>
+  <script defer src="../domains/parasite/controller.js?v=20260826-pa-ctrl"></script>
+  <script defer src="../domains/parasite/selectors.js?v=20260826-pa-ctrl"></script>
+  <script defer src="./app.js?v=20260826-pa-adopt"></script>
 </body>
 </html>
