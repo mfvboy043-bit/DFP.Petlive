@@ -2879,6 +2879,24 @@ input[type="month"]::-webkit-calendar-picker-indicator {
   min-width: 0;
 }
 
+.parasite-cal-chooser-providers .parasite-cal-google-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.parasite-cal-google-g {
+  display: inline-flex;
+  width: 18px;
+  height: 18px;
+  flex: 0 0 auto;
+}
+
+.parasite-cal-google-g svg {
+  display: block;
+}
+
 /* ---------------------------------------------------------
    19. TIMELINE
    Block language matches .alert-section (padded card + left accent).
