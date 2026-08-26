@@ -54,5 +54,5 @@
 - [x] Reviews attached
 - [x] Merge into `main` (C + shared `domains/pets` lifecycle/media + QA); formal B untouched; no Pages push (C-only)
 - [x] Set proposal `status: adopted`
-- [ ] C → B cover (separate Victor confirm)
-- [ ] Push `origin/main` (only if Victor wants remote/main sync; not required for Pages until B cover)
+- [x] C → B cover (Victor confirm 覆蓋)
+- [ ] Push `origin/main` (auto-publish Pages after B cover commit)
