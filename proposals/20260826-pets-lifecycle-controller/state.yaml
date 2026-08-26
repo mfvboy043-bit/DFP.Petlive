@@ -1,0 +1,43 @@
+id: "20260826-pets-lifecycle-controller"
+title: "Pets lifecycle + media controller building blocks"
+version: 2
+status: adopted
+# proposed | building | reviewing | revising | candidate_ready | halted | adopted | rejected
+
+gate_a:
+  status: approved
+  # pending | approved | modified | rejected
+  approved_at: "2026-08-26"
+  approved_by: "victor"
+
+gate_b:
+  status: adopted
+  # pending | adopted | rejected
+  adopted_at: "2026-08-26"
+  adopted_by: "victor"
+
+iteration: 1
+max_iterations: 3
+
+candidate:
+  branch: "proposal/pets-lifecycle-controller"
+  path: "proposals/20260826-pets-lifecycle-controller"
+  worktree: ".worktrees/pets-lifecycle"
+
+reviews:
+  pharmacist: skipped
+  qa: pass
+  ui: pass
+  # pending | skipped | pass | conditional | reject
+  # pharmacist: skipped — no dose/Rx/source-tag/disclaimer changes; escalate if weight/identity semantics drift
+
+rerun: []
+blocking_issues: []
+non_blocking: []
+builder_scope: []
+halt_reason: ""
+
+sequencing_note: >-
+  Concurrent with 20260826-timeline-visits-controller (different domains;
+  both touch apps/web/c/app.js). Prefer sequential Gate A builds or clear
+  non-overlapping function ownership.
