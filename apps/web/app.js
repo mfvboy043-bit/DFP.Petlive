@@ -2620,23 +2620,34 @@ function closeParasiteCalendarChooser() {
   delete overlay.dataset.parasiteKind;
 }
 
-function openParasiteCalendarChooser(kind) {
-  if (!prepareParasiteNextDueFromLast(kind)) return;
-  if (!saveParasiteKind(kind, { quiet: true })) return;
-
+function showParasiteCalendarChooser(kind) {
   const pet = getCurrentPet();
   const record = getParasiteRecord(pet, kind);
   const overlay = document.getElementById("parasite-cal-chooser");
   const meta = document.getElementById("parasite-cal-chooser-meta");
   if (!overlay || !record?.nextDue) {
     showToast(t("toastParasiteNeedNext"));
-    return;
+    return false;
   }
   overlay.dataset.parasiteKind = kind;
   if (meta) {
     meta.textContent = t("parasiteCalChooserMeta", { date: record.nextDue });
   }
   overlay.hidden = false;
+  return true;
+}
+
+/** Past dose: require last-given date, recompute next, save, then offer calendar. */
+function saveParasitePastAndOfferCalendar(kind) {
+  if (!prepareParasiteNextDueFromLast(kind)) return false;
+  if (!saveParasiteKind(kind, { quiet: true })) return false;
+  return showParasiteCalendarChooser(kind);
+}
+
+/** Dosed today: mark today in-app, then offer calendar for next due. */
+function saveParasiteDosedTodayAndOfferCalendar(kind) {
+  if (!saveParasiteKind(kind, { dosedToday: true, quiet: true })) return false;
+  return showParasiteCalendarChooser(kind);
 }
 
 function openParasiteGoogleCalendar(kind) {
@@ -7850,22 +7861,18 @@ PARASITE_KINDS.forEach((kind) => {
 
 document.getElementById("parasite-form-external")?.addEventListener("submit", (event) => {
   event.preventDefault();
-  saveParasiteKind("external");
+  saveParasitePastAndOfferCalendar("external");
 });
 
 document.getElementById("parasite-form-heartworm")?.addEventListener("submit", (event) => {
   event.preventDefault();
-  saveParasiteKind("heartworm");
+  saveParasitePastAndOfferCalendar("heartworm");
 });
 
 document.querySelectorAll("[data-parasite-dosed]").forEach((btn) => {
   btn.addEventListener("click", () => {
-    saveParasiteKind(btn.dataset.parasiteDosed, { dosedToday: true });
+    saveParasiteDosedTodayAndOfferCalendar(btn.dataset.parasiteDosed);
   });
-});
-
-document.querySelectorAll("[data-parasite-cal]").forEach((btn) => {
-  btn.addEventListener("click", () => openParasiteCalendarChooser(btn.dataset.parasiteCal));
 });
 
 document.getElementById("parasite-cal-chooser")?.addEventListener("click", (event) => {

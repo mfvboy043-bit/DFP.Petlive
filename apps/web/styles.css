@@ -7583,14 +7583,15 @@ html.is-proof-lightbox-open body {
   }
 
   .form-actions,
-  .med-form-actions,
-  .parasite-actions {
+  .med-form-actions {
     display: grid;
     grid-template-columns: 1fr;
   }
 
   .parasite-actions {
-    grid-template-columns: 1fr;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
   }
 
   .parasite-block {
