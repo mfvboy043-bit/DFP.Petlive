@@ -1,0 +1,37 @@
+id: "20260827-emergency-controller"
+title: "Emergency card controller building blocks"
+version: 2
+status: adopted
+
+gate_a:
+  status: approved
+  note: "Victor 確認 2026-08-27"
+
+gate_b:
+  status: adopted
+  note: "Victor 採用 2026-08-27；C + domains/emergency on main; formal B cover separate"
+
+iteration: 1
+max_iterations: 3
+
+candidate:
+  branch: "proposal/emergency-controller"
+  path: "proposals/20260827-emergency-controller"
+  worktree: ""
+  note: "Cherry-pick 1a89114 onto main; index conflicts kept main UI WIP"
+
+reviews:
+  pharmacist: conditional
+  qa: pass
+  ui: pass
+
+rerun: []
+blocking_issues: []
+non_blocking:
+  - QA-002
+  - MED-001
+  - MED-002
+  - MED-003
+  - UI-001
+builder_scope: []
+halt_reason: ""

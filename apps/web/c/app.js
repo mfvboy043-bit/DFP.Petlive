@@ -816,82 +816,6 @@ function todayIsoLocal() {
   return `${yyyy}-${mm}-${dd}`;
 }
 
-function parseDurationDaysFromDose(dose) {
-  const match = String(dose || "").match(/(\d+)\s*天/);
-  if (!match) return null;
-  const days = Number(match[1]);
-  return Number.isInteger(days) && days > 0 ? days : null;
-}
-
-function resolveMedCourse(med, visit) {
-  const startDate = med.startDate || visit?.date || null;
-  const durationDays =
-    med.durationDays ||
-    parseDurationDaysFromDose(med.dose) ||
-    null;
-  if (!startDate || !durationDays || !(durationDays > 0)) return null;
-  return {
-    startDate,
-    durationDays,
-    endDate: addDays(startDate, durationDays - 1),
-  };
-}
-
-function isMedCourseActive(course, today = todayIsoLocal()) {
-  if (!course) return false;
-  return today >= course.startDate && today <= course.endDate;
-}
-
-/** Active courses for emergency card / copy — derived from visits only.
- *  Compound bundles are flattened to ingredient rows (no “調劑藥水 A” type header).
- */
-function deriveActiveEmergencyMeds(pet) {
-  const today = todayIsoLocal();
-  const active = [];
-
-  (pet.visits || []).forEach((visit) => {
-    (visit.medications || []).forEach((med) => {
-      if (med.kind === "photo_bundle") return;
-      const course = resolveMedCourse(med, visit);
-      if (!isMedCourseActive(course, today)) return;
-
-      if (med.kind === "compound_bundle") {
-        const ingredients = med.ingredients || [];
-        if (!ingredients.length) return;
-        ingredients.forEach((ing) => {
-          if (!ing?.name) return;
-          active.push({
-            kind: "single",
-            name: ing.name,
-            dose: ing.dose,
-            frequency: med.frequency,
-            startDate: course.startDate,
-            durationDays: course.durationDays,
-            source: ing.source || med.source,
-          });
-        });
-        return;
-      }
-
-      const amount = med.amount ?? med.dosageAmount;
-      const unit = med.unit || med.dosageUnit;
-      active.push({
-        kind: "single",
-        name: med.name,
-        dose: med.dose,
-        frequency: med.frequency,
-        dosageAmount: amount,
-        dosageUnit: unit,
-        startDate: course.startDate,
-        durationDays: course.durationDays,
-        source: med.source,
-      });
-    });
-  });
-
-  return active;
-}
-
 function formatFrequencyLabel(frequency) {
   const raw = String(frequency || "").trim();
   if (!raw || raw === "unrecorded") return "";
@@ -1578,6 +1502,23 @@ function getAlertsForPet(pet) {
     ...alert,
     type: alertTypeLabel(alert.alertType),
   }));
+}
+
+const emergencyAdapter = PetLiveWeb.domains.emergency.createAdapter({
+  getAlertsForPet,
+  todayISODate: todayIsoLocal,
+});
+const emergencySelectors = PetLiveWeb.domains.emergency.createSelectors({
+  adapter: emergencyAdapter,
+});
+
+/** Active courses for emergency card / copy — visits only; domain adapter. */
+function deriveActiveEmergencyMeds(pet, today) {
+  return emergencyAdapter.deriveActiveEmergencyMeds(pet, today);
+}
+
+function buildEmergencySnapshot(pet) {
+  return emergencyAdapter.buildSnapshot(pet);
 }
 
 function alertLineText(alert) {
@@ -3673,23 +3614,22 @@ function formatPetShareLines(pet) {
 }
 
 function buildEmergencyCopyText(pet) {
-  const alerts = getAlertsForPet(pet);
-  const alertText = alerts.length
-    ? alerts.map((a) => `${alertTypeLabel(a.alertType)} ${alertLineText(a)}`).join("；")
-    : t("none");
-  const activeMeds = deriveActiveEmergencyMeds(pet);
-  const medText = activeMeds.length
-    ? activeMeds.map((med) => formatMedLine(med)).join("；")
-    : t("none");
-  const ownerLines = formatOwnerCopyLines(loadOwnerProfile());
+  const payload = emergencySelectors.copyPayload(pet, {
+    profile: loadOwnerProfile(),
+    labelOfAlertType: alertTypeLabel,
+    formatMedLine,
+    noneLabel: t("none"),
+    lineTextOfAlert: alertLineText,
+  });
+  const ownerLines = formatOwnerCopyLines(payload.owner);
 
   return [
     t("copyCardTitle"),
     "",
     ...formatPetShareLines(pet),
     "",
-    t("copyAlerts", { text: alertText }),
-    t("copyMeds", { text: medText }),
+    t("copyAlerts", { text: payload.alertsText }),
+    t("copyMeds", { text: payload.medsText }),
     ...(ownerLines.length ? ownerLines : [t("copyOwnerEmpty")]),
     t("copyDisclaimer"),
   ]
@@ -3802,30 +3742,6 @@ function renderEmergencyOwner() {
     rows.push(row(t("ownerAddressShort"), profile.address));
   }
   el.innerHTML = rows.join("");
-}
-
-function buildEmergencySnapshot(pet) {
-  const alerts = getAlertsForPet(pet);
-  const meds = deriveActiveEmergencyMeds(pet);
-  return {
-    pet: {
-      id: pet.id,
-      name: pet.name,
-      species: pet.species,
-      breed: pet.breed,
-      gender: pet.gender,
-      birthDate: pet.birthDate,
-      chipNumber: pet.chipNumber || "",
-      weight: pet.weight,
-      weightDate: pet.weightDate,
-    },
-    latestWeight:
-      pet.weight != null
-        ? { weight: pet.weight, recordedDate: pet.weightDate || null }
-        : null,
-    alerts,
-    currentMedications: meds,
-  };
 }
 
 function renderEmergencyAlertsList(alerts) {
@@ -4004,7 +3920,7 @@ function renderEmergencyCard(pet) {
   paintEmergencyIdentity(pet);
   if (cardPet.name) eName.textContent = cardPet.name || pet.name;
 
-  const degraded = result._degraded || {};
+  const degraded = emergencySelectors.degradedSections(result);
   const alertsBlock = eAlerts?.closest(".e-alerts");
 
   if (degraded.weight) {
