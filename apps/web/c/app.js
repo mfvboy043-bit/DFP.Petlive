@@ -1435,14 +1435,7 @@ function renderTimeline(pet) {
   if (imagingPending == null) expandLatestVisitRx();
 }
 
-const ALERT_TYPE_ORDER = [
-  "drug_allergy",
-  "food_allergy",
-  "adverse_drug_reaction",
-  "vaccine_reaction",
-  "chronic_disease",
-  "special_note",
-];
+const ALERT_TYPE_ORDER = PetLiveWeb.domains.alerts.ALERT_TYPE_ORDER;
 
 const ALERT_SECTION_DEFS = [
   {
@@ -1484,31 +1477,25 @@ const suppressedAlertsSlot = PetLiveWeb.storage.createJsonSlot({
   fallback: () => ({}),
   validate: isStorageMap,
 });
+const alertsController = PetLiveWeb.domains.alerts.createController({
+  ownerAlertsSlot,
+  suppressedAlertsSlot,
+});
+const alertsSelectors = PetLiveWeb.domains.alerts.createSelectors({
+  alerts: alertsController,
+});
 const editingAlertSectionIds = new Set();
 
-const DEFAULT_ALERT_SEVERITY = {
-  drug_allergy: "critical",
-  adverse_drug_reaction: "critical",
-  vaccine_reaction: "critical",
-  food_allergy: "caution",
-  chronic_disease: "caution",
-  special_note: "caution",
-};
-
 function defaultSeverityForType(alertType) {
-  return DEFAULT_ALERT_SEVERITY[alertType] || "caution";
+  return alertsController.defaultSeverityForType(alertType);
 }
 
 function normalizeSeverity(value, alertType) {
-  if (value === "critical" || value === "high") return "critical";
-  if (value === "caution") return "caution";
-  return defaultSeverityForType(alertType);
+  return alertsController.normalizeSeverity(value, alertType);
 }
 
 function highestAlertSeverity(alerts) {
-  if ((alerts || []).some((alert) => alert.severity === "critical")) return "critical";
-  if ((alerts || []).some((alert) => alert.severity === "caution")) return "caution";
-  return null;
+  return alertsSelectors.highestAlertSeverity(alerts);
 }
 
 function escapeAlertHtml(value) {
@@ -1532,122 +1519,65 @@ function alertTypeLabel(alertType) {
 }
 
 function inferAlertType(alert) {
-  if (ALERT_TYPE_ORDER.includes(alert.alertType)) return alert.alertType;
-  const label = String(alert.type || "");
-  if (/藥物過敏|drug.?allerg/i.test(label)) return "drug_allergy";
-  if (/食物過敏|food.?allerg/i.test(label)) return "food_allergy";
-  if (/不良反應|adverse/i.test(label)) return "adverse_drug_reaction";
-  if (/疫苗|vaccine/i.test(label)) return "vaccine_reaction";
-  if (/慢性|chronic/i.test(label)) return "chronic_disease";
-  if (/特別|注意|special|note/i.test(label)) return "special_note";
-  return "special_note";
+  return alertsController.inferAlertType(alert);
 }
 
 function normalizeAlert(alert, fallbackSource = "linked") {
-  const alertType = inferAlertType(alert);
-  const description = alert.desc || alert.text || alert.description || "";
-  const note = alert.note || alert.severityNote || "";
-  const source = alert.source === "owner" ? "owner" : fallbackSource;
-  const sinceRaw = alert.sinceDate || alert.since || "";
-  const sinceDate = typeof sinceRaw === "string" ? sinceRaw.trim() : "";
-  return {
-    id: alert.id || `a-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
-    alertType,
-    source,
-    type: alertTypeLabel(alertType),
-    text: alert.text || description,
-    desc: description,
-    description,
-    note,
-    severityNote: note,
-    severity: normalizeSeverity(alert.severity, alertType),
-    sinceDate: sinceDate || null,
-    createdAt: alert.createdAt || null,
-  };
+  const base = alertsController.normalizeAlert(alert, fallbackSource);
+  return { ...base, type: alertTypeLabel(base.alertType) };
 }
 
 function loadOwnerAlertsMap() {
-  return ownerAlertsSlot.read();
+  return alertsController.loadOwnerAlertsMap();
 }
 
 function saveOwnerAlertsMap(map) {
-  return ownerAlertsSlot.write(map);
+  return alertsController.saveOwnerAlertsMap(map);
 }
 
 function loadSuppressedAlertsMap() {
-  return suppressedAlertsSlot.read();
+  return alertsController.loadSuppressedAlertsMap();
 }
 
 function saveSuppressedAlertsMap(map) {
-  return suppressedAlertsSlot.write(map);
+  return alertsController.saveSuppressedAlertsMap(map);
 }
 
 function getSuppressedAlertIds(petId) {
-  const map = loadSuppressedAlertsMap();
-  const list = Array.isArray(map[petId]) ? map[petId] : [];
-  return new Set(list.map(String));
+  return alertsController.getSuppressedAlertIds(petId);
 }
 
 function suppressLinkedAlert(petId, alertId) {
-  if (!petId || !alertId) return false;
-  const map = loadSuppressedAlertsMap();
-  const next = new Set(Array.isArray(map[petId]) ? map[petId].map(String) : []);
-  next.add(String(alertId));
-  map[petId] = [...next];
-  return saveSuppressedAlertsMap(map);
+  return alertsController.suppressLinkedAlert(petId, alertId);
 }
 
 function getLinkedAlerts(pet) {
-  const suppressed = getSuppressedAlertIds(pet.id);
-  return (pet.alerts || [])
-    .filter((alert) => alert.source !== "owner")
-    .filter((alert) => !suppressed.has(String(alert.id)))
-    .map((alert) => normalizeAlert(alert, "linked"));
+  return alertsController.getLinkedAlerts(pet).map((alert) => ({
+    ...alert,
+    type: alertTypeLabel(alert.alertType),
+  }));
 }
 
 function getOwnerAlerts(petId) {
-  const map = loadOwnerAlertsMap();
-  const list = Array.isArray(map[petId]) ? map[petId] : [];
-  return list.map((alert) => normalizeAlert(alert, "owner"));
+  return alertsController.getOwnerAlerts(petId).map((alert) => ({
+    ...alert,
+    type: alertTypeLabel(alert.alertType),
+  }));
 }
 
 function persistOwnerAlertsForPet(petId, ownerAlerts) {
-  const map = loadOwnerAlertsMap();
-  map[petId] = ownerAlerts.map((alert) => ({
-    id: alert.id,
-    alertType: alert.alertType,
-    source: "owner",
-    description: alert.description || alert.desc || alert.text,
-    text: alert.text || alert.description || alert.desc,
-    desc: alert.desc || alert.description || alert.text,
-    note: alert.note || alert.severityNote || "",
-    severityNote: alert.note || alert.severityNote || "",
-    severity: alert.severity,
-    sinceDate: alert.sinceDate || null,
-    createdAt: alert.createdAt || new Date().toISOString(),
-  }));
-  if (!map[petId].length) delete map[petId];
-  return saveOwnerAlertsMap(map);
+  return alertsController.persistOwnerAlertsForPet(petId, ownerAlerts);
 }
 
 function sortAlerts(alerts) {
-  const rank = { critical: 0, caution: 1 };
-  return [...alerts].sort((a, b) => {
-    const sr = (rank[a.severity] ?? 2) - (rank[b.severity] ?? 2);
-    if (sr) return sr;
-    const ai = ALERT_TYPE_ORDER.indexOf(a.alertType);
-    const bi = ALERT_TYPE_ORDER.indexOf(b.alertType);
-    if (ai !== bi) return ai - bi;
-    return String(a.createdAt || "").localeCompare(String(b.createdAt || ""));
-  });
+  return alertsSelectors.sortAlerts(alerts);
 }
 
 function getAlertsForPet(pet) {
-  if (!pet) return [];
-  const owner = getOwnerAlerts(pet.id);
-  const ownerIds = new Set(owner.map((alert) => String(alert.id)));
-  const linked = getLinkedAlerts(pet).filter((alert) => !ownerIds.has(String(alert.id)));
-  return sortAlerts([...linked, ...owner]);
+  return alertsController.getAlertsForPet(pet).map((alert) => ({
+    ...alert,
+    type: alertTypeLabel(alert.alertType),
+  }));
 }
 
 function alertLineText(alert) {
@@ -1660,16 +1590,11 @@ function alertLineText(alert) {
 }
 
 function formatAlertSince(sinceDate) {
-  if (!sinceDate) return "";
-  const raw = String(sinceDate).trim();
-  if (/^\d{4}-\d{2}$/.test(raw)) return raw;
-  if (/^\d{4}-\d{2}-\d{2}$/.test(raw)) return raw.slice(0, 7);
-  return raw;
+  return alertsController.formatAlertSince(sinceDate);
 }
 
 function toMonthInputValue(sinceDate) {
-  const formatted = formatAlertSince(sinceDate);
-  return /^\d{4}-\d{2}$/.test(formatted) ? formatted : "";
+  return alertsController.toMonthInputValue(sinceDate);
 }
 
 function chronicSinceLine(alert) {
@@ -1860,67 +1785,42 @@ function saveAlertFromForm() {
     selectedAlertType === "chronic_disease"
       ? formatAlertSince(sinceInput?.value || "") || null
       : null;
-  if (!description) {
+  const draft = {
+    alertType: selectedAlertType,
+    description,
+    note,
+    severityNote: note,
+    severity: selectedAlertSeverity,
+    sinceDate,
+  };
+  const validation = alertsController.validateOwnerDraft(draft);
+  if (!validation.ok) {
     showToast(t("toastNeedAlertDescription"));
     return;
   }
 
   const editId = alertEditIdInput?.value || "";
-  let ownerAlerts = getOwnerAlerts(pet.id);
-
+  let result;
   if (editId) {
+    const ownerAlerts = getOwnerAlerts(pet.id);
     const index = ownerAlerts.findIndex((alert) => alert.id === editId);
     const base =
       index >= 0
         ? ownerAlerts[index]
         : getAlertsForPet(pet).find((alert) => alert.id === editId) || {};
-    const updated = normalizeAlert(
-      {
-        ...base,
-        id: editId,
-        alertType: selectedAlertType,
-        source: "owner",
-        description,
-        text: description,
-        desc: description,
-        note,
-        severityNote: note,
-        severity: selectedAlertSeverity,
-        sinceDate,
-        createdAt: base.createdAt || new Date().toISOString(),
-      },
-      "owner"
-    );
-    if (index >= 0) ownerAlerts[index] = updated;
-    else ownerAlerts = [...ownerAlerts, updated];
-    if (!persistOwnerAlertsForPet(pet.id, ownerAlerts)) {
-      showPersistenceFailure();
-      return;
-    }
-    showToast(t("toastAlertUpdated"));
+    result = alertsController.updateOwnerAlert(pet.id, editId, {
+      ...draft,
+      createdAt: base.createdAt || new Date().toISOString(),
+    });
+    if (result.ok) showToast(t("toastAlertUpdated"));
   } else {
-    const created = normalizeAlert(
-      {
-        id: `a-owner-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
-        alertType: selectedAlertType,
-        source: "owner",
-        description,
-        text: description,
-        desc: description,
-        note,
-        severityNote: note,
-        severity: selectedAlertSeverity,
-        sinceDate,
-        createdAt: new Date().toISOString(),
-      },
-      "owner"
-    );
-    ownerAlerts = [...ownerAlerts, created];
-    if (!persistOwnerAlertsForPet(pet.id, ownerAlerts)) {
-      showPersistenceFailure();
-      return;
-    }
-    showToast(t("toastAlertSaved"));
+    result = alertsController.createOwnerAlert(pet.id, draft);
+    if (result.ok) showToast(t("toastAlertSaved"));
+  }
+
+  if (!result.ok) {
+    showPersistenceFailure();
+    return;
   }
 
   const keepType = selectedAlertType;
@@ -1931,29 +1831,10 @@ function saveAlertFromForm() {
 function deleteAlertById(alertId) {
   const pet = getCurrentPet();
   if (!pet || !alertId) return;
-  const ownerAlerts = getOwnerAlerts(pet.id);
-  const inOwner = ownerAlerts.some((alert) => alert.id === alertId);
-  const linkedIds = new Set(
-    (pet.alerts || [])
-      .filter((alert) => alert.source !== "owner")
-      .map((alert) => String(alert.id))
-  );
-
-  if (inOwner) {
-    const saved = persistOwnerAlertsForPet(
-      pet.id,
-      ownerAlerts.filter((alert) => alert.id !== alertId)
-    );
-    if (!saved) {
-      showPersistenceFailure();
-      return;
-    }
-  }
-  if (linkedIds.has(String(alertId))) {
-    if (!suppressLinkedAlert(pet.id, alertId)) {
-      showPersistenceFailure();
-      return;
-    }
+  const result = alertsController.deleteOrSuppressAlert(pet, alertId);
+  if (!result.ok) {
+    showPersistenceFailure();
+    return;
   }
 
   if (alertEditIdInput?.value === alertId) resetAlertForm();
@@ -4220,7 +4101,6 @@ function paintEmergencyIdentity(pet) {
     species: speciesLabelOf(pet),
     breed: breedLabelOf(pet),
     gender: genderLabelOf(pet),
-    age: ageLabelOf(pet),
   });
   paintEmergencyBirth(pet);
   paintEmergencyChip(pet);
@@ -4235,7 +4115,11 @@ function paintEmergencyBirth(pet) {
     return;
   }
   eBirthLine.hidden = false;
-  eBirthLine.textContent = t("eBirthLine", { birth });
+  const age = ageLabelOf(pet);
+  eBirthLine.textContent =
+    age && age !== t("ageUnknown")
+      ? t("eBirthLineAge", { birth, age })
+      : t("eBirthLine", { birth });
 }
 
 function paintEmergencyChip(pet) {
@@ -5038,9 +4922,8 @@ function clearNavigationHistory() {
   shellNavigation.clearHistory();
 }
 
-function glassChromeActionsMarkup() {
+function glassChromeNavAccountMarkup() {
   return `
-    <div class="screen-head-actions" data-glass-chrome>
       <div class="app-nav-menu">
         <button
           class="app-nav-btn js-app-nav-btn"
@@ -5074,6 +4957,13 @@ function glassChromeActionsMarkup() {
           <span class="account-chip-name"></span>
         </button>
       </div>
+  `;
+}
+
+function glassChromeActionsMarkup() {
+  return `
+    <div class="screen-head-actions" data-glass-chrome>
+      ${glassChromeNavAccountMarkup()}
     </div>
   `;
 }
@@ -5082,7 +4972,13 @@ function enhanceGlassScreenHeads() {
   document
     .querySelectorAll('[data-screen]:not([data-screen="home"]) > .screen-head')
     .forEach((head) => {
-      if (head.querySelector("[data-glass-chrome]")) return;
+      const existing = head.querySelector("[data-glass-chrome]");
+      if (existing) {
+        if (!existing.querySelector(".app-nav-menu")) {
+          existing.insertAdjacentHTML("beforeend", glassChromeNavAccountMarkup());
+        }
+        return;
+      }
       head.insertAdjacentHTML("beforeend", glassChromeActionsMarkup());
     });
 }

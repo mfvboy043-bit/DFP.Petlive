@@ -1,0 +1,39 @@
+id: "20260826-alerts-controller"
+title: "Alerts controller building blocks"
+version: 2
+status: adopted
+# proposed | building | reviewing | revising | candidate_ready | halted | adopted | rejected
+
+gate_a:
+  status: approved
+  note: "Victor 確認 2026-08-26"
+
+gate_b:
+  status: adopted
+  note: "Victor 採用 2026-08-26；C + domains/alerts on main; formal B cover separate"
+
+iteration: 1
+max_iterations: 3
+
+candidate:
+  branch: "proposal/vaccines-controller"
+  path: "proposals/20260826-alerts-controller"
+  worktree: ""
+  note: "Cherry-pick de1848b onto main; index conflicts resolved keeping main UI WIP"
+
+reviews:
+  pharmacist: pass
+  qa: pass
+  ui: pass
+  arbiter: candidate_ready
+
+rerun: []
+blocking_issues: []
+non_blocking:
+  - QA-002
+  - QA-003
+  - QA-004
+  - QA-005
+  - UI-001
+builder_scope: []
+halt_reason: ""
