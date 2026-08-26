@@ -2485,7 +2485,7 @@ function readParasiteForm(kind) {
   };
 }
 
-function saveParasiteKind(kind, { dosedToday = false } = {}) {
+function saveParasiteKind(kind, { dosedToday = false, quiet = false } = {}) {
   if (demoBlocksWrite()) return;
   const pet = getCurrentPet();
   if (!pet) return false;
@@ -2545,23 +2545,53 @@ function saveParasiteKind(kind, { dosedToday = false } = {}) {
 
   fillParasiteKindForm(pet, kind);
   renderParasiteStrip(pet);
-  showToast(
-    t(
-      draft.productKey && isParasiteDualProduct(draft.productKey)
-        ? "toastParasiteSavedDual"
-        : "toastParasiteSaved",
-      {
-        name: pet.name,
-        kind: parasiteKindTitle(kind),
-        product: draft.product,
-      }
-    )
-  );
+  if (!quiet) {
+    showToast(
+      t(
+        draft.productKey && isParasiteDualProduct(draft.productKey)
+          ? "toastParasiteSavedDual"
+          : "toastParasiteSaved",
+        {
+          name: pet.name,
+          kind: parasiteKindTitle(kind),
+          product: draft.product,
+        }
+      )
+    );
+  }
   return true;
 }
 
 function isoToCompactDate(iso) {
   return String(iso || "").replace(/-/g, "");
+}
+
+function escapeIcsText(text) {
+  return String(text || "")
+    .replace(/\\/g, "\\\\")
+    .replace(/;/g, "\\;")
+    .replace(/,/g, "\\,")
+    .replace(/\r?\n/g, "\\n");
+}
+
+/** Recompute next due from last given + interval (does not mark dosed today). */
+function prepareParasiteNextDueFromLast(kind) {
+  const lastEl = document.getElementById(`parasite-last-${kind}`);
+  const intervalEl = document.getElementById(`parasite-interval-${kind}`);
+  const nextEl = document.getElementById(`parasite-next-${kind}`);
+  const lastGiven = lastEl?.value || "";
+  if (!lastGiven) {
+    showToast(t("toastParasiteNeedLast"));
+    return false;
+  }
+  let days = Number(intervalEl?.value);
+  if (!Number.isFinite(days) || days < 1) {
+    days = 30;
+    if (intervalEl) intervalEl.value = "30";
+  }
+  const nextDue = addDays(lastGiven, days);
+  if (nextEl) nextEl.value = nextDue;
+  return true;
 }
 
 function buildParasiteCalendarPayload(pet, kind) {
@@ -2583,6 +2613,32 @@ function buildParasiteCalendarPayload(pet, kind) {
   return { title, details, nextDue: record.nextDue };
 }
 
+function closeParasiteCalendarChooser() {
+  const overlay = document.getElementById("parasite-cal-chooser");
+  if (!overlay) return;
+  overlay.hidden = true;
+  delete overlay.dataset.parasiteKind;
+}
+
+function openParasiteCalendarChooser(kind) {
+  if (!prepareParasiteNextDueFromLast(kind)) return;
+  if (!saveParasiteKind(kind, { quiet: true })) return;
+
+  const pet = getCurrentPet();
+  const record = getParasiteRecord(pet, kind);
+  const overlay = document.getElementById("parasite-cal-chooser");
+  const meta = document.getElementById("parasite-cal-chooser-meta");
+  if (!overlay || !record?.nextDue) {
+    showToast(t("toastParasiteNeedNext"));
+    return;
+  }
+  overlay.dataset.parasiteKind = kind;
+  if (meta) {
+    meta.textContent = t("parasiteCalChooserMeta", { date: record.nextDue });
+  }
+  overlay.hidden = false;
+}
+
 function openParasiteGoogleCalendar(kind) {
   const pet = getCurrentPet();
   const payload = buildParasiteCalendarPayload(pet, kind);
@@ -2598,6 +2654,44 @@ function openParasiteGoogleCalendar(kind) {
   url.searchParams.set("dates", `${start}/${end}`);
   url.searchParams.set("details", payload.details);
   window.open(url.toString(), "_blank", "noopener,noreferrer");
+}
+
+function openParasiteAppleCalendar(kind) {
+  const pet = getCurrentPet();
+  const payload = buildParasiteCalendarPayload(pet, kind);
+  if (!payload) {
+    showToast(t("toastParasiteNeedNext"));
+    return;
+  }
+  const start = isoToCompactDate(payload.nextDue);
+  const end = isoToCompactDate(addDays(payload.nextDue, 1));
+  const stamp = isoToCompactDate(todayISODate()) + "T000000Z";
+  const ics = [
+    "BEGIN:VCALENDAR",
+    "VERSION:2.0",
+    "PRODID:-//Petlive//Dragon Fruit Passport//EN",
+    "CALSCALE:GREGORIAN",
+    "METHOD:PUBLISH",
+    "BEGIN:VEVENT",
+    `UID:petlive-parasite-${kind}-${start}@petlive`,
+    `DTSTAMP:${stamp}`,
+    `DTSTART;VALUE=DATE:${start}`,
+    `DTEND;VALUE=DATE:${end}`,
+    `SUMMARY:${escapeIcsText(payload.title)}`,
+    `DESCRIPTION:${escapeIcsText(payload.details)}`,
+    "END:VEVENT",
+    "END:VCALENDAR",
+  ].join("\r\n");
+  const blob = new Blob([ics], { type: "text/calendar;charset=utf-8" });
+  const href = URL.createObjectURL(blob);
+  const link = document.createElement("a");
+  link.href = href;
+  link.download = `petlive-${kind}-${start}.ics`;
+  link.rel = "noopener";
+  document.body.appendChild(link);
+  link.click();
+  link.remove();
+  window.setTimeout(() => URL.revokeObjectURL(href), 2000);
 }
 
 const VACCINE_PRESETS = {
@@ -7770,8 +7864,25 @@ document.querySelectorAll("[data-parasite-dosed]").forEach((btn) => {
   });
 });
 
-document.querySelectorAll("[data-parasite-gcal]").forEach((btn) => {
-  btn.addEventListener("click", () => openParasiteGoogleCalendar(btn.dataset.parasiteGcal));
+document.querySelectorAll("[data-parasite-cal]").forEach((btn) => {
+  btn.addEventListener("click", () => openParasiteCalendarChooser(btn.dataset.parasiteCal));
+});
+
+document.getElementById("parasite-cal-chooser")?.addEventListener("click", (event) => {
+  const target = event.target;
+  if (!(target instanceof Element)) return;
+  if (target === event.currentTarget || target.closest("[data-parasite-cal-close]")) {
+    closeParasiteCalendarChooser();
+    return;
+  }
+  const providerBtn = target.closest("[data-parasite-cal-provider]");
+  if (!providerBtn) return;
+  const kind = event.currentTarget.dataset.parasiteKind;
+  const provider = providerBtn.getAttribute("data-parasite-cal-provider");
+  if (!kind) return;
+  closeParasiteCalendarChooser();
+  if (provider === "apple") openParasiteAppleCalendar(kind);
+  else if (provider === "google") openParasiteGoogleCalendar(kind);
 });
 
 document.getElementById("copy-card").addEventListener("click", async () => {

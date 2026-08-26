@@ -2804,6 +2804,47 @@ input[type="month"]::-webkit-calendar-picker-indicator {
   width: 100%;
 }
 
+.parasite-cal-chooser {
+  position: fixed;
+  z-index: 980;
+  inset: 0;
+  display: grid;
+  align-items: end;
+  padding: 16px;
+  background: rgba(20, 28, 24, 0.58);
+  backdrop-filter: blur(8px);
+}
+
+.parasite-cal-chooser[hidden] {
+  display: none !important;
+}
+
+.parasite-cal-chooser-sheet {
+  width: min(100%, 420px);
+  margin: 0 auto;
+  padding: 19px;
+  border-radius: 23px;
+  background: #fff;
+  box-shadow: var(--shadow-md);
+}
+
+.parasite-cal-chooser-sheet h3 {
+  margin: 0 0 6px;
+  font-family: "Noto Serif TC", serif;
+  font-size: 1.15rem;
+}
+
+.parasite-cal-chooser-meta {
+  margin: 0 0 16px;
+  font-size: 13px;
+  color: var(--text-muted);
+}
+
+.parasite-cal-chooser-actions {
+  display: grid;
+  gap: 8px;
+}
+
 /* ---------------------------------------------------------
    19. TIMELINE
    Block language matches .alert-section (padded card + left accent).
