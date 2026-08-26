@@ -11,7 +11,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,700&family=Noto+Sans+TC:wght@400;500;700&family=Noto+Serif+TC:wght@600;700&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="./styles.css?v=20260826-parasite-field-fix" />
+  <link rel="stylesheet" href="./styles.css?v=20260826-parasite-date-proxy" />
 </head>
 <body>
   <div class="atmosphere" aria-hidden="true">
@@ -1315,11 +1315,17 @@
         <div class="field-row">
           <label class="field">
             <span data-i18n="parasiteLastGiven">上次投藥</span>
-            <input type="date" id="parasite-last-external" />
+            <span class="date-proxy">
+              <input type="text" class="date-proxy-face" readonly tabindex="-1" aria-hidden="true" placeholder="YYYY-MM-DD" />
+              <input type="date" id="parasite-last-external" class="date-proxy-native" />
+            </span>
           </label>
           <label class="field">
             <span data-i18n="parasiteNextDue">下次投藥（可改）</span>
-            <input type="date" id="parasite-next-external" />
+            <span class="date-proxy">
+              <input type="text" class="date-proxy-face" readonly tabindex="-1" aria-hidden="true" placeholder="YYYY-MM-DD" />
+              <input type="date" id="parasite-next-external" class="date-proxy-native" />
+            </span>
           </label>
         </div>
         <div class="parasite-actions">
@@ -1351,11 +1357,17 @@
         <div class="field-row">
           <label class="field">
             <span data-i18n="parasiteLastGiven">上次投藥</span>
-            <input type="date" id="parasite-last-heartworm" />
+            <span class="date-proxy">
+              <input type="text" class="date-proxy-face" readonly tabindex="-1" aria-hidden="true" placeholder="YYYY-MM-DD" />
+              <input type="date" id="parasite-last-heartworm" class="date-proxy-native" />
+            </span>
           </label>
           <label class="field">
             <span data-i18n="parasiteNextDue">下次投藥（可改）</span>
-            <input type="date" id="parasite-next-heartworm" />
+            <span class="date-proxy">
+              <input type="text" class="date-proxy-face" readonly tabindex="-1" aria-hidden="true" placeholder="YYYY-MM-DD" />
+              <input type="date" id="parasite-next-heartworm" class="date-proxy-native" />
+            </span>
           </label>
         </div>
         <div class="parasite-actions">
@@ -1900,6 +1912,6 @@
   <script defer src="./domains/pets/controller.js?v=20260813-layered-adopted"></script>
   <script defer src="./domains/pets/lifecycle.js?v=20260826-pets-lifecycle"></script>
   <script defer src="./domains/pets/media.js?v=20260826-pets-lifecycle"></script>
-  <script defer src="./app.js?v=20260826-pets-lifecycle-b"></script>
+  <script defer src="./app.js?v=20260826-parasite-date-proxy"></script>
 </body>
 </html>

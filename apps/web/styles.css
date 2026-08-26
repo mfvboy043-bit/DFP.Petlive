@@ -1691,18 +1691,20 @@ select:focus {
   overflow-x: clip;
 }
 
-/* Unified control height inside add-pet / vaccine date pairs */
+/* Unified control height inside add-pet / vaccine / parasite date pairs */
 #pet-form .field-row select,
 #pet-form .field-row input:not(.date-proxy-face):not(.date-proxy-native),
 #pet-form .field-row .date-proxy,
-.vaccine-form .field-row .date-proxy {
+.vaccine-form .field-row .date-proxy,
+.parasite-block .field-row .date-proxy {
   min-height: 50px;
   height: 50px;
   box-sizing: border-box;
 }
 
 #pet-form .field-row .date-proxy-face,
-.vaccine-form .field-row .date-proxy-face {
+.vaccine-form .field-row .date-proxy-face,
+.parasite-block .field-row .date-proxy-face {
   height: 100%;
   min-height: 0;
   box-sizing: border-box;
@@ -2802,7 +2804,6 @@ input[type="month"]::-webkit-calendar-picker-indicator {
   max-width: 100%;
 }
 
-.parasite-block .field-row input[type="date"],
 .parasite-block .field-row input[type="number"],
 .parasite-block .field-row input[type="text"] {
   display: block;
@@ -7501,7 +7502,9 @@ html.is-proof-lightbox-open body {
   #pet-form .field-row:has(.date-proxy),
   .screen[data-screen="add-pet"] .field-row:has(.date-proxy),
   .vaccine-form .field-row:has(.date-proxy),
-  .screen[data-screen="vaccines"] .vaccine-form .field-row:has(.date-proxy) {
+  .screen[data-screen="vaccines"] .vaccine-form .field-row:has(.date-proxy),
+  .parasite-block .field-row:has(.date-proxy),
+  .screen[data-screen="parasite"] .parasite-block .field-row:has(.date-proxy) {
     overflow: visible;
   }
 
@@ -7521,7 +7524,9 @@ html.is-proof-lightbox-open body {
   #pet-form .field-row .field:has(.date-proxy),
   .screen[data-screen="add-pet"] .field-row .field:has(.date-proxy),
   .vaccine-form .field-row .field:has(.date-proxy),
-  .screen[data-screen="vaccines"] .vaccine-form .field-row .field:has(.date-proxy) {
+  .screen[data-screen="vaccines"] .vaccine-form .field-row .field:has(.date-proxy),
+  .parasite-block .field-row .field:has(.date-proxy),
+  .screen[data-screen="parasite"] .parasite-block .field-row .field:has(.date-proxy) {
     overflow: visible;
   }
 
@@ -7532,7 +7537,9 @@ html.is-proof-lightbox-open body {
   .screen[data-screen="add-pet"] .field-row input:not(.date-proxy-face):not(.date-proxy-native),
   .screen[data-screen="add-pet"] .field-row .date-proxy,
   .vaccine-form .field-row .date-proxy,
-  .screen[data-screen="vaccines"] .vaccine-form .field-row .date-proxy {
+  .screen[data-screen="vaccines"] .vaccine-form .field-row .date-proxy,
+  .parasite-block .field-row .date-proxy,
+  .screen[data-screen="parasite"] .parasite-block .field-row .date-proxy {
     width: 100%;
     min-width: 0;
     max-width: 100%;
@@ -7544,7 +7551,9 @@ html.is-proof-lightbox-open body {
   #pet-form .field-row .date-proxy-face,
   .screen[data-screen="add-pet"] .field-row .date-proxy-face,
   .vaccine-form .field-row .date-proxy-face,
-  .screen[data-screen="vaccines"] .vaccine-form .field-row .date-proxy-face {
+  .screen[data-screen="vaccines"] .vaccine-form .field-row .date-proxy-face,
+  .parasite-block .field-row .date-proxy-face,
+  .screen[data-screen="parasite"] .parasite-block .field-row .date-proxy-face {
     width: 100%;
     min-width: 0;
     max-width: 100%;
@@ -7601,10 +7610,8 @@ html.is-proof-lightbox-open body {
     -webkit-min-logical-width: 0;
   }
 
-  .parasite-block .field-row input[type="date"],
   .parasite-block .field-row input[type="number"],
   .parasite-block .field-row input[type="text"],
-  .screen[data-screen="parasite"] .parasite-block .field-row input[type="date"],
   .screen[data-screen="parasite"] .parasite-block .field-row input[type="number"],
   .screen[data-screen="parasite"] .parasite-block .field-row input[type="text"] {
     display: block;

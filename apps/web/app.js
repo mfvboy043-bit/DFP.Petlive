@@ -2297,6 +2297,7 @@ function syncParasiteNextFromLast(kind) {
   const days = Number(intervalEl.value);
   if (!Number.isFinite(days) || days < 1) return;
   nextEl.value = addDays(lastEl.value, days);
+  syncDateProxies(document.getElementById(`parasite-form-${kind}`) || document);
 }
 
 function parasiteProductChipMarkup(kind, item) {
@@ -2337,6 +2338,7 @@ function fillParasiteKindForm(pet, kind) {
   if (lastEl) lastEl.value = record?.lastGiven || "";
   if (intervalEl) intervalEl.value = record?.intervalDays || 30;
   if (nextEl) nextEl.value = record?.nextDue || "";
+  syncDateProxies(document.getElementById(`parasite-form-${kind}`) || document);
 }
 
 function fillParasiteScreen(pet) {
@@ -2591,6 +2593,7 @@ function prepareParasiteNextDueFromLast(kind) {
   }
   const nextDue = addDays(lastGiven, days);
   if (nextEl) nextEl.value = nextDue;
+  syncDateProxies(document.getElementById(`parasite-form-${kind}`) || document);
   return true;
 }
 
