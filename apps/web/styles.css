@@ -2805,8 +2805,9 @@ input[type="month"]::-webkit-calendar-picker-indicator {
 .parasite-block .field-row input[type="date"],
 .parasite-block .field-row input[type="number"],
 .parasite-block .field-row input[type="text"] {
-  width: 0;
-  min-width: 100%;
+  display: block;
+  width: 100%;
+  min-width: 0;
   max-width: 100%;
   box-sizing: border-box;
 }
@@ -7606,11 +7607,10 @@ html.is-proof-lightbox-open body {
   .screen[data-screen="parasite"] .parasite-block .field-row input[type="date"],
   .screen[data-screen="parasite"] .parasite-block .field-row input[type="number"],
   .screen[data-screen="parasite"] .parasite-block .field-row input[type="text"] {
-    width: 0;
-    min-width: 100%;
+    display: block;
+    width: 100%;
+    min-width: 0;
     max-width: 100%;
-    padding-inline: 8px;
-    overflow: hidden;
     box-sizing: border-box;
     -webkit-min-logical-width: 0;
   }
