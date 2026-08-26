@@ -50,7 +50,9 @@
 
 ## Merge checklist (after 採用 only)
 
-- [ ] Victor said 採用
-- [ ] Reviews attached
-- [ ] Merge/copy into mainline (C + shared domains); ask separately for C → B cover / Pages
-- [ ] Set proposal `status: adopted`
+- [x] Victor said 採用
+- [x] Reviews attached
+- [x] Merge into `main` (C + shared `domains/pets` lifecycle/media + QA); formal B untouched; no Pages push (C-only)
+- [x] Set proposal `status: adopted`
+- [ ] C → B cover (separate Victor confirm)
+- [ ] Push `origin/main` (only if Victor wants remote/main sync; not required for Pages until B cover)
