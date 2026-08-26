@@ -1,0 +1,41 @@
+id: "20260826-timeline-visits-controller"
+title: "Timeline + Visits controller building blocks"
+version: 2
+status: adopted
+# proposed | building | reviewing | revising | candidate_ready | halted | adopted | rejected
+
+gate_a:
+  status: approved
+  # pending | approved | modified | rejected
+  note: "Victor 確認 2026-08-26；並定調：任何功能都應拆成獨立積木"
+
+gate_b:
+  status: adopted
+  # pending | adopted | rejected
+  note: "Victor 採用 2026-08-26；僅 TV 檔案進 mainline；排除 styles/i18n/meds/B"
+
+iteration: 2
+max_iterations: 3
+
+candidate:
+  branch: "proposal/timeline-visits-controller"
+  path: "proposals/20260826-timeline-visits-controller"
+  worktree: ""
+  note: >-
+    Adopted onto main. Scoped files only per contrast.md.
+    Excluded: c/styles.css, c/i18n.js, domains/medications, formal B, Pages.
+
+reviews:
+  pharmacist: pass
+  qa: pass
+  ui: conditional
+  # pending | skipped | pass | conditional | reject
+
+rerun: []
+blocking_issues: []
+non_blocking:
+  - QA-002
+  - QA-003
+  - UI-001
+builder_scope: []
+halt_reason: ""

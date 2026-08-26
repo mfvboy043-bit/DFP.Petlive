@@ -760,6 +760,8 @@ let liveRxPhoto = null;
 let liveDrugPhoto = null;
 /** When set, structured med saves append to this visit instead of creating from the visit form. */
 let completingVisitRef = null;
+/** Session overrides: compoundGroup → hex (cleared on pet switch). */
+const compoundColorByGroup = Object.create(null);
 
 function showToast(message) {
   toastEl.hidden = false;
@@ -1045,28 +1047,11 @@ function renderTimelineDrugNotes(med, notesId) {
 }
 
 function collectVisitProofPhotos(visit) {
-  const slots = { bag: [], rx: [], drug: [] };
-  const pushUnique = (list, url) => {
-    if (!url || list.includes(url)) return;
-    list.push(url);
-  };
-
-  pushUnique(slots.bag, visit.bagPhoto);
-  pushUnique(slots.rx, visit.rxPhoto);
-  pushUnique(slots.drug, visit.drugPhoto);
-
-  (visit.medications || []).forEach((med) => {
-    pushUnique(slots.bag, med.bagPhoto);
-    pushUnique(slots.rx, med.rxPhoto);
-    pushUnique(slots.drug, med.drugPhoto);
-  });
-
-  return slots;
+  return visitsController.collectVisitProofPhotos(visit);
 }
 
 function visitHasAnyProof(visit) {
-  const slots = collectVisitProofPhotos(visit);
-  return Boolean(slots.bag.length || slots.rx.length || slots.drug.length);
+  return visitsController.visitHasAnyProof(visit);
 }
 
 function renderVisitProofThumbs(slots, visitIndex) {
@@ -1104,53 +1089,19 @@ function renderVisitProofThumbs(slots, visitIndex) {
 }
 
 function clearVisitProofSlot(visit, slot) {
-  if (slot === "bag") {
-    visit.bagPhoto = null;
-    (visit.medications || []).forEach((med) => {
-      med.bagPhoto = null;
-    });
-    return;
-  }
-  if (slot === "rx") {
-    visit.rxPhoto = null;
-    (visit.medications || []).forEach((med) => {
-      med.rxPhoto = null;
-    });
-    return;
-  }
-  if (slot === "drug") {
-    visit.drugPhoto = null;
-    (visit.medications || []).forEach((med) => {
-      med.drugPhoto = null;
-    });
-  }
+  visitsController.clearVisitProofSlot(visit, slot);
 }
 
-const IMAGING_PHOTOS_MAX = 4;
-
 function getVisitImaging(visit) {
-  const img = visit?.imaging;
-  return {
-    xrayPhotos: Array.isArray(img?.xrayPhotos)
-      ? img.xrayPhotos.filter(Boolean)
-      : [],
-    usPhotos: Array.isArray(img?.usPhotos) ? img.usPhotos.filter(Boolean) : [],
-  };
+  return visitsController.getVisitImaging(visit);
 }
 
 function ensureVisitImaging(visit) {
-  if (!visit) return { xrayPhotos: [], usPhotos: [] };
-  const current = getVisitImaging(visit);
-  visit.imaging = {
-    xrayPhotos: [...current.xrayPhotos],
-    usPhotos: [...current.usPhotos],
-  };
-  return visit.imaging;
+  return visitsController.ensureVisitImaging(visit);
 }
 
 function visitHasImaging(visit) {
-  const img = getVisitImaging(visit);
-  return Boolean(img.xrayPhotos.length || img.usPhotos.length);
+  return visitsController.visitHasImaging(visit);
 }
 
 function formatImagingTypes(visit) {
@@ -1162,15 +1113,7 @@ function formatImagingTypes(visit) {
 }
 
 function getImagingVisitEntries(pet) {
-  return (pet?.visits || [])
-    .map((visit, index) => ({ visit, index }))
-    .filter(({ visit }) => visitHasImaging(visit))
-    .sort((a, b) => {
-      const da = String(a.visit.date || "");
-      const db = String(b.visit.date || "");
-      if (da !== db) return da < db ? 1 : -1;
-      return b.index - a.index;
-    });
+  return visitsController.getImagingVisitEntries(pet);
 }
 
 function renderVisitImagingThumbs(imaging, visitIndex) {
@@ -1206,12 +1149,7 @@ function renderVisitImagingThumbs(imaging, visitIndex) {
 }
 
 function clearVisitImagingPhoto(visit, slot, index) {
-  const imaging = ensureVisitImaging(visit);
-  const key = slot === "us" ? "usPhotos" : "xrayPhotos";
-  if (!Number.isInteger(index) || index < 0 || index >= imaging[key].length) {
-    return;
-  }
-  imaging[key].splice(index, 1);
+  visitsController.clearVisitImagingPhoto(visit, slot, index);
 }
 
 function getProofLightboxEls() {
@@ -1252,20 +1190,12 @@ function openProofLightbox(src, captionKey) {
 }
 
 function visitWeightKg(visit) {
-  const n = Number(visit?.weightAtVisit);
-  return n > 0 ? n : null;
+  return visitsController.visitWeightKg(visit);
 }
 
 /** Calendar-day gap between ISO dates (same day → 0). */
 function calendarDaysBetween(fromIso, toIso) {
-  const from = String(fromIso || "").slice(0, 10);
-  const to = String(toIso || "").slice(0, 10);
-  if (!/^\d{4}-\d{2}-\d{2}$/.test(from) || !/^\d{4}-\d{2}-\d{2}$/.test(to)) {
-    return null;
-  }
-  const a = new Date(`${from}T00:00:00`);
-  const b = new Date(`${to}T00:00:00`);
-  return Math.round((b.getTime() - a.getTime()) / 86400000);
+  return visitsController.calendarDaysBetween(fromIso, toIso);
 }
 
 /**
@@ -1273,22 +1203,11 @@ function calendarDaysBetween(fromIso, toIso) {
  * Newest-first display list: same-day ties use higher index as older.
  */
 function buildPreviousVisitByIndex(visits) {
-  const indexed = (visits || []).map((visit, index) => ({ visit, index }));
-  indexed.sort((a, b) => {
-    const da = String(a.visit.date || "");
-    const db = String(b.visit.date || "");
-    if (da !== db) return da < db ? -1 : da > db ? 1 : 0;
-    return b.index - a.index;
-  });
-  const prevByIndex = new Array(indexed.length).fill(null);
-  for (let i = 1; i < indexed.length; i++) {
-    prevByIndex[indexed[i].index] = indexed[i - 1].visit;
-  }
-  return prevByIndex;
+  return visitsController.buildPreviousVisitByIndex(visits);
 }
 
 function formatWeightDeltaKg(delta) {
-  return (Math.round(Math.abs(delta) * 10) / 10).toFixed(1);
+  return visitsController.formatWeightDeltaKg(delta);
 }
 
 function renderVisitWeightVsPrevious(visit, previousVisit) {
@@ -1474,24 +1393,23 @@ function renderTimeline(pet) {
   }
 
   const sourceTags = getSourceTags();
-  const previousByIndex = buildPreviousVisitByIndex(pet.visits);
-  timelineList.innerHTML = pet.visits
-    .map((visit, visitIndex) => {
+  const entries = timelineSelectors.buildTimelineEntries(pet);
+  timelineList.innerHTML = entries
+    .map((entry) => {
+      const { visit, visitIndex, previousVisit, year } = entry;
       const tags = visit.tags
         .map((tag) => `<span class="tl-tag">${visitTagLabel(tag)}</span>`)
         .join("");
       const noteText = locField(visit.note);
       const note = noteText ? `<p class="tl-note">${noteText}</p>` : "";
       const meds =
-        visit.medications && visit.medications.length
+        entry.hasRx
           ? `<ul class="med-list">${visit.medications
               .map((med, medIndex) =>
                 renderTimelineMedItem(med, pet, visitIndex, medIndex, sourceTags)
               )
               .join("")}</ul>`
           : "";
-      const year = String(visit.date || "").slice(0, 4);
-      const previousVisit = previousByIndex[visitIndex];
       const { weightHtml } = renderVisitWeightParts(
         visit,
         visitIndex,
@@ -2170,6 +2088,7 @@ function syncParasiteNextFromLast(kind) {
   const days = Number(intervalEl.value);
   if (!Number.isFinite(days) || days < 1) return;
   nextEl.value = addDays(lastEl.value, days);
+  syncDateProxies(document.getElementById(`parasite-form-${kind}`) || document);
 }
 
 function parasiteProductChipMarkup(kind, item) {
@@ -2210,6 +2129,7 @@ function fillParasiteKindForm(pet, kind) {
   if (lastEl) lastEl.value = record?.lastGiven || "";
   if (intervalEl) intervalEl.value = record?.intervalDays || 30;
   if (nextEl) nextEl.value = record?.nextDue || "";
+  syncDateProxies(document.getElementById(`parasite-form-${kind}`) || document);
 }
 
 function fillParasiteScreen(pet) {
@@ -2335,7 +2255,7 @@ function readParasiteForm(kind) {
   };
 }
 
-function saveParasiteKind(kind, { dosedToday = false } = {}) {
+function saveParasiteKind(kind, { dosedToday = false, quiet = false } = {}) {
   const pet = getCurrentPet();
   if (!pet) return false;
   const pp = ensureParasitePrevention(pet);
@@ -2394,23 +2314,54 @@ function saveParasiteKind(kind, { dosedToday = false } = {}) {
 
   fillParasiteKindForm(pet, kind);
   renderParasiteStrip(pet);
-  showToast(
-    t(
-      draft.productKey && isParasiteDualProduct(draft.productKey)
-        ? "toastParasiteSavedDual"
-        : "toastParasiteSaved",
-      {
-        name: pet.name,
-        kind: parasiteKindTitle(kind),
-        product: draft.product,
-      }
-    )
-  );
+  if (!quiet) {
+    showToast(
+      t(
+        draft.productKey && isParasiteDualProduct(draft.productKey)
+          ? "toastParasiteSavedDual"
+          : "toastParasiteSaved",
+        {
+          name: pet.name,
+          kind: parasiteKindTitle(kind),
+          product: draft.product,
+        }
+      )
+    );
+  }
   return true;
 }
 
 function isoToCompactDate(iso) {
   return String(iso || "").replace(/-/g, "");
+}
+
+function escapeIcsText(text) {
+  return String(text || "")
+    .replace(/\\/g, "\\\\")
+    .replace(/;/g, "\\;")
+    .replace(/,/g, "\\,")
+    .replace(/\r?\n/g, "\\n");
+}
+
+/** Recompute next due from last given + interval (does not mark dosed today). */
+function prepareParasiteNextDueFromLast(kind) {
+  const lastEl = document.getElementById(`parasite-last-${kind}`);
+  const intervalEl = document.getElementById(`parasite-interval-${kind}`);
+  const nextEl = document.getElementById(`parasite-next-${kind}`);
+  const lastGiven = lastEl?.value || "";
+  if (!lastGiven) {
+    showToast(t("toastParasiteNeedLast"));
+    return false;
+  }
+  let days = Number(intervalEl?.value);
+  if (!Number.isFinite(days) || days < 1) {
+    days = 30;
+    if (intervalEl) intervalEl.value = "30";
+  }
+  const nextDue = addDays(lastGiven, days);
+  if (nextEl) nextEl.value = nextDue;
+  syncDateProxies(document.getElementById(`parasite-form-${kind}`) || document);
+  return true;
 }
 
 function buildParasiteCalendarPayload(pet, kind) {
@@ -2432,10 +2383,78 @@ function buildParasiteCalendarPayload(pet, kind) {
   return { title, details, nextDue: record.nextDue };
 }
 
-function openParasiteGoogleCalendar(kind) {
+let pendingCalendarPayload = null;
+
+function closeCalendarChooser() {
+  const overlay = document.getElementById("parasite-cal-chooser");
+  if (!overlay) return;
+  overlay.hidden = true;
+  delete overlay.dataset.parasiteKind;
+  pendingCalendarPayload = null;
+}
+
+function showCalendarChooser(payload, metaText) {
+  const overlay = document.getElementById("parasite-cal-chooser");
+  const meta = document.getElementById("parasite-cal-chooser-meta");
+  if (!overlay || !payload?.nextDue) {
+    showToast(t("toastParasiteNeedNext"));
+    return false;
+  }
+  pendingCalendarPayload = payload;
+  if (meta) meta.textContent = metaText || t("parasiteCalChooserMeta", { date: payload.nextDue });
+  overlay.hidden = false;
+  return true;
+}
+
+function showParasiteCalendarChooser(kind) {
   const pet = getCurrentPet();
   const payload = buildParasiteCalendarPayload(pet, kind);
   if (!payload) {
+    showToast(t("toastParasiteNeedNext"));
+    return false;
+  }
+  const overlay = document.getElementById("parasite-cal-chooser");
+  if (overlay) overlay.dataset.parasiteKind = kind;
+  return showCalendarChooser(payload, t("parasiteCalChooserMeta", { date: payload.nextDue }));
+}
+
+/** Past dose: require last-given date, recompute next, save, then offer calendar. */
+function saveParasitePastAndOfferCalendar(kind) {
+  if (!prepareParasiteNextDueFromLast(kind)) return false;
+  if (!saveParasiteKind(kind, { quiet: true })) return false;
+  return showParasiteCalendarChooser(kind);
+}
+
+/** Dosed today: mark today in-app, then offer calendar for next due. */
+function saveParasiteDosedTodayAndOfferCalendar(kind) {
+  if (!saveParasiteKind(kind, { dosedToday: true, quiet: true })) return false;
+  return showParasiteCalendarChooser(kind);
+}
+
+function buildVaccineCalendarPayload(pet, { vaccines, given, next }) {
+  if (!pet || !next) return null;
+  const vaccineNames = (vaccines || []).map((entry) => entry.name).filter(Boolean);
+  const vaccinesLabel = vaccineNames.join("、") || t("vaccine");
+  const title = t("vaccineCalTitle", {
+    name: pet.name,
+    vaccines: vaccinesLabel,
+  });
+  const details = t("vaccineCalDetails", {
+    name: pet.name,
+    vaccines: vaccinesLabel,
+    given: given || "—",
+    next,
+  });
+  return {
+    title,
+    details,
+    nextDue: next,
+    uid: `vaccine-${isoToCompactDate(next)}-${vaccineNames.length}`,
+  };
+}
+
+function openGoogleCalendar(payload) {
+  if (!payload?.nextDue) {
     showToast(t("toastParasiteNeedNext"));
     return;
   }
@@ -2447,6 +2466,59 @@ function openParasiteGoogleCalendar(kind) {
   url.searchParams.set("dates", `${start}/${end}`);
   url.searchParams.set("details", payload.details);
   window.open(url.toString(), "_blank", "noopener,noreferrer");
+}
+
+function openAppleCalendar(payload) {
+  if (!payload?.nextDue) {
+    showToast(t("toastParasiteNeedNext"));
+    return;
+  }
+  const start = isoToCompactDate(payload.nextDue);
+  const end = isoToCompactDate(addDays(payload.nextDue, 1));
+  const stamp = isoToCompactDate(todayISODate()) + "T000000Z";
+  const uid = payload.uid || `event-${start}`;
+  const ics = [
+    "BEGIN:VCALENDAR",
+    "VERSION:2.0",
+    "PRODID:-//Petlive//Dragon Fruit Passport//EN",
+    "CALSCALE:GREGORIAN",
+    "METHOD:PUBLISH",
+    "BEGIN:VEVENT",
+    `UID:petlive-${uid}@petlive`,
+    `DTSTAMP:${stamp}`,
+    `DTSTART;VALUE=DATE:${start}`,
+    `DTEND;VALUE=DATE:${end}`,
+    `SUMMARY:${escapeIcsText(payload.title)}`,
+    `DESCRIPTION:${escapeIcsText(payload.details)}`,
+    "END:VEVENT",
+    "END:VCALENDAR",
+  ].join("\r\n");
+  const blob = new Blob([ics], { type: "text/calendar;charset=utf-8" });
+  const href = URL.createObjectURL(blob);
+  const link = document.createElement("a");
+  link.href = href;
+  link.download = `petlive-${uid}.ics`;
+  link.rel = "noopener";
+  document.body.appendChild(link);
+  link.click();
+  link.remove();
+  window.setTimeout(() => URL.revokeObjectURL(href), 2000);
+}
+
+function closeParasiteCalendarChooser() {
+  closeCalendarChooser();
+}
+
+function openParasiteGoogleCalendar(kind) {
+  const pet = getCurrentPet();
+  openGoogleCalendar(buildParasiteCalendarPayload(pet, kind));
+}
+
+function openParasiteAppleCalendar(kind) {
+  const pet = getCurrentPet();
+  const payload = buildParasiteCalendarPayload(pet, kind);
+  if (payload) payload.uid = `parasite-${kind}-${isoToCompactDate(payload.nextDue)}`;
+  openAppleCalendar(payload);
 }
 
 const VACCINE_PRESETS = {
@@ -2878,32 +2950,15 @@ function formatLabTypes(types) {
 }
 
 function visitLinkValue(visit) {
-  return `${visit.date}::${visit.clinicId || visitClinicLabel(visit) || ""}`;
+  return visitsController.visitLinkValue(visit);
 }
 
 function parseVisitLinkValue(value) {
-  const raw = String(value || "");
-  const idx = raw.indexOf("::");
-  if (idx < 0) return null;
-  return {
-    date: raw.slice(0, idx),
-    clinicKey: raw.slice(idx + 2),
-  };
+  return visitsController.parseVisitLinkValue(value);
 }
 
 function findVisitByLink(pet, value) {
-  const parsed = parseVisitLinkValue(value);
-  if (!parsed || !pet?.visits) return null;
-  return (
-    pet.visits.find((visit) => {
-      if (visit.date !== parsed.date) return false;
-      if (visit.clinicId && parsed.clinicKey === visit.clinicId) return true;
-      return (
-        visitClinicLabel(visit) === parsed.clinicKey ||
-        visit.clinic === parsed.clinicKey
-      );
-    }) || null
-  );
+  return visitsController.findVisitByLink(pet, value);
 }
 
 function reportMatchesVisit(report, visit) {
@@ -4881,7 +4936,15 @@ const petsController = PetLiveWeb.domains.pets.createController({
   },
   afterSelect: (pet) => {
     currentPetId = pet?.id || appState.getCurrentPetId();
+    // Drop in-flight med session so Pet A pending / complete-drugs cannot write onto Pet B.
+    pendingMeds = [];
+    completingVisitRef = null;
+    Object.keys(compoundColorByGroup).forEach((key) => {
+      delete compoundColorByGroup[key];
+    });
     applySelectedPet();
+    if (typeof renderPendingMeds === "function") renderPendingMeds();
+    if (typeof updateMedModeHint === "function") updateMedModeHint();
     if (petSelectionStartedAt != null) {
       const startedAt = petSelectionStartedAt;
       requestAnimationFrame(() => {
@@ -4893,6 +4956,14 @@ const petsController = PetLiveWeb.domains.pets.createController({
     }
   },
 });
+
+const visitsController = PetLiveWeb.domains.visits.createController({
+  clinicLabelOf: (visit) => visitClinicLabel(visit),
+});
+const timelineSelectors = PetLiveWeb.domains.timeline.createSelectors({
+  visits: visitsController,
+});
+const IMAGING_PHOTOS_MAX = visitsController.IMAGING_PHOTOS_MAX;
 
 const VIEWPORT_DEFAULT =
   "width=device-width, initial-scale=1, viewport-fit=cover";
@@ -5776,9 +5847,6 @@ const COMPOUND_COLOR_SWATCHES = [
   { hex: "#6DA6C3", labelKey: "compoundColorSky" },
   { hex: "#9B8BC4", labelKey: "compoundColorLavender" },
 ];
-
-/** Session overrides: compoundGroup → hex */
-const compoundColorByGroup = Object.create(null);
 
 function defaultCompoundColor(group) {
   return COMPOUND_DEFAULT_COLORS[group] || COMPOUND_DEFAULT_COLORS.liquid_a;
@@ -6864,18 +6932,13 @@ function toggleVisitWeightButton(toggle) {
 
 function saveVisitWeightAtIndex(visitIndex) {
   const pet = getCurrentPet();
-  const visit = pet?.visits?.[visitIndex];
-  if (!visit) return false;
+  if (!pet?.visits?.[visitIndex]) return false;
   const input = document.getElementById(`visit-weight-input-${visitIndex}`);
   const weight = Number(input?.value?.trim() || "");
-  if (!(weight > 0)) {
+  const result = visitsController.saveVisitWeight(pet, visitIndex, weight);
+  if (!result.ok) {
     showToast(t("toastWeight"));
     return false;
-  }
-  visit.weightAtVisit = weight;
-  if (!pet.weightDate || visit.date >= pet.weightDate) {
-    pet.weight = weight;
-    pet.weightDate = visit.date;
   }
   showToast(t("toastVisitWeightSaved", { weight }));
   applySelectedPet();
@@ -7449,6 +7512,12 @@ vaccineForm.addEventListener("submit", (event) => {
     }))
   );
 
+  const calPayload = buildVaccineCalendarPayload(pet, {
+    vaccines: selected,
+    given,
+    next,
+  });
+
   renderVaccines(pet);
   resetVaccineForm(pet);
   vaccineFormPetId = pet.id;
@@ -7459,6 +7528,9 @@ vaccineForm.addEventListener("submit", (event) => {
       vaccines: selected.map((entry) => entry.name).join("、"),
     })
   );
+  if (calPayload) {
+    showCalendarChooser(calPayload, t("vaccineCalChooserMeta", { date: next }));
+  }
 });
 
 document.getElementById("parasite-chips-external")?.addEventListener("click", (event) => {
@@ -7511,22 +7583,35 @@ PARASITE_KINDS.forEach((kind) => {
 
 document.getElementById("parasite-form-external")?.addEventListener("submit", (event) => {
   event.preventDefault();
-  saveParasiteKind("external");
+  saveParasitePastAndOfferCalendar("external");
 });
 
 document.getElementById("parasite-form-heartworm")?.addEventListener("submit", (event) => {
   event.preventDefault();
-  saveParasiteKind("heartworm");
+  saveParasitePastAndOfferCalendar("heartworm");
 });
 
 document.querySelectorAll("[data-parasite-dosed]").forEach((btn) => {
   btn.addEventListener("click", () => {
-    saveParasiteKind(btn.dataset.parasiteDosed, { dosedToday: true });
+    saveParasiteDosedTodayAndOfferCalendar(btn.dataset.parasiteDosed);
   });
 });
 
-document.querySelectorAll("[data-parasite-gcal]").forEach((btn) => {
-  btn.addEventListener("click", () => openParasiteGoogleCalendar(btn.dataset.parasiteGcal));
+document.getElementById("parasite-cal-chooser")?.addEventListener("click", (event) => {
+  const target = event.target;
+  if (!(target instanceof Element)) return;
+  if (target === event.currentTarget || target.closest("[data-parasite-cal-close]")) {
+    closeCalendarChooser();
+    return;
+  }
+  const providerBtn = target.closest("[data-parasite-cal-provider]");
+  if (!providerBtn) return;
+  const provider = providerBtn.getAttribute("data-parasite-cal-provider");
+  const payload = pendingCalendarPayload;
+  closeCalendarChooser();
+  if (!payload) return;
+  if (provider === "apple") openAppleCalendar(payload);
+  else if (provider === "google") openGoogleCalendar(payload);
 });
 
 document.getElementById("copy-card").addEventListener("click", async () => {
