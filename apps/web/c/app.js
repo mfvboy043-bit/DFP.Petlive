@@ -2839,6 +2839,11 @@ const petPhotosSlot = PetLiveWeb.storage.createJsonSlot({
   },
 });
 
+const petsMedia = PetLiveWeb.domains.pets.createMedia({
+  photosSlot: petPhotosSlot,
+  pets,
+});
+
 const LAB_REPORTS_KEY = "petlive-c-lab-reports";
 const LAB_PHOTOS_MAX = 6;
 const LAB_TYPE_ORDER = [
@@ -3261,7 +3266,7 @@ const PET_FRAME_EMPTY_SVG = `
 `.trim();
 
 function loadPetPhotosMap() {
-  return petPhotosSlot.read();
+  return petsMedia.loadMap();
 }
 
 function savePetPhotosMap(map) {
@@ -3269,26 +3274,19 @@ function savePetPhotosMap(map) {
 }
 
 function flushPetPhotosMap() {
-  return petPhotosSlot.flush();
+  return petsMedia.flush();
 }
 
 function getPetPhoto(petId) {
-  const map = loadPetPhotosMap();
-  return map[petId] || null;
+  return petsMedia.getPetPhoto(petId);
 }
 
 function setPetPhoto(petId, dataUrl) {
-  const map = loadPetPhotosMap();
-  if (dataUrl) map[petId] = dataUrl;
-  else delete map[petId];
-  if (!savePetPhotosMap(map)) return false;
-  const pet = pets.find((p) => p.id === petId);
-  if (pet) pet.photo = dataUrl || "";
-  return true;
+  return petsMedia.setPetPhoto(petId, dataUrl);
 }
 
 function flushPetPhotosOrToast() {
-  if (!petPhotosSlot.hasPendingWrite()) return true;
+  if (!petsMedia.hasPendingWrite()) return true;
   if (flushPetPhotosMap()) return true;
   showPersistenceFailure();
   return false;
@@ -3302,10 +3300,7 @@ window.addEventListener("pagehide", () => {
 });
 
 function hydratePetPhotos() {
-  const map = loadPetPhotosMap();
-  pets.forEach((pet) => {
-    if (map[pet.id]) pet.photo = map[pet.id];
-  });
+  petsMedia.hydratePetPhotos(pets);
 }
 
 const PROOF_PHOTO_MAX_EDGE = 1280;
@@ -3403,26 +3398,20 @@ function getPhotoCropViewportSize() {
 }
 
 function getPhotoCropMetrics() {
-  const view = getPhotoCropViewportSize();
-  const { naturalW: nw, naturalH: nh, zoom } = photoCropState;
-  if (!nw || !nh) {
-    return { view, scale: 1, left: 0, top: 0, width: view, height: view };
-  }
-  const cover = Math.max(view / nw, view / nh);
-  const scale = cover * zoom;
-  const width = nw * scale;
-  const height = nh * scale;
-  const left = view / 2 - width / 2 + photoCropState.offsetX;
-  const top = view / 2 - height / 2 + photoCropState.offsetY;
-  return { view, scale, left, top, width, height, nw, nh };
+  return petsMedia.computeCropMetrics({
+    view: getPhotoCropViewportSize(),
+    naturalW: photoCropState.naturalW,
+    naturalH: photoCropState.naturalH,
+    zoom: photoCropState.zoom,
+    offsetX: photoCropState.offsetX,
+    offsetY: photoCropState.offsetY,
+  });
 }
 
 function clampPhotoCropOffset() {
-  const { view, width, height } = getPhotoCropMetrics();
-  const maxX = Math.max(0, (width - view) / 2);
-  const maxY = Math.max(0, (height - view) / 2);
-  photoCropState.offsetX = Math.min(maxX, Math.max(-maxX, photoCropState.offsetX));
-  photoCropState.offsetY = Math.min(maxY, Math.max(-maxY, photoCropState.offsetY));
+  const next = petsMedia.clampCropOffset(photoCropState, getPhotoCropMetrics());
+  photoCropState.offsetX = next.offsetX;
+  photoCropState.offsetY = next.offsetY;
 }
 
 function renderPhotoCropTransform() {
@@ -3470,13 +3459,9 @@ async function openPetPhotoCrop(dataUrl, petId) {
 }
 
 function exportPetPhotoCrop(outputSize = 480) {
-  const { view, scale, left, top, nw, nh } = getPhotoCropMetrics();
-  if (!nw || !nh || !photoCropEls.img?.src) return null;
-  const srcSize = view / scale;
-  const sx = Math.max(0, Math.min(nw - srcSize, -left / scale));
-  const sy = Math.max(0, Math.min(nh - srcSize, -top / scale));
-  const sw = Math.min(srcSize, nw - sx);
-  const sh = Math.min(srcSize, nh - sy);
+  const metrics = getPhotoCropMetrics();
+  const rect = petsMedia.exportCropSourceRect(metrics);
+  if (!rect || !metrics.nw || !metrics.nh || !photoCropEls.img?.src) return null;
   const canvas = document.createElement("canvas");
   canvas.width = outputSize;
   canvas.height = outputSize;
@@ -3484,7 +3469,17 @@ function exportPetPhotoCrop(outputSize = 480) {
   if (!ctx) return null;
   ctx.fillStyle = "#e8f1ed";
   ctx.fillRect(0, 0, outputSize, outputSize);
-  ctx.drawImage(photoCropEls.img, sx, sy, sw, sh, 0, 0, outputSize, outputSize);
+  ctx.drawImage(
+    photoCropEls.img,
+    rect.sx,
+    rect.sy,
+    rect.sw,
+    rect.sh,
+    0,
+    0,
+    outputSize,
+    outputSize
+  );
   return canvas.toDataURL("image/jpeg", 0.86);
 }
 
@@ -3693,23 +3688,22 @@ function confirmArchivePet(event) {
     return;
   }
 
-  const index = pets.findIndex((item) => item.id === pet.id);
-  if (index < 0) return;
-  const [archived] = pets.splice(index, 1);
-  archived.passedAwayDate = passedAwayDate;
-  archived.memorialNote = memorialNote || "";
-  archivedPets.unshift(archived);
+  const result = petsLifecycle.archivePet(pet.id, {
+    passedAwayDate,
+    memorialNote,
+    currentPetId,
+  });
+  if (!result.ok) return;
 
-  const wasCurrent = currentPetId === archived.id;
   pendingArchivePetId = null;
   setManageMode(false);
-  if (wasCurrent || !pets.some((item) => item.id === currentPetId)) {
-    currentPetId = pets[0]?.id || null;
+  if (result.nextCurrentPetId !== undefined) {
+    currentPetId = result.nextCurrentPetId;
     appState.setCurrentPetId(currentPetId);
   }
   applySelectedPet();
   renderArchiveList();
-  showToast(t("toastArchived", { name: archived.name }));
+  showToast(t("toastArchived", { name: result.archived.name }));
   clearNavigationHistory();
   go("archive", { replace: true });
 }
@@ -3773,17 +3767,15 @@ function confirmRemovePet() {
     return;
   }
 
-  const removedName = pet.name;
-  const wasCurrent = currentPetId === pet.id;
-  pets.splice(
-    pets.findIndex((item) => item.id === pet.id),
-    1
-  );
+  const result = petsLifecycle.removePet(pet.id, { currentPetId });
+  if (!result.ok) return;
+
+  const removedName = result.removed.name;
   pendingRemovePetId = null;
   setManageMode(false);
 
-  if (wasCurrent || !pets.some((item) => item.id === currentPetId)) {
-    currentPetId = pets[0]?.id || null;
+  if (result.nextCurrentPetId !== undefined) {
+    currentPetId = result.nextCurrentPetId;
     appState.setCurrentPetId(currentPetId);
   }
   applySelectedPet();
@@ -4451,6 +4443,12 @@ const PET_TONES = [
   "linear-gradient(160deg, #9bb87a, #4a6435)",
 ];
 
+const petsLifecycle = PetLiveWeb.domains.pets.createLifecycle({
+  pets,
+  archivedPets,
+  tones: PET_TONES,
+});
+
 function formatAgeLabel(birthDate) {
   const birth = new Date(`${birthDate}T00:00:00`);
   const today = new Date();
@@ -4777,20 +4775,7 @@ function syncDateProxies(root = document) {
 }
 
 function createPetFromForm(form) {
-  return {
-    id: `p${Date.now()}`,
-    ...readPetIdentityFromForm(form),
-    tone: PET_TONES[pets.length % PET_TONES.length],
-    alertCount: 0,
-    alerts: [],
-    meds: [],
-    visits: [],
-    vaccines: [],
-    parasitePrevention: {
-      external: null,
-      heartworm: null,
-    },
-  };
+  return petsLifecycle.createPet(readPetIdentityFromForm(form));
 }
 
 let editingPetId = null;
@@ -4837,7 +4822,7 @@ function fillPetFormFromPet(pet) {
 }
 
 function applyPetFromForm(pet, form) {
-  Object.assign(pet, readPetIdentityFromForm(form));
+  return petsLifecycle.updatePet(pet, readPetIdentityFromForm(form));
 }
 
 function openCreatePetForm() {
