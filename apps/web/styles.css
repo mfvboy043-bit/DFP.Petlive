@@ -3291,6 +3291,13 @@ input[type="month"]::-webkit-calendar-picker-indicator {
   margin-top: 2px;
 }
 
+/* EN meta lines: keep readable full words, force one line on the card */
+html[lang="en"] .e-card-top-main > .e-sub {
+  font-size: 0.82rem;
+  letter-spacing: -0.015em;
+  white-space: nowrap;
+}
+
 .e-name-row .e-chip-meta {
   margin: 0 0 0 auto;
   flex: 0 1 auto;
@@ -7850,6 +7857,11 @@ html.is-proof-lightbox-open body {
   .e-pet-frame {
     width: 68px;
     height: 68px;
+  }
+
+  html[lang="en"] .e-card-top-main > .e-sub {
+    font-size: 0.78rem;
+    letter-spacing: -0.02em;
   }
 
   .e-block {
