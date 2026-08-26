@@ -2888,6 +2888,7 @@ input[type="month"]::-webkit-calendar-picker-indicator {
   min-width: 0;
 }
 
+.parasite-cal-chooser-providers .parasite-cal-apple-btn,
 .parasite-cal-chooser-providers .parasite-cal-google-btn {
   display: inline-flex;
   align-items: center;
@@ -2895,6 +2896,7 @@ input[type="month"]::-webkit-calendar-picker-indicator {
   gap: 8px;
 }
 
+.parasite-cal-apple-g,
 .parasite-cal-google-g {
   display: inline-flex;
   width: 18px;
@@ -2902,6 +2904,7 @@ input[type="month"]::-webkit-calendar-picker-indicator {
   flex: 0 0 auto;
 }
 
+.parasite-cal-apple-g svg,
 .parasite-cal-google-g svg {
   display: block;
 }
