@@ -3225,16 +3225,28 @@ input[type="month"]::-webkit-calendar-picker-indicator {
   margin-top: 2px;
 }
 
-.e-chip-meta {
-  margin: 4px 0 0;
+.e-name-row .e-chip-meta {
+  margin: 0 0 0 auto;
+  flex: 0 1 auto;
   min-width: 0;
-  padding-bottom: 2px;
+  padding-bottom: 0;
   font-size: 0.78rem;
   font-weight: 500;
   font-style: italic;
   line-height: 1.25;
   letter-spacing: 0.01em;
-  text-align: left;
+  text-align: right;
+  color: var(--text-muted);
+}
+
+.e-chip-meta {
+  margin: 0;
+  min-width: 0;
+  font-size: 0.78rem;
+  font-weight: 500;
+  font-style: italic;
+  line-height: 1.25;
+  letter-spacing: 0.01em;
   color: var(--text-muted);
 }
 

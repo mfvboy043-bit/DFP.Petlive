@@ -4387,7 +4387,6 @@ function paintEmergencyIdentity(pet) {
     species: speciesLabelOf(pet),
     breed: breedLabelOf(pet),
     gender: genderLabelOf(pet),
-    age: ageLabelOf(pet),
   });
   paintEmergencyBirth(pet);
   paintEmergencyChip(pet);
@@ -4402,7 +4401,11 @@ function paintEmergencyBirth(pet) {
     return;
   }
   eBirthLine.hidden = false;
-  eBirthLine.textContent = t("eBirthLine", { birth });
+  const age = ageLabelOf(pet);
+  eBirthLine.textContent =
+    age && age !== t("ageUnknown")
+      ? t("eBirthLineAge", { birth, age })
+      : t("eBirthLine", { birth });
 }
 
 function paintEmergencyChip(pet) {
