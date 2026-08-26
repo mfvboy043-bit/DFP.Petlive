@@ -11,7 +11,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,700&family=Noto+Sans+TC:wght@400;500;700&family=Noto+Serif+TC:wght@600;700&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="./styles.css?v=20260826-e-card-head-fix" />
+  <link rel="stylesheet" href="./styles.css?v=20260826-e-head-copy" />
 </head>
 <body>
   <div class="atmosphere" aria-hidden="true">
@@ -1495,17 +1495,17 @@
         <div>
           <h2 data-i18n="emergencyTitle">醫療資訊卡</h2>
         </div>
+        <div class="screen-head-actions" data-glass-chrome>
+          <button class="btn btn-small e-copy-summary" type="button" id="copy-card" data-i18n="copySummary">
+            複製摘要
+          </button>
+        </div>
       </header>
 
       <article class="e-card" id="e-card">
         <header class="e-card-top">
           <div class="e-card-top-main">
-            <div class="e-brand-row">
-              <p class="e-brand" data-i18n="eBrand">火龍果護照</p>
-              <button class="btn btn-small e-copy-summary" type="button" id="copy-card" data-i18n="copySummary">
-                複製摘要
-              </button>
-            </div>
+            <p class="e-brand" data-i18n="eBrand">火龍果護照</p>
             <div class="e-name-row">
               <h3 id="e-name">米醬</h3>
               <button
@@ -1938,6 +1938,6 @@
   <script defer src="./domains/timeline/selectors.js?v=20260826-meds-cover-b"></script>
   <script defer src="./domains/medications/controller.js?v=20260826-meds-cover-b"></script>
   <script defer src="./domains/medications/selectors.js?v=20260826-meds-cover-b"></script>
-  <script defer src="./app.js?v=20260826-meds-cover-b"></script>
+  <script defer src="./app.js?v=20260826-e-head-copy"></script>
 </body>
 </html>

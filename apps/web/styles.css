@@ -926,6 +926,15 @@ h4 {
   margin-left: auto;
 }
 
+.screen-head-actions .e-copy-summary {
+  flex: 0 0 auto;
+  width: auto;
+  min-height: 34px;
+  padding: 6px 10px;
+  font-size: 0.78rem;
+  white-space: nowrap;
+}
+
 .screen-head-actions .account-menu {
   position: static;
 }
@@ -3150,20 +3159,9 @@ input[type="month"]::-webkit-calendar-picker-indicator {
   min-width: 0;
 }
 
-.e-brand-row {
-  display: flex;
-  flex-wrap: nowrap;
-  align-items: center;
-  justify-content: space-between;
-  gap: 10px;
-  margin-bottom: 7px;
-  min-width: 0;
-}
-
 .e-brand {
-  margin: 0;
+  margin: 0 0 7px;
   min-width: 0;
-  flex: 1 1 auto;
 
   font-family: "Noto Serif TC", serif;
   font-size: 12px;
@@ -3174,7 +3172,7 @@ input[type="month"]::-webkit-calendar-picker-indicator {
 
 .e-name-row {
   display: flex;
-  align-items: flex-start;
+  align-items: center;
   gap: 7px;
   min-width: 0;
 }
@@ -3182,7 +3180,7 @@ input[type="month"]::-webkit-calendar-picker-indicator {
 .e-name-row h3 {
   margin: 0;
   min-width: 0;
-  flex: 1 1 auto;
+  flex: 0 1 auto;
 
   font-family: "Noto Serif TC", serif;
   font-size: 27px;
@@ -3191,19 +3189,10 @@ input[type="month"]::-webkit-calendar-picker-indicator {
   color: var(--text-strong);
 }
 
-.e-copy-summary {
-  flex: 0 0 auto;
-  width: auto;
-  min-height: 34px;
-  padding: 6px 11px;
-  font-size: 0.8rem;
-}
-
 .e-pet-photo-edit {
   display: grid;
   place-items: center;
   flex: 0 0 auto;
-  margin-top: 5px;
 
   width: 27px;
   height: 27px;
@@ -7769,14 +7758,6 @@ html.is-proof-lightbox-open body {
 
   .e-name-row h3 {
     font-size: 24px;
-  }
-
-  .e-brand-row .e-copy-summary {
-    flex: 0 0 auto;
-    width: auto;
-    max-width: min(44vw, 108px);
-    padding-inline: 8px;
-    font-size: 0.76rem;
   }
 
   .e-pet-frame {

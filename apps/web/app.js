@@ -5291,9 +5291,8 @@ function clearNavigationHistory() {
   shellNavigation.clearHistory();
 }
 
-function glassChromeActionsMarkup() {
+function glassChromeNavAccountMarkup() {
   return `
-    <div class="screen-head-actions" data-glass-chrome>
       <div class="app-nav-menu">
         <button
           class="app-nav-btn js-app-nav-btn"
@@ -5327,6 +5326,13 @@ function glassChromeActionsMarkup() {
           <span class="account-chip-name"></span>
         </button>
       </div>
+  `;
+}
+
+function glassChromeActionsMarkup() {
+  return `
+    <div class="screen-head-actions" data-glass-chrome>
+      ${glassChromeNavAccountMarkup()}
     </div>
   `;
 }
@@ -5335,7 +5341,13 @@ function enhanceGlassScreenHeads() {
   document
     .querySelectorAll('[data-screen]:not([data-screen="home"]) > .screen-head')
     .forEach((head) => {
-      if (head.querySelector("[data-glass-chrome]")) return;
+      const existing = head.querySelector("[data-glass-chrome]");
+      if (existing) {
+        if (!existing.querySelector(".app-nav-menu")) {
+          existing.insertAdjacentHTML("beforeend", glassChromeNavAccountMarkup());
+        }
+        return;
+      }
       head.insertAdjacentHTML("beforeend", glassChromeActionsMarkup());
     });
 }
