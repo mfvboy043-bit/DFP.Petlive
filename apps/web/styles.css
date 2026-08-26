@@ -2868,6 +2868,17 @@ input[type="month"]::-webkit-calendar-picker-indicator {
   gap: 8px;
 }
 
+.parasite-cal-chooser-providers {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+
+.parasite-cal-chooser-providers .btn {
+  width: 100%;
+  min-width: 0;
+}
+
 /* ---------------------------------------------------------
    19. TIMELINE
    Block language matches .alert-section (padded card + left accent).
