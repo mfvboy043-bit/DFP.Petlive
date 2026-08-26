@@ -2790,6 +2790,27 @@ input[type="month"]::-webkit-calendar-picker-indicator {
   color: var(--leaf-deep);
 }
 
+.parasite-block .field-row {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 11px;
+  width: 100%;
+  min-width: 0;
+}
+
+.parasite-block .field-row .field {
+  min-width: 0;
+  max-width: 100%;
+}
+
+.parasite-block .field-row input[type="date"],
+.parasite-block .field-row input[type="number"],
+.parasite-block .field-row input[type="text"] {
+  width: 0;
+  min-width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
+}
+
 .parasite-actions {
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -7548,20 +7569,18 @@ html.is-proof-lightbox-open body {
     -webkit-min-logical-width: 0;
   }
 
-  /* Keep vaccine date pair side-by-side (date-proxy prevents iOS overflow) */
+  /* Keep vaccine / parasite pairs side-by-side on phone */
   .vaccine-form .field-row,
-  .screen[data-screen="vaccines"] .vaccine-form .field-row {
+  .screen[data-screen="vaccines"] .vaccine-form .field-row,
+  .parasite-block .field-row,
+  .screen[data-screen="parasite"] .parasite-block .field-row {
     grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 10px;
   }
 
-  .parasite-block .field-row {
-    grid-template-columns: 1fr;
-    gap: 12px;
-  }
-
   .vaccine-form .field-row .field,
-  .parasite-block .field-row .field {
+  .parasite-block .field-row .field,
+  .screen[data-screen="parasite"] .parasite-block .field-row .field {
     min-width: 0;
     max-width: 100%;
   }
@@ -7570,7 +7589,6 @@ html.is-proof-lightbox-open body {
   .form input[type="month"],
   .form input[type="time"],
   .vaccine-form input[type="date"],
-  .parasite-block input[type="date"],
   .screen[data-screen="add-visit"] input[type="date"],
   .screen[data-screen="add-pet"] input[type="date"],
   .screen[data-screen="labs"] input[type="date"],
@@ -7578,6 +7596,21 @@ html.is-proof-lightbox-open body {
     width: 100%;
     min-width: 0;
     max-width: 100%;
+    box-sizing: border-box;
+    -webkit-min-logical-width: 0;
+  }
+
+  .parasite-block .field-row input[type="date"],
+  .parasite-block .field-row input[type="number"],
+  .parasite-block .field-row input[type="text"],
+  .screen[data-screen="parasite"] .parasite-block .field-row input[type="date"],
+  .screen[data-screen="parasite"] .parasite-block .field-row input[type="number"],
+  .screen[data-screen="parasite"] .parasite-block .field-row input[type="text"] {
+    width: 0;
+    min-width: 100%;
+    max-width: 100%;
+    padding-inline: 8px;
+    overflow: hidden;
     box-sizing: border-box;
     -webkit-min-logical-width: 0;
   }

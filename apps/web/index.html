@@ -11,7 +11,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,700&family=Noto+Sans+TC:wght@400;500;700&family=Noto+Serif+TC:wght@600;700&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="./styles.css?v=20260826-parasite-dose-flow" />
+  <link rel="stylesheet" href="./styles.css?v=20260826-vaccine-parasite-cal-rows" />
 </head>
 <body>
   <div class="atmosphere" aria-hidden="true">
@@ -1301,10 +1301,17 @@
           <legend data-i18n="parasiteProduct">產品</legend>
           <div class="chips" id="parasite-chips-external"></div>
         </fieldset>
-        <label class="field">
-          <span data-i18n="parasiteCustomProduct">自訂產品名</span>
-          <input type="text" id="parasite-custom-external" data-i18n-placeholder="parasiteCustomPlaceholder" placeholder="例如：院內處方" />
-        </label>
+        <div class="field-row">
+          <label class="field">
+            <span data-i18n="parasiteCustomProduct">自訂產品名</span>
+            <input type="text" id="parasite-custom-external" data-i18n-placeholder="parasiteCustomPlaceholder" placeholder="例如：院內處方" />
+          </label>
+          <label class="field">
+            <span data-i18n="parasiteCustomDays">自訂天數</span>
+            <input type="number" id="parasite-interval-external" min="1" step="1" placeholder="30" />
+          </label>
+        </div>
+        <p class="field-hint" data-i18n="parasiteCustomDaysHint">填天數後，會依上次投藥算出下次投藥日（仍可改）。</p>
         <div class="field-row">
           <label class="field">
             <span data-i18n="parasiteLastGiven">上次投藥</span>
@@ -1315,11 +1322,6 @@
             <input type="date" id="parasite-next-external" />
           </label>
         </div>
-        <label class="field">
-          <span data-i18n="parasiteCustomDays">自訂天數</span>
-          <input type="number" id="parasite-interval-external" min="1" step="1" placeholder="30" />
-        </label>
-        <p class="field-hint" data-i18n="parasiteCustomDaysHint">填天數後，會依上次投藥算出下次投藥日（仍可改）。</p>
         <div class="parasite-actions">
           <button class="btn btn-primary" type="submit" data-i18n="parasiteSaveExternal">今日前投藥（過去）</button>
           <button class="btn btn-sun" type="button" data-parasite-dosed="external" data-i18n="parasiteDosedToday">
@@ -1335,10 +1337,17 @@
           <legend data-i18n="parasiteProduct">產品</legend>
           <div class="chips" id="parasite-chips-heartworm"></div>
         </fieldset>
-        <label class="field">
-          <span data-i18n="parasiteCustomProduct">自訂產品名</span>
-          <input type="text" id="parasite-custom-heartworm" data-i18n-placeholder="parasiteCustomPlaceholder" placeholder="例如：院內處方" />
-        </label>
+        <div class="field-row">
+          <label class="field">
+            <span data-i18n="parasiteCustomProduct">自訂產品名</span>
+            <input type="text" id="parasite-custom-heartworm" data-i18n-placeholder="parasiteCustomPlaceholder" placeholder="例如：院內處方" />
+          </label>
+          <label class="field">
+            <span data-i18n="parasiteCustomDays">自訂天數</span>
+            <input type="number" id="parasite-interval-heartworm" min="1" step="1" placeholder="30" />
+          </label>
+        </div>
+        <p class="field-hint" data-i18n="parasiteCustomDaysHint">填天數後，會依上次投藥算出下次投藥日（仍可改）。</p>
         <div class="field-row">
           <label class="field">
             <span data-i18n="parasiteLastGiven">上次投藥</span>
@@ -1349,11 +1358,6 @@
             <input type="date" id="parasite-next-heartworm" />
           </label>
         </div>
-        <label class="field">
-          <span data-i18n="parasiteCustomDays">自訂天數</span>
-          <input type="number" id="parasite-interval-heartworm" min="1" step="1" placeholder="30" />
-        </label>
-        <p class="field-hint" data-i18n="parasiteCustomDaysHint">填天數後，會依上次投藥算出下次投藥日（仍可改）。</p>
         <div class="parasite-actions">
           <button class="btn btn-primary" type="submit" data-i18n="parasiteSaveHeartworm">今日前投藥（過去）</button>
           <button class="btn btn-sun" type="button" data-parasite-dosed="heartworm" data-i18n="parasiteDosedToday">
@@ -1887,13 +1891,13 @@
   <script defer src="./auth/google-drive.js?v=20260825-one-popup"></script>
   <script type="module" src="./runtime/petlive.js?v=20260824-drug-seed-dedupe"></script>
   <script defer src="./runtime/safe-ui.js?v=20260812-local-first"></script>
-  <script defer src="./i18n.js?v=20260826-parasite-dose-flow"></script>
+  <script defer src="./i18n.js?v=20260826-vaccine-parasite-cal-rows"></script>
   <script defer src="./breeds-database.js?v=20260825-breed-typeahead-adopt"></script>
   <script defer src="./core/storage.js?v=20260824-perf-adopt"></script>
   <script defer src="./core/state.js?v=20260813-layered-adopted"></script>
   <script defer src="./shell/navigation.js?v=20260813-layered-adopted"></script>
   <script defer src="./shell/render-coordinator.js?v=20260824-perf-adopt"></script>
   <script defer src="./domains/pets/controller.js?v=20260813-layered-adopted"></script>
-  <script defer src="./app.js?v=20260826-parasite-dose-flow"></script>
+  <script defer src="./app.js?v=20260826-vaccine-parasite-cal-rows"></script>
 </body>
 </html>

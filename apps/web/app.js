@@ -2613,28 +2613,39 @@ function buildParasiteCalendarPayload(pet, kind) {
   return { title, details, nextDue: record.nextDue };
 }
 
-function closeParasiteCalendarChooser() {
+let pendingCalendarPayload = null;
+
+function closeCalendarChooser() {
   const overlay = document.getElementById("parasite-cal-chooser");
   if (!overlay) return;
   overlay.hidden = true;
   delete overlay.dataset.parasiteKind;
+  pendingCalendarPayload = null;
+}
+
+function showCalendarChooser(payload, metaText) {
+  const overlay = document.getElementById("parasite-cal-chooser");
+  const meta = document.getElementById("parasite-cal-chooser-meta");
+  if (!overlay || !payload?.nextDue) {
+    showToast(t("toastParasiteNeedNext"));
+    return false;
+  }
+  pendingCalendarPayload = payload;
+  if (meta) meta.textContent = metaText || t("parasiteCalChooserMeta", { date: payload.nextDue });
+  overlay.hidden = false;
+  return true;
 }
 
 function showParasiteCalendarChooser(kind) {
   const pet = getCurrentPet();
-  const record = getParasiteRecord(pet, kind);
-  const overlay = document.getElementById("parasite-cal-chooser");
-  const meta = document.getElementById("parasite-cal-chooser-meta");
-  if (!overlay || !record?.nextDue) {
+  const payload = buildParasiteCalendarPayload(pet, kind);
+  if (!payload) {
     showToast(t("toastParasiteNeedNext"));
     return false;
   }
-  overlay.dataset.parasiteKind = kind;
-  if (meta) {
-    meta.textContent = t("parasiteCalChooserMeta", { date: record.nextDue });
-  }
-  overlay.hidden = false;
-  return true;
+  const overlay = document.getElementById("parasite-cal-chooser");
+  if (overlay) overlay.dataset.parasiteKind = kind;
+  return showCalendarChooser(payload, t("parasiteCalChooserMeta", { date: payload.nextDue }));
 }
 
 /** Past dose: require last-given date, recompute next, save, then offer calendar. */
@@ -2650,10 +2661,30 @@ function saveParasiteDosedTodayAndOfferCalendar(kind) {
   return showParasiteCalendarChooser(kind);
 }
 
-function openParasiteGoogleCalendar(kind) {
-  const pet = getCurrentPet();
-  const payload = buildParasiteCalendarPayload(pet, kind);
-  if (!payload) {
+function buildVaccineCalendarPayload(pet, { vaccines, given, next }) {
+  if (!pet || !next) return null;
+  const vaccineNames = (vaccines || []).map((entry) => entry.name).filter(Boolean);
+  const vaccinesLabel = vaccineNames.join("、") || t("vaccine");
+  const title = t("vaccineCalTitle", {
+    name: pet.name,
+    vaccines: vaccinesLabel,
+  });
+  const details = t("vaccineCalDetails", {
+    name: pet.name,
+    vaccines: vaccinesLabel,
+    given: given || "—",
+    next,
+  });
+  return {
+    title,
+    details,
+    nextDue: next,
+    uid: `vaccine-${isoToCompactDate(next)}-${vaccineNames.length}`,
+  };
+}
+
+function openGoogleCalendar(payload) {
+  if (!payload?.nextDue) {
     showToast(t("toastParasiteNeedNext"));
     return;
   }
@@ -2667,16 +2698,15 @@ function openParasiteGoogleCalendar(kind) {
   window.open(url.toString(), "_blank", "noopener,noreferrer");
 }
 
-function openParasiteAppleCalendar(kind) {
-  const pet = getCurrentPet();
-  const payload = buildParasiteCalendarPayload(pet, kind);
-  if (!payload) {
+function openAppleCalendar(payload) {
+  if (!payload?.nextDue) {
     showToast(t("toastParasiteNeedNext"));
     return;
   }
   const start = isoToCompactDate(payload.nextDue);
   const end = isoToCompactDate(addDays(payload.nextDue, 1));
   const stamp = isoToCompactDate(todayISODate()) + "T000000Z";
+  const uid = payload.uid || `event-${start}`;
   const ics = [
     "BEGIN:VCALENDAR",
     "VERSION:2.0",
@@ -2684,7 +2714,7 @@ function openParasiteAppleCalendar(kind) {
     "CALSCALE:GREGORIAN",
     "METHOD:PUBLISH",
     "BEGIN:VEVENT",
-    `UID:petlive-parasite-${kind}-${start}@petlive`,
+    `UID:petlive-${uid}@petlive`,
     `DTSTAMP:${stamp}`,
     `DTSTART;VALUE=DATE:${start}`,
     `DTEND;VALUE=DATE:${end}`,
@@ -2697,12 +2727,28 @@ function openParasiteAppleCalendar(kind) {
   const href = URL.createObjectURL(blob);
   const link = document.createElement("a");
   link.href = href;
-  link.download = `petlive-${kind}-${start}.ics`;
+  link.download = `petlive-${uid}.ics`;
   link.rel = "noopener";
   document.body.appendChild(link);
   link.click();
   link.remove();
   window.setTimeout(() => URL.revokeObjectURL(href), 2000);
+}
+
+function closeParasiteCalendarChooser() {
+  closeCalendarChooser();
+}
+
+function openParasiteGoogleCalendar(kind) {
+  const pet = getCurrentPet();
+  openGoogleCalendar(buildParasiteCalendarPayload(pet, kind));
+}
+
+function openParasiteAppleCalendar(kind) {
+  const pet = getCurrentPet();
+  const payload = buildParasiteCalendarPayload(pet, kind);
+  if (payload) payload.uid = `parasite-${kind}-${isoToCompactDate(payload.nextDue)}`;
+  openAppleCalendar(payload);
 }
 
 const VACCINE_PRESETS = {
@@ -7799,6 +7845,12 @@ vaccineForm.addEventListener("submit", (event) => {
     }))
   );
 
+  const calPayload = buildVaccineCalendarPayload(pet, {
+    vaccines: selected,
+    given,
+    next,
+  });
+
   renderVaccines(pet);
   resetVaccineForm(pet);
   vaccineFormPetId = pet.id;
@@ -7809,6 +7861,9 @@ vaccineForm.addEventListener("submit", (event) => {
       vaccines: selected.map((entry) => entry.name).join("、"),
     })
   );
+  if (calPayload) {
+    showCalendarChooser(calPayload, t("vaccineCalChooserMeta", { date: next }));
+  }
 });
 
 document.getElementById("parasite-chips-external")?.addEventListener("click", (event) => {
@@ -7879,17 +7934,17 @@ document.getElementById("parasite-cal-chooser")?.addEventListener("click", (even
   const target = event.target;
   if (!(target instanceof Element)) return;
   if (target === event.currentTarget || target.closest("[data-parasite-cal-close]")) {
-    closeParasiteCalendarChooser();
+    closeCalendarChooser();
     return;
   }
   const providerBtn = target.closest("[data-parasite-cal-provider]");
   if (!providerBtn) return;
-  const kind = event.currentTarget.dataset.parasiteKind;
   const provider = providerBtn.getAttribute("data-parasite-cal-provider");
-  if (!kind) return;
-  closeParasiteCalendarChooser();
-  if (provider === "apple") openParasiteAppleCalendar(kind);
-  else if (provider === "google") openParasiteGoogleCalendar(kind);
+  const payload = pendingCalendarPayload;
+  closeCalendarChooser();
+  if (!payload) return;
+  if (provider === "apple") openAppleCalendar(payload);
+  else if (provider === "google") openGoogleCalendar(payload);
 });
 
 document.getElementById("copy-card").addEventListener("click", async () => {

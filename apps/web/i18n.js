@@ -503,6 +503,10 @@ const I18N = {
     vaccinePrevention: "疫苗預防",
     vaccineNotSet: "尚未設定 · 點此新增",
     vaccineStripMeta: "{name} · 下次 {date}",
+    vaccineCalTitle: "{name} · 疫苗（{vaccines}）",
+    vaccineCalDetails:
+      "寵物：{name}\n疫苗：{vaccines}\n施打：{given}\n下次：{next}\n（火龍果護照 · 僅供參考）",
+    vaccineCalChooserMeta: "下次施打：{date}（已寫入護照）",
     parasiteCalTitle: "{name} · {kind}（{product}）",
     parasiteCalDetails:
       "寵物：{name}\n項目：{kind}\n產品：{product}\n上次：{last}\n下次：{next}\n（火龍果護照 · 僅供參考）",
@@ -1242,6 +1246,10 @@ const I18N = {
     vaccinePrevention: "Vaccines",
     vaccineNotSet: "Not set · tap to add",
     vaccineStripMeta: "{name} · Next {date}",
+    vaccineCalTitle: "{name} · Vaccines ({vaccines})",
+    vaccineCalDetails:
+      "Pet: {name}\nVaccines: {vaccines}\nGiven: {given}\nNext: {next}\n(Dragon Fruit Passport · reference only)",
+    vaccineCalChooserMeta: "Next shot: {date} (saved to passport)",
     parasiteCalTitle: "{name} · {kind} ({product})",
     parasiteCalDetails:
       "Pet: {name}\nType: {kind}\nProduct: {product}\nLast: {last}\nNext: {next}\n(Dragon Fruit Passport · reference only)",
@@ -1986,6 +1994,10 @@ const I18N = {
     vaccinePrevention: "ワクチン予防",
     vaccineNotSet: "未設定 · タップして追加",
     vaccineStripMeta: "{name} · 次回 {date}",
+    vaccineCalTitle: "{name} · ワクチン（{vaccines}）",
+    vaccineCalDetails:
+      "ペット：{name}\nワクチン：{vaccines}\n接種：{given}\n次回：{next}\n（ドラゴンフルーツパスポート · 参考情報）",
+    vaccineCalChooserMeta: "次回接種：{date}（パスポートに保存済み）",
     parasiteCalTitle: "{name} · {kind}（{product}）",
     parasiteCalDetails:
       "ペット：{name}\n項目：{kind}\n製品：{product}\n前回：{last}\n次回：{next}\n（ドラゴンフルーツパスポート · 参考情報）",
@@ -2730,6 +2742,10 @@ const I18N = {
     vaccinePrevention: "백신 예방",
     vaccineNotSet: "미설정 · 눌러서 추가",
     vaccineStripMeta: "{name} · 다음 {date}",
+    vaccineCalTitle: "{name} · 백신({vaccines})",
+    vaccineCalDetails:
+      "반려동물: {name}\n백신: {vaccines}\n접종: {given}\n다음: {next}\n(용과 패스포트 · 참고용)",
+    vaccineCalChooserMeta: "다음 접종: {date} (여권에 저장됨)",
     parasiteCalTitle: "{name} · {kind}({product})",
     parasiteCalDetails:
       "반려동물: {name}\n항목: {kind}\n제품: {product}\n마지막: {last}\n다음: {next}\n(용과 패스포트 · 참고용)",
