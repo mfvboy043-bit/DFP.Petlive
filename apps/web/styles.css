@@ -3138,7 +3138,7 @@ input[type="month"]::-webkit-calendar-picker-indicator {
 
 .e-card-top {
   display: grid;
-  grid-template-columns: 1fr auto;
+  grid-template-columns: minmax(0, 1fr) auto;
   gap: 14px;
 
   padding-bottom: 16px;
@@ -3146,8 +3146,13 @@ input[type="month"]::-webkit-calendar-picker-indicator {
   border-bottom: 1px solid #e2ddd4;
 }
 
+.e-card-top-main {
+  min-width: 0;
+}
+
 .e-brand-row {
   display: flex;
+  flex-wrap: nowrap;
   align-items: center;
   justify-content: space-between;
   gap: 10px;
@@ -3158,6 +3163,7 @@ input[type="month"]::-webkit-calendar-picker-indicator {
 .e-brand {
   margin: 0;
   min-width: 0;
+  flex: 1 1 auto;
 
   font-family: "Noto Serif TC", serif;
   font-size: 12px;
@@ -3176,7 +3182,7 @@ input[type="month"]::-webkit-calendar-picker-indicator {
 .e-name-row h3 {
   margin: 0;
   min-width: 0;
-  flex: 0 1 auto;
+  flex: 1 1 auto;
 
   font-family: "Noto Serif TC", serif;
   font-size: 27px;
@@ -3187,6 +3193,7 @@ input[type="month"]::-webkit-calendar-picker-indicator {
 
 .e-copy-summary {
   flex: 0 0 auto;
+  width: auto;
   min-height: 34px;
   padding: 6px 11px;
   font-size: 0.8rem;
@@ -7762,6 +7769,14 @@ html.is-proof-lightbox-open body {
 
   .e-name-row h3 {
     font-size: 24px;
+  }
+
+  .e-brand-row .e-copy-summary {
+    flex: 0 0 auto;
+    width: auto;
+    max-width: min(44vw, 108px);
+    padding-inline: 8px;
+    font-size: 0.76rem;
   }
 
   .e-pet-frame {
