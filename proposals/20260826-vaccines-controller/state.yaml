@@ -1,0 +1,41 @@
+id: "20260826-vaccines-controller"
+title: "Vaccines controller building blocks"
+version: 2
+status: adopted
+# proposed | building | reviewing | revising | candidate_ready | halted | adopted | rejected
+
+gate_a:
+  status: approved
+  # pending | approved | modified | rejected
+  note: "Victor 確認 2026-08-26"
+
+gate_b:
+  status: adopted
+  # pending | adopted | rejected
+  note: "Victor 採用 2026-08-26 — surgical copy from 3b97a72 onto main (C + domains/vaccines); no blind-merge"
+
+iteration: 1
+max_iterations: 3
+
+candidate:
+  branch: "proposal/vaccines-controller"
+  path: "proposals/20260826-vaccines-controller"
+  worktree: ""
+  note: "Adopted onto main via main-adopt worktree; source commit 3b97a72"
+
+reviews:
+  pharmacist: conditional
+  qa: conditional
+  ui: pass
+  # pending | skipped | pass | conditional | reject
+
+blocking_issues: []
+non_blocking:
+  - QA-002
+  - MED-001
+  - MED-002
+  - MED-003
+  - UI-001
+rerun: []
+builder_scope: []
+halt_reason: ""
