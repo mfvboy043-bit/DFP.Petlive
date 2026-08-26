@@ -340,6 +340,30 @@ html[lang="ko"] .lede {
   color: var(--text-strong);
 }
 
+.e-title-stack {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: center;
+  line-height: 1.05;
+  gap: 0;
+}
+
+.e-title-stack span:empty {
+  display: none;
+}
+
+html:not([lang="en"]):not([lang="ja"]) .e-title-stack {
+  flex-direction: row;
+  gap: 0;
+}
+
+html[lang="en"] .screen-emergency > .screen-head h2,
+html[lang="ja"] .screen-emergency > .screen-head h2 {
+  font-size: 12px;
+  line-height: 1.1;
+}
+
 .screen-head p {
   margin: 3px 0 0;
 
@@ -7485,6 +7509,12 @@ html.is-proof-lightbox-open body {
   html[lang="en"] .screen > .screen-head h2,
   html[lang="ja"] .screen > .screen-head h2 {
     font-size: 15px;
+  }
+
+  html[lang="en"] .screen-emergency > .screen-head h2,
+  html[lang="ja"] .screen-emergency > .screen-head h2 {
+    font-size: 12px;
+    line-height: 1.1;
   }
 
   /* Action btn + glass chrome: keep title on row 1, move btn-small to row 2 */
