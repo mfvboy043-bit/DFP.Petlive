@@ -1,0 +1,34 @@
+id: "20260826-meds-drugs-controller"
+title: "Meds / drugs controller building blocks"
+version: 2
+status: adopted
+# proposed | building | reviewing | revising | candidate_ready | halted | adopted | rejected
+
+gate_a:
+  status: approved
+  note: "Victor 確認 2026-08-26"
+
+gate_b:
+  status: adopted
+  note: "Victor 採用；domains/medications + visits QA-001 在 primary。C→B cover 已完成（B index 載入 domains + app.js 薄 facade + afterSelect QA-002）。待 parent commit/push Pages"
+
+iteration: 2
+max_iterations: 3
+
+candidate:
+  branch: "proposal/meds-drugs-controller"
+  path: "proposals/20260826-meds-drugs-controller"
+  worktree: ".worktrees/meds-drugs-controller"
+
+reviews:
+  pharmacist: pass
+  qa: pass
+  ui: pass
+
+rerun: []
+blocking_issues: []
+non_blocking:
+  - QA-003
+  - UI-001
+builder_scope: []
+halt_reason: ""

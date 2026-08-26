@@ -667,9 +667,10 @@ h4 {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 38px;
+  width: auto;
+  min-width: 38px;
   height: 38px;
-  padding: 0;
+  padding: 0 10px;
   border: 1px solid rgba(40, 36, 32, 0.08);
   border-radius: 999px;
   background: rgba(245, 243, 240, 0.95);
@@ -683,6 +684,31 @@ h4 {
 .app-nav-btn[aria-expanded="true"] {
   background: #fff;
   border-color: rgba(40, 36, 32, 0.14);
+}
+
+.app-nav-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 0;
+  font-family: "Noto Sans TC", system-ui, sans-serif;
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  line-height: 1;
+  white-space: nowrap;
+}
+
+.app-nav-label[hidden] {
+  display: none !important;
+}
+
+.app-nav-flank {
+  font-weight: 700;
+  opacity: 0.88;
+}
+
+.app-nav-word {
+  padding: 0 1px;
 }
 
 .app-nav-ico {
@@ -713,59 +739,113 @@ h4 {
   z-index: 55;
   display: flex;
   flex-direction: column;
-  gap: 0;
-  max-width: 420px;
+  gap: 4px;
+  box-sizing: border-box;
+  width: max-content;
+  min-width: 168px;
+  max-width: min(240px, calc(100vw - 28px));
   margin-left: auto;
   margin-right: 0;
-  padding: 18px 8px 18px 8px;
-  border: 1px solid rgba(40, 36, 32, 0.08);
-  border-radius: 22px;
-  background: #fff;
+  padding: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.72);
+  border-radius: 18px;
+  background:
+    linear-gradient(
+      155deg,
+      rgba(255, 253, 250, 0.94) 0%,
+      rgba(255, 255, 255, 0.86) 48%,
+      rgba(240, 244, 241, 0.9) 100%
+    );
+  backdrop-filter: blur(18px) saturate(1.15);
+  -webkit-backdrop-filter: blur(18px) saturate(1.15);
   box-shadow:
-    0 12px 40px rgba(26, 52, 45, 0.12),
-    0 2px 8px rgba(26, 52, 45, 0.06);
+    0 1px 0 rgba(255, 255, 255, 0.7) inset,
+    0 0 0 1px rgba(61, 107, 87, 0.14),
+    0 14px 36px rgba(26, 52, 45, 0.12),
+    0 2px 8px rgba(26, 52, 45, 0.05);
+  transform-origin: top right;
 }
 
 .app-nav-panel[hidden] {
   display: none !important;
 }
 
+.app-nav-panel:not([hidden]) {
+  animation: app-nav-in 200ms var(--ease);
+}
+
+@keyframes app-nav-in {
+  from {
+    opacity: 0;
+    transform: translateY(-6px) scale(0.97);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
 .app-nav-item {
-  display: block;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 2px;
   width: 100%;
   margin: 0;
-  padding: 14px 22px;
+  padding: 11px 14px;
   border: 0;
   border-radius: 12px;
   background: transparent;
-  color: #141414;
+  color: var(--text-strong);
   font-family: "Noto Sans TC", system-ui, sans-serif;
-  font-size: 17px;
-  font-weight: 700;
-  letter-spacing: 0.01em;
   text-align: left;
   cursor: pointer;
+  transition:
+    background 160ms var(--ease),
+    color 160ms var(--ease);
 }
 
-.app-nav-item:not(:last-child) {
-  border-bottom: 1px dashed rgba(40, 36, 32, 0.14);
+.app-nav-item-label {
+  font-size: 15px;
+  font-weight: 700;
+  letter-spacing: 0.01em;
+  line-height: 1.25;
+}
+
+.app-nav-item-hint {
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: 0.01em;
+  line-height: 1.35;
+  color: var(--text-muted);
+  transition: color 160ms var(--ease);
 }
 
 .app-nav-item:hover,
 .app-nav-item:focus-visible {
-  background: rgba(40, 36, 32, 0.05);
+  background: var(--leaf-pale);
+  color: var(--leaf-deep);
   outline: none;
+}
+
+.app-nav-item:hover .app-nav-item-hint,
+.app-nav-item:focus-visible .app-nav-item-hint {
+  color: var(--leaf-mid);
 }
 
 @media (max-width: 720px) {
   .app-nav-panel {
-    max-width: none;
+    min-width: 156px;
+    max-width: min(220px, calc(100vw - 24px));
     margin-right: 0;
   }
 
   .app-nav-item {
-    font-size: 16px;
-    padding: 13px 18px;
+    padding: 12px 13px;
+  }
+
+  .app-nav-item-label {
+    font-size: 15px;
   }
 }
 
@@ -1606,18 +1686,20 @@ select:focus {
   min-width: 0;
 }
 
-/* Unified control height inside add-pet / vaccine date pairs */
+/* Unified control height inside add-pet / vaccine / parasite date pairs */
 #pet-form .field-row select,
 #pet-form .field-row input:not(.date-proxy-face):not(.date-proxy-native),
 #pet-form .field-row .date-proxy,
-.vaccine-form .field-row .date-proxy {
+.vaccine-form .field-row .date-proxy,
+.parasite-block .field-row .date-proxy {
   min-height: 50px;
   height: 50px;
   box-sizing: border-box;
 }
 
 #pet-form .field-row .date-proxy-face,
-.vaccine-form .field-row .date-proxy-face {
+.vaccine-form .field-row .date-proxy-face,
+.parasite-block .field-row .date-proxy-face {
   height: 100%;
   min-height: 0;
   box-sizing: border-box;
@@ -2683,6 +2765,27 @@ input[type="week"] {
   color: var(--leaf-deep);
 }
 
+.parasite-block .field-row {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 11px;
+  width: 100%;
+  min-width: 0;
+}
+
+.parasite-block .field-row .field {
+  min-width: 0;
+  max-width: 100%;
+}
+
+.parasite-block .field-row input[type="number"],
+.parasite-block .field-row input[type="text"] {
+  display: block;
+  width: 100%;
+  min-width: 0;
+  max-width: 100%;
+  box-sizing: border-box;
+}
+
 .parasite-actions {
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -2695,6 +2798,58 @@ input[type="week"] {
 .parasite-cal-actions .btn {
   flex: 1;
   width: 100%;
+}
+
+.parasite-cal-chooser {
+  position: fixed;
+  z-index: 980;
+  inset: 0;
+  display: grid;
+  align-items: end;
+  padding: 16px;
+  background: rgba(20, 28, 24, 0.58);
+  backdrop-filter: blur(8px);
+}
+
+.parasite-cal-chooser[hidden] {
+  display: none !important;
+}
+
+.parasite-cal-chooser-sheet {
+  width: min(100%, 420px);
+  margin: 0 auto;
+  padding: 19px;
+  border-radius: 23px;
+  background: #fff;
+  box-shadow: var(--shadow-md);
+}
+
+.parasite-cal-chooser-sheet h3 {
+  margin: 0 0 6px;
+  font-family: "Noto Serif TC", serif;
+  font-size: 1.15rem;
+}
+
+.parasite-cal-chooser-meta {
+  margin: 0 0 16px;
+  font-size: 13px;
+  color: var(--text-muted);
+}
+
+.parasite-cal-chooser-actions {
+  display: grid;
+  gap: 8px;
+}
+
+.parasite-cal-chooser-providers {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+
+.parasite-cal-chooser-providers .btn {
+  width: 100%;
+  min-width: 0;
 }
 
 /* ---------------------------------------------------------
@@ -2958,7 +3113,7 @@ input[type="week"] {
 
 .e-name-row {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   gap: 7px;
   min-width: 0;
 }
@@ -2975,10 +3130,27 @@ input[type="week"] {
   color: var(--text-strong);
 }
 
+.e-name-aside {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 6px;
+  margin-left: auto;
+  flex: 0 1 auto;
+  min-width: 0;
+}
+
+.e-copy-summary {
+  min-height: 34px;
+  padding: 6px 11px;
+  font-size: 0.8rem;
+}
+
 .e-pet-photo-edit {
   display: grid;
   place-items: center;
   flex: 0 0 auto;
+  margin-top: 5px;
 
   width: 27px;
   height: 27px;
@@ -3009,8 +3181,7 @@ input[type="week"] {
 }
 
 .e-chip-meta {
-  align-self: flex-end;
-  margin: 0 0 0 auto;
+  margin: 0;
   min-width: 0;
   padding-bottom: 2px;
   font-size: 0.78rem;
@@ -7226,6 +7397,45 @@ html.is-proof-lightbox-open body {
     font-size: 15px;
   }
 
+  /* Action btn + glass chrome: keep title on row 1, move btn-small to row 2 */
+  .screen > .screen-head:has(> .btn-small) {
+    flex-wrap: wrap;
+    row-gap: 6px;
+    border-radius: 18px;
+    padding-bottom: 8px;
+  }
+
+  .screen > .screen-head:has(> .btn-small) > div {
+    flex: 1 1 0;
+    min-width: 0;
+  }
+
+  .screen > .screen-head:has(> .btn-small) h2 {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  html[lang="ja"] .screen > .screen-head:has(> .btn-small) h2,
+  html[lang="ko"] .screen > .screen-head:has(> .btn-small) h2 {
+    line-break: strict;
+    word-break: keep-all;
+  }
+
+  .screen > .screen-head > .btn-small {
+    order: 10;
+    flex: 1 1 100%;
+    width: 100%;
+    box-sizing: border-box;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .screen:has(> .screen-head > .btn-small) {
+    --e-head-float-h: 108px;
+  }
+
   .back {
     width: 44px;
     height: 44px;
@@ -7262,7 +7472,9 @@ html.is-proof-lightbox-open body {
   #pet-form .field-row:has(.date-proxy),
   .screen[data-screen="add-pet"] .field-row:has(.date-proxy),
   .vaccine-form .field-row:has(.date-proxy),
-  .screen[data-screen="vaccines"] .vaccine-form .field-row:has(.date-proxy) {
+  .screen[data-screen="vaccines"] .vaccine-form .field-row:has(.date-proxy),
+  .parasite-block .field-row:has(.date-proxy),
+  .screen[data-screen="parasite"] .parasite-block .field-row:has(.date-proxy) {
     overflow: visible;
   }
 
@@ -7281,7 +7493,9 @@ html.is-proof-lightbox-open body {
   #pet-form .field-row .field:has(.date-proxy),
   .screen[data-screen="add-pet"] .field-row .field:has(.date-proxy),
   .vaccine-form .field-row .field:has(.date-proxy),
-  .screen[data-screen="vaccines"] .vaccine-form .field-row .field:has(.date-proxy) {
+  .screen[data-screen="vaccines"] .vaccine-form .field-row .field:has(.date-proxy),
+  .parasite-block .field-row .field:has(.date-proxy),
+  .screen[data-screen="parasite"] .parasite-block .field-row .field:has(.date-proxy) {
     overflow: visible;
   }
 
@@ -7292,7 +7506,9 @@ html.is-proof-lightbox-open body {
   .screen[data-screen="add-pet"] .field-row input:not(.date-proxy-face):not(.date-proxy-native),
   .screen[data-screen="add-pet"] .field-row .date-proxy,
   .vaccine-form .field-row .date-proxy,
-  .screen[data-screen="vaccines"] .vaccine-form .field-row .date-proxy {
+  .screen[data-screen="vaccines"] .vaccine-form .field-row .date-proxy,
+  .parasite-block .field-row .date-proxy,
+  .screen[data-screen="parasite"] .parasite-block .field-row .date-proxy {
     width: 100%;
     min-width: 0;
     max-width: 100%;
@@ -7304,7 +7520,9 @@ html.is-proof-lightbox-open body {
   #pet-form .field-row .date-proxy-face,
   .screen[data-screen="add-pet"] .field-row .date-proxy-face,
   .vaccine-form .field-row .date-proxy-face,
-  .screen[data-screen="vaccines"] .vaccine-form .field-row .date-proxy-face {
+  .screen[data-screen="vaccines"] .vaccine-form .field-row .date-proxy-face,
+  .parasite-block .field-row .date-proxy-face,
+  .screen[data-screen="parasite"] .parasite-block .field-row .date-proxy-face {
     width: 100%;
     min-width: 0;
     max-width: 100%;
@@ -7342,37 +7560,43 @@ html.is-proof-lightbox-open body {
   }
 
   .vaccine-form .field-row,
-  .screen[data-screen="vaccines"] .vaccine-form .field-row {
+  .screen[data-screen="vaccines"] .vaccine-form .field-row,
+  .parasite-block .field-row,
+  .screen[data-screen="parasite"] .parasite-block .field-row {
     grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 10px;
   }
 
-  .parasite-block .field-row {
-    grid-template-columns: 1fr;
-    gap: 12px;
-  }
-
   .vaccine-form .field-row .field,
-  .parasite-block .field-row .field {
+  .parasite-block .field-row .field,
+  .screen[data-screen="parasite"] .parasite-block .field-row .field {
     min-width: 0;
     max-width: 100%;
   }
 
   .vaccine-form input[type="date"],
-  .parasite-block input[type="date"] {
+  .parasite-block .field-row input[type="number"],
+  .parasite-block .field-row input[type="text"],
+  .screen[data-screen="parasite"] .parasite-block .field-row input[type="number"],
+  .screen[data-screen="parasite"] .parasite-block .field-row input[type="text"] {
+    display: block;
     width: 100%;
     min-width: 0;
+    max-width: 100%;
+    box-sizing: border-box;
+    -webkit-min-logical-width: 0;
   }
 
   .form-actions,
-  .med-form-actions,
-  .parasite-actions {
+  .med-form-actions {
     display: grid;
     grid-template-columns: 1fr;
   }
 
   .parasite-actions {
-    grid-template-columns: 1fr;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
   }
 
   .parasite-block {
