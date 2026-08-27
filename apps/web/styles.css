@@ -5954,7 +5954,7 @@ html.is-photo-crop-open body {
   flex-wrap: wrap;
   align-items: center;
   justify-content: flex-end;
-  gap: 4px 10px;
+  gap: 6px;
   flex-shrink: 0;
 }
 
@@ -5964,10 +5964,20 @@ html.is-photo-crop-open body {
   font-size: 0.82rem;
   font-weight: 700;
   color: var(--leaf-deep);
+  border: 1px solid rgba(120, 138, 128, 0.42);
+  background: rgba(255, 255, 255, 0.42);
+}
+
+.alert-section-add:hover,
+.alert-section-edit:hover {
+  background: rgba(61, 107, 87, 0.08);
+  border-color: rgba(100, 122, 110, 0.55);
 }
 
 .alert-section.is-editing .alert-section-edit {
-  color: var(--milktea);
+  color: var(--alert);
+  border-color: color-mix(in srgb, var(--alert) 45%, rgba(255, 255, 255, 0.5));
+  background: color-mix(in srgb, var(--alert) 8%, rgba(255, 255, 255, 0.5));
 }
 
 .alert-section.is-editing .alert-item-actions {
