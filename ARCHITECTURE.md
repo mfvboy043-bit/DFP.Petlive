@@ -36,11 +36,17 @@ petlive/
 │   ├── medication/            # validation + history/current filters
 │   └── emergency-card/        # read-only composition; degrades sections
 ├── apps/web/                  # UI shell (prototype + module bridge)
+│   ├── core/                  # state + storage adapters
+│   ├── shell/                 # navigation + render coordinator
+│   ├── domains/               # pure domain controllers / selectors
+│   ├── c/                     # discussion surface (edit C first)
 │   └── runtime/petlive.js     # window.PetLive bridge
 └── qa/
     ├── test-plans/
     └── tests/                 # node:test contract + isolation suites
 ```
+
+**New web logic:** classify → write under `domains/` / `core/` / `shell/` → thin facade wire. Rule: `.cursor/rules/web-building-blocks.mdc`.
 
 ## Dependency batches (contracts §8)
 
