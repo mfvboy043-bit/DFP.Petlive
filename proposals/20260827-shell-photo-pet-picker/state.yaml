@@ -1,7 +1,7 @@
 id: 20260827-shell-photo-pet-picker
 title: Shell — pet picker + photo crop render building blocks
 version: 2
-status: building
+status: candidate_ready
 
 gate_a:
   status: approved
@@ -19,8 +19,8 @@ candidate:
 
 reviews:
   pharmacist: skipped
-  qa: pending
-  ui: pending
+  qa: pass
+  ui: skipped
 
 rerun: []
 blocking_issues: []
