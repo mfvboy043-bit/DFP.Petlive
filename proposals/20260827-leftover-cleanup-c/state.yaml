@@ -1,7 +1,7 @@
 id: "20260827-leftover-cleanup-c"
 title: "Leftover cleanup on C — catalogs, seed, crop export, timeline keyed plan"
 version: 2
-status: building
+status: reviewing
 
 gate_a:
   status: approved
@@ -10,7 +10,7 @@ gate_a:
 gate_b:
   status: pending
 
-iteration: 0
+iteration: 1
 max_iterations: 3
 
 candidate:
@@ -21,7 +21,7 @@ candidate:
 reviews:
   pharmacist: pending
   qa: pending
-  ui: pending
+  ui: skipped
 
 rerun: []
 blocking_issues: []

@@ -597,8 +597,13 @@
     function planKeyedListReconcile(previousSignatures, nextSignatures) {
       const prev = Array.isArray(previousSignatures) ? previousSignatures : [];
       const next = Array.isArray(nextSignatures) ? nextSignatures : [];
-      if (!prev.length && !next.length) {
-        return { mode: "skip", indices: [] };
+      // Empty list must paint empty-state HTML. Never skip []→[] (matches
+      // legacy shouldSkipListRebuild requiring a truthy previous signature).
+      if (!next.length) {
+        return { mode: "full", indices: [] };
+      }
+      if (!prev.length) {
+        return { mode: "full", indices: next.map((_, i) => i) };
       }
       if (prev.length !== next.length) {
         return { mode: "full", indices: next.map((_, i) => i) };
@@ -610,11 +615,17 @@
       for (let i = 0; i < next.length; i += 1) {
         if (prev[i] !== next[i]) indices.push(i);
       }
-      // Too many churned rows → cheaper full rebuild
-      if (indices.length > Math.max(1, Math.floor(next.length / 2))) {
-        return { mode: "full", indices };
+      // Weight-vs chrome on row i+1 reads previousVisit — bump neighbor too.
+      const withNeighbors = new Set(indices);
+      for (const i of indices) {
+        if (i + 1 < next.length) withNeighbors.add(i + 1);
       }
-      return { mode: "partial", indices };
+      const expanded = [...withNeighbors].sort((a, b) => a - b);
+      // Too many churned rows → cheaper full rebuild
+      if (expanded.length > Math.max(1, Math.floor(next.length / 2))) {
+        return { mode: "full", indices: expanded };
+      }
+      return { mode: "partial", indices: expanded };
     }
 
     function shouldSkipListRebuild(previousSignature, nextSignature) {

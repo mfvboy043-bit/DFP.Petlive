@@ -254,13 +254,15 @@ describe("TL-05 timeline render builders", () => {
     const next = renderer.buildItemSignatures(changed, { lang: "zh-Hant" });
     const plan = renderer.planKeyedListReconcile(sigs, next);
     assert.equal(plan.mode, "partial");
-    assert.equal(plan.indices.length, 1);
+    assert.equal(plan.indices.length, 2);
     assert.equal(plan.indices[0], 1);
+    assert.equal(plan.indices[1], 2);
 
     const shorter = renderer.buildItemSignatures(
       { id: "p1", visits: [pet.visits[0]] },
       { lang: "zh-Hant" }
     );
     assert.equal(renderer.planKeyedListReconcile(sigs, shorter).mode, "full");
+    assert.equal(renderer.planKeyedListReconcile([], []).mode, "full");
   });
 });
