@@ -876,28 +876,11 @@ function expandFrequencyInText(text) {
 }
 
 function formatMedDose(med) {
-  const parts = [];
-  const unitLabel = formatDosageUnitLabel(med.dosageUnit || med.unit);
-  if (med.dosageAmount != null && med.dosageAmount !== "" && Number(med.dosageAmount) > 0) {
-    parts.push(unitLabel ? `${med.dosageAmount} ${unitLabel}` : String(med.dosageAmount));
-  } else if (med.amount != null && Number(med.amount) > 0) {
-    parts.push(unitLabel ? `${med.amount} ${unitLabel}` : String(med.amount));
-  } else if (unitLabel) {
-    parts.push(unitLabel);
-  }
-  if (med.frequency) parts.push(formatFrequencyLabel(med.frequency));
-  if (parts.length) return parts.join(" · ");
-  if (med.dose) return expandFrequencyInText(med.dose);
-  return t("medDetailsPending");
+  return medicationsSelectors.formatMedDose(med);
 }
 
 function formatMedCourse(med) {
-  if (!med?.startDate || !med?.durationDays) return "";
-  return t("medCourse", {
-    start: formatShortDate(med.startDate),
-    days: med.durationDays,
-    end: formatShortDate(getMedEndDate(med)),
-  });
+  return medicationsSelectors.formatMedCourse(med);
 }
 
 function formatMedLine(med) {
@@ -907,16 +890,7 @@ function formatMedLine(med) {
 }
 
 function formatDraftDoseLine(draft) {
-  const parts = [];
-  const unitLabel = formatDosageUnitLabel(draft.unit);
-  if (draft.amount > 0 && unitLabel) parts.push(`${draft.amount} ${unitLabel}`);
-  else if (draft.amount > 0) parts.push(String(draft.amount));
-  else if (unitLabel) parts.push(unitLabel);
-  if (draft.frequency) parts.push(formatFrequencyLabel(draft.frequency));
-  if (Number.isInteger(draft.days) && draft.days > 0) {
-    parts.push(t("durationDaysCount", { n: draft.days }));
-  }
-  return parts.join(" · ") || t("medDetailsPending");
+  return medicationsSelectors.formatDraftDoseLine(draft);
 }
 
 function renderEmergencyMeds(pet) {
@@ -3615,6 +3589,26 @@ const timelineSelectors = PetLiveWeb.domains.timeline.createSelectors({
 const timelineViewHelpers = PetLiveWeb.domains.timeline.createViewHelpers({
   findDrugByName: findDrugByMedName,
 });
+const medicationsSelectors = PetLiveWeb.domains.medications.createSelectors({
+  formatFrequencyLabelOf: formatFrequencyLabel,
+  formatDosageUnitLabelOf: formatDosageUnitLabel,
+  durationDaysLabelOf: (n) => t("durationDaysCount", { n }),
+  pendingDoseLabelOf: () => t("medDetailsPending"),
+  formatShortDateOf: formatShortDate,
+  getMedEndDate,
+  medCourseOf: ({ start, days, end }) => t("medCourse", { start, days, end }),
+  expandFrequencyInTextOf: expandFrequencyInText,
+});
+const medicationsController = PetLiveWeb.domains.medications.createController({
+  visits: visitsController,
+  searchDrugs: (query) => drugsAdapter.searchDrugs(query),
+  resolveEnrichedDrug: (drugOrId) => drugsAdapter.resolveEnrichedDrug(drugOrId),
+  formatFrequencyLabelOf: formatFrequencyLabel,
+  durationDaysLabelOf: (n) => t("durationDaysCount", { n }),
+  compoundFormLabelOf: compoundFormLabel,
+  formatDraftDoseLineOf: (draft) =>
+    medicationsSelectors.formatDraftDoseLine(draft),
+});
 let timelineRenderer;
 let emergencyRenderer;
 let vaccineRenderer;
@@ -4230,12 +4224,12 @@ clinicResults.addEventListener("click", (event) => {
 });
 
 function searchDrugs(query) {
-  return drugsAdapter.searchDrugs(query);
+  return medicationsController.searchDrugs(query);
 }
 
 /** Prefer the enriched local seed so side effects / precautions always show. */
 function resolveEnrichedDrug(drugOrId) {
-  return drugsAdapter.resolveEnrichedDrug(drugOrId);
+  return medicationsController.resolveEnrichedDrug(drugOrId);
 }
 
 function renderDrugInfoCard(drug) {
@@ -4512,15 +4506,11 @@ function formatDosageUnitLabel(unit) {
 }
 
 function normalizeMedUnitForStore(unit) {
-  const value = (unit || "").trim();
-  if (!value || value === "unrecorded") return "";
-  return value;
+  return medicationsController.normalizeMedUnitForStore(unit);
 }
 
 function normalizeMedFreqForStore(frequency) {
-  const value = (frequency || "").trim();
-  if (!value || value === "unrecorded") return "";
-  return value;
+  return medicationsController.normalizeMedFreqForStore(frequency);
 }
 
 function setMedFreqChip(frequency) {
@@ -4531,16 +4521,6 @@ function setMedFreqChip(frequency) {
     chip.classList.toggle("is-on", chip.dataset.freq === next);
   });
 }
-
-const COMPOUND_DEFAULT_COLORS = {
-  liquid: "#6DA6C3",
-  liquid_a: "#6DA6C3",
-  liquid_b: "#6BAA8E",
-  liquid_c: "#E8655A",
-  capsule_a: "#E38A6C",
-  capsule_b: "#9B8BC4",
-  capsule_c: "#C9A227",
-};
 
 /** Macaron-inspired swatches (max 6), deepened slightly for badge contrast */
 const COMPOUND_COLOR_SWATCHES = [
@@ -4553,13 +4533,15 @@ const COMPOUND_COLOR_SWATCHES = [
 ];
 
 function defaultCompoundColor(group) {
-  return COMPOUND_DEFAULT_COLORS[group] || COMPOUND_DEFAULT_COLORS.liquid_a;
+  return medicationsController.defaultCompoundColor(group);
 }
 
 function resolveCompoundColor(group, explicit) {
-  if (explicit) return explicit;
-  if (group && compoundColorByGroup[group]) return compoundColorByGroup[group];
-  return group ? defaultCompoundColor(group) : "";
+  return medicationsController.resolveCompoundColor(
+    group,
+    explicit,
+    compoundColorByGroup
+  );
 }
 
 function applyCompoundChipColors() {
@@ -4603,7 +4585,13 @@ function setMedCompoundColor(hex, { persistGroup = true } = {}) {
   const colorInput = document.getElementById("compound-color");
   const group = groupInput?.value || "";
   if (!group || !hex) return;
-  if (persistGroup) compoundColorByGroup[group] = hex;
+  if (persistGroup) {
+    medicationsController.setCompoundColorOverride(
+      compoundColorByGroup,
+      group,
+      hex
+    );
+  }
   if (colorInput) colorInput.value = hex;
   applyCompoundChipColors();
   renderCompoundColorSwatches(group);
@@ -4618,7 +4606,11 @@ function setMedCompoundChip(group) {
   });
   if (value) {
     const color = resolveCompoundColor(value);
-    compoundColorByGroup[value] = color;
+    medicationsController.setCompoundColorOverride(
+      compoundColorByGroup,
+      value,
+      color
+    );
     const colorInput = document.getElementById("compound-color");
     if (colorInput) colorInput.value = color;
   } else {
@@ -4674,19 +4666,13 @@ function hasAnyMedDraftInput(form) {
 }
 
 function validateMedDraft(draft, { silent = false } = {}) {
-  if (!draft.drugName) {
-    if (!silent) showToast(t("toastNeedDrug"));
-    return false;
+  const result = medicationsController.validateMedDraft(draft);
+  if (!result.ok && !silent) {
+    if (result.reason === "need_drug") showToast(t("toastNeedDrug"));
+    else if (result.reason === "dose") showToast(t("toastDose"));
+    else if (result.reason === "days") showToast(t("toastDays"));
   }
-  if (draft.amount != null && !(draft.amount > 0)) {
-    if (!silent) showToast(t("toastDose"));
-    return false;
-  }
-  if (draft.days != null && (!Number.isInteger(draft.days) || draft.days <= 0)) {
-    if (!silent) showToast(t("toastDays"));
-    return false;
-  }
-  return true;
+  return result.ok;
 }
 
 function clearMedDrugFields() {
@@ -4706,7 +4692,7 @@ function clearMedDrugFields() {
 }
 
 function pendingMedScheduleKey(med) {
-  return `${med.frequency || ""}|${med.durationDays || ""}`;
+  return medicationsController.pendingMedScheduleKey(med);
 }
 
 function compoundFormLabel(form) {
@@ -4736,13 +4722,7 @@ function compoundFormBadge(form) {
 }
 
 function compoundFormClass(form) {
-  if (form === "liquid" || form === "liquid_a") return "is-liquid is-liquid-a";
-  if (form === "liquid_b") return "is-liquid is-liquid-b";
-  if (form === "liquid_c") return "is-liquid is-liquid-c";
-  if (form === "capsule_a") return "is-capsule is-capsule-a";
-  if (form === "capsule_b") return "is-capsule is-capsule-b";
-  if (form === "capsule_c") return "is-capsule is-capsule-c";
-  return "";
+  return medicationsSelectors.compoundFormClass(form);
 }
 
 function compoundChipToneClass(form) {
@@ -4756,8 +4736,7 @@ function compoundChipToneClass(form) {
 }
 
 function compoundIconKind(form) {
-  if (String(form || "").startsWith("capsule")) return "capsule";
-  return "liquid";
+  return medicationsSelectors.compoundIconKind(form);
 }
 function hasLinkedLabsForVisit(visit) {
   const pet = getCurrentPet();
@@ -4904,7 +4883,7 @@ medicationsRenderer = PetLiveWeb.domains.medications.createRenderer({
 });
 
 function pendingMedHasCompoundTag(med) {
-  return Boolean(med.compoundGroup);
+  return medicationsController.pendingMedHasCompoundTag(med);
 }
 
 function renderPendingMeds() {
@@ -4937,87 +4916,16 @@ function renderPendingMeds() {
 }
 
 function pushPendingMed(draft) {
-  pendingMeds.push({
-    localId: `pm-${Date.now()}-${pendingMeds.length}`,
-    name: draft.drugName,
-    dose: formatDraftDoseLine(draft),
-    source: draft.sourcePreset,
-    frequency: draft.frequency || "",
-    durationDays: draft.days || null,
-    amount: draft.amount || null,
-    unit: draft.unit || "",
-    compoundGroup: draft.compoundGroup || "",
-    compoundColor: draft.compoundColor || "",
-  });
+  const item = medicationsController.pushPendingMed(pendingMeds, draft);
   renderPendingMeds();
+  return item;
 }
 
 function buildVisitMedicationsFromPending(petId) {
-  const feedingUnits = [];
-  const groupBuckets = new Map();
-
-  pendingMeds.forEach((med) => {
-    const group = med.compoundGroup || "";
-    if (!group) {
-      feedingUnits.push({
-        id: `m-${petId}-${Date.now()}-${feedingUnits.length}-${Math.random()
-          .toString(36)
-          .slice(2, 6)}`,
-        name: med.name,
-        dose: med.dose,
-        source: med.source,
-        frequency: med.frequency,
-        durationDays: med.durationDays,
-      });
-      return;
-    }
-    const key = `${group}|${pendingMedScheduleKey(med)}`;
-    if (!groupBuckets.has(key)) groupBuckets.set(key, []);
-    groupBuckets.get(key).push(med);
-  });
-
-  groupBuckets.forEach((members, key) => {
-    const [form] = key.split("|");
-    if (members.length < 2) {
-      members.forEach((med) => {
-        feedingUnits.push({
-          id: `m-${petId}-${Date.now()}-${feedingUnits.length}-${Math.random()
-            .toString(36)
-            .slice(2, 6)}`,
-          name: med.name,
-          dose: med.dose,
-          source: med.source,
-          frequency: med.frequency,
-          durationDays: med.durationDays,
-        });
-      });
-      return;
-    }
-    const sample = members[0];
-    const compoundColor =
-      sample.compoundColor ||
-      resolveCompoundColor(form);
-    feedingUnits.push({
-      id: `m-${petId}-cmp-${Date.now()}-${feedingUnits.length}`,
-      kind: "compound_bundle",
-      name: compoundFormLabel(form),
-      dose: `${formatFrequencyLabel(sample.frequency)} · ${t("durationDaysCount", {
-        n: sample.durationDays,
-      })}`,
-      source: sample.source,
-      compoundForm: form,
-      compoundColor,
-      frequency: sample.frequency,
-      durationDays: sample.durationDays,
-      ingredients: members.map((med) => ({
-        name: med.name,
-        dose: med.dose,
-        source: med.source,
-      })),
-    });
-  });
-
-  return feedingUnits;
+  return medicationsController.buildVisitMedicationsFromPending(
+    pendingMeds,
+    petId
+  );
 }
 
 function tryAddCurrentMedToList({ toastOnSuccess = true } = {}) {
@@ -5077,15 +4985,10 @@ function setMedEntryMode(mode) {
 function getOrCreateVisitForMedSave() {
   const pet = getCurrentPet();
   if (completingVisitRef) {
-    const visit = pet.visits.find((item) => {
-      if (item.date !== completingVisitRef.date) return false;
-      if (completingVisitRef.clinicId && item.clinicId) {
-        return item.clinicId === completingVisitRef.clinicId;
-      }
-      return (
-        visitClinicLabel(item) === completingVisitRef.clinic ||
-        item.clinic === completingVisitRef.clinic
-      );
+    const visit = medicationsController.findVisitForMedSave(pet, {
+      date: completingVisitRef.date,
+      clinicId: completingVisitRef.clinicId,
+      clinicName: completingVisitRef.clinic,
     });
     if (visit) return { pet, visit };
   }
@@ -5100,10 +5003,10 @@ function getOrCreateVisitForMedSave() {
   const weightRaw = visitForm?.weightAtVisit?.value?.trim() || "";
   const weightAtVisit = weightRaw === "" ? null : Number(weightRaw);
   const weightValue = weightAtVisit > 0 ? weightAtVisit : null;
-  let visit = pet.visits.find((item) => {
-    if (item.date !== visitDate) return false;
-    if (clinicId && item.clinicId) return item.clinicId === clinicId;
-    return visitClinicLabel(item) === clinicName || item.clinic === clinicName;
+  let visit = medicationsController.findVisitForMedSave(pet, {
+    date: visitDate,
+    clinicId,
+    clinicName,
   });
   if (!visit) {
     visit = {
@@ -5112,16 +5015,13 @@ function getOrCreateVisitForMedSave() {
       clinic: clinicName,
       tags: [...selectedTags],
       note: visitForm?.notes?.value?.trim() || "",
-      weightAtVisit: weightValue,
+      weightAtVisit: null,
       medications: [],
     };
     pet.visits.unshift(visit);
-  } else if (weightValue != null) {
-    visit.weightAtVisit = weightValue;
   }
   if (weightValue != null) {
-    pet.weight = weightValue;
-    pet.weightDate = visitDate;
+    medicationsController.applyVisitWeightOnMedSave(pet, visit, weightValue);
   }
   return { pet, visit };
 }
@@ -5180,22 +5080,12 @@ bindLivePhotoInput("live-drug-photo", "live-drug-preview", (url) => {
 
 document.getElementById("save-photo-rx-btn")?.addEventListener("click", () => {
   const { pet, visit } = getOrCreateVisitForMedSave();
-  const hasProof = Boolean(liveBagPhoto || liveRxPhoto || liveDrugPhoto);
-  if (hasProof) {
-    visit.bagPhoto = liveBagPhoto || visit.bagPhoto || null;
-    visit.rxPhoto = liveRxPhoto || visit.rxPhoto || null;
-    visit.drugPhoto = liveDrugPhoto || visit.drugPhoto || null;
-  }
-  visit.medications.push({
-    id: `m-${pet.id}-photo-${Date.now()}`,
-    kind: "photo_bundle",
-    name: t("photoRxName", { date: formatShortDate(visit.date) }),
-    dose: t("photoRxDosePending"),
-    source: hasProof ? "owner_proof" : "owner",
+  medicationsController.appendPhotoBundleToVisit(visit, pet, {
     bagPhoto: liveBagPhoto,
     rxPhoto: liveRxPhoto,
     drugPhoto: liveDrugPhoto,
-    structuredPending: true,
+    name: t("photoRxName", { date: formatShortDate(visit.date) }),
+    dosePendingText: t("photoRxDosePending"),
   });
   finishMedFlowAfterSave(pet, "toastPhotoRxSaved", { name: pet.name });
 });
@@ -5208,18 +5098,20 @@ document.getElementById("pending-med-list").addEventListener("click", (event) =>
   const clearBtn = event.target.closest("[data-compound-clear]");
   if (clearBtn) {
     const id = clearBtn.getAttribute("data-compound-clear");
-    const med = pendingMeds.find((item) => item.localId === id);
-    if (med) {
-      med.compoundGroup = "";
-      renderPendingMeds();
-    }
+    medicationsController.setPendingCompoundGroup(
+      pendingMeds,
+      id,
+      "",
+      compoundColorByGroup
+    );
+    renderPendingMeds();
     return;
   }
 
   const btn = event.target.closest("[data-remove-pending]");
   if (!btn) return;
   const id = btn.getAttribute("data-remove-pending");
-  pendingMeds = pendingMeds.filter((med) => med.localId !== id);
+  pendingMeds = medicationsController.removePendingMed(pendingMeds, id);
   renderPendingMeds();
 });
 
@@ -5227,15 +5119,12 @@ document.getElementById("pending-med-list").addEventListener("change", (event) =
   const input = event.target.closest("[data-compound-for]");
   if (!input) return;
   const id = input.getAttribute("data-compound-for");
-  const med = pendingMeds.find((item) => item.localId === id);
-  if (!med) return;
-  med.compoundGroup = input.value || "";
-  if (med.compoundGroup) {
-    med.compoundColor = resolveCompoundColor(med.compoundGroup, med.compoundColor);
-    compoundColorByGroup[med.compoundGroup] = med.compoundColor;
-  } else {
-    med.compoundColor = "";
-  }
+  medicationsController.setPendingCompoundGroup(
+    pendingMeds,
+    id,
+    input.value || "",
+    compoundColorByGroup
+  );
   renderPendingMeds();
 });
 
@@ -5256,10 +5145,7 @@ document.getElementById("med-form").addEventListener("submit", (event) => {
 
   const { pet, visit } = getOrCreateVisitForMedSave();
   const units = buildVisitMedicationsFromPending(pet.id);
-  units.forEach((med) => {
-    med.startDate = visit.date;
-    visit.medications.push(med);
-  });
+  medicationsController.appendUnitsToVisit(visit, units);
 
   finishMedFlowAfterSave(pet, "toastMedSaved", {
     name: pet.name,

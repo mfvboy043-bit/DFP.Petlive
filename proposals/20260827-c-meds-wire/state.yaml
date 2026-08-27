@@ -1,0 +1,35 @@
+id: "20260827-c-meds-wire"
+title: "C — wire medications controller/selectors (match B)"
+version: 2
+status: candidate_ready
+
+gate_a:
+  status: approved
+  note: "Victor 2026-08-27 — 好，幫我接"
+
+gate_b:
+  status: pending
+
+iteration: 1
+max_iterations: 3
+
+candidate:
+  branch: "cursor/c-meds-wire-ad50"
+  path: "proposals/20260827-c-meds-wire"
+  worktree: ""
+
+reviews:
+  pharmacist: skipped
+  qa: pass
+  ui: skipped
+
+rerun: []
+blocking_issues: []
+non_blocking: []
+builder_scope:
+  - "apps/web/c/app.js"
+  - "apps/web/c/index.html"
+  - "proposals/20260827-c-meds-wire/proposal.md"
+  - "proposals/20260827-c-meds-wire/state.yaml"
+  - "proposals/20260827-c-meds-wire/contrast.md"
+halt_reason: ""
