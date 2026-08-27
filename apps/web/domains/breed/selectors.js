@@ -101,6 +101,18 @@
       return found ? label(found) : "";
     }
 
+    /**
+     * Pure breed search-face value: known breed → display label;
+     * custom / empty → leaveTyped (facade keeps typed text).
+     */
+    function resolveSearchFaceValue(value, species) {
+      if (value && value !== CUSTOM_VALUE) {
+        const breed = findByValue(species, value);
+        return { setValue: true, display: breed ? label(breed) : "" };
+      }
+      return { setValue: false, leaveTyped: true };
+    }
+
     return {
       CUSTOM_VALUE,
       search,
@@ -112,8 +124,34 @@
       isValidSelection,
       resolveKey,
       resolveDisplayName,
+      resolveSearchFaceValue,
     };
   }
 
+  /**
+   * Standalone pure helper (same semantics as selectors.resolveSearchFaceValue).
+   * @returns {{ setValue: true, display: string } | { setValue: false, leaveTyped: true }}
+   */
+  function resolveBreedSearchFaceValue(
+    value,
+    { species, findBreed, breedOptionLabel, customSentinel } = {}
+  ) {
+    if (typeof findBreed !== "function") {
+      throw new TypeError("resolveBreedSearchFaceValue requires findBreed");
+    }
+    if (typeof breedOptionLabel !== "function") {
+      throw new TypeError("resolveBreedSearchFaceValue requires breedOptionLabel");
+    }
+    if (!customSentinel) {
+      throw new TypeError("resolveBreedSearchFaceValue requires customSentinel");
+    }
+    if (value && value !== customSentinel) {
+      const breed = findBreed(species, value);
+      return { setValue: true, display: breed ? breedOptionLabel(breed) : "" };
+    }
+    return { setValue: false, leaveTyped: true };
+  }
+
   root.domains.breed.createSelectors = createSelectors;
+  root.domains.breed.resolveBreedSearchFaceValue = resolveBreedSearchFaceValue;
 })(typeof window !== "undefined" ? window : globalThis);

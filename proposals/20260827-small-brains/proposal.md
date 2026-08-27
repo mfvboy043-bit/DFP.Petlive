@@ -1,7 +1,7 @@
 ---
 id: 20260827-small-brains
 title: Wave 1 — leftover small brains out of C facade
-status: proposed
+status: reviewing
 author: planner
 candidate_branch: "cursor/small-brains-6f84"
 candidate_path: "proposals/20260827-small-brains"
@@ -11,9 +11,9 @@ updated: 2026-08-27
 
 # Proposal: Wave 1 — leftover small brains (C only)
 
-Companion: `state.yaml`.
+Companion: `state.yaml`. Contrast: `contrast.md`.
 
-**Gate A:** Victor 2026-08-27 —「確認」(對「確認：先做小腦袋」). Orchestrator Wave 1. File keeps `gate_a: pending` until parent flips approved.
+**Gate A:** Victor 2026-08-27 —「確認」(對「確認：先做小腦袋」). Approved; Builder iteration 0 on `cursor/small-brains-6f84`.
 
 ## Goal
 

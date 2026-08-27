@@ -283,31 +283,6 @@ function getMedEndDate(med) {
   return addDays(med.startDate, med.durationDays - 1);
 }
 
-function formatFrequencyLabel(frequency) {
-  const raw = String(frequency || "").trim();
-  if (!raw || raw === "unrecorded") return "";
-  const code = raw.toUpperCase();
-  const labels = {
-    SID: t("freqLabelSid"),
-    BID: t("freqLabelBid"),
-    TID: t("freqLabelTid"),
-    EOD: t("freqLabelEod"),
-  };
-  if (labels[code]) return `${labels[code]} (${code})`;
-  return code;
-}
-
-/** Expand SID/BID/… and localized day counts inside stored dose strings. */
-function expandFrequencyInText(text) {
-  if (!text) return text;
-  return String(text)
-    .replace(/ · SID(?= · |$)/g, ` · ${formatFrequencyLabel("SID")}`)
-    .replace(/ · BID(?= · |$)/g, ` · ${formatFrequencyLabel("BID")}`)
-    .replace(/ · TID(?= · |$)/g, ` · ${formatFrequencyLabel("TID")}`)
-    .replace(/ · EOD(?= · |$)/g, ` · ${formatFrequencyLabel("EOD")}`)
-    .replace(/ · (\d+) 天(?= · |$)/g, (_, n) => ` · ${t("durationDaysCount", { n })}`);
-}
-
 function formatMedDose(med) {
   return medicationsSelectors.formatMedDose(med);
 }
@@ -840,6 +815,9 @@ const parasiteController = PetLiveWeb.domains.parasite.createController({
 const parasiteSelectors = PetLiveWeb.domains.parasite.createSelectors({
   parasite: parasiteController,
 });
+const parasiteLabels = PetLiveWeb.domains.parasite.createLabels({
+  label: (key, params) => t(key, params),
+});
 
 const PARASITE_APPROACHING_DAYS = parasiteController.APPROACHING_DAYS;
 const PARASITE_KINDS = parasiteController.KINDS;
@@ -1109,23 +1087,13 @@ function buildParasiteCalendarPayload(pet, kind) {
   if (!pet) return null;
   const kindTitle = parasiteKindTitle(kind);
   const record = getParasiteRecord(pet, kind);
-  if (!record?.nextDue) return null;
-  const title = t("parasiteCalTitle", {
-    name: pet.name,
-    kind: kindTitle,
-    product: record.product || kindTitle,
+  const copy = parasiteLabels.buildCalendarTitleDetails({
+    pet,
+    kindTitle,
+    record,
   });
-  const details = t("parasiteCalDetails", {
-    name: pet.name,
-    kind: kindTitle,
-    product: record.product || "—",
-    last: record.lastGiven || "—",
-    next: record.nextDue,
-  });
-  return parasiteController.buildParasiteCalendarPayload(pet, kind, {
-    title,
-    details,
-  });
+  if (!copy) return null;
+  return parasiteController.buildParasiteCalendarPayload(pet, kind, copy);
 }
 
 function closeCalendarChooser() {
@@ -1186,23 +1154,18 @@ function saveParasiteDosedTodayAndOfferCalendar(kind) {
 }
 
 function buildVaccineCalendarPayload(pet, { vaccines, given, next }) {
-  if (!pet || !next) return null;
-  const vaccineNames = (vaccines || []).map((entry) => entry.name).filter(Boolean);
-  const vaccinesLabel = vaccineNames.join("、") || t("vaccine");
-  const title = t("vaccineCalTitle", {
-    name: pet.name,
-    vaccines: vaccinesLabel,
-  });
-  const details = t("vaccineCalDetails", {
-    name: pet.name,
-    vaccines: vaccinesLabel,
-    given: given || "—",
+  const copy = vaccinesLabels.buildCalendarTitleDetails({
+    pet,
+    vaccines,
+    given,
     next,
+    vaccineFallbackLabel: t("vaccine"),
   });
+  if (!copy) return null;
   return vaccinesController.buildVaccineCalendarPayload(
     pet,
     { vaccines, given, next },
-    { title, details }
+    copy
   );
 }
 
@@ -2109,6 +2072,7 @@ function formatPetShareLines(pet) {
   });
 }
 
+/** D: copy-card join already in emergencyRenderer.buildCopyCardText; facade wires only. */
 function buildEmergencyCopyText(pet) {
   const payload = emergencySelectors.copyPayload(pet, {
     profile: loadOwnerProfile(),
@@ -2563,9 +2527,9 @@ function updateBreedSearchFace(value) {
   const species = speciesEl ? speciesEl.value : "";
 
   suppressBreedSearchInput = true;
-  if (value && value !== BREED_CUSTOM_VALUE) {
-    const breed = findBreedByValue(species, value);
-    breedSearch.value = breed ? breedOptionLabel(breed) : "";
+  const resolved = breedSelectors.resolveSearchFaceValue(value, species);
+  if (resolved.setValue) {
+    breedSearch.value = resolved.display;
   }
   // Custom / empty: leave typed text (caller may set value explicitly).
   suppressBreedSearchInput = false;
@@ -2877,6 +2841,24 @@ const timelineSelectors = PetLiveWeb.domains.timeline.createSelectors({
 const timelineViewHelpers = PetLiveWeb.domains.timeline.createViewHelpers({
   findDrugByName: findDrugByMedName,
 });
+const medicationsLabels = PetLiveWeb.domains.medications.createLabels({
+  label: (key, params) => t(key, params),
+});
+function formatFrequencyLabel(frequency) {
+  return medicationsLabels.formatFrequencyLabel(frequency);
+}
+function expandFrequencyInText(text) {
+  return medicationsLabels.expandFrequencyInText(text);
+}
+function compoundFormLabel(form) {
+  return medicationsLabels.compoundFormLabel(form);
+}
+function compoundFormBadge(form) {
+  return medicationsLabels.compoundFormBadge(form);
+}
+function compoundChipToneClass(form) {
+  return medicationsLabels.compoundChipToneClass(form);
+}
 const medicationsSelectors = PetLiveWeb.domains.medications.createSelectors({
   formatFrequencyLabelOf: formatFrequencyLabel,
   formatDosageUnitLabelOf: formatDosageUnitLabel,
@@ -2945,6 +2927,9 @@ const vaccinesSelectors = PetLiveWeb.domains.vaccines.createSelectors({
 });
 const vaccinesController = PetLiveWeb.domains.vaccines.createController({
   selectors: vaccinesSelectors,
+});
+const vaccinesLabels = PetLiveWeb.domains.vaccines.createLabels({
+  label: (key, params) => t(key, params),
 });
 
 function getNextVaccine(pet) {
@@ -3879,44 +3864,8 @@ function pendingMedScheduleKey(med) {
   return medicationsController.pendingMedScheduleKey(med);
 }
 
-function compoundFormLabel(form) {
-  const map = {
-    liquid: t("compoundLiquidAName"),
-    liquid_a: t("compoundLiquidAName"),
-    liquid_b: t("compoundLiquidBName"),
-    liquid_c: t("compoundLiquidCName"),
-    capsule_a: t("compoundCapsuleAName"),
-    capsule_b: t("compoundCapsuleBName"),
-    capsule_c: t("compoundCapsuleCName"),
-  };
-  return map[form] || t("compoundLiquidName");
-}
-
-function compoundFormBadge(form) {
-  const map = {
-    liquid: t("compoundLiquidA"),
-    liquid_a: t("compoundLiquidA"),
-    liquid_b: t("compoundLiquidB"),
-    liquid_c: t("compoundLiquidC"),
-    capsule_a: t("compoundCapsuleA"),
-    capsule_b: t("compoundCapsuleB"),
-    capsule_c: t("compoundCapsuleC"),
-  };
-  return map[form] || t("compoundLiquid");
-}
-
 function compoundFormClass(form) {
   return medicationsSelectors.compoundFormClass(form);
-}
-
-function compoundChipToneClass(form) {
-  if (form === "liquid" || form === "liquid_a") return "is-liquid-a";
-  if (form === "liquid_b") return "is-liquid-b";
-  if (form === "liquid_c") return "is-liquid-c";
-  if (form === "capsule_a") return "is-capsule-a";
-  if (form === "capsule_b") return "is-capsule-b";
-  if (form === "capsule_c") return "is-capsule-c";
-  return "";
 }
 
 function compoundIconKind(form) {

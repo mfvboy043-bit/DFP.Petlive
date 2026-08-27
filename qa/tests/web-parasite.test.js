@@ -55,7 +55,7 @@ function loadParasite({
     throw new Error("domains must not call window.open");
   };
 
-  ["domains/parasite/controller.js", "domains/parasite/selectors.js"].forEach(
+  ["domains/parasite/controller.js", "domains/parasite/selectors.js", "domains/parasite/labels.js"].forEach(
     (path) => {
       vm.runInContext(readFileSync(new URL(path, WEB_ROOT), "utf8"), context, {
         filename: path,
@@ -277,6 +277,49 @@ describe("PA-04 parasite controller + selectors", () => {
       ),
       { title: "Title", details: "Details", nextDue: "2026-01-31" }
     );
+  });
+
+  it("parasite labels buildCalendarTitleDetails injects label keys (Wave 1 A)", () => {
+    const { api } = loadParasite();
+    const calls = [];
+    const labels = api.domains.parasite.createLabels({
+      label: (key, params) => {
+        calls.push({ key, params });
+        return `${key}:${JSON.stringify(params)}`;
+      },
+    });
+    assert.equal(
+      labels.buildCalendarTitleDetails({
+        pet: { name: "Mochi" },
+        kindTitle: "External",
+        record: null,
+      }),
+      null
+    );
+    const copy = labels.buildCalendarTitleDetails({
+      pet: { name: "Mochi" },
+      kindTitle: "External",
+      record: {
+        product: "Frontline",
+        lastGiven: "2026-01-01",
+        nextDue: "2026-01-31",
+      },
+    });
+    assert.equal(calls[0].key, "parasiteCalTitle");
+    assert.equal(calls[0].params.product, "Frontline");
+    assert.equal(calls[1].key, "parasiteCalDetails");
+    assert.equal(calls[1].params.last, "2026-01-01");
+    assert.equal(calls[1].params.next, "2026-01-31");
+    assert.match(copy.title, /parasiteCalTitle/);
+    assert.match(copy.details, /parasiteCalDetails/);
+    labels.buildCalendarTitleDetails({
+      pet: { name: "Mochi" },
+      kindTitle: "Heartworm",
+      record: { product: "", lastGiven: "", nextDue: "2026-02-01" },
+    });
+    assert.equal(calls[2].params.product, "Heartworm");
+    assert.equal(calls[3].params.product, "—");
+    assert.equal(calls[3].params.last, "—");
   });
 
   it("wrong pet object isolation — mutation only on passed pet", () => {

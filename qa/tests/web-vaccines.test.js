@@ -18,7 +18,7 @@ function loadVaccines({ findKeyByLocalizedName, isRabiesLocalizedName, daysUntil
   context.window = context;
   context.document = undefined;
   context.localStorage = undefined;
-  ["domains/vaccines/selectors.js", "domains/vaccines/controller.js"].forEach((path) => {
+  ["domains/vaccines/selectors.js", "domains/vaccines/controller.js", "domains/vaccines/labels.js"].forEach((path) => {
     vm.runInContext(readFileSync(new URL(path, WEB_ROOT), "utf8"), context, {
       filename: path,
     });
@@ -259,8 +259,47 @@ describe("VC-04 vaccines selectors + controller", () => {
     );
   });
 
+  it("vaccines labels buildCalendarTitleDetails joins names (Wave 1 A)", () => {
+    const { api } = loadVaccines();
+    const calls = [];
+    const labels = api.domains.vaccines.createLabels({
+      label: (key, params) => {
+        calls.push({ key, params });
+        return `${key}:${params.vaccines}`;
+      },
+    });
+    assert.equal(
+      labels.buildCalendarTitleDetails({
+        pet: { name: "Mochi" },
+        vaccines: [],
+        given: "",
+        next: "",
+        vaccineFallbackLabel: "Vaccine",
+      }),
+      null
+    );
+    const copy = labels.buildCalendarTitleDetails({
+      pet: { name: "Mochi" },
+      vaccines: [{ name: "五合一" }, { name: "Rabies" }],
+      given: "2026-01-01",
+      next: "2026-08-27",
+      vaccineFallbackLabel: "Vaccine",
+    });
+    assert.equal(calls[0].key, "vaccineCalTitle");
+    assert.equal(calls[0].params.vaccines, "五合一、Rabies");
+    assert.equal(calls[1].key, "vaccineCalDetails");
+    assert.equal(calls[1].params.given, "2026-01-01");
+    assert.equal(calls[1].params.next, "2026-08-27");
+    assert.match(copy.title, /vaccineCalTitle/);
+    assert.equal(labels.joinVaccineNames([], "Vaccine"), "Vaccine");
+  });
+
   it("domain scripts do not reference document, localStorage, or modules/vaccine", () => {
-    for (const path of ["domains/vaccines/selectors.js", "domains/vaccines/controller.js"]) {
+    for (const path of [
+      "domains/vaccines/selectors.js",
+      "domains/vaccines/controller.js",
+      "domains/vaccines/labels.js",
+    ]) {
       const src = readFileSync(new URL(path, WEB_ROOT), "utf8");
       assert.equal(/\bdocument\b/.test(src), false, `${path} must not use document`);
       assert.equal(/\blocalStorage\b/.test(src), false, `${path} must not use localStorage`);

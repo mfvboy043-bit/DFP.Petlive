@@ -16,6 +16,7 @@ function loadMedicationsDomain() {
     "domains/drugs/adapter.js",
     "domains/medications/controller.js",
     "domains/medications/selectors.js",
+    "domains/medications/labels.js",
   ].forEach((path) => {
     vm.runInContext(readFileSync(new URL(path, WEB_ROOT), "utf8"), context, {
       filename: path,
@@ -388,6 +389,57 @@ describe("MD-01 / MD-02 medications controller + selectors", () => {
     assert.equal(selectors.compoundIconKind("liquid_b"), "liquid");
   });
 
+  it("medications labels: frequency + compound badge/label/tone (Wave 1 B)", () => {
+    const context = loadMedicationsDomain();
+    const stub = {
+      freqLabelSid: "once daily",
+      freqLabelBid: "twice daily",
+      freqLabelTid: "three times daily",
+      freqLabelEod: "every other day",
+      durationDaysCount: ({ n }) => `${n} days`,
+      compoundLiquidAName: "Liquid A name",
+      compoundLiquidBName: "Liquid B name",
+      compoundLiquidCName: "Liquid C name",
+      compoundCapsuleAName: "Capsule A name",
+      compoundCapsuleBName: "Capsule B name",
+      compoundCapsuleCName: "Capsule C name",
+      compoundLiquidName: "Liquid default",
+      compoundLiquidA: "LiqA",
+      compoundLiquidB: "LiqB",
+      compoundLiquidC: "LiqC",
+      compoundCapsuleA: "CapA",
+      compoundCapsuleB: "CapB",
+      compoundCapsuleC: "CapC",
+      compoundLiquid: "Liq",
+    };
+    const labels = context.PetLiveWeb.domains.medications.createLabels({
+      label: (key, params) => {
+        const value = stub[key];
+        return typeof value === "function" ? value(params || {}) : value || key;
+      },
+    });
+    assert.equal(labels.formatFrequencyLabel("SID"), "once daily (SID)");
+    assert.equal(labels.formatFrequencyLabel("bid"), "twice daily (BID)");
+    assert.equal(labels.formatFrequencyLabel("unrecorded"), "");
+    assert.equal(labels.formatFrequencyLabel(""), "");
+    assert.equal(labels.formatFrequencyLabel("PRN"), "PRN");
+    assert.equal(
+      labels.expandFrequencyInText("1 ml · SID · 7 天"),
+      "1 ml · once daily (SID) · 7 days"
+    );
+    assert.equal(labels.compoundFormLabel("liquid_a"), "Liquid A name");
+    assert.equal(labels.compoundFormBadge("liquid_a"), "LiqA");
+    assert.equal(labels.compoundFormLabel("capsule_b"), "Capsule B name");
+    assert.equal(labels.compoundFormBadge("capsule_b"), "CapB");
+    assert.equal(labels.compoundFormLabel("unknown"), "Liquid default");
+    assert.equal(labels.compoundFormBadge("unknown"), "Liq");
+    assert.equal(labels.compoundChipToneClass("liquid"), "is-liquid-a");
+    assert.equal(labels.compoundChipToneClass("liquid_a"), "is-liquid-a");
+    assert.equal(labels.compoundChipToneClass("liquid_b"), "is-liquid-b");
+    assert.equal(labels.compoundChipToneClass("capsule_c"), "is-capsule-c");
+    assert.equal(labels.compoundChipToneClass(""), "");
+  });
+
   it("domains do not touch document / localStorage", () => {
     const context = loadMedicationsDomain();
     assert.equal(context.document, undefined);
@@ -395,6 +447,7 @@ describe("MD-01 / MD-02 medications controller + selectors", () => {
     const source = [
       readFileSync(new URL("domains/medications/controller.js", WEB_ROOT), "utf8"),
       readFileSync(new URL("domains/medications/selectors.js", WEB_ROOT), "utf8"),
+      readFileSync(new URL("domains/medications/labels.js", WEB_ROOT), "utf8"),
     ].join("\n");
     assert.equal(/localStorage/.test(source), false);
     assert.equal(/\bdocument\b/.test(source), false);

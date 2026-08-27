@@ -1,17 +1,14 @@
 id: "20260827-small-brains"
 title: "Wave 1 — leftover small brains out of C facade"
 version: 2
-status: proposed
-# proposed | building | reviewing | revising | candidate_ready | halted | adopted | rejected
+status: reviewing
 
 gate_a:
-  status: pending
-  # pending | approved | modified | rejected
-  note: "Victor 2026-08-27 verbally 確認（先做小腦袋）; parent will flip approved"
+  status: approved
+  note: "Victor 2026-08-27 — 確認（先做小腦袋／Wave 1）"
 
 gate_b:
   status: pending
-  # pending | adopted | rejected
   note: "Formal B out of scope until Victor 採用"
 
 iteration: 0
@@ -39,4 +36,8 @@ builder_scope:
   - "D: Move any remaining emergency copy-card assemble/join into domains/emergency; if already fully in render.buildCopyCardText, verify only and thin-wire"
   - "C surface only: apps/web/c/app.js + c/index.html ?v=; do not touch apps/web/app.js / formal B"
   - "No Wave 2 form wires, Wave 3 CSS/bundler, Wave 4 modules write truth, no drive-by refactors"
+builder_note: >-
+  Iteration 0 FULL A–D on C. New labels.js for parasite/vaccines/medications;
+  breed resolveSearchFaceValue; D verified already in emergency render.
+  Formal B untouched. Hand off to Pharmacist + QA.
 halt_reason: ""

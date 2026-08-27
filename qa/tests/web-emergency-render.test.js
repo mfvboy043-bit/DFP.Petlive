@@ -149,4 +149,16 @@ describe("EM-05 emergency render builders", () => {
     assert.match(text, /copyDisclaimer/);
     assert.equal(/\n{3,}/.test(text), false);
   });
+
+  it("D verified: C facade wires buildCopyCardText; no inline join assemble", () => {
+    const appSource = readFileSync(new URL("c/app.js", WEB_ROOT), "utf8");
+    assert.match(
+      appSource,
+      /emergencyRenderer\.buildCopyCardText\s*\(/
+    );
+    assert.doesNotMatch(
+      appSource,
+      /function buildEmergencyCopyText[\s\S]{0,400}\.replace\(\/\\n\{3,\}/
+    );
+  });
 });
