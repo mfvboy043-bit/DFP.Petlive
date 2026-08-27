@@ -21,10 +21,10 @@
   gap: 0;
 
   box-sizing: border-box;
-  width: min(420px, calc(100% - 2 * var(--screen-padding) - 48px));
-  max-width: min(420px, calc(100% - 2 * var(--screen-padding) - 48px));
+  width: min(460px, calc(100% - 2 * var(--screen-padding) - 32px));
+  max-width: min(460px, calc(100% - 2 * var(--screen-padding) - 32px));
   margin: 0;
-  padding: 4px 6px;
+  padding: 4px 4px;
   transform: translateX(-50%);
   overflow: visible;
   touch-action: manipulation;
