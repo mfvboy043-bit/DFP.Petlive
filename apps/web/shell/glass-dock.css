@@ -203,32 +203,43 @@
   line-height: 1.15;
 }
 
-/* Press-hold transparent glass magnifier — slide across tabs while holding */
+/* Press-hold transparent glass magnifier — sliding bubble follows finger */
 .glass-dock-lens {
   position: absolute;
   z-index: 12;
   left: 0;
   top: 0;
-  width: 96px;
-  height: 96px;
+  width: 104px;
+  height: 104px;
   margin: 0;
   padding: 0;
   border-radius: 50%;
   pointer-events: none;
   opacity: 0;
-  transform: translate(-50%, -72%) scale(0.4);
+  transform: translate(-50%, -78%) scale(0.36);
   transform-origin: center bottom;
   transition:
-    opacity 140ms ease,
-    transform 220ms cubic-bezier(0.18, 1.15, 0.32, 1),
-    left 160ms cubic-bezier(0.22, 1, 0.36, 1),
-    top 160ms cubic-bezier(0.22, 1, 0.36, 1);
-  filter: drop-shadow(0 12px 22px rgba(26, 52, 45, 0.16));
+    opacity 120ms ease,
+    transform 260ms cubic-bezier(0.18, 1.2, 0.28, 1),
+    left 180ms cubic-bezier(0.22, 1, 0.36, 1),
+    top 180ms cubic-bezier(0.22, 1, 0.36, 1);
+  filter: drop-shadow(0 14px 24px rgba(26, 52, 45, 0.18));
+  will-change: left, top, transform;
 }
 
 .glass-dock-lens.is-visible {
   opacity: 1;
-  transform: translate(-50%, -72%) scale(1);
+  transform: translate(-50%, -78%) scale(1);
+}
+
+/* While dragging: soft liquid squash so it reads as a sliding bubble */
+.glass-dock-lens.is-visible.is-sliding {
+  transform: translate(-50%, -78%) scale(1.06, 0.94);
+  transition:
+    opacity 100ms ease,
+    transform 120ms cubic-bezier(0.22, 1, 0.36, 1),
+    left 90ms cubic-bezier(0.2, 0.9, 0.2, 1),
+    top 90ms cubic-bezier(0.2, 0.9, 0.2, 1);
 }
 
 .glass-dock-lens-face {
@@ -241,40 +252,73 @@
   justify-content: center;
   gap: 4px;
   border-radius: 50%;
-  border: 1px solid rgba(255, 255, 255, 0.55);
+  border: 1px solid rgba(255, 255, 255, 0.58);
   background:
-    linear-gradient(
-      155deg,
-      rgba(255, 253, 250, 0.28) 0%,
-      rgba(255, 255, 255, 0.12) 48%,
-      rgba(232, 244, 239, 0.18) 100%
+    radial-gradient(
+      120% 90% at 32% 22%,
+      rgba(255, 255, 255, 0.42) 0%,
+      rgba(255, 255, 255, 0.14) 42%,
+      rgba(232, 244, 239, 0.16) 100%
     );
-  backdrop-filter: blur(16px) saturate(1.15);
-  -webkit-backdrop-filter: blur(16px) saturate(1.15);
+  backdrop-filter: blur(18px) saturate(1.2);
+  -webkit-backdrop-filter: blur(18px) saturate(1.2);
   box-shadow:
-    0 1px 0 rgba(255, 255, 255, 0.65) inset,
-    0 0 0 1px rgba(61, 107, 87, 0.08),
-    0 8px 20px rgba(26, 52, 45, 0.1);
+    0 1px 0 rgba(255, 255, 255, 0.72) inset,
+    0 0 0 1px rgba(61, 107, 87, 0.07),
+    0 10px 22px rgba(26, 52, 45, 0.12);
   overflow: hidden;
+}
+
+.glass-dock-lens-face::before {
+  content: "";
+  position: absolute;
+  left: 18%;
+  right: 28%;
+  top: 10%;
+  height: 28%;
+  border-radius: 999px;
+  background: linear-gradient(
+    180deg,
+    rgba(255, 255, 255, 0.55) 0%,
+    rgba(255, 255, 255, 0) 100%
+  );
+  pointer-events: none;
 }
 
 .glass-dock-lens-ico {
   display: grid;
   place-items: center;
-  width: 42px;
-  height: 42px;
+  width: 44px;
+  height: 44px;
   color: var(--leaf-deep, #2f4f42);
   line-height: 0;
+  transition: transform 180ms cubic-bezier(0.18, 1.2, 0.28, 1);
+}
+
+.glass-dock-lens.is-switching .glass-dock-lens-ico {
+  animation: glass-dock-lens-pop 280ms cubic-bezier(0.18, 1.25, 0.28, 1);
+}
+
+@keyframes glass-dock-lens-pop {
+  0% {
+    transform: scale(0.82);
+  }
+  55% {
+    transform: scale(1.14);
+  }
+  100% {
+    transform: scale(1);
+  }
 }
 
 .glass-dock-lens-ico svg {
   display: block;
-  width: 36px;
-  height: 36px;
+  width: 38px;
+  height: 38px;
 }
 
 .glass-dock-lens-label {
-  max-width: 78px;
+  max-width: 84px;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -287,7 +331,7 @@
 }
 
 .glass-dock.is-pressing .glass-dock-thumb {
-  opacity: 0.28;
+  opacity: 0.22;
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -301,9 +345,14 @@
     transition: none;
   }
 
-  .glass-dock-lens {
+  .glass-dock-lens,
+  .glass-dock-lens.is-visible.is-sliding {
     transition: opacity 80ms ease;
-    transform: translate(-50%, -72%) scale(1);
+    transform: translate(-50%, -78%) scale(1);
+  }
+
+  .glass-dock-lens.is-switching .glass-dock-lens-ico {
+    animation: none;
   }
 }
 

@@ -116,16 +116,17 @@
   }
 
   /**
-   * Press-hold transparent glass magnifier: hold, then slide across tabs.
-   * Quick tap still navigates without showing the lens.
+   * Press-hold transparent glass magnifier: hold, then slide a bubble across tabs.
+   * Bubble tracks the finger (with light snap to the nearest tab). Quick tap skips lens.
    */
   function wireGlassDockClicks(doc, onGo, state = {}) {
     const dock = doc.getElementById("glass-dock");
     if (!dock || dock.dataset.navWired === "1") return;
     dock.dataset.navWired = "1";
 
-    const HOLD_MS = 70;
+    const HOLD_MS = 55;
     let press = null;
+    let slideRaf = 0;
 
     function lensEl() {
       return doc.getElementById("glass-dock-lens");
@@ -141,15 +142,21 @@
     function hideLens() {
       const lens = lensEl();
       if (lens) {
-        lens.classList.remove("is-visible");
+        lens.classList.remove("is-visible", "is-sliding", "is-switching");
         lens.hidden = true;
+        lens.style.left = "";
+        lens.style.top = "";
       }
       clearPressClasses();
+      if (slideRaf) {
+        global.cancelAnimationFrame(slideRaf);
+        slideRaf = 0;
+      }
     }
 
-    function showLensFor(btn) {
+    function fillLensContent(btn) {
       const lens = lensEl();
-      if (!lens || !btn || !dock.contains(btn)) return;
+      if (!lens || !btn) return;
       const ico = btn.querySelector(".glass-dock-ico");
       const label = btn.querySelector(".glass-dock-label");
       const lensIco = lens.querySelector(".glass-dock-lens-ico");
@@ -158,19 +165,64 @@
       if (lensLabel) {
         lensLabel.textContent = label ? label.textContent : "";
       }
+    }
+
+    function nearestItem(clientX) {
+      const items = Array.from(dock.querySelectorAll(".glass-dock-item"));
+      if (!items.length) return null;
+      let best = items[0];
+      let bestDist = Infinity;
+      for (const btn of items) {
+        const r = btn.getBoundingClientRect();
+        const mid = r.left + r.width / 2;
+        const d = Math.abs(clientX - mid);
+        if (d < bestDist) {
+          bestDist = d;
+          best = btn;
+        }
+      }
+      return best;
+    }
+
+    function placeLensBubble(clientX, btn, opts = {}) {
+      const lens = lensEl();
+      if (!lens || !btn || !dock.contains(btn)) return;
+      const { reveal = false, sliding = false } = opts;
+
+      const dockRect = dock.getBoundingClientRect();
+      const btnRect = btn.getBoundingClientRect();
+      const btnCx = btnRect.left + btnRect.width / 2 - dockRect.left;
+      const fingerX = clientX - dockRect.left;
+      // Follow finger, gently pulled toward tab center (bubble magnet).
+      const cx = fingerX * 0.72 + btnCx * 0.28;
+      const minX = 28;
+      const maxX = Math.max(minX, dockRect.width - 28);
+      const clamped = Math.min(maxX, Math.max(minX, cx));
+      const cy = btnRect.top + btnRect.height / 2 - dockRect.top - 14;
+
       clearPressClasses();
       dock.classList.add("is-pressing");
       btn.classList.add("is-pressing");
 
-      const dockRect = dock.getBoundingClientRect();
-      const btnRect = btn.getBoundingClientRect();
-      const cx = btnRect.left + btnRect.width / 2 - dockRect.left;
-      const cy = btnRect.top + btnRect.height / 2 - dockRect.top - 10;
-      lens.style.left = `${cx}px`;
+      const switched = press && press.contentBtn && press.contentBtn !== btn;
+      if (!press?.contentBtn || switched) {
+        fillLensContent(btn);
+        if (press) press.contentBtn = btn;
+        if (switched) {
+          lens.classList.remove("is-switching");
+          void lens.offsetWidth;
+          lens.classList.add("is-switching");
+        }
+      }
+
+      lens.style.left = `${clamped}px`;
       lens.style.top = `${cy}px`;
       lens.hidden = false;
-      void lens.offsetWidth;
-      lens.classList.add("is-visible");
+      if (reveal) {
+        void lens.offsetWidth;
+        lens.classList.add("is-visible");
+      }
+      lens.classList.toggle("is-sliding", Boolean(sliding));
     }
 
     function itemFromPoint(clientX, clientY) {
@@ -183,7 +235,7 @@
         const btn = el.closest(".glass-dock-item");
         if (btn && dock.contains(btn)) return btn;
       }
-      return null;
+      return nearestItem(clientX);
     }
 
     function endPress(event, commit) {
@@ -219,12 +271,15 @@
       if (press?.timer) global.clearTimeout(press.timer);
       press = {
         btn,
+        contentBtn: null,
         pointerId: event.pointerId,
         lensShown: false,
+        lastX: event.clientX,
         timer: global.setTimeout(() => {
           if (!press || press.btn !== btn) return;
           press.lensShown = true;
-          showLensFor(btn);
+          press.contentBtn = null;
+          placeLensBubble(press.lastX, btn, { reveal: true, sliding: false });
         }, HOLD_MS),
       };
       try {
@@ -236,12 +291,25 @@
 
     dock.addEventListener("pointermove", (event) => {
       if (!press || event.pointerId !== press.pointerId) return;
-      const over = itemFromPoint(event.clientX, event.clientY);
+      press.lastX = event.clientX;
+      const over =
+        itemFromPoint(event.clientX, event.clientY) || press.btn;
       if (!over) return;
-      if (over !== press.btn) {
-        press.btn = over;
-        if (press.lensShown) showLensFor(over);
+      press.btn = over;
+      if (!press.lensShown) {
+        // If finger already moved before hold fires, keep target current.
+        return;
       }
+
+      if (slideRaf) global.cancelAnimationFrame(slideRaf);
+      slideRaf = global.requestAnimationFrame(() => {
+        slideRaf = 0;
+        if (!press?.lensShown) return;
+        placeLensBubble(press.lastX, press.btn, {
+          reveal: false,
+          sliding: true,
+        });
+      });
     });
 
     dock.addEventListener("pointerup", (event) => {
