@@ -1,0 +1,40 @@
+id: "20260827-leftover-cleanup-c"
+title: "Leftover cleanup on C — catalogs, seed, crop export, timeline keyed plan"
+version: 2
+status: building
+
+gate_a:
+  status: approved
+  note: "Victor 2026-08-27 — 請開始整理；全部整理好在網頁C頁面，做完審核再覆蓋B"
+
+gate_b:
+  status: pending
+
+iteration: 0
+max_iterations: 3
+
+candidate:
+  branch: "cursor/leftover-cleanup-c-7855"
+  path: "proposals/20260827-leftover-cleanup-c"
+  worktree: ""
+
+reviews:
+  pharmacist: pending
+  qa: pending
+  ui: pending
+
+rerun: []
+blocking_issues: []
+non_blocking: []
+builder_scope:
+  - "apps/web/domains/clinics/catalog.js"
+  - "apps/web/domains/vaccines/presets.js"
+  - "apps/web/domains/pets/seed.js"
+  - "apps/web/domains/pets/media.js"
+  - "apps/web/domains/visits/labels.js"
+  - "apps/web/domains/timeline/render.js"
+  - "apps/web/c/app.js"
+  - "apps/web/c/index.html"
+  - "qa/tests/"
+  - "proposals/20260827-leftover-cleanup-c/"
+halt_reason: ""

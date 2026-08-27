@@ -227,4 +227,40 @@ describe("TL-05 timeline render builders", () => {
     const otherLang = renderer.buildListSignature(pet, { lang: "en" });
     assert.equal(renderer.shouldSkipListRebuild(sig, otherLang), false);
   });
+
+  it("list html tags data-visit-index; keyed plan skip/partial/full", () => {
+    const { renderer } = loadRenderer();
+    const pet = {
+      id: "p1",
+      visits: [
+        { date: "2026-08-01", clinic: "A", medications: [] },
+        { date: "2026-08-02", clinic: "B", medications: [] },
+      ],
+    };
+    const { html } = renderer.buildTimelineListHtml(pet);
+    assert.match(html, /data-visit-index="0"/);
+    assert.match(html, /data-visit-index="1"/);
+
+    const sigs = renderer.buildItemSignatures(pet, { lang: "zh-Hant" });
+    assert.equal(renderer.planKeyedListReconcile(sigs, sigs).mode, "skip");
+
+    const changed = {
+      ...pet,
+      visits: [
+        pet.visits[0],
+        { date: "2026-08-02", clinic: "B-edited", medications: [] },
+      ],
+    };
+    const next = renderer.buildItemSignatures(changed, { lang: "zh-Hant" });
+    const plan = renderer.planKeyedListReconcile(sigs, next);
+    assert.equal(plan.mode, "partial");
+    assert.equal(plan.indices.length, 1);
+    assert.equal(plan.indices[0], 1);
+
+    const shorter = renderer.buildItemSignatures(
+      { id: "p1", visits: [pet.visits[0]] },
+      { lang: "zh-Hant" }
+    );
+    assert.equal(renderer.planKeyedListReconcile(sigs, shorter).mode, "full");
+  });
 });

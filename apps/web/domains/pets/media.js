@@ -50,6 +50,46 @@
     return { sx, sy, sw, sh };
   }
 
+  /**
+   * Draw cropped JPEG from an image + metrics. Browser-only (needs canvas).
+   * @param {CanvasImageSource} image
+   * @param {object} metrics from computeCropMetrics / exportCropSourceRect inputs
+   * @param {{ outputSize?: number, quality?: number, fillStyle?: string, createCanvas?: Function }} [options]
+   */
+  function exportCroppedJpegDataUrl(image, metrics, options = {}) {
+    const outputSize = options.outputSize ?? 480;
+    const quality = options.quality ?? 0.86;
+    const fillStyle = options.fillStyle ?? "#e8f1ed";
+    const rect = exportCropSourceRect(metrics);
+    if (!rect || !metrics?.nw || !metrics?.nh || !image) return null;
+    const createCanvas =
+      options.createCanvas ||
+      (typeof document !== "undefined"
+        ? () => document.createElement("canvas")
+        : null);
+    if (!createCanvas) return null;
+    const canvas = createCanvas();
+    canvas.width = outputSize;
+    canvas.height = outputSize;
+    const ctx = canvas.getContext("2d");
+    if (!ctx) return null;
+    ctx.fillStyle = fillStyle;
+    ctx.fillRect(0, 0, outputSize, outputSize);
+    ctx.drawImage(
+      image,
+      rect.sx,
+      rect.sy,
+      rect.sw,
+      rect.sh,
+      0,
+      0,
+      outputSize,
+      outputSize
+    );
+    if (typeof canvas.toDataURL !== "function") return null;
+    return canvas.toDataURL("image/jpeg", quality);
+  }
+
   function createMedia({ photosSlot, pets } = {}) {
     if (
       !photosSlot ||
@@ -109,8 +149,13 @@
       computeCropMetrics,
       clampCropOffset,
       exportCropSourceRect,
+      exportCroppedJpegDataUrl,
     };
   }
 
+  root.domains.pets.computeCropMetrics = computeCropMetrics;
+  root.domains.pets.clampCropOffset = clampCropOffset;
+  root.domains.pets.exportCropSourceRect = exportCropSourceRect;
+  root.domains.pets.exportCroppedJpegDataUrl = exportCroppedJpegDataUrl;
   root.domains.pets.createMedia = createMedia;
 })(typeof window !== "undefined" ? window : globalThis);

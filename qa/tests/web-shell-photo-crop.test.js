@@ -114,4 +114,50 @@ describe("SH-05 shell photo crop styles", () => {
     assert.equal(closeFlags.rootHidden, true);
     assert.equal(closeFlags.clearImg, true);
   });
+
+  it("exportCroppedJpegDataUrl draws using inject createCanvas", () => {
+    const { petsMedia } = loadPhotoCropShell();
+    const calls = [];
+    const fakeCanvas = {
+      width: 0,
+      height: 0,
+      getContext() {
+        return {
+          fillStyle: "",
+          fillRect(...args) {
+            calls.push(["fillRect", ...args]);
+          },
+          drawImage(...args) {
+            calls.push(["drawImage", args.length]);
+          },
+        };
+      },
+      toDataURL(type, quality) {
+        return `data:${type};q=${quality}`;
+      },
+    };
+    const metrics = petsMedia.computeCropMetrics({
+      view: 200,
+      naturalW: 400,
+      naturalH: 400,
+      zoom: 1,
+      offsetX: 0,
+      offsetY: 0,
+    });
+    const out = petsMedia.exportCroppedJpegDataUrl(
+      { fake: true },
+      metrics,
+      {
+        outputSize: 480,
+        quality: 0.86,
+        fillStyle: "#e8f1ed",
+        createCanvas: () => fakeCanvas,
+      }
+    );
+    assert.equal(out, "data:image/jpeg;q=0.86");
+    assert.equal(fakeCanvas.width, 480);
+    assert.equal(fakeCanvas.height, 480);
+    assert.ok(calls.some((c) => c[0] === "fillRect"));
+    assert.ok(calls.some((c) => c[0] === "drawImage"));
+  });
 });

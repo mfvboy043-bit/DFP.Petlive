@@ -483,7 +483,7 @@
           );
 
           return `
-        <li class="tl-item" style="--i:${visitIndex}">
+        <li class="tl-item" style="--i:${visitIndex}" data-visit-index="${visitIndex}">
           <header class="tl-item-head">
             <time datetime="${visit.date}">${formatShortDate(visit.date)}</time>
             ${weightHtml}
@@ -584,6 +584,39 @@
       ].join("\u001d");
     }
 
+    function buildItemSignatures(pet, { lang } = {}) {
+      const visits = Array.isArray(pet?.visits) ? pet.visits : [];
+      const langKey = lang || "";
+      const petId = pet?.id || "";
+      return visits.map(
+        (visit, index) =>
+          `${langKey}\u001d${petId}\u001d${visitFingerprint(visit, index)}`
+      );
+    }
+
+    function planKeyedListReconcile(previousSignatures, nextSignatures) {
+      const prev = Array.isArray(previousSignatures) ? previousSignatures : [];
+      const next = Array.isArray(nextSignatures) ? nextSignatures : [];
+      if (!prev.length && !next.length) {
+        return { mode: "skip", indices: [] };
+      }
+      if (prev.length !== next.length) {
+        return { mode: "full", indices: next.map((_, i) => i) };
+      }
+      if (prev.every((sig, i) => sig === next[i])) {
+        return { mode: "skip", indices: [] };
+      }
+      const indices = [];
+      for (let i = 0; i < next.length; i += 1) {
+        if (prev[i] !== next[i]) indices.push(i);
+      }
+      // Too many churned rows → cheaper full rebuild
+      if (indices.length > Math.max(1, Math.floor(next.length / 2))) {
+        return { mode: "full", indices };
+      }
+      return { mode: "partial", indices };
+    }
+
     function shouldSkipListRebuild(previousSignature, nextSignature) {
       return Boolean(previousSignature) && previousSignature === nextSignature;
     }
@@ -605,6 +638,8 @@
       shouldHydrateDrugNotesPanel,
       buildDrugNotesHydrateSlot,
       buildListSignature,
+      buildItemSignatures,
+      planKeyedListReconcile,
       shouldSkipListRebuild,
     };
   }
