@@ -936,82 +936,6 @@ function todayIsoLocal() {
   return `${yyyy}-${mm}-${dd}`;
 }
 
-function parseDurationDaysFromDose(dose) {
-  const match = String(dose || "").match(/(\d+)\s*天/);
-  if (!match) return null;
-  const days = Number(match[1]);
-  return Number.isInteger(days) && days > 0 ? days : null;
-}
-
-function resolveMedCourse(med, visit) {
-  const startDate = med.startDate || visit?.date || null;
-  const durationDays =
-    med.durationDays ||
-    parseDurationDaysFromDose(med.dose) ||
-    null;
-  if (!startDate || !durationDays || !(durationDays > 0)) return null;
-  return {
-    startDate,
-    durationDays,
-    endDate: addDays(startDate, durationDays - 1),
-  };
-}
-
-function isMedCourseActive(course, today = todayIsoLocal()) {
-  if (!course) return false;
-  return today >= course.startDate && today <= course.endDate;
-}
-
-/** Active courses for emergency card / copy — derived from visits only.
- *  Compound bundles are flattened to ingredient rows (no “調劑藥水 A” type header).
- */
-function deriveActiveEmergencyMeds(pet) {
-  const today = todayIsoLocal();
-  const active = [];
-
-  (pet.visits || []).forEach((visit) => {
-    (visit.medications || []).forEach((med) => {
-      if (med.kind === "photo_bundle") return;
-      const course = resolveMedCourse(med, visit);
-      if (!isMedCourseActive(course, today)) return;
-
-      if (med.kind === "compound_bundle") {
-        const ingredients = med.ingredients || [];
-        if (!ingredients.length) return;
-        ingredients.forEach((ing) => {
-          if (!ing?.name) return;
-          active.push({
-            kind: "single",
-            name: ing.name,
-            dose: ing.dose,
-            frequency: med.frequency,
-            startDate: course.startDate,
-            durationDays: course.durationDays,
-            source: ing.source || med.source,
-          });
-        });
-        return;
-      }
-
-      const amount = med.amount ?? med.dosageAmount;
-      const unit = med.unit || med.dosageUnit;
-      active.push({
-        kind: "single",
-        name: med.name,
-        dose: med.dose,
-        frequency: med.frequency,
-        dosageAmount: amount,
-        dosageUnit: unit,
-        startDate: course.startDate,
-        durationDays: course.durationDays,
-        source: med.source,
-      });
-    });
-  });
-
-  return active;
-}
-
 function formatFrequencyLabel(frequency) {
   const raw = String(frequency || "").trim();
   if (!raw || raw === "unrecorded") return "";
@@ -1529,14 +1453,7 @@ function renderTimeline(pet) {
   if (imagingPending == null) expandLatestVisitRx();
 }
 
-const ALERT_TYPE_ORDER = [
-  "drug_allergy",
-  "food_allergy",
-  "adverse_drug_reaction",
-  "vaccine_reaction",
-  "chronic_disease",
-  "special_note",
-];
+const ALERT_TYPE_ORDER = PetLiveWeb.domains.alerts.ALERT_TYPE_ORDER;
 
 const ALERT_SECTION_DEFS = [
   {
@@ -1578,31 +1495,25 @@ const suppressedAlertsSlot = PetLiveWeb.storage.createJsonSlot({
   fallback: () => ({}),
   validate: isStorageMap,
 });
+const alertsController = PetLiveWeb.domains.alerts.createController({
+  ownerAlertsSlot,
+  suppressedAlertsSlot,
+});
+const alertsSelectors = PetLiveWeb.domains.alerts.createSelectors({
+  alerts: alertsController,
+});
 const editingAlertSectionIds = new Set();
 
-const DEFAULT_ALERT_SEVERITY = {
-  drug_allergy: "critical",
-  adverse_drug_reaction: "critical",
-  vaccine_reaction: "critical",
-  food_allergy: "caution",
-  chronic_disease: "caution",
-  special_note: "caution",
-};
-
 function defaultSeverityForType(alertType) {
-  return DEFAULT_ALERT_SEVERITY[alertType] || "caution";
+  return alertsController.defaultSeverityForType(alertType);
 }
 
 function normalizeSeverity(value, alertType) {
-  if (value === "critical" || value === "high") return "critical";
-  if (value === "caution") return "caution";
-  return defaultSeverityForType(alertType);
+  return alertsController.normalizeSeverity(value, alertType);
 }
 
 function highestAlertSeverity(alerts) {
-  if ((alerts || []).some((alert) => alert.severity === "critical")) return "critical";
-  if ((alerts || []).some((alert) => alert.severity === "caution")) return "caution";
-  return null;
+  return alertsSelectors.highestAlertSeverity(alerts);
 }
 
 function escapeAlertHtml(value) {
@@ -1626,128 +1537,94 @@ function alertTypeLabel(alertType) {
 }
 
 function inferAlertType(alert) {
-  if (ALERT_TYPE_ORDER.includes(alert.alertType)) return alert.alertType;
-  const label = String(alert.type || "");
-  if (/藥物過敏|drug.?allerg/i.test(label)) return "drug_allergy";
-  if (/食物過敏|food.?allerg/i.test(label)) return "food_allergy";
-  if (/不良反應|adverse/i.test(label)) return "adverse_drug_reaction";
-  if (/疫苗|vaccine/i.test(label)) return "vaccine_reaction";
-  if (/慢性|chronic/i.test(label)) return "chronic_disease";
-  if (/特別|注意|special|note/i.test(label)) return "special_note";
-  return "special_note";
+  return alertsController.inferAlertType(alert);
 }
 
 function normalizeAlert(alert, fallbackSource = "linked") {
-  const alertType = inferAlertType(alert);
-  const description = alert.desc || alert.text || alert.description || "";
-  const note = alert.note || alert.severityNote || "";
-  const source = alert.source === "owner" ? "owner" : fallbackSource;
-  const sinceRaw = alert.sinceDate || alert.since || "";
-  const sinceDate = typeof sinceRaw === "string" ? sinceRaw.trim() : "";
-  return {
-    id: alert.id || `a-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
-    alertType,
-    source,
-    type: alertTypeLabel(alertType),
-    text: alert.text || description,
-    desc: description,
-    description,
-    note,
-    severityNote: note,
-    severity: normalizeSeverity(alert.severity, alertType),
-    sinceDate: sinceDate || null,
-    createdAt: alert.createdAt || null,
-  };
+  const base = alertsController.normalizeAlert(alert, fallbackSource);
+  return { ...base, type: alertTypeLabel(base.alertType) };
 }
 
 function loadOwnerAlertsMap() {
-  return ownerAlertsSlot.read();
+  return alertsController.loadOwnerAlertsMap();
 }
 
 function saveOwnerAlertsMap(map) {
   if (DEMO_MODE) return false;
-  const ok = ownerAlertsSlot.write(map);
+  const ok = alertsController.saveOwnerAlertsMap(map);
   if (ok) bumpLocalDataRevision();
   return ok;
 }
 
 function loadSuppressedAlertsMap() {
-  return suppressedAlertsSlot.read();
+  return alertsController.loadSuppressedAlertsMap();
 }
 
 function saveSuppressedAlertsMap(map) {
   if (DEMO_MODE) return false;
-  const ok = suppressedAlertsSlot.write(map);
+  const ok = alertsController.saveSuppressedAlertsMap(map);
   if (ok) bumpLocalDataRevision();
   return ok;
 }
 
 function getSuppressedAlertIds(petId) {
-  const map = loadSuppressedAlertsMap();
-  const list = Array.isArray(map[petId]) ? map[petId] : [];
-  return new Set(list.map(String));
+  return alertsController.getSuppressedAlertIds(petId);
 }
 
 function suppressLinkedAlert(petId, alertId) {
-  if (!petId || !alertId) return false;
-  const map = loadSuppressedAlertsMap();
-  const next = new Set(Array.isArray(map[petId]) ? map[petId].map(String) : []);
-  next.add(String(alertId));
-  map[petId] = [...next];
-  return saveSuppressedAlertsMap(map);
+  if (DEMO_MODE) return false;
+  const ok = alertsController.suppressLinkedAlert(petId, alertId);
+  if (ok) bumpLocalDataRevision();
+  return ok;
 }
 
 function getLinkedAlerts(pet) {
-  const suppressed = getSuppressedAlertIds(pet.id);
-  return (pet.alerts || [])
-    .filter((alert) => alert.source !== "owner")
-    .filter((alert) => !suppressed.has(String(alert.id)))
-    .map((alert) => normalizeAlert(alert, "linked"));
+  return alertsController.getLinkedAlerts(pet).map((alert) => ({
+    ...alert,
+    type: alertTypeLabel(alert.alertType),
+  }));
 }
 
 function getOwnerAlerts(petId) {
-  const map = loadOwnerAlertsMap();
-  const list = Array.isArray(map[petId]) ? map[petId] : [];
-  return list.map((alert) => normalizeAlert(alert, "owner"));
+  return alertsController.getOwnerAlerts(petId).map((alert) => ({
+    ...alert,
+    type: alertTypeLabel(alert.alertType),
+  }));
 }
 
 function persistOwnerAlertsForPet(petId, ownerAlerts) {
-  const map = loadOwnerAlertsMap();
-  map[petId] = ownerAlerts.map((alert) => ({
-    id: alert.id,
-    alertType: alert.alertType,
-    source: "owner",
-    description: alert.description || alert.desc || alert.text,
-    text: alert.text || alert.description || alert.desc,
-    desc: alert.desc || alert.description || alert.text,
-    note: alert.note || alert.severityNote || "",
-    severityNote: alert.note || alert.severityNote || "",
-    severity: alert.severity,
-    sinceDate: alert.sinceDate || null,
-    createdAt: alert.createdAt || new Date().toISOString(),
-  }));
-  if (!map[petId].length) delete map[petId];
-  return saveOwnerAlertsMap(map);
+  if (DEMO_MODE) return false;
+  const ok = alertsController.persistOwnerAlertsForPet(petId, ownerAlerts);
+  if (ok) bumpLocalDataRevision();
+  return ok;
 }
 
 function sortAlerts(alerts) {
-  const rank = { critical: 0, caution: 1 };
-  return [...alerts].sort((a, b) => {
-    const sr = (rank[a.severity] ?? 2) - (rank[b.severity] ?? 2);
-    if (sr) return sr;
-    const ai = ALERT_TYPE_ORDER.indexOf(a.alertType);
-    const bi = ALERT_TYPE_ORDER.indexOf(b.alertType);
-    if (ai !== bi) return ai - bi;
-    return String(a.createdAt || "").localeCompare(String(b.createdAt || ""));
-  });
+  return alertsSelectors.sortAlerts(alerts);
 }
 
 function getAlertsForPet(pet) {
-  if (!pet) return [];
-  const owner = getOwnerAlerts(pet.id);
-  const ownerIds = new Set(owner.map((alert) => String(alert.id)));
-  const linked = getLinkedAlerts(pet).filter((alert) => !ownerIds.has(String(alert.id)));
-  return sortAlerts([...linked, ...owner]);
+  return alertsController.getAlertsForPet(pet).map((alert) => ({
+    ...alert,
+    type: alertTypeLabel(alert.alertType),
+  }));
+}
+
+const emergencyAdapter = PetLiveWeb.domains.emergency.createAdapter({
+  getAlertsForPet,
+  todayISODate: todayIsoLocal,
+});
+const emergencySelectors = PetLiveWeb.domains.emergency.createSelectors({
+  adapter: emergencyAdapter,
+});
+
+/** Active courses for emergency card / copy — visits only; domain adapter. */
+function deriveActiveEmergencyMeds(pet, today) {
+  return emergencyAdapter.deriveActiveEmergencyMeds(pet, today);
+}
+
+function buildEmergencySnapshot(pet) {
+  return emergencyAdapter.buildSnapshot(pet);
 }
 
 function alertLineText(alert) {
@@ -1760,16 +1637,11 @@ function alertLineText(alert) {
 }
 
 function formatAlertSince(sinceDate) {
-  if (!sinceDate) return "";
-  const raw = String(sinceDate).trim();
-  if (/^\d{4}-\d{2}$/.test(raw)) return raw;
-  if (/^\d{4}-\d{2}-\d{2}$/.test(raw)) return raw.slice(0, 7);
-  return raw;
+  return alertsController.formatAlertSince(sinceDate);
 }
 
 function toMonthInputValue(sinceDate) {
-  const formatted = formatAlertSince(sinceDate);
-  return /^\d{4}-\d{2}$/.test(formatted) ? formatted : "";
+  return alertsController.toMonthInputValue(sinceDate);
 }
 
 function chronicSinceLine(alert) {
@@ -1961,67 +1833,48 @@ function saveAlertFromForm() {
     selectedAlertType === "chronic_disease"
       ? formatAlertSince(sinceInput?.value || "") || null
       : null;
-  if (!description) {
+  const draft = {
+    alertType: selectedAlertType,
+    description,
+    note,
+    severityNote: note,
+    severity: selectedAlertSeverity,
+    sinceDate,
+  };
+  const validation = alertsController.validateOwnerDraft(draft);
+  if (!validation.ok) {
     showToast(t("toastNeedAlertDescription"));
     return;
   }
 
   const editId = alertEditIdInput?.value || "";
-  let ownerAlerts = getOwnerAlerts(pet.id);
-
+  let result;
   if (editId) {
+    const ownerAlerts = getOwnerAlerts(pet.id);
     const index = ownerAlerts.findIndex((alert) => alert.id === editId);
     const base =
       index >= 0
         ? ownerAlerts[index]
         : getAlertsForPet(pet).find((alert) => alert.id === editId) || {};
-    const updated = normalizeAlert(
-      {
-        ...base,
-        id: editId,
-        alertType: selectedAlertType,
-        source: "owner",
-        description,
-        text: description,
-        desc: description,
-        note,
-        severityNote: note,
-        severity: selectedAlertSeverity,
-        sinceDate,
-        createdAt: base.createdAt || new Date().toISOString(),
-      },
-      "owner"
-    );
-    if (index >= 0) ownerAlerts[index] = updated;
-    else ownerAlerts = [...ownerAlerts, updated];
-    if (!persistOwnerAlertsForPet(pet.id, ownerAlerts)) {
-      showPersistenceFailure();
-      return;
+    result = alertsController.updateOwnerAlert(pet.id, editId, {
+      ...draft,
+      createdAt: base.createdAt || new Date().toISOString(),
+    });
+    if (result.ok) {
+      bumpLocalDataRevision();
+      showToast(t("toastAlertUpdated"));
     }
-    showToast(t("toastAlertUpdated"));
   } else {
-    const created = normalizeAlert(
-      {
-        id: `a-owner-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
-        alertType: selectedAlertType,
-        source: "owner",
-        description,
-        text: description,
-        desc: description,
-        note,
-        severityNote: note,
-        severity: selectedAlertSeverity,
-        sinceDate,
-        createdAt: new Date().toISOString(),
-      },
-      "owner"
-    );
-    ownerAlerts = [...ownerAlerts, created];
-    if (!persistOwnerAlertsForPet(pet.id, ownerAlerts)) {
-      showPersistenceFailure();
-      return;
+    result = alertsController.createOwnerAlert(pet.id, draft);
+    if (result.ok) {
+      bumpLocalDataRevision();
+      showToast(t("toastAlertSaved"));
     }
-    showToast(t("toastAlertSaved"));
+  }
+
+  if (!result.ok) {
+    showPersistenceFailure();
+    return;
   }
 
   const keepType = selectedAlertType;
@@ -2030,32 +1883,15 @@ function saveAlertFromForm() {
 }
 
 function deleteAlertById(alertId) {
+  if (demoBlocksWrite()) return;
   const pet = getCurrentPet();
   if (!pet || !alertId) return;
-  const ownerAlerts = getOwnerAlerts(pet.id);
-  const inOwner = ownerAlerts.some((alert) => alert.id === alertId);
-  const linkedIds = new Set(
-    (pet.alerts || [])
-      .filter((alert) => alert.source !== "owner")
-      .map((alert) => String(alert.id))
-  );
-
-  if (inOwner) {
-    const saved = persistOwnerAlertsForPet(
-      pet.id,
-      ownerAlerts.filter((alert) => alert.id !== alertId)
-    );
-    if (!saved) {
-      showPersistenceFailure();
-      return;
-    }
+  const result = alertsController.deleteOrSuppressAlert(pet, alertId);
+  if (!result.ok) {
+    showPersistenceFailure();
+    return;
   }
-  if (linkedIds.has(String(alertId))) {
-    if (!suppressLinkedAlert(pet.id, alertId)) {
-      showPersistenceFailure();
-      return;
-    }
-  }
+  if (result.kind !== "none") bumpLocalDataRevision();
 
   if (alertEditIdInput?.value === alertId) resetAlertForm();
   showToast(t("toastAlertDeleted"));
@@ -2069,36 +1905,37 @@ function daysUntil(isoDate) {
   return Math.ceil((target - today) / (1000 * 60 * 60 * 24));
 }
 
-const PARASITE_APPROACHING_DAYS = 7;
-const PARASITE_KINDS = ["external", "heartworm"];
-/** covers: which tracking slots this product can fill; dual = external+heartworm */
-const PARASITE_PRODUCT_CATALOG = {
-  ppRevolution: { intervalDays: 30, covers: ["external", "heartworm"] },
-  ppFrontline: { intervalDays: 30, covers: ["external"] },
-  ppAdvantix: { intervalDays: 30, covers: ["external"] },
-  ppNexGardSpectra: { intervalDays: 30, covers: ["external", "heartworm"] },
-  ppMilbemax: { intervalDays: 30, covers: ["heartworm"] },
-  ppProHeart: { intervalDays: 365, covers: ["heartworm"] },
-};
+function parasiteTodayISODate() {
+  const date = new Date();
+  const yyyy = date.getFullYear();
+  const mm = String(date.getMonth() + 1).padStart(2, "0");
+  const dd = String(date.getDate()).padStart(2, "0");
+  return `${yyyy}-${mm}-${dd}`;
+}
 
+const parasiteController = PetLiveWeb.domains.parasite.createController({
+  daysUntil,
+  addDays,
+  todayISODate: parasiteTodayISODate,
+  labelOf: (key) => t(key),
+});
+const parasiteSelectors = PetLiveWeb.domains.parasite.createSelectors({
+  parasite: parasiteController,
+});
+
+const PARASITE_APPROACHING_DAYS = parasiteController.APPROACHING_DAYS;
+const PARASITE_KINDS = parasiteController.KINDS;
+const PARASITE_PRODUCT_CATALOG = parasiteController.PRODUCT_CATALOG;
 const PARASITE_PRODUCTS = {
-  external: ["ppFrontline", "ppAdvantix", "ppRevolution", "ppNexGardSpectra"].map(
-    (key) => ({ key, ...PARASITE_PRODUCT_CATALOG[key] })
-  ),
-  heartworm: [
-    "ppRevolution",
-    "ppNexGardSpectra",
-    "ppMilbemax",
-    "ppProHeart",
-  ].map((key) => ({ key, ...PARASITE_PRODUCT_CATALOG[key] })),
+  external: parasiteController.productsForKind("external"),
+  heartworm: parasiteController.productsForKind("heartworm"),
 };
 
 let pendingParasiteFocus = null;
 const selectedParasiteProduct = { external: "", heartworm: "" };
 
 function isParasiteDualProduct(productKey) {
-  const covers = PARASITE_PRODUCT_CATALOG[productKey]?.covers || [];
-  return covers.includes("external") && covers.includes("heartworm");
+  return parasiteController.isParasiteDualProduct(productKey);
 }
 
 function parasiteProductChipLabel(item) {
@@ -2109,24 +1946,22 @@ function parasiteProductChipLabel(item) {
 }
 
 function ensureParasitePrevention(pet) {
-  if (!pet.parasitePrevention) {
-    pet.parasitePrevention = { external: null, heartworm: null };
-  }
-  return pet.parasitePrevention;
+  return parasiteController.ensureParasitePrevention(pet);
 }
 
 /** @returns {"protected"|"approaching"|"unprotected"} */
 function getParasiteStatus(nextDue) {
-  if (!nextDue) return "unprotected";
-  const days = daysUntil(nextDue);
-  if (days < 0) return "unprotected";
-  if (days <= PARASITE_APPROACHING_DAYS) return "approaching";
-  return "protected";
+  return parasiteController.getParasiteStatus(nextDue);
+}
+
+function getParasiteSlotStatus(pet, kind) {
+  return parasiteSelectors.getParasiteSlotStatus(pet, kind);
 }
 
 function parasiteStatusLabel(status) {
   if (status === "protected") return t("parasiteProtected");
   if (status === "approaching") return t("parasiteApproaching");
+  if (status === "optional") return t("parasiteOptional");
   return t("parasiteUnprotected");
 }
 
@@ -2135,15 +1970,11 @@ function parasiteKindTitle(kind) {
 }
 
 function getParasiteRecord(pet, kind) {
-  const pp = ensureParasitePrevention(pet);
-  return pp[kind] || null;
+  return parasiteController.getParasiteRecord(pet, kind);
 }
 
 function resolveParasiteProductName(kind, productKey, customValue) {
-  const custom = (customValue || "").trim();
-  if (custom) return custom;
-  if (productKey) return t(productKey);
-  return "";
+  return parasiteController.resolveProductName({ productKey, customValue });
 }
 
 function syncParasiteNextFromLast(kind) {
@@ -2151,9 +1982,12 @@ function syncParasiteNextFromLast(kind) {
   const intervalEl = document.getElementById(`parasite-interval-${kind}`);
   const nextEl = document.getElementById(`parasite-next-${kind}`);
   if (!lastEl?.value || !intervalEl?.value || !nextEl) return;
-  const days = Number(intervalEl.value);
-  if (!Number.isFinite(days) || days < 1) return;
-  nextEl.value = addDays(lastEl.value, days);
+  const nextDue = parasiteController.computeNextDue(
+    lastEl.value,
+    Number(intervalEl.value)
+  );
+  if (!nextDue) return;
+  nextEl.value = nextDue;
   syncDateProxies(document.getElementById(`parasite-form-${kind}`) || document);
 }
 
@@ -2259,15 +2093,15 @@ function renderParasiteStrip(pet) {
       "is-optional"
     );
 
+    const status = getParasiteSlotStatus(pet, kind);
     // Cats: heartworm is optional — unset = no alarm; set = normal status UI.
-    if (pet.species === "cat" && kind === "heartworm" && !record?.nextDue) {
+    if (status === "optional") {
       row.classList.add("is-optional");
       meta.textContent = t("parasiteHeartwormOptional");
       statusEl.textContent = t("parasiteOptional");
       return;
     }
 
-    const status = getParasiteStatus(record?.nextDue);
     row.classList.add(`is-${status}`);
 
     if (!record?.nextDue) {
@@ -2325,31 +2159,24 @@ function renderVaccineStrip(pet) {
 function readParasiteForm(kind) {
   const productKey = selectedParasiteProduct[kind] || "";
   const custom = document.getElementById(`parasite-custom-${kind}`)?.value || "";
-  const product = resolveParasiteProductName(kind, productKey, custom);
   const lastGiven = document.getElementById(`parasite-last-${kind}`)?.value || "";
   const intervalRaw = document.getElementById(`parasite-interval-${kind}`)?.value;
-  const intervalDays = Number(intervalRaw);
-  let nextDue = document.getElementById(`parasite-next-${kind}`)?.value || "";
+  const nextDue = document.getElementById(`parasite-next-${kind}`)?.value || "";
 
-  if (lastGiven && Number.isFinite(intervalDays) && intervalDays >= 1 && !nextDue) {
-    nextDue = addDays(lastGiven, intervalDays);
-  }
-
-  return {
-    productKey: custom.trim() ? "" : productKey,
-    product,
+  return parasiteController.normalizeDraft({
+    productKey,
+    customValue: custom,
     lastGiven,
-    intervalDays: Number.isFinite(intervalDays) && intervalDays >= 1 ? intervalDays : 30,
+    intervalDays: Number(intervalRaw),
     nextDue,
-  };
+  });
 }
 
 function saveParasiteKind(kind, { dosedToday = false, quiet = false } = {}) {
   if (demoBlocksWrite()) return;
   const pet = getCurrentPet();
   if (!pet) return false;
-  const pp = ensureParasitePrevention(pet);
-  const draft = readParasiteForm(kind);
+  let draft = readParasiteForm(kind);
 
   if (dosedToday) {
     const lastEl = document.getElementById(`parasite-last-${kind}`);
@@ -2359,61 +2186,43 @@ function saveParasiteKind(kind, { dosedToday = false, quiet = false } = {}) {
     const intervalDays =
       Number.isFinite(typedDays) && typedDays >= 1 ? typedDays : draft.intervalDays || 30;
 
-    draft.lastGiven = todayISODate();
-    draft.intervalDays = intervalDays;
-    draft.nextDue = addDays(draft.lastGiven, intervalDays);
+    draft = parasiteController.applyDosedToday(
+      { ...draft, intervalDays },
+      { today: parasiteTodayISODate() }
+    );
 
     if (lastEl) lastEl.value = draft.lastGiven;
     if (intervalEl) intervalEl.value = String(intervalDays);
     if (nextEl) nextEl.value = draft.nextDue;
   }
 
-  if (!draft.product) {
-    showToast(t("toastParasiteNeedProduct"));
+  const result = parasiteController.saveParasiteKind(pet, kind, draft);
+  if (!result.ok) {
+    if (result.reason === "needProduct") showToast(t("toastParasiteNeedProduct"));
+    else if (result.reason === "needDates") showToast(t("toastParasiteNeedDates"));
+    else if (result.reason === "order") showToast(t("toastParasiteOrder"));
     return false;
   }
-  if (!draft.lastGiven || !draft.nextDue) {
-    showToast(t("toastParasiteNeedDates"));
-    return false;
-  }
-  if (draft.nextDue < draft.lastGiven) {
-    showToast(t("toastParasiteOrder"));
-    return false;
-  }
-
-  pp[kind] = {
-    productKey: draft.productKey,
-    product: draft.product,
-    lastGiven: draft.lastGiven,
-    intervalDays: draft.intervalDays,
-    nextDue: draft.nextDue,
-  };
 
   // Dual-cover products (e.g. 寵愛 / 全能狗Ｓ) keep both strips in sync.
-  if (draft.productKey && isParasiteDualProduct(draft.productKey)) {
-    const other = kind === "external" ? "heartworm" : "external";
-    pp[other] = {
-      productKey: draft.productKey,
-      product: draft.product,
-      lastGiven: draft.lastGiven,
-      intervalDays: draft.intervalDays,
-      nextDue: draft.nextDue,
-    };
-    fillParasiteKindForm(pet, other);
+  if (result.syncedOtherKind) {
+    fillParasiteKindForm(pet, result.syncedOtherKind);
   }
 
   fillParasiteKindForm(pet, kind);
   renderParasiteStrip(pet);
+  // Preserve pre-extract persist pattern: no applySelectedPet / schedulePetsGraphPersist here.
   if (!quiet) {
+    const saved = result.draft || draft;
     showToast(
       t(
-        draft.productKey && isParasiteDualProduct(draft.productKey)
+        saved.productKey && isParasiteDualProduct(saved.productKey)
           ? "toastParasiteSavedDual"
           : "toastParasiteSaved",
         {
           name: pet.name,
           kind: parasiteKindTitle(kind),
-          product: draft.product,
+          product: saved.product,
         }
       )
     );
@@ -2448,16 +2257,18 @@ function prepareParasiteNextDueFromLast(kind) {
     days = 30;
     if (intervalEl) intervalEl.value = "30";
   }
-  const nextDue = addDays(lastGiven, days);
+  const nextDue = parasiteController.computeNextDue(lastGiven, days);
+  if (!nextDue) return false;
   if (nextEl) nextEl.value = nextDue;
   syncDateProxies(document.getElementById(`parasite-form-${kind}`) || document);
   return true;
 }
 
 function buildParasiteCalendarPayload(pet, kind) {
+  if (!pet) return null;
+  const kindTitle = parasiteKindTitle(kind);
   const record = getParasiteRecord(pet, kind);
   if (!record?.nextDue) return null;
-  const kindTitle = parasiteKindTitle(kind);
   const title = t("parasiteCalTitle", {
     name: pet.name,
     kind: kindTitle,
@@ -2470,7 +2281,10 @@ function buildParasiteCalendarPayload(pet, kind) {
     last: record.lastGiven || "—",
     next: record.nextDue,
   });
-  return { title, details, nextDue: record.nextDue };
+  return parasiteController.buildParasiteCalendarPayload(pet, kind, {
+    title,
+    details,
+  });
 }
 
 let pendingCalendarPayload = null;
@@ -3981,23 +3795,22 @@ function formatPetShareLines(pet) {
 }
 
 function buildEmergencyCopyText(pet) {
-  const alerts = getAlertsForPet(pet);
-  const alertText = alerts.length
-    ? alerts.map((a) => `${alertTypeLabel(a.alertType)} ${alertLineText(a)}`).join("；")
-    : t("none");
-  const activeMeds = deriveActiveEmergencyMeds(pet);
-  const medText = activeMeds.length
-    ? activeMeds.map((med) => formatMedLine(med)).join("；")
-    : t("none");
-  const ownerLines = formatOwnerCopyLines(loadOwnerProfile());
+  const payload = emergencySelectors.copyPayload(pet, {
+    profile: loadOwnerProfile(),
+    labelOfAlertType: alertTypeLabel,
+    formatMedLine,
+    noneLabel: t("none"),
+    lineTextOfAlert: alertLineText,
+  });
+  const ownerLines = formatOwnerCopyLines(payload.owner);
 
   return [
     t("copyCardTitle"),
     "",
     ...formatPetShareLines(pet),
     "",
-    t("copyAlerts", { text: alertText }),
-    t("copyMeds", { text: medText }),
+    t("copyAlerts", { text: payload.alertsText }),
+    t("copyMeds", { text: payload.medsText }),
     ...(ownerLines.length ? ownerLines : [t("copyOwnerEmpty")]),
     t("copyDisclaimer"),
   ]
@@ -4110,30 +3923,6 @@ function renderEmergencyOwner() {
     rows.push(row(t("ownerAddressShort"), profile.address));
   }
   el.innerHTML = rows.join("");
-}
-
-function buildEmergencySnapshot(pet) {
-  const alerts = getAlertsForPet(pet);
-  const meds = deriveActiveEmergencyMeds(pet);
-  return {
-    pet: {
-      id: pet.id,
-      name: pet.name,
-      species: pet.species,
-      breed: pet.breed,
-      gender: pet.gender,
-      birthDate: pet.birthDate,
-      chipNumber: pet.chipNumber || "",
-      weight: pet.weight,
-      weightDate: pet.weightDate,
-    },
-    latestWeight:
-      pet.weight != null
-        ? { weight: pet.weight, recordedDate: pet.weightDate || null }
-        : null,
-    alerts,
-    currentMedications: meds,
-  };
 }
 
 function renderEmergencyAlertsList(alerts) {
@@ -4312,7 +4101,7 @@ function renderEmergencyCard(pet) {
   paintEmergencyIdentity(pet);
   if (cardPet.name) eName.textContent = cardPet.name || pet.name;
 
-  const degraded = result._degraded || {};
+  const degraded = emergencySelectors.degradedSections(result);
   const alertsBlock = eAlerts?.closest(".e-alerts");
 
   if (degraded.weight) {
