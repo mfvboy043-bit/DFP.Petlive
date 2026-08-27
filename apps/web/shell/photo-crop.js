@@ -118,6 +118,83 @@
       return true;
     }
 
+    /**
+     * Wire photo-crop overlay listeners. Domain side effects stay in hooks
+     * (onSave / onCancel / onRender) — shell never touches pets or persistence.
+     */
+    function bindPhotoCropUi(els, state, hooks = {}) {
+      const { onRender, onCancel, onSave, win } = hooks;
+      const targetWin =
+        win ||
+        (typeof global !== "undefined" && global.window) ||
+        (typeof globalThis !== "undefined" ? globalThis : null);
+      if (!els?.viewport || !els?.zoom) return false;
+
+      els.zoom.addEventListener("input", () => {
+        if (!setZoom(state, els.zoom.value)) return;
+        if (typeof onRender === "function") onRender();
+      });
+
+      els.viewport.addEventListener("pointerdown", (event) => {
+        if (event.button != null && event.button !== 0) return;
+        if (
+          !beginDrag(state, {
+            pointerId: event.pointerId,
+            clientX: event.clientX,
+            clientY: event.clientY,
+          })
+        ) {
+          return;
+        }
+        els.viewport.classList.add("is-dragging");
+        els.viewport.setPointerCapture?.(event.pointerId);
+      });
+
+      els.viewport.addEventListener("pointermove", (event) => {
+        if (
+          !moveDrag(state, {
+            pointerId: event.pointerId,
+            clientX: event.clientX,
+            clientY: event.clientY,
+          })
+        ) {
+          return;
+        }
+        if (typeof onRender === "function") onRender();
+      });
+
+      const endDragHandler = (event) => {
+        if (!endDrag(state, { pointerId: event?.pointerId })) {
+          return;
+        }
+        els.viewport.classList.remove("is-dragging");
+      };
+
+      els.viewport.addEventListener("pointerup", endDragHandler);
+      els.viewport.addEventListener("pointercancel", endDragHandler);
+
+      els.cancel?.addEventListener("click", () => {
+        if (typeof onCancel === "function") onCancel();
+      });
+
+      els.save?.addEventListener("click", () => {
+        if (typeof onSave === "function") onSave();
+      });
+
+      els.root?.addEventListener("click", (event) => {
+        if (event.target === els.root && typeof onCancel === "function") {
+          onCancel();
+        }
+      });
+
+      if (targetWin && typeof targetWin.addEventListener === "function") {
+        targetWin.addEventListener("resize", () => {
+          if (state?.open && typeof onRender === "function") onRender();
+        });
+      }
+      return true;
+    }
+
     return {
       createInitialSession,
       buildCropImageStyles,
@@ -129,6 +206,7 @@
       moveDrag,
       endDrag,
       setZoom,
+      bindPhotoCropUi,
     };
   }
 

@@ -82,6 +82,53 @@ describe("SH-05 shell photo crop styles", () => {
     assert.equal(/\binnerHTML\b/.test(src), false);
   });
 
+  it("bindPhotoCropUi registers zoom input and cancel hooks", () => {
+    const { photoCrop } = loadPhotoCropShell();
+    const state = photoCrop.createInitialSession();
+    photoCrop.applyOpen(state, { petId: "p1", naturalW: 40, naturalH: 40 });
+    const zoomListeners = [];
+    const cancelListeners = [];
+    const els = {
+      viewport: {
+        addEventListener() {},
+        classList: { add() {}, remove() {} },
+        setPointerCapture() {},
+      },
+      zoom: {
+        value: "2",
+        addEventListener(type, fn) {
+          if (type === "input") zoomListeners.push(fn);
+        },
+      },
+      cancel: {
+        addEventListener(type, fn) {
+          if (type === "click") cancelListeners.push(fn);
+        },
+      },
+      save: { addEventListener() {} },
+      root: { addEventListener() {} },
+    };
+    let renders = 0;
+    let cancels = 0;
+    assert.equal(
+      photoCrop.bindPhotoCropUi(els, state, {
+        win: { addEventListener() {} },
+        onRender: () => {
+          renders += 1;
+        },
+        onCancel: () => {
+          cancels += 1;
+        },
+      }),
+      true
+    );
+    zoomListeners[0]();
+    assert.equal(state.zoom, 2);
+    assert.equal(renders, 1);
+    cancelListeners[0]();
+    assert.equal(cancels, 1);
+  });
+
   it("session open/close and drag offsets", () => {
     const { photoCrop } = loadPhotoCropShell();
     const state = photoCrop.createInitialSession();

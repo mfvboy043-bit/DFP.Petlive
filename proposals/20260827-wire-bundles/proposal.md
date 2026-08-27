@@ -1,7 +1,7 @@
 ---
 id: 20260827-wire-bundles
 title: "C — bundle facade wires into shell (photo-crop, nav, account/cloud, intro)"
-status: proposed
+status: building
 author: planner
 candidate_branch: "cursor/wire-bundles-6f84"
 candidate_path: "proposals/20260827-wire-bundles"

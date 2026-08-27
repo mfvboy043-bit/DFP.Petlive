@@ -1,17 +1,14 @@
 id: "20260827-wire-bundles"
 title: "C — bundle facade wires into shell (photo-crop, nav, account/cloud, intro)"
 version: 2
-status: proposed
-# proposed | building | reviewing | revising | candidate_ready | halted | adopted | rejected
+status: reviewing
 
 gate_a:
-  status: pending
-  # pending | approved | modified | rejected
-  # Parent flips to approved after this write. Victor 2026-08-27 —「1. 可以整理電線？」then「確認」.
+  status: approved
+  note: "Victor 2026-08-27 — 可以整理電線？→ 確認"
 
 gate_b:
   status: pending
-  # pending | adopted | rejected
 
 iteration: 0
 max_iterations: 3
