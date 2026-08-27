@@ -1,0 +1,43 @@
+id: "20260827-cloud-controller"
+title: "Cloud（雲端）controller building blocks"
+version: 2
+status: adopted
+# proposed | building | reviewing | revising | candidate_ready | halted | adopted | rejected
+
+gate_a:
+  status: approved
+  # pending | approved | modified | rejected
+  note: "Victor 確認 2026-08-27"
+
+gate_b:
+  status: adopted
+  # pending | adopted | rejected
+  note: "Victor 採用 2026-08-27 — surgical land on main (domains/cloud + C wire; B/auth untouched)"
+
+iteration: 2
+max_iterations: 3
+
+candidate:
+  branch: "proposal/cloud-controller"
+  path: "proposals/20260827-cloud-controller"
+  worktree: ""
+  note: "Adopted surgically onto main from bf25753 (not blind-merge); C only + domains/cloud"
+
+reviews:
+  pharmacist: skipped
+  qa: conditional
+  ui: pass
+  # pending | skipped | pass | conditional | reject
+  # pharmacist: skip — no meds this slice
+  # ui: light — chrome status strings only; no redesign
+
+rerun: []
+blocking_issues: []
+non_blocking:
+  - QA-002
+  - QA-003
+  - QA-004
+  - QA-005
+builder_scope: []
+halt_reason: ""
+# iteration 2 arbiter: QA-001 resolved; candidate_ready; Gate B adopted 2026-08-27

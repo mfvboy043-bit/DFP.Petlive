@@ -623,7 +623,24 @@ const pets = [];
 const archivedPets = [];
 
 const PETS_GRAPH_KEY = "petlive-c-pets-graph";
+const SYNC_META_KEY = "petlive-c-sync-meta";
 const INTRO_SEEN_KEY = "petlive-c-intro-seen";
+
+function hasStoredPetsGraph() {
+  try {
+    return Boolean(localStorage.getItem(PETS_GRAPH_KEY));
+  } catch {
+    return false;
+  }
+}
+
+function hasStoredSyncMeta() {
+  try {
+    return localStorage.getItem(SYNC_META_KEY) != null;
+  } catch {
+    return false;
+  }
+}
 
 function cloneSeedPets() {
   try {
@@ -654,6 +671,16 @@ const petsGraphSlot = PetLiveWeb.storage.createJsonSlot({
   coalesceMs: 220,
 });
 
+const syncMetaSlot = PetLiveWeb.storage.createJsonSlot({
+  key: SYNC_META_KEY,
+  fallback: () => ({
+    localRevision: 0,
+    lastSyncedRevision: 0,
+    lastCloudUpdatedAt: null,
+  }),
+  validate: (value) => Boolean(value && typeof value === "object" && !Array.isArray(value)),
+});
+
 function hydratePetsGraphFromStorage() {
   const data = petsGraphSlot.read();
   const nextPets = data.pets?.length ? data.pets : cloneSeedPets();
@@ -675,7 +702,14 @@ function schedulePetsGraphPersist() {
     archivedPets,
     currentPetId: id || null,
   });
-  if (typeof scheduleCloudBackup === "function") {
+  // Prefer cloud domain bump (dirty flag + Drive backup). Fallback for early boot.
+  if (
+    typeof cloudController !== "undefined" &&
+    cloudController &&
+    typeof cloudController.bumpLocalDataRevision === "function"
+  ) {
+    cloudController.bumpLocalDataRevision();
+  } else if (typeof scheduleCloudBackup === "function") {
     scheduleCloudBackup();
   }
 }
@@ -7411,74 +7445,131 @@ const googleDriveAuth =
 let cloudBackupTimer = null;
 let lastCloudBackupAt = null;
 let cloudBusy = false;
+let suppressSyncMetaBump = false;
+let cloudReconcileState = "idle";
+let cloudReconcilePhase = "";
+let cloudSyncConflict = false;
+
+const cloudSelectors = PetLiveWeb.domains.cloud.createSelectors({
+  getSeedPetIds: () => SEED_PETS.map((pet) => pet.id),
+  hasStoredPetsGraph,
+  readPetsGraphSnapshot: () => petsGraphSlot.read(),
+  readSyncMeta: () => syncMetaSlot.read(),
+});
+
+const cloudController = PetLiveWeb.domains.cloud.createController({
+  selectors: cloudSelectors,
+  getPets: () => pets,
+  getArchivedPets: () => archivedPets,
+  getCurrentPetId: () => appState.getCurrentPetId(),
+  setCurrentPetId: (id) => {
+    currentPetId = id;
+    appState.setCurrentPetId(id);
+  },
+  petsGraphSlot,
+  ownerProfileSlot,
+  ownerAlertsSlot,
+  suppressedAlertsSlot,
+  petPhotosSlot,
+  labReportsSlot,
+  syncMetaSlot,
+  isDemoMode: () => false,
+  getSuppressSyncMetaBump: () => suppressSyncMetaBump,
+  setSuppressSyncMetaBump: (value) => {
+    suppressSyncMetaBump = Boolean(value);
+  },
+  hasStoredSyncMeta,
+  hasStoredPetsGraph,
+  readPetsGraphSnapshot: () => petsGraphSlot.read(),
+  onAfterApply: () => {
+    hydratePetPhotos();
+    applySelectedPet();
+  },
+  scheduleCloudBackup: () => {
+    if (typeof scheduleCloudBackup === "function") scheduleCloudBackup();
+  },
+});
 
 function stripHeavyMedia(value) {
-  if (Array.isArray(value)) return value.map(stripHeavyMedia);
-  if (!value || typeof value !== "object") return value;
-  const out = {};
-  for (const [key, val] of Object.entries(value)) {
-    if (
-      key === "bagPhoto" ||
-      key === "rxPhoto" ||
-      key === "drugPhoto" ||
-      key === "xrayPhotos" ||
-      key === "usPhotos" ||
-      key === "imaging" ||
-      key === "attachmentUrl"
-    ) {
-      continue;
-    }
-    if (typeof val === "string" && val.startsWith("data:image") && val.length > 8000) {
-      continue;
-    }
-    out[key] = stripHeavyMedia(val);
-  }
-  return out;
+  return cloudController.stripHeavyMedia(value);
 }
 
 function buildCloudPayload() {
-  return {
-    version: 1,
-    updatedAt: new Date().toISOString(),
-    pets: stripHeavyMedia(pets),
-    archivedPets: stripHeavyMedia(archivedPets),
-    currentPetId: appState.getCurrentPetId(),
-    ownerProfile: ownerProfileSlot.read(),
-    petAlerts: ownerAlertsSlot.read(),
-    suppressedAlerts: suppressedAlertsSlot.read(),
-    petPhotos: petPhotosSlot.read(),
-    labReports: stripHeavyMedia(labReportsSlot.read()),
-  };
+  return cloudController.buildCloudPayload();
 }
 
 function applyCloudPayload(payload) {
-  if (!payload || !Array.isArray(payload.pets)) return false;
-  pets.length = 0;
-  archivedPets.length = 0;
-  for (const pet of payload.pets) pets.push(pet);
-  for (const pet of payload.archivedPets || []) archivedPets.push(pet);
-  if (payload.ownerProfile) ownerProfileSlot.write(payload.ownerProfile);
-  if (payload.petAlerts) ownerAlertsSlot.write(payload.petAlerts);
-  if (payload.suppressedAlerts) suppressedAlertsSlot.write(payload.suppressedAlerts);
-  if (payload.petPhotos) petPhotosSlot.write(payload.petPhotos);
-  if (payload.labReports) labReportsSlot.write(payload.labReports);
-  const nextId =
-    payload.currentPetId && pets.some((p) => p.id === payload.currentPetId)
-      ? payload.currentPetId
-      : pets[0]?.id || null;
-  if (nextId) {
-    currentPetId = nextId;
-    appState.setCurrentPetId(nextId);
-  }
-  petsGraphSlot.write({
-    version: 1,
-    pets,
-    archivedPets,
-    currentPetId: nextId,
+  return cloudController.applyCloudPayload(payload);
+}
+
+function bumpLocalDataRevision() {
+  return cloudController.bumpLocalDataRevision();
+}
+
+function markCloudSynced(cloudUpdatedAt) {
+  return cloudController.markCloudSynced(cloudUpdatedAt);
+}
+
+function clearSeedPetsFromMemory() {
+  return cloudController.clearSeedPetsFromMemory();
+}
+
+function isSeedOnlyPets(petList) {
+  return cloudSelectors.isSeedOnlyPets(petList);
+}
+
+function isSeedOnlyCloudPayload(payload) {
+  return cloudSelectors.isSeedOnlyCloudPayload(payload);
+}
+
+function isFreshDevice() {
+  return cloudSelectors.isFreshDevice({
+    meta: cloudController.readSyncMeta(),
+    hasStoredGraph: hasStoredPetsGraph(),
   });
-  hydratePetPhotos();
-  applySelectedPet();
-  return true;
+}
+
+function hasRealLocalData() {
+  return cloudSelectors.hasRealLocalData({
+    meta: cloudController.readSyncMeta(),
+    memoryPets: pets,
+  });
+}
+
+function localCloudGraphFingerprint(petList) {
+  return cloudSelectors.localCloudGraphFingerprint(petList);
+}
+
+function cloudPayloadGraphFingerprint(payload) {
+  return cloudSelectors.cloudPayloadGraphFingerprint(payload);
+}
+
+function hasCloudGraphConflict(payload) {
+  return cloudSelectors.hasCloudGraphConflict({
+    localPets: pets,
+    payload,
+    meta: cloudController.readSyncMeta(),
+    hasStoredGraph: hasStoredPetsGraph(),
+    memoryPets: pets,
+  });
+}
+
+function isLocalDirty() {
+  return cloudSelectors.isLocalDirty(cloudController.readSyncMeta());
+}
+
+function accountSyncStatusText() {
+  const session = getAccountSessionForChrome();
+  const key = cloudSelectors.accountSyncStatusKey({
+    signedIn: Boolean(session?.signedIn),
+    reconcileState: cloudReconcileState,
+    reconcilePhase: cloudReconcilePhase,
+    conflict: cloudSyncConflict,
+    meta: cloudController.readSyncMeta(),
+    lastBackupAt: lastCloudBackupAt,
+    hasRealLocal: hasRealLocalData(),
+  });
+  return t(key);
 }
 
 function setIntroStatus(message) {
@@ -7593,7 +7684,7 @@ function paintAccountMenu(session) {
     popEmail.hidden = !email;
   }
   if (planValue) {
-    planValue.textContent = t("accountPlanLocal");
+    planValue.textContent = accountSyncStatusText();
   }
 
   const popSyncBtn = document.getElementById("account-popover-edit");
@@ -7683,10 +7774,18 @@ async function pushCloudBackup({ silent } = {}) {
     return false;
   }
   if (cloudBusy) return false;
+  if (!hasRealLocalData()) {
+    if (!silent) showToast(t("accountSyncFirstBackup"));
+    paintCloudChrome();
+    return false;
+  }
   cloudBusy = true;
   try {
-    await googleDriveAuth.uploadJson(buildCloudPayload());
+    const payload = buildCloudPayload();
+    await googleDriveAuth.uploadJson(payload);
     lastCloudBackupAt = Date.now();
+    markCloudSynced(payload.updatedAt);
+    cloudSyncConflict = false;
     if (!silent) {
       setIntroStatus(t("cloudBackupOk"));
       showToast(t("cloudBackupOk"));
@@ -7705,18 +7804,25 @@ async function pushCloudBackup({ silent } = {}) {
   }
 }
 
-async function pullCloudBackup() {
+async function pullCloudBackup({ silent } = {}) {
   if (!googleDriveAuth) return false;
   try {
     const payload = await googleDriveAuth.downloadJson();
     if (!payload) return false;
-    applyCloudPayload(payload);
+    suppressSyncMetaBump = true;
+    try {
+      applyCloudPayload(payload);
+      markCloudSynced(payload.updatedAt);
+    } finally {
+      suppressSyncMetaBump = false;
+    }
     lastCloudBackupAt = Date.now();
-    showToast(t("cloudRestoreOk"));
+    cloudSyncConflict = false;
+    if (!silent) showToast(t("cloudRestoreOk"));
     paintCloudChrome();
     return true;
   } catch {
-    showToast(t("cloudBackupFail"));
+    if (!silent) showToast(t("cloudBackupFail"));
     return false;
   }
 }
