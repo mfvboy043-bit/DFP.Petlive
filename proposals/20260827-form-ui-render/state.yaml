@@ -1,13 +1,13 @@
 id: 20260827-form-ui-render
 title: Form UI render — extract填表畫面 HTML from app.js
 version: 2
-status: candidate_ready
+status: adopted
 
 gate_a:
   status: approved
 
 gate_b:
-  status: pending
+  status: adopted
 
 iteration: 0
 max_iterations: 3
