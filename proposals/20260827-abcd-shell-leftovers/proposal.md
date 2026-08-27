@@ -1,7 +1,7 @@
 ---
 id: 20260827-abcd-shell-leftovers
 title: ABCD leftovers — vaccine chips, calendar chooser, alert badge, timeline toggles
-status: candidate_ready
+status: adopted
 author: planner
 candidate_branch: "cursor/abcd-shell-leftovers-8ec1"
 candidate_path: "proposals/20260827-abcd-shell-leftovers"
