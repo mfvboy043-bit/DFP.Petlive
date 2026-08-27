@@ -1,7 +1,7 @@
 id: "20260827-wire-thin-forms"
 title: "Wave 2 — thin form-save + screen-paint orchestration wires (C)"
 version: 2
-status: reviewing
+status: candidate_ready
 
 gate_a:
   status: approved
@@ -10,7 +10,7 @@ gate_a:
 gate_b:
   status: pending
 
-iteration: 0
+iteration: 1
 max_iterations: 3
 
 candidate:
@@ -19,20 +19,15 @@ candidate:
   worktree: ""
 
 reviews:
-  pharmacist: pending
-  qa: pending
-  ui: pending
+  pharmacist: skipped
+  qa: pass
+  ui: skipped
+  # pending | skipped | pass | conditional | reject
   # Expect pharmacist skip (no med copy/dose change); ui skip (no visual redesign);
   # qa on wire behavior parity for A–D.
 
 rerun: []
 blocking_issues: []
 non_blocking: []
-builder_scope:
-  - "A — shell/alert-form.js: extract saveAlertFromForm orchestration (optional deleteAlertById sibling if cheap); inject alertsController + toast/reset/applySelectedPet"
-  - "B — shell/parasite-form.js: extract saveParasiteKind orchestration incl. dosedToday DOM write-back + dual toast; no new persist/applySelectedPet"
-  - "C — shell/breed-form.js: extract syncBreedFields chip/select orchestration; do not redo Wave 1 resolveBreedSearchFaceValue"
-  - "D — shell/emergency-paint.js: extract renderEmergencyCard generate→degraded→DOM assign sequence; inject renderer + list/photo callbacks"
-  - "E — Wire A–D in apps/web/c/app.js only; add script tags + ?v= in c/index.html before c/app.js; node --check; optional shell qa"
-  - "Forbidden: apps/web/app.js / formal B; timeline morph; Google Drive; modules write-truth; medical algorithms; wholesale other save* handlers; openVisitImaging / confirmArchivePet"
+builder_scope: []
 halt_reason: ""
