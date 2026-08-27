@@ -1,26 +1,24 @@
 # Arbiter — 20260827-shell-pet-chrome
 
-**Decision:** revision_required  
-**Iteration reviewed:** 1
+**Decision:** candidate_ready  
+**Iteration reviewed:** 2
 
 ## Mapping
 
 | ID | Source | Severity | Bucket |
 |---|---|---|---|
-| QA-001 | qa | high | blocking |
+| QA-001 | qa | high (resolved) | — |
 
-Pharmacist skipped. UI skipped. QA reject stands on shared-module boot break for formal B.
+Pharmacist skipped. UI skipped. QA verdict: pass. No open findings.
 
 ## Decision rationale
 
-C extraction is otherwise behavior-preserving, but `domains/pets/render.js` is loaded by B today. Requiring `speciesLabelOf` / `breedLabelOf` / `ageLabelOf` at `createRenderer` violates C-first (SH-06-04 B cover is after adopt). That is a high boot defect, not a taste note.
-
-`iteration` 1 < `max_iterations` 3 → revision_required.
+Iteration-1 blocker QA-001 (shared `createRenderer` required chrome label deps and broke formal B boot) is resolved: deps are lazy-required only when header/archive builders run. C extraction remains behavior-preserving. No blocking issues remain.
 
 ## builder_scope
 
-- QA-001
+[]
 
 ## rerun
 
-- qa
+[]

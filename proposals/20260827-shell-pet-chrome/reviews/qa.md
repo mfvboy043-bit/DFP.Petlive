@@ -1,31 +1,29 @@
 # QA review
-Verdict: reject
+Verdict: pass
 
 ## Findings
 
-### Shared pets render requires new deps; formal B createRenderer throws
+### QA-001 resolved — formal B createRenderer boot no longer throws
 - ID: QA-001
-- Severity: high
+- Severity: high (resolved)
 - Steps:
-  1. Confirm this branch does not change `apps/web/app.js` or `apps/web/index.html` (B still calls `createRenderer({ label, getPetPhoto })` only).
-  2. Load formal B so it executes shared `apps/web/domains/pets/render.js` (cache miss / hard reload on `render.js?v=20260827-sh-render`, or any path that reads the updated file).
-  3. Observe top-level init at `petsRenderer = PetLiveWeb.domains.pets.createRenderer(...)`.
-- Expected: C-only SH-06 leaves B boot and pet chrome unchanged until an explicit C→B cover (proposal SH-06-04).
-- Actual: New `createRenderer` throws `TypeError: createRenderer requires speciesLabelOf(pet)` when the new deps are omitted. `petsRenderer` never initializes on B → picker / header / archive / emergency photo facades that gate on `petsRenderer` no-op or fail. Reproduced with Node: createRenderer({ label, getPetPhoto }) throws the same TypeError.
+  1. Confirm branch still leaves `apps/web/app.js` calling `createRenderer({ label, getPetPhoto })` only (no species/breed/age injectors; no B chrome cover).
+  2. Load shared `apps/web/domains/pets/render.js` and run `PetLiveWeb.domains.pets.createRenderer({ label, getPetPhoto })`.
+  3. Call SH-05 `buildPetPickerHtml` on that instance; separately call `buildPetHeaderCopy` without chrome deps.
+- Expected: Boot succeeds; picker builders work; chrome builders fail only when invoked without injectors (lazy require).
+- Actual: Boot does not throw. Picker HTML builds. `buildPetHeaderCopy` throws `TypeError: … requires speciesLabelOf(pet)` only on call. Covered by `qa/tests/web-pets-render.test.js` (“formal B compat”) and a Node snippet (`bootThrows: false`). Prior reject cause is fixed.
 
-## Checks (C candidate — no additional defect IDs)
+## Checks (no open defect IDs)
 
 | Check | Result |
 |---|---|
-| Validation / error toasts | Pass — no form/validation paths in scope; photo crop fail toast facade unchanged |
-| Pending state loss | Pass — no pending med / archive / crop state moved |
-| Back navigation | Pass — archive / crop / screen flows stay in `app.js` |
-| Empty pets header | Pass — `buildPetHeaderCopy(null)` → empty title/sub; timeline/visit/vaccine subs `""`; facade still null-guards those els |
+| Empty pets header | Pass — `buildPetHeaderCopy(null)` → empty title/sub; timeline/visit/vaccine `""`; C facade null-guards those els on empty path |
 | Empty archive | Pass — `buildArchiveListHtml([])` → `archive-empty` via `label("archiveEmpty")` |
-| Archive photo box | Pass — item HTML keeps empty `<div class="archive-item-photo">` (no avatar/photo fill) |
+| Archive photo box | Pass — item keeps empty `<div class="archive-item-photo">` (no avatar/photo fill) |
+| Memorial / leftOn line | Pass — date + optional ` · note` match prior markup |
 | Emergency photo vs no photo | Pass — `has-photo` + `url('…')` + empty inner vs cleared background + camera SVG + upload/change label keys |
-| Header `is-updating` animation | Pass — classList + rAF remain in `renderPetHeader` facade before copy apply |
-| Multi-pet writes | Pass — builders are pure; facades still apply for the `pet` / `archivedPets` the coordinator passes; no new pet-id writes |
-| C init order | Pass — `speciesLabelOf` / `breedLabelOf` / `ageLabelOf` are hoisted functions; `petsRenderer` assigned before boot `applySelectedPet()` |
+| Header `is-updating` | Pass — classList + rAF remain in C `renderPetHeader` before copy apply |
+| C chrome injectors | Pass — `petsRenderer` init passes `speciesLabelOf`, `breedLabelOf`, `ageLabelOf` (function decls, hoisted) |
+| Formal B unchanged chrome | Pass — B still owns inline header/archive/emergency; shared module remains SH-05-boot-compatible |
 | `node --check apps/web/c/app.js` | Pass |
-| `node --test qa/tests/web-pets-render.test.js` | Pass (6/6) |
+| `node --test qa/tests/web-pets-render.test.js` | Pass (7/7) |
