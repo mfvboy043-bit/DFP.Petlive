@@ -9,7 +9,7 @@ gate_a:
 
 gate_b:
   status: adopted
-  note: "Victor 採用 2026-08-27 — C wired; B cover pending confirm"
+  note: "Victor 採用 2026-08-27 — C + B cover complete"
 
 iteration: 1
 max_iterations: 3
