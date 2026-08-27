@@ -1264,38 +1264,45 @@ function renderVaccineList(pet) {
   vaccineList.innerHTML = vaccineRenderer.buildVaccineListHtml(pet, pet.vaccines);
 }
 
-function syncVaccineNavLights(status) {
-  const lights = document.getElementById("e-vax-lights");
-  if (!lights) return;
+function syncVaccineNavLights(status, lightsEl) {
   const titleByStatus = {
     protected: t("vaxLightGreen"),
     approaching: t("vaxLightOrange"),
     expired: t("vaxLightRed"),
   };
-  lights.querySelectorAll(".e-vax-dot").forEach((dot) => {
-    const key = dot.dataset.status;
-    const on = status && key === status;
-    dot.classList.toggle("is-on", Boolean(on));
-    if (titleByStatus[key]) dot.title = titleByStatus[key];
+  const targets = lightsEl
+    ? [lightsEl]
+    : Array.from(document.querySelectorAll(".e-vax-lights"));
+  targets.forEach((lights) => {
+    if (!lights) return;
+    lights.querySelectorAll(".e-vax-dot").forEach((dot) => {
+      const key = dot.dataset.status;
+      const on = status && key === status;
+      dot.classList.toggle("is-on", Boolean(on));
+      if (titleByStatus[key]) dot.title = titleByStatus[key];
+    });
+    lights.setAttribute(
+      "aria-label",
+      status ? titleByStatus[status] : t("noVaccineNext")
+    );
   });
-  lights.setAttribute(
-    "aria-label",
-    status ? titleByStatus[status] : t("noVaccineNext")
-  );
 }
 
 function renderEmergencyVaccineNav(pet) {
-  const nextEl = document.getElementById("e-vaccine-next");
-  const vaccineBtn = document.getElementById("e-vaccine-btn");
-  if (!nextEl || !vaccineBtn) return;
-
-  vaccineBtn.classList.remove("is-protected", "is-approaching", "is-expired");
-
   const presentation = vaccineRenderer.buildEmergencyNavPresentation(getNextVaccine(pet));
-  nextEl.textContent = presentation.nextText;
-  nextEl.className = presentation.nextClassName;
-  vaccineBtn.classList.add(presentation.btnClass);
-  syncVaccineNavLights(presentation.lightStatus);
+  document.querySelectorAll('.e-vax-nav[data-go="vaccines"]').forEach((vaccineBtn) => {
+    vaccineBtn.classList.remove("is-protected", "is-approaching", "is-expired");
+    const nextEl = vaccineBtn.querySelector("#e-vaccine-next, #fh-vaccine-next");
+    if (nextEl) {
+      const keepId = nextEl.id;
+      nextEl.textContent = presentation.nextText;
+      nextEl.className = presentation.nextClassName || "";
+      if (keepId) nextEl.id = keepId;
+    }
+    vaccineBtn.classList.add(presentation.btnClass);
+    const lights = vaccineBtn.querySelector(".e-vax-lights");
+    if (lights) syncVaccineNavLights(presentation.lightStatus, lights);
+  });
 }
 
 function renderVaccines(pet) {
@@ -1812,36 +1819,29 @@ function cancelArchivePetFlow() {
 
 function confirmArchivePet(event) {
   event.preventDefault();
-  const pet = getPendingArchivePet();
-  if (!pet) return;
-
-  const passedAwayDate = document.getElementById("archive-passed-date").value;
-  const memorialNote = document
-    .getElementById("archive-memorial-note")
-    .value.trim();
-  if (!passedAwayDate) {
-    showToast(t("toastNeedPassedDate"));
-    return;
-  }
-
-  const result = petsLifecycle.archivePet(pet.id, {
-    passedAwayDate,
-    memorialNote,
+  PetLiveWeb.shell.confirmArchivePet({
+    getPendingArchivePet,
+    passedAwayDate: document.getElementById("archive-passed-date").value,
+    memorialNote: document
+      .getElementById("archive-memorial-note")
+      .value.trim(),
+    archivePet: (petId, payload) => petsLifecycle.archivePet(petId, payload),
     currentPetId,
+    onArchived: () => {
+      pendingArchivePetId = null;
+    },
+    setManageMode,
+    setCurrentPetId: (id) => {
+      currentPetId = id;
+      appState.setCurrentPetId(currentPetId);
+    },
+    applySelectedPet,
+    renderArchiveList,
+    showToast,
+    t,
+    clearNavigationHistory,
+    go,
   });
-  if (!result.ok) return;
-
-  pendingArchivePetId = null;
-  setManageMode(false);
-  if (result.nextCurrentPetId !== undefined) {
-    currentPetId = result.nextCurrentPetId;
-    appState.setCurrentPetId(currentPetId);
-  }
-  applySelectedPet();
-  renderArchiveList();
-  showToast(t("toastArchived", { name: result.archived.name }));
-  clearNavigationHistory();
-  go("archive", { replace: true });
 }
 
 function getPendingRemovePet() {
@@ -3103,14 +3103,18 @@ document.querySelectorAll("[data-go]").forEach((btn) => {
 
 
 function wireFeatureHubVaxHelp() {
-  const helpBtn = document.getElementById("e-vax-help");
-  const pop = document.getElementById("e-vax-help-pop");
+  const helpBtn = document.getElementById("fh-vax-help");
+  const pop = document.getElementById("fh-vax-help-pop");
   if (!helpBtn || !pop || helpBtn.getAttribute("data-vax-help-wired") === "1") return;
   helpBtn.setAttribute("data-vax-help-wired", "1");
   helpBtn.addEventListener("click", (event) => {
     event.preventDefault();
     event.stopPropagation();
-    setVaxHelpOpen(Boolean(pop.hidden));
+    const willOpen = Boolean(pop.hidden);
+    pop.hidden = !willOpen;
+    helpBtn.setAttribute("aria-expanded", willOpen ? "true" : "false");
+    // Close the card legend if the hub one opens.
+    if (willOpen) setVaxHelpOpen(false);
   });
   pop.addEventListener("click", (event) => {
     event.stopPropagation();
@@ -3118,34 +3122,41 @@ function wireFeatureHubVaxHelp() {
 }
 
 function setVaxHelpOpen(open) {
-  const helpBtn = document.getElementById("e-vax-help");
-  const pop = document.getElementById("e-vax-help-pop");
-  if (!helpBtn || !pop) return;
-  pop.hidden = !open;
-  helpBtn.setAttribute("aria-expanded", open ? "true" : "false");
+  PetLiveWeb.shell.setVaxHelpOpen(
+    {
+      helpBtn: document.getElementById("e-vax-help"),
+      pop: document.getElementById("e-vax-help-pop"),
+    },
+    open
+  );
 }
 
-document.getElementById("e-vax-help")?.addEventListener("click", (event) => {
-  event.preventDefault();
-  event.stopPropagation();
-  const pop = document.getElementById("e-vax-help-pop");
-  setVaxHelpOpen(Boolean(pop?.hidden));
-});
-
-document.getElementById("e-vax-help-pop")?.addEventListener("click", (event) => {
-  event.stopPropagation();
-});
-
-document.addEventListener("click", (event) => {
-  if (event.target.closest("#e-vax-help, #e-vax-help-pop")) return;
-  setVaxHelpOpen(false);
-});
-
-document.addEventListener("keydown", (event) => {
-  if (event.key === "Escape") {
-    closeProofLightbox();
-    setVaxHelpOpen(false);
+PetLiveWeb.shell.initVaxHelp(
+  {
+    helpBtn: document.getElementById("e-vax-help"),
+    pop: document.getElementById("e-vax-help-pop"),
+    doc: document,
+  },
+  {
+    closeProofLightbox,
+    helpSelector:
+      "#e-vax-help, #e-vax-help-pop, #fh-vax-help, #fh-vax-help-pop",
   }
+);
+
+// Feature Hub popover: outside-click close (card legend handled by initVaxHelp).
+document.addEventListener("click", (event) => {
+  if (
+    event.target.closest(
+      "#e-vax-help, #e-vax-help-pop, #fh-vax-help, #fh-vax-help-pop"
+    )
+  ) {
+    return;
+  }
+  const fhHelp = document.getElementById("fh-vax-help");
+  const fhPop = document.getElementById("fh-vax-help-pop");
+  if (fhPop) fhPop.hidden = true;
+  if (fhHelp) fhHelp.setAttribute("aria-expanded", "false");
 });
 
 document.getElementById("proof-lightbox")?.addEventListener("click", (event) => {
@@ -3415,46 +3426,25 @@ function renderDrugInfoCard(drug) {
   });
 }
 
-function renderDrugResults(list) {
-  if (!medicationsRenderer) return;
-  const built = medicationsRenderer.buildDrugResultsHtml(list);
-  drugResults.hidden = built.hidden;
-  drugResults.innerHTML = built.html;
-}
-
-let suppressDrugSearchInput = false;
-
-drugSearch.addEventListener("input", () => {
-  if (suppressDrugSearchInput) return;
-  selectedDrug = null;
-  selectedDrugEl.hidden = true;
-  renderDrugInfoCard(null);
-  renderDrugResults(searchDrugs(drugSearch.value));
-});
-
-drugResults.addEventListener("click", (event) => {
-  const btn = event.target.closest("[data-drug-id]");
-  if (!btn) return;
-  selectedDrug = resolveEnrichedDrug(btn.dataset.drugId);
-  if (!selectedDrug && window.PetLive?.drug?.getDrugById) {
-    const result = window.PetLive.drug.getDrugById(btn.dataset.drugId);
-    if (result?.ok) selectedDrug = resolveEnrichedDrug(result.data) || result.data;
+PetLiveWeb.shell.bindDrugSearch(
+  { drugSearch, drugResults, selectedDrugEl },
+  {
+    searchDrugs,
+    resolveEnrichedDrug,
+    getDrugById: (id) => window.PetLive?.drug?.getDrugById?.(id),
+    renderDrugInfoCard,
+    setMedEntryMode,
+    getMedEntryMode: () => medEntryMode,
+    t,
+    onSelectedDrug: (drug) => {
+      selectedDrug = drug;
+    },
+    buildDrugResultsHtml: (list) =>
+      medicationsRenderer
+        ? medicationsRenderer.buildDrugResultsHtml(list)
+        : { hidden: true, html: "" },
   }
-  if (!selectedDrug) return;
-  drugResults.hidden = true;
-  suppressDrugSearchInput = true;
-  drugSearch.value = selectedDrug.genericName;
-  suppressDrugSearchInput = false;
-  selectedDrugEl.hidden = false;
-  selectedDrugEl.textContent = t("selectedDrug", {
-    name: `${selectedDrug.genericName}${
-      selectedDrug.brandNameZh ? ` / ${selectedDrug.brandNameZh}` : ""
-    }`,
-  });
-  // Stay on manual entry so the safety card is visible
-  if (medEntryMode !== "manual") setMedEntryMode("manual");
-  renderDrugInfoCard(selectedDrug);
-});
+);
 
 document.getElementById("visit-form").addEventListener("submit", (event) => {
   event.preventDefault();
@@ -4523,35 +4513,32 @@ async function appendImagingFiles(files, slot) {
 }
 
 function openVisitImaging(visitIndex) {
-  const pet = getCurrentPet();
-  const visit = pet?.visits?.[visitIndex];
-  if (!visit) return;
-
-  pendingImagingVisitIndex = visitIndex;
-  const imaging = getVisitImaging(visit);
-  pendingXrayPhotos = [...imaging.xrayPhotos];
-  pendingUsPhotos = [...imaging.usPhotos];
-
-  document.getElementById("imaging-proof-name").textContent =
-    visitClinicLabel(visit);
-  document.getElementById("imaging-proof-meta").textContent = visit.date;
-  document.getElementById("imaging-proof-sub").textContent = t(
-    "timelineVisitImagingProofSub"
-  );
-  const targetKicker = document.querySelector(
-    "#imaging-proof-form .archive-pet-kicker"
-  );
-  if (targetKicker) {
-    targetKicker.setAttribute("data-i18n", "timelineVisitImagingTarget");
-    targetKicker.textContent = t("timelineVisitImagingTarget");
-  }
-  const xrayInput = document.getElementById("imaging-xray-photo");
-  const usInput = document.getElementById("imaging-us-photo");
-  if (xrayInput) xrayInput.value = "";
-  if (usInput) usInput.value = "";
-  renderImagingSlotPreviews("xray");
-  renderImagingSlotPreviews("us");
-  go("imaging-proof");
+  PetLiveWeb.shell.openImagingProofScreen({
+    visitIndex,
+    getCurrentPet,
+    getVisitImaging,
+    visitClinicLabel,
+    setPendingImagingVisitIndex: (i) => {
+      pendingImagingVisitIndex = i;
+    },
+    setPendingXrayPhotos: (photos) => {
+      pendingXrayPhotos = photos;
+    },
+    setPendingUsPhotos: (photos) => {
+      pendingUsPhotos = photos;
+    },
+    nameEl: document.getElementById("imaging-proof-name"),
+    metaEl: document.getElementById("imaging-proof-meta"),
+    subEl: document.getElementById("imaging-proof-sub"),
+    kickerEl: document.querySelector(
+      "#imaging-proof-form .archive-pet-kicker"
+    ),
+    xrayInput: document.getElementById("imaging-xray-photo"),
+    usInput: document.getElementById("imaging-us-photo"),
+    renderImagingSlotPreviews,
+    go,
+    t,
+  });
 }
 
 function openCompleteDrugs(visitIndex) {
@@ -4641,97 +4628,24 @@ function saveVisitWeightAtIndex(visitIndex) {
   return true;
 }
 
-timelineList.addEventListener("click", (event) => {
-  const notesToggle = event.target.closest("[data-drug-notes-toggle]");
-  if (notesToggle) {
-    toggleDrugNotesButton(notesToggle);
-    return;
-  }
-  const medDetailToggle = event.target.closest("[data-med-detail-toggle]");
-  if (medDetailToggle) {
-    toggleMedDetailButton(medDetailToggle);
-    return;
-  }
-  const visitWeightToggle = event.target.closest("[data-visit-weight-toggle]");
-  if (visitWeightToggle) {
-    toggleVisitWeightButton(visitWeightToggle);
-    return;
-  }
-  const visitLabsBtn = event.target.closest("[data-open-labs]");
-  if (visitLabsBtn) {
-    go("labs");
-    return;
-  }
-  const visitRxToggle = event.target.closest("[data-visit-rx-toggle]");
-  if (visitRxToggle) {
-    toggleVisitRxButton(visitRxToggle);
-    return;
-  }
-  const visitImagingToggle = event.target.closest("[data-visit-imaging-toggle]");
-  if (visitImagingToggle) {
-    toggleVisitImagingButton(visitImagingToggle);
-    return;
-  }
-  const proofLightboxBtn = event.target.closest("[data-proof-lightbox]");
-  if (proofLightboxBtn) {
-    const img = proofLightboxBtn.querySelector("img");
-    openProofLightbox(img?.currentSrc || img?.src, proofLightboxBtn.dataset.proofCaption);
-    return;
-  }
-  const clearSlotBtn = event.target.closest("[data-visit-proof-clear-slot]");
-  if (clearSlotBtn) {
-    const pet = getCurrentPet();
-    const visitIndex = Number(clearSlotBtn.dataset.visitIndex);
-    const visit = pet.visits[visitIndex];
-    const slot = clearSlotBtn.dataset.visitProofClearSlot;
-    if (!visit || !slot) return;
-    clearVisitProofSlot(visit, slot);
-    showToast(t("toastProofCleared"));
-    applySelectedPet();
-    const toggle = document.querySelector(
-      `[data-visit-rx-toggle][aria-controls="visit-rx-${visitIndex}"]`
-    );
-    if (toggle) toggleVisitRxButton(toggle);
-    return;
-  }
-  const clearImagingBtn = event.target.closest("[data-visit-imaging-clear-slot]");
-  if (clearImagingBtn) {
-    const pet = getCurrentPet();
-    const visitIndex = Number(clearImagingBtn.dataset.visitIndex);
-    const visit = pet?.visits?.[visitIndex];
-    const slot = clearImagingBtn.dataset.visitImagingClearSlot;
-    const photoIndex = Number(clearImagingBtn.dataset.visitImagingClearIndex);
-    if (!visit || !slot) return;
-    clearVisitImagingPhoto(visit, slot, photoIndex);
-    showToast(t("toastImagingCleared"));
-    applySelectedPet();
-    const toggle = document.querySelector(
-      `[data-visit-imaging-toggle][aria-controls="visit-imaging-${visitIndex}"]`
-    );
-    if (toggle) toggleVisitImagingButton(toggle);
-    return;
-  }
-  const visitUpload = event.target.closest("[data-visit-proof-upload]");
-  if (visitUpload) {
-    openVisitProof(Number(visitUpload.dataset.visitProofUpload));
-    return;
-  }
-  const imagingUpload = event.target.closest("[data-visit-imaging-upload]");
-  if (imagingUpload) {
-    openVisitImaging(Number(imagingUpload.dataset.visitImagingUpload));
-    return;
-  }
-  const completeBtn = event.target.closest("[data-complete-visit]");
-  if (completeBtn) {
-    openCompleteDrugs(Number(completeBtn.dataset.completeVisit));
-  }
-});
-
-timelineList.addEventListener("submit", (event) => {
-  const form = event.target.closest("[data-visit-weight-form]");
-  if (!form) return;
-  event.preventDefault();
-  saveVisitWeightAtIndex(Number(form.dataset.visitWeightForm));
+PetLiveWeb.shell.bindTimelineList(timelineList, {
+  toggleDrugNotesButton,
+  toggleMedDetailButton,
+  toggleVisitWeightButton,
+  toggleVisitRxButton,
+  toggleVisitImagingButton,
+  go,
+  openProofLightbox,
+  getCurrentPet,
+  clearVisitProofSlot,
+  clearVisitImagingPhoto,
+  showToast,
+  t,
+  applySelectedPet,
+  openVisitProof,
+  openVisitImaging,
+  openCompleteDrugs,
+  saveVisitWeightAtIndex,
 });
 
 if (eMeds) {
@@ -5317,32 +5231,16 @@ document.getElementById("e-pet-photo-input")?.addEventListener("change", async (
 const langFab = document.getElementById("lang-fab");
 const langMenu = document.getElementById("lang-menu");
 
+const langMenuApi = PetLiveWeb.shell.initLangMenu(
+  { langFab, langMenu, doc: document },
+  {
+    onPickLang: (lang) => setLanguage(lang),
+    onToast: () => showToast(t("langChanged")),
+  }
+);
+
 function closeLangMenu() {
-  if (!langMenu || !langFab) return;
-  langMenu.hidden = true;
-  langFab.setAttribute("aria-expanded", "false");
-}
-
-if (langFab && langMenu) {
-  langFab.addEventListener("click", (event) => {
-    event.stopPropagation();
-    const open = langMenu.hidden;
-    langMenu.hidden = !open;
-    langFab.setAttribute("aria-expanded", open ? "true" : "false");
-  });
-
-  langMenu.addEventListener("click", (event) => {
-    const btn = event.target.closest("[data-lang]");
-    if (!btn) return;
-    setLanguage(btn.dataset.lang);
-    closeLangMenu();
-    showToast(t("langChanged"));
-  });
-
-  document.addEventListener("click", (event) => {
-    if (event.target.closest("#lang-switcher")) return;
-    closeLangMenu();
-  });
+  langMenuApi.closeLangMenu();
 }
 
 let dynamicLanguageRefreshes = 0;

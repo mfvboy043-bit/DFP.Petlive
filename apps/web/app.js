@@ -1444,38 +1444,45 @@ function renderVaccineList(pet) {
   vaccineList.innerHTML = vaccineRenderer.buildVaccineListHtml(pet, pet.vaccines);
 }
 
-function syncVaccineNavLights(status) {
-  const lights = document.getElementById("e-vax-lights");
-  if (!lights) return;
+function syncVaccineNavLights(status, lightsEl) {
   const titleByStatus = {
     protected: t("vaxLightGreen"),
     approaching: t("vaxLightOrange"),
     expired: t("vaxLightRed"),
   };
-  lights.querySelectorAll(".e-vax-dot").forEach((dot) => {
-    const key = dot.dataset.status;
-    const on = status && key === status;
-    dot.classList.toggle("is-on", Boolean(on));
-    if (titleByStatus[key]) dot.title = titleByStatus[key];
+  const targets = lightsEl
+    ? [lightsEl]
+    : Array.from(document.querySelectorAll(".e-vax-lights"));
+  targets.forEach((lights) => {
+    if (!lights) return;
+    lights.querySelectorAll(".e-vax-dot").forEach((dot) => {
+      const key = dot.dataset.status;
+      const on = status && key === status;
+      dot.classList.toggle("is-on", Boolean(on));
+      if (titleByStatus[key]) dot.title = titleByStatus[key];
+    });
+    lights.setAttribute(
+      "aria-label",
+      status ? titleByStatus[status] : t("noVaccineNext")
+    );
   });
-  lights.setAttribute(
-    "aria-label",
-    status ? titleByStatus[status] : t("noVaccineNext")
-  );
 }
 
 function renderEmergencyVaccineNav(pet) {
-  const nextEl = document.getElementById("e-vaccine-next");
-  const vaccineBtn = document.getElementById("e-vaccine-btn");
-  if (!nextEl || !vaccineBtn) return;
-
-  vaccineBtn.classList.remove("is-protected", "is-approaching", "is-expired");
-
   const presentation = vaccineRenderer.buildEmergencyNavPresentation(getNextVaccine(pet));
-  nextEl.textContent = presentation.nextText;
-  nextEl.className = presentation.nextClassName;
-  vaccineBtn.classList.add(presentation.btnClass);
-  syncVaccineNavLights(presentation.lightStatus);
+  document.querySelectorAll('.e-vax-nav[data-go="vaccines"]').forEach((vaccineBtn) => {
+    vaccineBtn.classList.remove("is-protected", "is-approaching", "is-expired");
+    const nextEl = vaccineBtn.querySelector("#e-vaccine-next, #fh-vaccine-next");
+    if (nextEl) {
+      const keepId = nextEl.id;
+      nextEl.textContent = presentation.nextText;
+      nextEl.className = presentation.nextClassName || "";
+      if (keepId) nextEl.id = keepId;
+    }
+    vaccineBtn.classList.add(presentation.btnClass);
+    const lights = vaccineBtn.querySelector(".e-vax-lights");
+    if (lights) syncVaccineNavLights(presentation.lightStatus, lights);
+  });
 }
 
 function renderVaccines(pet) {
@@ -1995,36 +2002,29 @@ function cancelArchivePetFlow() {
 
 function confirmArchivePet(event) {
   event.preventDefault();
-  const pet = getPendingArchivePet();
-  if (!pet) return;
-
-  const passedAwayDate = document.getElementById("archive-passed-date").value;
-  const memorialNote = document
-    .getElementById("archive-memorial-note")
-    .value.trim();
-  if (!passedAwayDate) {
-    showToast(t("toastNeedPassedDate"));
-    return;
-  }
-
-  const result = petsLifecycle.archivePet(pet.id, {
-    passedAwayDate,
-    memorialNote,
+  PetLiveWeb.shell.confirmArchivePet({
+    getPendingArchivePet,
+    passedAwayDate: document.getElementById("archive-passed-date").value,
+    memorialNote: document
+      .getElementById("archive-memorial-note")
+      .value.trim(),
+    archivePet: (petId, payload) => petsLifecycle.archivePet(petId, payload),
     currentPetId,
+    onArchived: () => {
+      pendingArchivePetId = null;
+    },
+    setManageMode,
+    setCurrentPetId: (id) => {
+      currentPetId = id;
+      appState.setCurrentPetId(currentPetId);
+    },
+    applySelectedPet,
+    renderArchiveList,
+    showToast,
+    t,
+    clearNavigationHistory,
+    go,
   });
-  if (!result.ok) return;
-
-  pendingArchivePetId = null;
-  setManageMode(false);
-  if (result.nextCurrentPetId !== undefined) {
-    currentPetId = result.nextCurrentPetId;
-    appState.setCurrentPetId(currentPetId);
-  }
-  applySelectedPet();
-  renderArchiveList();
-  showToast(t("toastArchived", { name: result.archived.name }));
-  clearNavigationHistory();
-  go("archive", { replace: true });
 }
 
 function getPendingRemovePet() {
@@ -3384,14 +3384,18 @@ document.querySelectorAll("[data-go]").forEach((btn) => {
 
 
 function wireFeatureHubVaxHelp() {
-  const helpBtn = document.getElementById("e-vax-help");
-  const pop = document.getElementById("e-vax-help-pop");
+  const helpBtn = document.getElementById("fh-vax-help");
+  const pop = document.getElementById("fh-vax-help-pop");
   if (!helpBtn || !pop || helpBtn.getAttribute("data-vax-help-wired") === "1") return;
   helpBtn.setAttribute("data-vax-help-wired", "1");
   helpBtn.addEventListener("click", (event) => {
     event.preventDefault();
     event.stopPropagation();
-    setVaxHelpOpen(Boolean(pop.hidden));
+    const willOpen = Boolean(pop.hidden);
+    pop.hidden = !willOpen;
+    helpBtn.setAttribute("aria-expanded", willOpen ? "true" : "false");
+    // Close the card legend if the hub one opens.
+    if (willOpen) setVaxHelpOpen(false);
   });
   pop.addEventListener("click", (event) => {
     event.stopPropagation();
@@ -3399,34 +3403,41 @@ function wireFeatureHubVaxHelp() {
 }
 
 function setVaxHelpOpen(open) {
-  const helpBtn = document.getElementById("e-vax-help");
-  const pop = document.getElementById("e-vax-help-pop");
-  if (!helpBtn || !pop) return;
-  pop.hidden = !open;
-  helpBtn.setAttribute("aria-expanded", open ? "true" : "false");
+  PetLiveWeb.shell.setVaxHelpOpen(
+    {
+      helpBtn: document.getElementById("e-vax-help"),
+      pop: document.getElementById("e-vax-help-pop"),
+    },
+    open
+  );
 }
 
-document.getElementById("e-vax-help")?.addEventListener("click", (event) => {
-  event.preventDefault();
-  event.stopPropagation();
-  const pop = document.getElementById("e-vax-help-pop");
-  setVaxHelpOpen(Boolean(pop?.hidden));
-});
-
-document.getElementById("e-vax-help-pop")?.addEventListener("click", (event) => {
-  event.stopPropagation();
-});
-
-document.addEventListener("click", (event) => {
-  if (event.target.closest("#e-vax-help, #e-vax-help-pop")) return;
-  setVaxHelpOpen(false);
-});
-
-document.addEventListener("keydown", (event) => {
-  if (event.key === "Escape") {
-    closeProofLightbox();
-    setVaxHelpOpen(false);
+PetLiveWeb.shell.initVaxHelp(
+  {
+    helpBtn: document.getElementById("e-vax-help"),
+    pop: document.getElementById("e-vax-help-pop"),
+    doc: document,
+  },
+  {
+    closeProofLightbox,
+    helpSelector:
+      "#e-vax-help, #e-vax-help-pop, #fh-vax-help, #fh-vax-help-pop",
   }
+);
+
+// Feature Hub popover: outside-click close (card legend handled by initVaxHelp).
+document.addEventListener("click", (event) => {
+  if (
+    event.target.closest(
+      "#e-vax-help, #e-vax-help-pop, #fh-vax-help, #fh-vax-help-pop"
+    )
+  ) {
+    return;
+  }
+  const fhHelp = document.getElementById("fh-vax-help");
+  const fhPop = document.getElementById("fh-vax-help-pop");
+  if (fhPop) fhPop.hidden = true;
+  if (fhHelp) fhHelp.setAttribute("aria-expanded", "false");
 });
 
 document.getElementById("proof-lightbox")?.addEventListener("click", (event) => {
@@ -3696,46 +3707,25 @@ function renderDrugInfoCard(drug) {
   });
 }
 
-function renderDrugResults(list) {
-  if (!medicationsRenderer) return;
-  const built = medicationsRenderer.buildDrugResultsHtml(list);
-  drugResults.hidden = built.hidden;
-  drugResults.innerHTML = built.html;
-}
-
-let suppressDrugSearchInput = false;
-
-drugSearch.addEventListener("input", () => {
-  if (suppressDrugSearchInput) return;
-  selectedDrug = null;
-  selectedDrugEl.hidden = true;
-  renderDrugInfoCard(null);
-  renderDrugResults(searchDrugs(drugSearch.value));
-});
-
-drugResults.addEventListener("click", (event) => {
-  const btn = event.target.closest("[data-drug-id]");
-  if (!btn) return;
-  selectedDrug = resolveEnrichedDrug(btn.dataset.drugId);
-  if (!selectedDrug && window.PetLive?.drug?.getDrugById) {
-    const result = window.PetLive.drug.getDrugById(btn.dataset.drugId);
-    if (result?.ok) selectedDrug = resolveEnrichedDrug(result.data) || result.data;
+PetLiveWeb.shell.bindDrugSearch(
+  { drugSearch, drugResults, selectedDrugEl },
+  {
+    searchDrugs,
+    resolveEnrichedDrug,
+    getDrugById: (id) => window.PetLive?.drug?.getDrugById?.(id),
+    renderDrugInfoCard,
+    setMedEntryMode,
+    getMedEntryMode: () => medEntryMode,
+    t,
+    onSelectedDrug: (drug) => {
+      selectedDrug = drug;
+    },
+    buildDrugResultsHtml: (list) =>
+      medicationsRenderer
+        ? medicationsRenderer.buildDrugResultsHtml(list)
+        : { hidden: true, html: "" },
   }
-  if (!selectedDrug) return;
-  drugResults.hidden = true;
-  suppressDrugSearchInput = true;
-  drugSearch.value = selectedDrug.genericName;
-  suppressDrugSearchInput = false;
-  selectedDrugEl.hidden = false;
-  selectedDrugEl.textContent = t("selectedDrug", {
-    name: `${selectedDrug.genericName}${
-      selectedDrug.brandNameZh ? ` / ${selectedDrug.brandNameZh}` : ""
-    }`,
-  });
-  // Stay on manual entry so the safety card is visible
-  if (medEntryMode !== "manual") setMedEntryMode("manual");
-  renderDrugInfoCard(selectedDrug);
-});
+);
 
 document.getElementById("visit-form").addEventListener("submit", (event) => {
   event.preventDefault();

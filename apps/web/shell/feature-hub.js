@@ -5,8 +5,8 @@
   root.shell = root.shell || {};
 
   /**
-   * Full emergency-card shortcut strip (same IDs / classes so paint + lights keep working).
-   * Lives on the feature-buttons screen only.
+   * Shortcut strip for feature-buttons screen.
+   * Vaccine control uses fh-* ids so the emergency card can keep e-* originals.
    */
   function featureHubBodyMarkup() {
     return `
@@ -21,14 +21,14 @@
   </button>
   <div
     class="e-vax-nav"
-    id="e-vaccine-btn"
+    id="fh-vaccine-btn"
     data-go="vaccines"
     role="button"
     tabindex="0"
   >
     <span class="e-vaccine-label">
       <span data-i18n="vaccine">疫苗</span>
-      <span class="e-vax-lights" id="e-vax-lights" role="img" aria-label="">
+      <span class="e-vax-lights" id="fh-vax-lights" role="img" aria-label="">
         <i class="e-vax-dot is-green" data-status="protected" title="薄荷：防護中"></i>
         <i class="e-vax-dot is-orange" data-status="approaching" title="暖橘：即將到期"></i>
         <i class="e-vax-dot is-red" data-status="expired" title="玫瑰：已到期／需留意"></i>
@@ -36,26 +36,26 @@
       <button
         type="button"
         class="e-vax-help"
-        id="e-vax-help"
+        id="fh-vax-help"
         data-i18n-aria="vaxLightsHelpAria"
         data-i18n-title="vaxLightsHelpTitle"
         aria-label="疫苗燈號說明"
         aria-expanded="false"
-        aria-controls="e-vax-help-pop"
+        aria-controls="fh-vax-help-pop"
         title="燈號說明"
       >
         ?
       </button>
     </span>
-    <small id="e-vaccine-next" data-i18n="nextDueDash">下次 —</small>
+    <small id="fh-vaccine-next" data-i18n="nextDueDash">下次 —</small>
     <div
       class="e-vax-help-pop"
-      id="e-vax-help-pop"
+      id="fh-vax-help-pop"
       hidden
       role="dialog"
-      aria-labelledby="e-vax-help-title"
+      aria-labelledby="fh-vax-help-title"
     >
-      <p class="e-vax-help-title" id="e-vax-help-title" data-i18n="vaxLightsHelpTitle">
+      <p class="e-vax-help-title" id="fh-vax-help-title" data-i18n="vaxLightsHelpTitle">
         燈號說明
       </p>
       <ul class="e-vax-help-list">
@@ -88,7 +88,7 @@
   }
 
   /**
-   * Mount authentic shortcut body into #feature-hub (replace simplified drafts).
+   * Mount shortcut body into #feature-hub.
    * @param {Document} doc
    * @param {{ onGo?: (screen: string) => void, onMounted?: (host: Element) => void }} [hooks]
    */
@@ -100,8 +100,8 @@
 
     const needsMount =
       host.getAttribute("data-feature-hub-wired") !== "1" ||
-      !host.querySelector("#e-vaccine-btn") ||
-      !host.querySelector("#e-vax-lights") ||
+      !host.querySelector("#fh-vaccine-btn") ||
+      !host.querySelector("#fh-vax-lights") ||
       !host.querySelector("#e-xray-btn");
 
     if (needsMount) {
@@ -123,7 +123,7 @@
           event.preventDefault();
           goScreen();
         });
-        if (btn.id === "e-vaccine-btn") {
+        if (btn.id === "fh-vaccine-btn") {
           btn.addEventListener("keydown", (event) => {
             if (event.target.closest?.(".e-vax-help")) return;
             if (event.key !== "Enter" && event.key !== " ") return;

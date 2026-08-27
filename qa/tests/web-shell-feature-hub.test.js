@@ -26,10 +26,11 @@ describe("shell feature-hub", () => {
     assert.match(html, /data-go="vaccines"/);
     assert.match(html, /data-go="imaging"/);
     assert.match(html, /data-go="labs"/);
-    assert.match(html, /id="e-vaccine-btn"/);
-    assert.match(html, /id="e-vax-lights"/);
+    assert.match(html, /id="fh-vaccine-btn"/);
+    assert.match(html, /id="fh-vax-lights"/);
     assert.match(html, /id="e-xray-btn"/);
     assert.match(html, /id="e-lab-btn"/);
     assert.match(html, /class="e-nav-alerts"/);
+    assert.doesNotMatch(html, /id="e-vaccine-btn"/);
   });
 });
