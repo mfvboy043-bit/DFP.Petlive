@@ -1,0 +1,35 @@
+id: 20260827-shell-photo-pet-picker
+title: Shell — pet picker + photo crop render building blocks
+version: 2
+status: building
+
+gate_a:
+  status: approved
+
+gate_b:
+  status: pending
+
+iteration: 0
+max_iterations: 3
+
+candidate:
+  branch: proposal/shell-photo-pet-picker
+  path: proposals/20260827-shell-photo-pet-picker
+  worktree: .worktrees/main-adopt
+
+reviews:
+  pharmacist: skipped
+  qa: pending
+  ui: pending
+
+rerun: []
+blocking_issues: []
+non_blocking: []
+builder_scope:
+  - domains/pets/render.js
+  - shell/photo-crop.js
+  - apps/web/c/app.js
+  - apps/web/c/index.html
+  - qa/tests/web-pets-render.test.js
+  - qa/tests/web-shell-photo-crop.test.js
+halt_reason: ""
