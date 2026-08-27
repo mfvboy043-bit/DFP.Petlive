@@ -920,6 +920,7 @@ function formatDraftDoseLine(draft) {
 }
 
 function renderEmergencyMeds(pet) {
+  drugNotesMedByPanelId.clear();
   const active = deriveActiveEmergencyMeds(pet);
   if (!active.length) {
     eMeds.innerHTML = `<li>${t("noMeds")}</li>`;
@@ -928,7 +929,10 @@ function renderEmergencyMeds(pet) {
 
   eMeds.innerHTML = active
     .map((med, medIndex) => {
-      const notesId = `e-drug-notes-${pet.id}-${medIndex}`;
+      const notesId = timelineViewHelpers.notesIdForMed({
+        emergencyPrefix: pet.id,
+        medIndex,
+      });
       return `
       <li class="e-med">
         <div class="tl-med-name-row">
@@ -951,49 +955,27 @@ function renderEmergencyMeds(pet) {
 }
 
 function findDrugByMedName(name) {
-  if (!name || typeof drugs === "undefined") return null;
-  const q = String(name).trim().toLowerCase();
-  if (!q) return null;
-  return (
-    drugs.find((drug) => {
-      const keys = [
-        drug.genericName,
-        drug.brandNameZh,
-        drug.brandNameEn,
-        ...(drug.commonAliases || []),
-      ]
-        .filter(Boolean)
-        .map((item) => String(item).toLowerCase());
-      return keys.some((key) => key === q || key.includes(q) || q.includes(key));
-    }) || null
-  );
+  if (typeof drugs === "undefined") return null;
+  return PetLiveWeb.domains.timeline.findDrugByNameInCatalog(drugs, name);
 }
 
-function drugNotesMedPayload(med) {
-  return encodeURIComponent(
-    JSON.stringify({
-      name: med?.name || "",
-      kind: med?.kind || "",
-      structuredPending: Boolean(med?.structuredPending),
-    })
-  );
-}
+/** Med payload keyed by panel id; cleared on each timeline/emergency re-render. */
+const drugNotesMedByPanelId = new Map();
 
-function paintDrugNoteBody(panel, med) {
-  const bodySlot = panel.querySelector(".tl-drug-notes-body");
-  if (!bodySlot) return;
-  const model = timelineViewHelpers.resolveDrugNoteModel(med);
-  let body = "";
+function buildDrugNotesBodyHtml(model) {
   if (model.status === "pending") {
-    body = `<p class="tl-drug-notes-empty">${t("timelineDrugPendingNotes")}</p>`;
-  } else if (model.status === "unavailable") {
-    body = `<p class="tl-drug-notes-empty">${t("drugInfoUnavailable")}</p>`;
-  } else {
-    const sides = model.sideEffects.map((item) => `<li>${item}</li>`).join("");
-    const precautions = model.precautions
-      .map((item) => `<li>${item}</li>`)
-      .join("");
-    body = `
+    return `<p class="tl-drug-notes-empty">${t("timelineDrugPendingNotes")}</p>`;
+  }
+  if (model.status === "unavailable") {
+    return `<p class="tl-drug-notes-empty">${t("drugInfoUnavailable")}</p>`;
+  }
+  const sides = (model.sideEffects || [])
+    .map((item) => `<li>${item}</li>`)
+    .join("");
+  const precautions = (model.precautions || [])
+    .map((item) => `<li>${item}</li>`)
+    .join("");
+  return `
         <p class="tl-drug-purpose"><span>${t("timelineDrugPurpose")}</span>${model.purposeText}</p>
         <div class="tl-drug-block">
           <h4>${t("drugSideEffects")}</h4>
@@ -1004,20 +986,24 @@ function paintDrugNoteBody(panel, med) {
           <ul>${precautions || `<li>${t("drugInfoUnavailable")}</li>`}</ul>
         </div>
         <p class="tl-drug-disclaimer">${t("timelineDrugSource")}</p>`;
-  }
-  bodySlot.innerHTML = body;
+}
+
+function hydrateDrugNotesPanel(panel) {
+  if (!panel || panel.dataset.drugNotesHydrated === "true") return;
+  const med = drugNotesMedByPanelId.get(panel.id);
+  if (!med || !timelineViewHelpers) return;
+  const model = timelineViewHelpers.hydrateDrugNoteModel(med);
+  const slot = document.createElement("div");
+  slot.className = "tl-drug-notes-body";
+  slot.innerHTML = buildDrugNotesBodyHtml(model);
+  panel.appendChild(slot);
   panel.dataset.drugNotesHydrated = "true";
 }
 
-function hydrateDrugNotesPanel(panel, med) {
-  if (!panel || !timelineViewHelpers.needsHydrate(panel)) return;
-  paintDrugNoteBody(panel, med);
-}
-
 function renderTimelineDrugNotes(med, notesId) {
-  return `<div class="tl-drug-notes" id="${notesId}" hidden data-drug-notes-shell data-drug-notes-med="${drugNotesMedPayload(med)}">
+  drugNotesMedByPanelId.set(notesId, med);
+  return `<div class="tl-drug-notes" id="${notesId}" hidden data-drug-notes-shell>
     <p class="tl-drug-notes-title">${t("timelineDrugNotes")}</p>
-    <div class="tl-drug-notes-body"></div>
   </div>`;
 }
 
@@ -1360,6 +1346,7 @@ function renderVisitRxBlock(
 }
 
 function renderTimeline(pet) {
+  drugNotesMedByPanelId.clear();
   if (!pet.visits?.length) {
     timelineList.innerHTML = `<li class="tl-item tl-item-empty"><div class="tl-body"><p class="tl-note">${t(
       "noVisits"
@@ -3828,6 +3815,7 @@ function renderEmergencyAlertsList(alerts) {
 }
 
 function renderEmergencyMedsFromList(meds) {
+  drugNotesMedByPanelId.clear();
   if (!meds.length) {
     eMeds.innerHTML = `<li>${t("noMeds")}</li>`;
     return;
@@ -3840,7 +3828,10 @@ function renderEmergencyMedsFromList(meds) {
         med.drugId ||
         t("emergencyMedNameUnknown");
       const view = { ...med, name };
-      const notesId = `e-drug-notes-${view.id || medIndex}-${medIndex}`;
+      const notesId = timelineViewHelpers.notesIdForMed({
+        emergencyPrefix: view.id || medIndex,
+        medIndex,
+      });
       const course =
         view.startDate != null && view.durationDays != null
           ? formatMedCourse(view)
@@ -4591,7 +4582,7 @@ const timelineSelectors = PetLiveWeb.domains.timeline.createSelectors({
   visits: visitsController,
 });
 const timelineViewHelpers = PetLiveWeb.domains.timeline.createViewHelpers({
-  findDrugByName: (name) => findDrugByMedName(name),
+  findDrugByName: findDrugByMedName,
 });
 
 const VACCINE_PROTECTION_META = PetLiveWeb.domains.vaccines.PROTECTION_META;
@@ -6016,7 +6007,12 @@ function renderTimelineMedItem(med, pet, visitIndex, medIndex, sourceTags) {
       : med.name;
     const ingredients = (med.ingredients || [])
       .map((ing, ingIndex) => {
-        const notesId = `drug-notes-${pet.id}-${visitIndex}-${medIndex}-${ingIndex}`;
+        const notesId = timelineViewHelpers.notesIdForMed({
+          petId: pet.id,
+          visitIndex,
+          medIndex,
+          ingredientIndex: ingIndex,
+        });
         return `<li class="tl-ingredient">
           <div class="tl-med-name-row">
             <strong>${ing.name}</strong>
@@ -6073,7 +6069,11 @@ function renderTimelineMedItem(med, pet, visitIndex, medIndex, sourceTags) {
       </li>`;
   }
 
-  const notesId = `drug-notes-${pet.id}-${visitIndex}-${medIndex}`;
+  const notesId = timelineViewHelpers.notesIdForMed({
+    petId: pet.id,
+    visitIndex,
+    medIndex,
+  });
   if (isPhotoBundle) {
     return `
     <li class="tl-med-unit">
@@ -6618,16 +6618,7 @@ function toggleDrugNotesButton(notesToggle) {
   if (!panel) return;
   const open = panel.hasAttribute("hidden");
   if (open) {
-    if (timelineViewHelpers.needsHydrate(panel)) {
-      const raw = panel.getAttribute("data-drug-notes-med");
-      if (raw) {
-        try {
-          hydrateDrugNotesPanel(panel, JSON.parse(decodeURIComponent(raw)));
-        } catch {
-          /* ignore */
-        }
-      }
-    }
+    hydrateDrugNotesPanel(panel);
     panel.removeAttribute("hidden");
     notesToggle.setAttribute("aria-expanded", "true");
     notesToggle.textContent = t("timelineDrugNotesHide");

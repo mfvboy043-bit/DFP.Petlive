@@ -5,6 +5,25 @@
   root.domains = root.domains || {};
   root.domains.timeline = root.domains.timeline || {};
 
+  function findDrugByNameInCatalog(drugs, name) {
+    if (!name || !Array.isArray(drugs)) return null;
+    const q = String(name).trim().toLowerCase();
+    if (!q) return null;
+    return (
+      drugs.find((drug) => {
+        const keys = [
+          drug.genericName,
+          drug.brandNameZh,
+          drug.brandNameEn,
+          ...(drug.commonAliases || []),
+        ]
+          .filter(Boolean)
+          .map((item) => String(item).toLowerCase());
+        return keys.some((key) => key === q || key.includes(q) || q.includes(key));
+      }) || null
+    );
+  }
+
   function createViewHelpers({ findDrugByName } = {}) {
     if (typeof findDrugByName !== "function") {
       throw new TypeError("createViewHelpers requires findDrugByName");
@@ -15,10 +34,12 @@
       visitIndex,
       medIndex,
       ingredientIndex,
-      emergency = false,
+      emergencyPrefix,
     } = {}) {
-      if (emergency) return `e-drug-notes-${petId}-${medIndex}`;
-      if (ingredientIndex !== undefined && ingredientIndex !== null) {
+      if (emergencyPrefix != null && emergencyPrefix !== "") {
+        return `e-drug-notes-${emergencyPrefix}-${medIndex}`;
+      }
+      if (ingredientIndex != null && ingredientIndex !== "") {
         return `drug-notes-${petId}-${visitIndex}-${medIndex}-${ingredientIndex}`;
       }
       return `drug-notes-${petId}-${visitIndex}-${medIndex}`;
@@ -41,22 +62,29 @@
         sideEffects: Array.isArray(drug.commonSideEffects)
           ? drug.commonSideEffects.slice()
           : [],
-        precautions: Array.isArray(drug.precautions)
-          ? drug.precautions.slice()
-          : [],
+        precautions: Array.isArray(drug.precautions) ? drug.precautions.slice() : [],
       };
     }
 
-    function needsHydrate(panel) {
-      return Boolean(panel && panel.dataset.drugNotesHydrated !== "true");
+    /** Same payload as resolveDrugNoteModel; first-open hydrate uses this contract. */
+    function hydrateDrugNoteModel(med) {
+      return resolveDrugNoteModel(med);
+    }
+
+    /** All drug-note bodies are deferred until first expand (shell-only first paint). */
+    function shouldDeferDrugNoteBody() {
+      return true;
     }
 
     return {
       notesIdForMed,
       resolveDrugNoteModel,
-      needsHydrate,
+      hydrateDrugNoteModel,
+      shouldDeferDrugNoteBody,
+      findDrugByName,
     };
   }
 
+  root.domains.timeline.findDrugByNameInCatalog = findDrugByNameInCatalog;
   root.domains.timeline.createViewHelpers = createViewHelpers;
 })(typeof window !== "undefined" ? window : globalThis);
