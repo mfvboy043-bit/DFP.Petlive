@@ -1,10 +1,10 @@
 id: 20260827-form-ui-render
 title: Form UI render — extract填表畫面 HTML from app.js
 version: 2
-status: proposed
+status: candidate_ready
 
 gate_a:
-  status: pending
+  status: approved
 
 gate_b:
   status: pending
@@ -15,12 +15,12 @@ max_iterations: 3
 candidate:
   branch: proposal/form-ui-render
   path: proposals/20260827-form-ui-render
-  worktree: ""
+  worktree: .worktrees/main-adopt
 
 reviews:
-  pharmacist: pending
-  qa: pending
-  ui: pending
+  pharmacist: pass
+  qa: pass
+  ui: skipped
 
 rerun: []
 blocking_issues: []
