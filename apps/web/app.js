@@ -3272,6 +3272,12 @@ function initGlassDock() {
     getActiveScreen: () =>
       app.querySelector(".screen.is-active")?.dataset.screen || "home",
     hideOnScreens: ["intro", "home"],
+    passportGo: "emergency",
+    startHidden: true,
+    onGo: (screen) => go(screen),
+    onMounted: () => {
+      if (typeof applyI18n === "function") applyI18n();
+    },
   });
 }
 

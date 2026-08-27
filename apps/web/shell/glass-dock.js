@@ -26,14 +26,102 @@
   }
 
   /**
-   * Paint bottom glass dock: active tab, sliding thumb, optional icon jump.
+   * Single markup source for C + B (passportGo differs: home vs emergency).
+   * @param {{ passportGo?: string, startHidden?: boolean }} [opts]
+   */
+  function glassDockMarkup(opts = {}) {
+    const passportGo = String(opts.passportGo || "home");
+    const hiddenAttr = opts.startHidden ? " hidden" : "";
+    return `
+<nav
+  class="glass-dock"
+  id="glass-dock"
+  data-i18n-aria="glassDockAria"
+  aria-label="主選單"${hiddenAttr}
+>
+  <span class="glass-dock-thumb" id="glass-dock-thumb" aria-hidden="true"></span>
+  <button class="glass-dock-item" type="button" data-go="timeline" data-dock="timeline">
+    <span class="glass-dock-ico" aria-hidden="true">
+      <svg viewBox="0 0 24 24" width="22" height="22" focusable="false">
+        <path fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" d="M4 7h16M4 12h12M4 17h8" />
+      </svg>
+    </span>
+    <span class="glass-dock-label" data-i18n="dockTimeline">時間軸</span>
+  </button>
+  <button class="glass-dock-item" type="button" data-go="alerts" data-dock="alerts">
+    <span class="glass-dock-ico" aria-hidden="true">
+      <svg viewBox="0 0 24 24" width="22" height="22" focusable="false">
+        <path fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" d="M12 4 3.5 19h17L12 4z" />
+        <path fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" d="M12 10v4M12 16.5v.5" />
+      </svg>
+    </span>
+    <span class="glass-dock-label" data-i18n="dockAlerts">警示</span>
+  </button>
+  <button class="glass-dock-item" type="button" data-go="${passportGo}" data-dock="home">
+    <span class="glass-dock-ico" aria-hidden="true">
+      <svg viewBox="0 0 24 24" width="22" height="22" focusable="false">
+        <rect x="5" y="4" width="14" height="16" rx="2.5" fill="none" stroke="currentColor" stroke-width="1.8" />
+        <path fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" d="M8.5 9h7M8.5 12.5h7M8.5 16h4" />
+      </svg>
+    </span>
+    <span class="glass-dock-label" data-i18n="dockPassport">護照</span>
+  </button>
+  <button class="glass-dock-item" type="button" data-go="imaging" data-dock="imaging">
+    <span class="glass-dock-ico" aria-hidden="true">
+      <svg viewBox="0 0 24 24" width="22" height="22" focusable="false">
+        <rect x="3.5" y="6" width="17" height="12" rx="2" fill="none" stroke="currentColor" stroke-width="1.8" />
+        <circle cx="9" cy="12" r="2.2" fill="none" stroke="currentColor" stroke-width="1.8" />
+        <path fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" d="m12.5 14.5 2.2-2.2 3.3 3.2" />
+      </svg>
+    </span>
+    <span class="glass-dock-label" data-i18n="dockImaging">影像</span>
+  </button>
+  <button class="glass-dock-item" type="button" data-go="labs" data-dock="labs">
+    <span class="glass-dock-ico" aria-hidden="true">
+      <svg viewBox="0 0 24 24" width="22" height="22" focusable="false">
+        <path fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" d="M9 3.5h6v5.2l3.5 8.3A2.2 2.2 0 0 1 16.5 20.5h-9a2.2 2.2 0 0 1-2-3.5L9 8.7z" />
+        <path fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" d="M9 3.5h6" />
+      </svg>
+    </span>
+    <span class="glass-dock-label" data-i18n="dockLabs">報告</span>
+  </button>
+</nav>`;
+  }
+
+  /**
+   * Mount dock once (replace stale inline copy if present).
    * @param {Document} doc
-   * @param {{
-   *   getActiveScreen?: () => string|null,
-   *   animateJump?: boolean,
-   *   hideOnScreens?: string[],
-   *   state?: { thumbPrimed?: boolean },
-   * }} [opts]
+   * @param {{ passportGo?: string, startHidden?: boolean }} [opts]
+   */
+  function ensureGlassDock(doc, opts = {}) {
+    if (!doc || typeof doc.getElementById !== "function") return null;
+    const existing = doc.getElementById("glass-dock");
+    if (existing) existing.remove();
+    const html = glassDockMarkup(opts);
+    const lang = doc.getElementById("lang-switcher");
+    if (lang && typeof lang.insertAdjacentHTML === "function") {
+      lang.insertAdjacentHTML("beforebegin", html);
+    } else if (doc.body && typeof doc.body.insertAdjacentHTML === "function") {
+      doc.body.insertAdjacentHTML("beforeend", html);
+    }
+    return doc.getElementById("glass-dock");
+  }
+
+  function wireGlassDockClicks(doc, onGo) {
+    const dock = doc.getElementById("glass-dock");
+    if (!dock || dock.dataset.navWired === "1") return;
+    dock.dataset.navWired = "1";
+    dock.addEventListener("click", (event) => {
+      const btn = event.target?.closest?.("[data-go]");
+      if (!btn || !dock.contains(btn)) return;
+      const screen = btn.getAttribute("data-go");
+      if (!screen) return;
+      if (typeof onGo === "function") onGo(screen, btn);
+    });
+  }
+
+  /**
+   * Paint bottom glass dock: active tab, sliding thumb, optional icon jump.
    */
   function paintGlassDock(doc, opts = {}) {
     if (!doc || typeof doc.getElementById !== "function") return;
@@ -105,15 +193,24 @@
   }
 
   /**
-   * Boot paint + resize remeasure. Returns state bag shared across paints.
+   * Mount markup, wire clicks, boot paint + resize.
    */
   function initGlassDock(doc, hooks = {}) {
     const {
       win = global,
       getActiveScreen,
       hideOnScreens = [],
+      passportGo = "home",
+      startHidden = false,
+      onGo,
+      onMounted,
     } = hooks;
     const state = { thumbPrimed: false };
+
+    ensureGlassDock(doc, { passportGo, startHidden });
+    wireGlassDockClicks(doc, onGo);
+    if (typeof onMounted === "function") onMounted(doc.getElementById("glass-dock"));
+
     const paint = (animateJump) =>
       paintGlassDock(doc, {
         getActiveScreen,
@@ -130,6 +227,8 @@
   }
 
   root.shell.dockKeyForScreen = dockKeyForScreen;
+  root.shell.glassDockMarkup = glassDockMarkup;
+  root.shell.ensureGlassDock = ensureGlassDock;
   root.shell.paintGlassDock = paintGlassDock;
   root.shell.initGlassDock = initGlassDock;
 })(typeof window !== "undefined" ? window : globalThis);

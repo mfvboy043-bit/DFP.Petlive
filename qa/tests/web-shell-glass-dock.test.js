@@ -33,4 +33,15 @@ describe("shell glass-dock", () => {
     assert.equal(shell.dockKeyForScreen("intro"), null);
     assert.equal(shell.dockKeyForScreen("owner-settings"), null);
   });
+
+  it("glassDockMarkup includes five tabs and passportGo", () => {
+    const shell = loadShell(["shell/glass-dock.js"]);
+    const home = shell.glassDockMarkup({ passportGo: "home" });
+    assert.match(home, /id="glass-dock"/);
+    assert.match(home, /data-dock="timeline"/);
+    assert.match(home, /data-go="home"/);
+    const em = shell.glassDockMarkup({ passportGo: "emergency", startHidden: true });
+    assert.match(em, /data-go="emergency"/);
+    assert.match(em, /\shidden/);
+  });
 });
