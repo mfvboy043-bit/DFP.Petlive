@@ -153,15 +153,6 @@
   transform: scale(1.22);
 }
 
-.glass-dock-item.is-pressing {
-  color: var(--leaf-deep, #2f4f42);
-}
-
-.glass-dock-item.is-pressing .glass-dock-ico,
-.glass-dock-item.is-pressing .glass-dock-label {
-  opacity: 0.22;
-}
-
 .glass-dock-item.is-jumping .glass-dock-ico {
   animation: glass-dock-ico-jump 480ms cubic-bezier(0.2, 0.85, 0.2, 1);
 }
@@ -202,107 +193,6 @@
   line-height: 1.15;
 }
 
-/* Press-hold / slide magnifier bubble (LINE / iOS-dock style) */
-.glass-dock-lens {
-  position: absolute;
-  z-index: 12;
-  left: 0;
-  top: 0;
-  width: 92px;
-  height: 92px;
-  margin: 0;
-  padding: 0;
-  border-radius: 50%;
-  pointer-events: none;
-  opacity: 0;
-  transform: translate(-50%, -68%) scale(0.42);
-  transform-origin: center bottom;
-  transition:
-    opacity 140ms ease,
-    transform 220ms cubic-bezier(0.18, 1.15, 0.32, 1),
-    left 160ms cubic-bezier(0.22, 1, 0.36, 1),
-    top 160ms cubic-bezier(0.22, 1, 0.36, 1);
-  filter: drop-shadow(0 10px 18px rgba(26, 52, 45, 0.22));
-}
-
-.glass-dock-lens.is-visible {
-  opacity: 1;
-  transform: translate(-50%, -68%) scale(1);
-}
-
-.glass-dock-lens-glow {
-  position: absolute;
-  inset: -3px;
-  border-radius: 50%;
-  background: conic-gradient(
-    from 140deg,
-    #ff7eb6 0deg,
-    #ffd56b 70deg,
-    #7dffb3 140deg,
-    #6ec8ff 210deg,
-    #c08bff 280deg,
-    #ff7eb6 360deg
-  );
-  opacity: 0.72;
-  filter: blur(1.2px) saturate(1.25);
-  z-index: 0;
-}
-
-.glass-dock-lens-face {
-  position: absolute;
-  inset: 3px;
-  z-index: 1;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 4px;
-  border-radius: 50%;
-  background:
-    radial-gradient(
-      120% 90% at 30% 18%,
-      rgba(255, 255, 255, 0.95) 0%,
-      rgba(255, 252, 248, 0.88) 42%,
-      rgba(245, 239, 228, 0.92) 100%
-    );
-  box-shadow:
-    0 1px 0 rgba(255, 255, 255, 0.9) inset,
-    0 0 0 1px rgba(255, 255, 255, 0.55) inset;
-  overflow: hidden;
-}
-
-.glass-dock-lens-ico {
-  display: grid;
-  place-items: center;
-  width: 40px;
-  height: 40px;
-  color: var(--leaf-deep, #2f4f42);
-  line-height: 0;
-}
-
-.glass-dock-lens-ico svg {
-  display: block;
-  width: 34px;
-  height: 34px;
-}
-
-.glass-dock-lens-label {
-  max-width: 78px;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  color: var(--leaf-deep, #2f4f42);
-  font-family: "Noto Sans TC", system-ui, sans-serif;
-  font-size: 12px;
-  font-weight: 700;
-  letter-spacing: 0.01em;
-  line-height: 1.1;
-}
-
-.glass-dock.is-pressing .glass-dock-thumb {
-  opacity: 0.35;
-}
-
 @media (prefers-reduced-motion: reduce) {
   .glass-dock-thumb {
     transition: none;
@@ -312,11 +202,6 @@
   .glass-dock-item.is-jumping .glass-dock-ico {
     animation: none;
     transition: none;
-  }
-
-  .glass-dock-lens {
-    transition: opacity 80ms ease;
-    transform: translate(-50%, -68%) scale(1);
   }
 }
 
