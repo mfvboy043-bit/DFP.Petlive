@@ -1,7 +1,7 @@
 id: "20260827-imaging-visits-cleanup"
 title: "Imaging visits cleanup — single imaging domain"
 version: 2
-status: building
+status: candidate_ready
 
 gate_a:
   status: approved
@@ -20,7 +20,7 @@ candidate:
 
 reviews:
   pharmacist: skipped
-  qa: pending
+  qa: pass
   ui: skipped
 
 rerun: []
