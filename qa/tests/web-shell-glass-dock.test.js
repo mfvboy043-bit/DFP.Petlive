@@ -24,7 +24,7 @@ describe("shell glass-dock", () => {
     assert.equal(shell.dockKeyForScreen("add-visit"), "timeline");
     assert.equal(shell.dockKeyForScreen("add-med"), "timeline");
     assert.equal(shell.dockKeyForScreen("alerts"), "alerts");
-    assert.equal(shell.dockKeyForScreen("home"), "home");
+    assert.equal(shell.dockKeyForScreen("home"), null);
     assert.equal(shell.dockKeyForScreen("emergency"), "passport");
     assert.equal(shell.dockKeyForScreen("imaging"), "imaging");
     assert.equal(shell.dockKeyForScreen("imaging-proof"), "imaging");
@@ -34,17 +34,15 @@ describe("shell glass-dock", () => {
     assert.equal(shell.dockKeyForScreen("owner-settings"), null);
   });
 
-  it("glassDockMarkup includes home + passport tabs and passportGo", () => {
+  it("glassDockMarkup has five tabs without dock home", () => {
     const shell = loadShell(["shell/glass-dock.js"]);
     const markup = shell.glassDockMarkup({ passportGo: "emergency" });
     assert.match(markup, /id="glass-dock"/);
-    assert.match(markup, /data-dock="home"[^>]*data-go="home"|data-go="home"[^>]*data-dock="home"/);
-    assert.match(markup, /data-i18n="dockHome"/);
+    assert.doesNotMatch(markup, /data-dock="home"/);
+    assert.doesNotMatch(markup, /data-i18n="dockHome"/);
     assert.match(markup, /data-dock="passport"/);
     assert.match(markup, /data-go="emergency"/);
     assert.match(markup, /data-dock="timeline"/);
-    assert.match(markup, /id="glass-dock-lens"/);
-    assert.doesNotMatch(markup, /glass-dock-lens-glow/);
     const hidden = shell.glassDockMarkup({ passportGo: "emergency", startHidden: true });
     assert.match(hidden, /\shidden/);
     const defaultGo = shell.glassDockMarkup({});
@@ -52,3 +50,14 @@ describe("shell glass-dock", () => {
   });
 });
 
+describe("shell screen-home-btn", () => {
+  it("screenHomeBtnMarkup is an icon-only control for home", () => {
+    const shell = loadShell(["shell/screen-home-btn.js"]);
+    const html = shell.screenHomeBtnMarkup();
+    assert.match(html, /data-screen-home-btn/);
+    assert.match(html, /data-go="home"/);
+    assert.match(html, /data-i18n-aria="dockHome"/);
+    assert.match(html, /class="screen-home-btn"/);
+    assert.doesNotMatch(html, /screen-home-btn-label/);
+  });
+});
