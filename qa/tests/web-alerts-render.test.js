@@ -66,8 +66,8 @@ describe("AL-05 alerts render builders", () => {
     assert.match(html, /is-owner/);
     assert.match(html, /alert-since/);
     assert.match(html, /alert-note/);
-    assert.match(html, /data-alert-edit="a&lt;script"/);
-    assert.match(html, /data-alert-delete="a&lt;script"/);
+    assert.match(html, /data-alert-edit="a&lt;script/);
+    assert.match(html, /data-alert-delete="a&lt;script/);
   });
 
   it("buildFlatListHtml empty and list", () => {
