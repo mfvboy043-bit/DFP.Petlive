@@ -1846,27 +1846,10 @@ function renderVaccineStrip(pet) {
     "is-optional"
   );
 
-  const nextVaccine = getNextVaccine(pet);
-  if (!nextVaccine) {
-    paintParasiteStripRowEmpty("vaccine");
-    return;
-  }
-
-  const status = getVaccineProtectionStatus(nextVaccine.next);
-  if (status === "expired") {
-    row.classList.add("is-unprotected");
-    statusEl.textContent = t("parasiteUnprotected");
-  } else if (status === "approaching") {
-    row.classList.add("is-approaching");
-    statusEl.textContent = t("parasiteApproaching");
-  } else {
-    row.classList.add("is-protected");
-    statusEl.textContent = t("parasiteProtected");
-  }
-  meta.textContent = t("vaccineStripMeta", {
-    name: vaccineLabelOf(nextVaccine),
-    date: nextVaccine.next,
-  });
+  const presentation = vaccineRenderer.buildStripPresentation(getNextVaccine(pet));
+  row.classList.add(presentation.rowClass);
+  meta.textContent = presentation.metaText;
+  statusEl.textContent = presentation.statusText;
 }
 
 function readParasiteForm(kind) {
@@ -2237,45 +2220,10 @@ function refreshVaccineForm(pet) {
 
 function renderVaccineList(pet) {
   if (!pet.vaccines?.length) {
-    vaccineList.innerHTML = `<li class="vaccine-empty">${t("noVaccines")}</li>`;
+    vaccineList.innerHTML = vaccineRenderer.buildEmptyListHtml();
     return;
   }
-  const sorted = [...pet.vaccines].sort((a, b) => compareVaccinesForList(pet, a, b));
-  vaccineList.innerHTML = sorted
-    .map((vaccine) => {
-      const successor = getVaccineSuccessor(pet, vaccine);
-      let pill;
-      let itemClass = "";
-      if (successor) {
-        itemClass = " is-superseded";
-        pill = `<span class="pill-history">${t("vaccineSupersededBy", {
-          name: vaccineLabelOf(successor),
-        })}</span>`;
-      } else {
-        const status = getVaccineProtectionStatus(vaccine.next);
-        itemClass =
-          status === "expired"
-            ? " is-expired"
-            : status === "approaching"
-              ? " is-approaching"
-              : " is-protected";
-        pill =
-          status === "expired"
-            ? `<span class="pill-expired">${t("protectionLost")}</span>`
-            : status === "approaching"
-              ? `<span class="pill-soon">${t("dueWithin90")}</span>`
-              : `<span class="pill-ok">${t("protected")}</span>`;
-      }
-      return `
-          <li class="vaccine-item${itemClass}">
-            <div class="vaccine-item-main">
-              <strong class="vaccine-item-name">${vaccineLabelOf(vaccine)}</strong>
-              <p class="vaccine-item-meta">${t("givenNext", { given: vaccine.given, next: vaccine.next })}</p>
-            </div>
-            ${pill}
-          </li>`;
-    })
-    .join("");
+  vaccineList.innerHTML = vaccineRenderer.buildVaccineListHtml(pet, pet.vaccines);
 }
 
 function syncVaccineNavLights(status) {
@@ -2303,33 +2251,13 @@ function renderEmergencyVaccineNav(pet) {
   const vaccineBtn = document.getElementById("e-vaccine-btn");
   if (!nextEl || !vaccineBtn) return;
 
-  const nextVaccine = getNextVaccine(pet);
   vaccineBtn.classList.remove("is-protected", "is-approaching", "is-expired");
 
-  if (!nextVaccine) {
-    nextEl.textContent = t("noVaccineNext");
-    nextEl.className = "";
-    vaccineBtn.classList.add("is-protected");
-    syncVaccineNavLights(null);
-    return;
-  }
-
-  const status = getVaccineProtectionStatus(nextVaccine.next);
-  nextEl.textContent = t("nextDue", { date: nextVaccine.next });
-  nextEl.className =
-    status === "expired"
-      ? "e-nav-expired"
-      : status === "approaching"
-        ? "e-nav-approaching"
-        : "e-nav-protected";
-  vaccineBtn.classList.add(
-    status === "expired"
-      ? "is-expired"
-      : status === "approaching"
-        ? "is-approaching"
-        : "is-protected"
-  );
-  syncVaccineNavLights(status);
+  const presentation = vaccineRenderer.buildEmergencyNavPresentation(getNextVaccine(pet));
+  nextEl.textContent = presentation.nextText;
+  nextEl.className = presentation.nextClassName;
+  vaccineBtn.classList.add(presentation.btnClass);
+  syncVaccineNavLights(presentation.lightStatus);
 }
 
 function renderVaccines(pet) {
@@ -3805,7 +3733,7 @@ renderCoordinator.register(
     if (pet) renderVaccineList(pet);
   },
   () => {
-    vaccineList.innerHTML = `<li class="vaccine-empty">${t("noVaccines")}</li>`;
+    vaccineList.innerHTML = vaccineRenderer.buildEmptyListHtml();
   }
 );
 renderCoordinator.register("archive", "archiveList", () => renderArchiveList());
@@ -5545,6 +5473,7 @@ function hasLinkedLabsForVisit(visit) {
 }
 
 let emergencyRenderer;
+let vaccineRenderer;
 
 timelineRenderer = PetLiveWeb.domains.timeline.createRenderer({
   label: (key, params) => t(key, params),
@@ -5578,6 +5507,14 @@ emergencyRenderer = PetLiveWeb.domains.emergency.createRenderer({
   buildDrugNotesShellHtml: (notesId) =>
     timelineRenderer.buildDrugNotesShellHtml(notesId),
   ownerProfileHasAny,
+});
+
+vaccineRenderer = PetLiveWeb.domains.vaccines.createRenderer({
+  label: (key, params) => t(key, params),
+  compareVaccinesForList,
+  getVaccineSuccessor,
+  getVaccineProtectionStatus,
+  vaccineLabelOf,
 });
 
 function renderTimeline(pet) {

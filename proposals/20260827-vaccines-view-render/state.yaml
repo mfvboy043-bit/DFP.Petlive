@@ -1,14 +1,15 @@
 id: "20260827-vaccines-view-render"
 title: "Vaccines view render — extract HTML builders from app.js"
 version: 2
-status: candidate_ready
+status: adopted
 
 gate_a:
   status: approved
   note: "Victor 確認 2026-08-27"
 
 gate_b:
-  status: pending
+  status: adopted
+  note: "Victor 採用 + 覆蓋 2026-08-27 — C + B wired"
 
 iteration: 1
 max_iterations: 3
