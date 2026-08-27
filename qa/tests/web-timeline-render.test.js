@@ -198,4 +198,33 @@ describe("TL-05 timeline render builders", () => {
     assert.equal(renderer.shouldAutoExpandLatestRx(false), true);
     assert.equal(renderer.shouldAutoExpandLatestRx(true), false);
   });
+
+  it("drug-note hydrate slot and timeline skip-noop signature", () => {
+    const { renderer } = loadRenderer();
+    assert.equal(
+      renderer.shouldHydrateDrugNotesPanel({ hydrated: "true", hasMed: true }),
+      false
+    );
+    assert.equal(
+      renderer.shouldHydrateDrugNotesPanel({ hydrated: "", hasMed: true }),
+      true
+    );
+    const slot = renderer.buildDrugNotesHydrateSlot({
+      status: "unavailable",
+      sideEffects: [],
+      precautions: [],
+    });
+    assert.equal(slot.className, "tl-drug-notes-body");
+    assert.equal(typeof slot.html, "string");
+
+    const pet = {
+      id: "p1",
+      visits: [{ date: "2026-08-27", clinic: "Happy", medications: [] }],
+    };
+    const sig = renderer.buildListSignature(pet, { lang: "zh-Hant" });
+    assert.equal(renderer.shouldSkipListRebuild(sig, sig), true);
+    assert.equal(renderer.shouldSkipListRebuild(sig, sig + "x"), false);
+    const otherLang = renderer.buildListSignature(pet, { lang: "en" });
+    assert.equal(renderer.shouldSkipListRebuild(sig, otherLang), false);
+  });
 });

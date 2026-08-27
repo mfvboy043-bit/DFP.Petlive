@@ -81,4 +81,37 @@ describe("SH-05 shell photo crop styles", () => {
     assert.equal(/\bdocument\b/.test(src), false);
     assert.equal(/\binnerHTML\b/.test(src), false);
   });
+
+  it("session open/close and drag offsets", () => {
+    const { photoCrop } = loadPhotoCropShell();
+    const state = photoCrop.createInitialSession();
+    assert.equal(state.open, false);
+
+    const openFlags = photoCrop.applyOpen(state, {
+      petId: "p1",
+      naturalW: 800,
+      naturalH: 600,
+    });
+    assert.equal(state.open, true);
+    assert.equal(state.petId, "p1");
+    assert.equal(state.zoom, 1);
+    assert.equal(openFlags.rootHidden, false);
+    assert.equal(openFlags.htmlClassOn, true);
+
+    assert.equal(photoCrop.beginDrag(state, { pointerId: 1, clientX: 10, clientY: 20 }), true);
+    assert.equal(
+      photoCrop.moveDrag(state, { pointerId: 1, clientX: 18, clientY: 16 }),
+      true
+    );
+    assert.equal(state.offsetX, 8);
+    assert.equal(state.offsetY, -4);
+    assert.equal(photoCrop.moveDrag(state, { pointerId: 99, clientX: 0, clientY: 0 }), false);
+    assert.equal(photoCrop.endDrag(state, { pointerId: 1 }), true);
+    assert.equal(state.dragging, false);
+
+    const closeFlags = photoCrop.applyClose(state);
+    assert.equal(state.open, false);
+    assert.equal(closeFlags.rootHidden, true);
+    assert.equal(closeFlags.clearImg, true);
+  });
 });

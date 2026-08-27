@@ -1049,13 +1049,22 @@ function findDrugByMedName(name) {
 const drugNotesMedByPanelId = new Map();
 
 function hydrateDrugNotesPanel(panel) {
-  if (!panel || panel.dataset.drugNotesHydrated === "true") return;
+  if (!panel || !timelineRenderer) return;
   const med = drugNotesMedByPanelId.get(panel.id);
-  if (!med || !timelineViewHelpers) return;
+  if (
+    !timelineRenderer.shouldHydrateDrugNotesPanel({
+      hydrated: panel.dataset.drugNotesHydrated,
+      hasMed: Boolean(med),
+    })
+  ) {
+    return;
+  }
+  if (!timelineViewHelpers) return;
   const model = timelineViewHelpers.hydrateDrugNoteModel(med);
+  const slotSpec = timelineRenderer.buildDrugNotesHydrateSlot(model);
   const slot = document.createElement("div");
-  slot.className = "tl-drug-notes-body";
-  slot.innerHTML = timelineRenderer.buildDrugNotesBodyHtml(model);
+  slot.className = slotSpec.className;
+  slot.innerHTML = slotSpec.html;
   panel.appendChild(slot);
   panel.dataset.drugNotesHydrated = "true";
 }
@@ -2553,36 +2562,39 @@ function renderPhotoCropTransform() {
   photoCropEls.img.style.transform = styles.transform;
 }
 
-function closePetPhotoCrop() {
-  if (!photoCropEls.root) return;
-  photoCropState.open = false;
-  photoCropState.petId = null;
-  photoCropState.dragging = false;
-  photoCropEls.root.hidden = true;
-  document.documentElement.classList.remove("is-photo-crop-open");
-  document.body.style.overflow = "";
-  if (photoCropEls.img) {
+function applyPhotoCropOverlay(flags) {
+  if (!photoCropEls.root || !flags) return;
+  photoCropEls.root.hidden = flags.rootHidden;
+  document.documentElement.classList.toggle(flags.htmlClass, flags.htmlClassOn);
+  document.body.style.overflow = flags.bodyOverflow;
+  if (flags.clearImg && photoCropEls.img) {
     photoCropEls.img.removeAttribute("src");
     photoCropEls.img.removeAttribute("style");
   }
+  if (flags.zoomValue != null && photoCropEls.zoom) {
+    photoCropEls.zoom.value = flags.zoomValue;
+  }
+}
+
+function closePetPhotoCrop() {
+  if (!photoCropEls.root || !photoCropShell) return;
+  const flags = photoCropShell.applyClose(photoCropState);
+  applyPhotoCropOverlay(flags);
 }
 
 async function openPetPhotoCrop(dataUrl, petId) {
-  if (!photoCropEls.root || !photoCropEls.img || !photoCropEls.zoom) return;
+  if (!photoCropEls.root || !photoCropEls.img || !photoCropEls.zoom || !photoCropShell) {
+    return;
+  }
   const prepared = await resizeImageDataUrl(dataUrl, 1600);
   const img = await loadImageFromUrl(prepared);
-  photoCropState.open = true;
-  photoCropState.petId = petId;
-  photoCropState.naturalW = img.naturalWidth;
-  photoCropState.naturalH = img.naturalHeight;
-  photoCropState.zoom = 1;
-  photoCropState.offsetX = 0;
-  photoCropState.offsetY = 0;
+  const flags = photoCropShell.applyOpen(photoCropState, {
+    petId,
+    naturalW: img.naturalWidth,
+    naturalH: img.naturalHeight,
+  });
   photoCropEls.img.src = prepared;
-  photoCropEls.zoom.value = "1";
-  photoCropEls.root.hidden = false;
-  document.documentElement.classList.add("is-photo-crop-open");
-  document.body.style.overflow = "hidden";
+  applyPhotoCropOverlay(flags);
   requestAnimationFrame(() => {
     renderPhotoCropTransform();
   });
@@ -2617,37 +2629,42 @@ function bindPetPhotoCropUi() {
   if (!photoCropEls.viewport || !photoCropEls.zoom) return;
 
   photoCropEls.zoom.addEventListener("input", () => {
-    if (!photoCropState.open) return;
-    photoCropState.zoom = Number(photoCropEls.zoom.value) || 1;
+    if (!photoCropShell?.setZoom(photoCropState, photoCropEls.zoom.value)) return;
     renderPhotoCropTransform();
   });
 
   photoCropEls.viewport.addEventListener("pointerdown", (event) => {
-    if (!photoCropState.open || event.button != null && event.button !== 0) return;
-    photoCropState.dragging = true;
-    photoCropState.pointerId = event.pointerId;
-    photoCropState.startX = event.clientX;
-    photoCropState.startY = event.clientY;
-    photoCropState.originX = photoCropState.offsetX;
-    photoCropState.originY = photoCropState.offsetY;
+    if (event.button != null && event.button !== 0) return;
+    if (
+      !photoCropShell?.beginDrag(photoCropState, {
+        pointerId: event.pointerId,
+        clientX: event.clientX,
+        clientY: event.clientY,
+      })
+    ) {
+      return;
+    }
     photoCropEls.viewport.classList.add("is-dragging");
     photoCropEls.viewport.setPointerCapture?.(event.pointerId);
   });
 
   photoCropEls.viewport.addEventListener("pointermove", (event) => {
-    if (!photoCropState.dragging || event.pointerId !== photoCropState.pointerId) return;
-    photoCropState.offsetX = photoCropState.originX + (event.clientX - photoCropState.startX);
-    photoCropState.offsetY = photoCropState.originY + (event.clientY - photoCropState.startY);
+    if (
+      !photoCropShell?.moveDrag(photoCropState, {
+        pointerId: event.pointerId,
+        clientX: event.clientX,
+        clientY: event.clientY,
+      })
+    ) {
+      return;
+    }
     renderPhotoCropTransform();
   });
 
   const endDrag = (event) => {
-    if (!photoCropState.dragging) return;
-    if (event && photoCropState.pointerId != null && event.pointerId !== photoCropState.pointerId) {
+    if (!photoCropShell?.endDrag(photoCropState, { pointerId: event?.pointerId })) {
       return;
     }
-    photoCropState.dragging = false;
-    photoCropState.pointerId = null;
     photoCropEls.viewport.classList.remove("is-dragging");
   };
 
@@ -2983,28 +3000,13 @@ function ownerProfileHasAny(profile) {
 }
 
 function formatPetShareLines(pet) {
-  const lines = [];
-  if (pet?.name) lines.push(t("copyName", { name: pet.name }));
-  const species = speciesLabelOf(pet);
-  if (species) lines.push(t("copySpecies", { text: species }));
-  const breed = breedLabelOf(pet);
-  if (breed) lines.push(t("copyBreed", { text: breed }));
-  const gender = genderLabelOf(pet);
-  if (gender) lines.push(t("copyGender", { text: gender }));
-  const age = ageLabelOf(pet);
-  if (age) lines.push(t("copyAge", { text: age }));
-  const birth = String(pet?.birthDate || "").trim();
-  if (birth) lines.push(t("eBirthLine", { birth }));
-  if (pet?.weight != null && String(pet.weight).trim() !== "") {
-    lines.push(
-      pet.weightDate
-        ? t("copyWeightDated", { weight: pet.weight, date: pet.weightDate })
-        : t("copyWeight", { weight: pet.weight })
-    );
-  }
-  const chip = String(pet?.chipNumber || "").trim();
-  if (chip) lines.push(t("eChipLine", { chip }));
-  return lines;
+  if (!emergencyRenderer) return [];
+  return emergencyRenderer.buildPetShareLines(pet, {
+    speciesLabelOf,
+    breedLabelOf,
+    genderLabelOf,
+    ageLabelOf,
+  });
 }
 
 function buildEmergencyCopyText(pet) {
@@ -3016,20 +3018,12 @@ function buildEmergencyCopyText(pet) {
     lineTextOfAlert: alertLineText,
   });
   const ownerLines = formatOwnerCopyLines(payload.owner);
-
-  return [
-    t("copyCardTitle"),
-    "",
-    ...formatPetShareLines(pet),
-    "",
-    t("copyAlerts", { text: payload.alertsText }),
-    t("copyMeds", { text: payload.medsText }),
-    ...(ownerLines.length ? ownerLines : [t("copyOwnerEmpty")]),
-    t("copyDisclaimer"),
-  ]
-    .join("\n")
-    .replace(/\n{3,}/g, "\n\n")
-    .trim();
+  return emergencyRenderer.buildCopyCardText({
+    petLines: formatPetShareLines(pet),
+    alertsText: payload.alertsText,
+    medsText: payload.medsText,
+    ownerLines,
+  });
 }
 
 async function copyTextToClipboard(text) {
@@ -3049,30 +3043,8 @@ async function copyTextToClipboard(text) {
 }
 
 function formatOwnerCopyLines(profile) {
-  return ownerSelectors
-    .copyRows(profile)
-    .map((row) => {
-      if (row.kind === "ownerLine") {
-        return t("copyOwnerLine", {
-          text: [row.name, row.phone].filter(Boolean).join(" · "),
-        });
-      }
-      if (row.kind === "email") {
-        return t("copyOwnerEmail", { email: row.email });
-      }
-      if (row.kind === "emergency") {
-        return t("copyOwnerEmergency", {
-          text: [row.emergencyName, row.emergencyPhone]
-            .filter(Boolean)
-            .join(" · "),
-        });
-      }
-      if (row.kind === "address") {
-        return t("copyOwnerAddress", { address: row.address });
-      }
-      return "";
-    })
-    .filter(Boolean);
+  if (!emergencyRenderer) return [];
+  return emergencyRenderer.buildOwnerCopyLines(ownerSelectors.copyRows(profile));
 }
 
 function fillOwnerSettingsForm(profile = loadOwnerProfile()) {
@@ -5148,7 +5120,19 @@ breedRenderer = PetLiveWeb.domains.breed.createRenderer({
 
 proofPreviewShell = PetLiveWeb.shell.createProofPreview();
 
+let lastTimelineSignature = "";
+
 function renderTimeline(pet) {
+  const lang =
+    (typeof getCurrentLang === "function" && getCurrentLang()) || "zh-Hant";
+  const signature = timelineRenderer.buildListSignature(pet, { lang });
+  if (timelineRenderer.shouldSkipListRebuild(lastTimelineSignature, signature)) {
+    const imagingPending = pendingVisitImagingIndex;
+    applyPendingVisitImagingExpand();
+    if (imagingPending == null) expandLatestVisitRx();
+    return;
+  }
+  lastTimelineSignature = signature;
   drugNotesMedByPanelId.clear();
   const { html, drugNotePanels } = timelineRenderer.buildTimelineListHtml(pet);
   drugNotePanels.forEach(({ notesId, med }) => {

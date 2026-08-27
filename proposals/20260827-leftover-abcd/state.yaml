@@ -1,0 +1,31 @@
+id: "20260827-leftover-abcd"
+title: "Leftover ABCD — crop session, drug-note hydrate, copy card, timeline skip-noop"
+version: 2
+status: adopted
+
+gate_a:
+  status: approved
+  note: "Victor 2026-08-27 — ABCD都處理，處理完問我是否採用"
+
+gate_b:
+  status: adopted
+  note: "Victor 採用並覆蓋 B 2026-08-27"
+
+iteration: 1
+max_iterations: 3
+
+candidate:
+  branch: "cursor/leftover-abcd-8ec1"
+  path: "proposals/20260827-leftover-abcd"
+  worktree: ""
+
+reviews:
+  pharmacist: skipped
+  qa: pass
+  ui: skipped
+
+rerun: []
+blocking_issues: []
+non_blocking: []
+builder_scope: []
+halt_reason: ""

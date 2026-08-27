@@ -132,4 +132,21 @@ describe("EM-05 emergency render builders", () => {
     assert.equal(/\bt\s*\(/.test(src), false);
     assert.equal(/\bPetLive\b/.test(src), false);
   });
+
+  it("buildCopyCardText joins pet, alerts, meds, owner", () => {
+    const { renderer } = loadEmergencyRenderer();
+    const text = renderer.buildCopyCardText({
+      petLines: ["Name: Mochi"],
+      alertsText: "none",
+      medsText: "none",
+      ownerLines: ["Owner: Victor"],
+    });
+    assert.match(text, /copyCardTitle/);
+    assert.match(text, /Name: Mochi/);
+    assert.match(text, /copyAlerts/);
+    assert.match(text, /copyMeds/);
+    assert.match(text, /Owner: Victor/);
+    assert.match(text, /copyDisclaimer/);
+    assert.equal(/\n{3,}/.test(text), false);
+  });
 });

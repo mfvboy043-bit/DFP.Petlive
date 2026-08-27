@@ -179,6 +179,82 @@
       return buildMedListHtml(meds, { emergencyPrefix, variant: "local" });
     }
 
+    function buildPetShareLines(pet, labelFns = {}) {
+      const speciesOf = labelFns.speciesLabelOf || deps.speciesLabelOf;
+      const breedOf = labelFns.breedLabelOf || deps.breedLabelOf;
+      const genderOf = labelFns.genderLabelOf || deps.genderLabelOf;
+      const ageOf = labelFns.ageLabelOf || deps.ageLabelOf;
+      const lines = [];
+      if (pet?.name) lines.push(label("copyName", { name: pet.name }));
+      const species = typeof speciesOf === "function" ? speciesOf(pet) : "";
+      if (species) lines.push(label("copySpecies", { text: species }));
+      const breed = typeof breedOf === "function" ? breedOf(pet) : "";
+      if (breed) lines.push(label("copyBreed", { text: breed }));
+      const gender = typeof genderOf === "function" ? genderOf(pet) : "";
+      if (gender) lines.push(label("copyGender", { text: gender }));
+      const age = typeof ageOf === "function" ? ageOf(pet) : "";
+      if (age) lines.push(label("copyAge", { text: age }));
+      const birth = String(pet?.birthDate || "").trim();
+      if (birth) lines.push(label("eBirthLine", { birth }));
+      if (pet?.weight != null && String(pet.weight).trim() !== "") {
+        lines.push(
+          pet.weightDate
+            ? label("copyWeightDated", { weight: pet.weight, date: pet.weightDate })
+            : label("copyWeight", { weight: pet.weight })
+        );
+      }
+      const chip = String(pet?.chipNumber || "").trim();
+      if (chip) lines.push(label("eChipLine", { chip }));
+      return lines;
+    }
+
+    function buildOwnerCopyLines(rows) {
+      return (rows || [])
+        .map((row) => {
+          if (row.kind === "ownerLine") {
+            return label("copyOwnerLine", {
+              text: [row.name, row.phone].filter(Boolean).join(" · "),
+            });
+          }
+          if (row.kind === "email") {
+            return label("copyOwnerEmail", { email: row.email });
+          }
+          if (row.kind === "emergency") {
+            return label("copyOwnerEmergency", {
+              text: [row.emergencyName, row.emergencyPhone]
+                .filter(Boolean)
+                .join(" · "),
+            });
+          }
+          if (row.kind === "address") {
+            return label("copyOwnerAddress", { address: row.address });
+          }
+          return "";
+        })
+        .filter(Boolean);
+    }
+
+    function buildCopyCardText({
+      petLines,
+      alertsText,
+      medsText,
+      ownerLines,
+    } = {}) {
+      return [
+        label("copyCardTitle"),
+        "",
+        ...(petLines || []),
+        "",
+        label("copyAlerts", { text: alertsText }),
+        label("copyMeds", { text: medsText }),
+        ...((ownerLines && ownerLines.length) ? ownerLines : [label("copyOwnerEmpty")]),
+        label("copyDisclaimer"),
+      ]
+        .join("\n")
+        .replace(/\n{3,}/g, "\n\n")
+        .trim();
+    }
+
     return {
       buildAlertsListHtml,
       buildEmptyAlertsListHtml,
@@ -189,6 +265,9 @@
       buildWeightHtml,
       buildOwnerBlockHtml,
       buildOwnerEmptyHtml,
+      buildPetShareLines,
+      buildOwnerCopyLines,
+      buildCopyCardText,
     };
   }
 
