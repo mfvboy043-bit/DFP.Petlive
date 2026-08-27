@@ -1,7 +1,7 @@
 ---
 id: 20260827-wire-thin-forms
 title: "Wave 2 — thin form-save + screen-paint orchestration wires (C)"
-status: proposed
+status: reviewing
 author: planner
 candidate_branch: "cursor/wire-thin-forms-6f84"
 candidate_path: "proposals/20260827-wire-thin-forms"

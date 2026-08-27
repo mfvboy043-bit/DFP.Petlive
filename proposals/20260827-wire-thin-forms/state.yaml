@@ -1,17 +1,14 @@
 id: "20260827-wire-thin-forms"
 title: "Wave 2 — thin form-save + screen-paint orchestration wires (C)"
 version: 2
-status: proposed
-# proposed | building | reviewing | revising | candidate_ready | halted | adopted | rejected
+status: reviewing
 
 gate_a:
-  status: pending
-  # pending | approved | modified | rejected
-  note: "Victor 2026-08-27 —「第2波，請總指揮開始指揮」; Planner draft ready; Parent may flip to approved after write"
+  status: approved
+  note: "Victor 2026-08-27 — 第2波，請總指揮開始指揮"
 
 gate_b:
   status: pending
-  # pending | adopted | rejected
 
 iteration: 0
 max_iterations: 3
