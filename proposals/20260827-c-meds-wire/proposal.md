@@ -1,7 +1,7 @@
 ---
 id: 20260827-c-meds-wire
 title: C — wire medications controller/selectors (match B)
-status: building
+status: adopted
 author: planner
 candidate_branch: "cursor/c-meds-wire-ad50"
 candidate_path: "proposals/20260827-c-meds-wire"
