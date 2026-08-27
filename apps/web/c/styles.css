@@ -3406,7 +3406,7 @@ button.tl-med-summary.is-open {
   position: relative;
   z-index: 12;
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: repeat(2, 1fr);
   gap: 8px;
 
   margin: 14px 0 0;
@@ -3448,6 +3448,18 @@ button.tl-med-summary.is-open {
 .e-vax-nav {
   overflow: visible;
   z-index: 1;
+}
+
+/* Inside passport card: between alerts and current meds */
+#e-card > .e-vax-nav {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 2px;
+  width: 100%;
+  box-sizing: border-box;
+  margin: 4px 0 2px;
+  cursor: pointer;
 }
 
 /* Keep legend above emergency card (card transform creates its own stack) */
@@ -3498,7 +3510,8 @@ button.tl-med-summary.is-open {
   color: var(--text-strong);
 }
 
-.e-quick-nav small {
+.e-quick-nav small,
+.e-vax-nav > small {
   display: block;
 
   margin-top: 2px;
@@ -4193,9 +4206,21 @@ html[lang="en"] .e-owner-k::after {
   min-width: 0;
 }
 
+.e-vaccine-label > .e-vax-title,
 .e-vaccine-label > span:first-child {
   flex: 0 0 auto;
   white-space: nowrap;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--text-strong);
+}
+
+.e-vax-note {
+  margin: 2px 0 0;
+  font-size: 11px;
+  font-weight: 500;
+  line-height: 1.35;
+  color: var(--text-muted);
 }
 
 .e-quick-nav .e-vax-lights,
@@ -5920,7 +5945,7 @@ html.is-photo-crop-open body {
   color: var(--alert);
 }
 
-.e-quick-nav > .e-vax-nav.is-protected {
+.e-vax-nav.is-protected {
   background:
     linear-gradient(
       165deg,
@@ -5935,7 +5960,7 @@ html.is-photo-crop-open body {
     0 2px 6px rgba(50, 57, 53, 0.04);
 }
 
-.e-quick-nav > .e-vax-nav.is-approaching {
+.e-vax-nav.is-approaching {
   background:
     linear-gradient(
       165deg,
@@ -5950,7 +5975,7 @@ html.is-photo-crop-open body {
     0 2px 6px rgba(50, 57, 53, 0.04);
 }
 
-.e-quick-nav > .e-vax-nav.is-expired {
+.e-vax-nav.is-expired {
   background:
     linear-gradient(
       165deg,
@@ -5965,17 +5990,20 @@ html.is-photo-crop-open body {
     0 2px 6px rgba(50, 57, 53, 0.05);
 }
 
-.e-quick-nav small.e-nav-protected {
+.e-quick-nav small.e-nav-protected,
+.e-vax-nav small.e-nav-protected {
   color: var(--safe);
   font-weight: 600;
 }
 
-.e-quick-nav small.e-nav-approaching {
+.e-quick-nav small.e-nav-approaching,
+.e-vax-nav small.e-nav-approaching {
   color: var(--attention);
   font-weight: 600;
 }
 
-.e-quick-nav small.e-nav-expired {
+.e-quick-nav small.e-nav-expired,
+.e-vax-nav small.e-nav-expired {
   color: color-mix(in srgb, var(--status-rose) 45%, var(--text));
   font-weight: 600;
 }
@@ -7483,6 +7511,8 @@ html.is-proof-lightbox-open body {
     gap: 3px;
   }
 
+  html[lang="en"] .e-vaccine-label > .e-vax-title,
+  html[lang="ja"] .e-vaccine-label > .e-vax-title,
   html[lang="en"] .e-vaccine-label > span:first-child,
   html[lang="ja"] .e-vaccine-label > span:first-child {
     font-size: 11px;

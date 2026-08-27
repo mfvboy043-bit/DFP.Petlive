@@ -11,9 +11,9 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,700&family=Noto+Sans+TC:wght@400;500;700&family=Noto+Serif+TC:wght@600;700&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="./styles.css?v=20260827-alert-btn-border" />
-  <link rel="stylesheet" href="../shell/glass-dock.css?v=20260827-dock-bubble-slide2" />
-  <link rel="stylesheet" href="../shell/screen-home-btn.css?v=20260827-screen-home-icon" />
+  <link rel="stylesheet" href="./styles.css?v=20260828-e-vax-title-black" />
+  <link rel="stylesheet" href="../shell/P260828-e-vax-in-card" />
+  <link rel="stylesheet" href="../shell/screen-home-btn.css?v=20260827-screen-home-btn" />
   <link rel="stylesheet" href="../shell/feature-hub.css?v=20260827-feature-hub" />
 </head>
 <body>
@@ -1362,31 +1362,6 @@
           <ul id="e-alerts"></ul>
         </section>
 
-        <section class="e-block">
-          <h4 data-i18n="currentMeds">目前用藥（未到期）</h4>
-          <ul id="e-meds"></ul>
-        </section>
-
-        <section class="e-block" id="e-owner-block">
-          <h4 data-i18n="ownerContact">飼主聯絡</h4>
-          <div id="e-owner" class="e-owner"></div>
-        </section>
-
-        <footer class="e-foot">
-          <p class="e-foot-role" data-i18n="emergencySub">給獸醫師快速參考 · 非電子病歷</p>
-          <p data-i18n="eFoot">僅供參考，不取代獸醫師診斷。產生時間 2026-08-09 15:00</p>
-        </footer>
-      </article>
-
-      <nav class="e-quick-nav" data-i18n-aria="detailNav" aria-label="此寵物的詳細紀錄">
-        <button type="button" data-go="timeline">
-          <span data-i18n="timelineNav">時間軸</span>
-          <small data-i18n="timelineNavSub">就診與用藥</small>
-        </button>
-        <button type="button" class="e-nav-alerts" data-go="alerts">
-          <span data-i18n="alertsTitle">醫療警示</span>
-          <small data-i18n="alertsNavSub">過敏／慢性病</small>
-        </button>
         <div
           class="e-vax-nav"
           id="e-vaccine-btn"
@@ -1395,7 +1370,7 @@
           tabindex="0"
         >
           <span class="e-vaccine-label">
-            <span data-i18n="vaccine">疫苗</span>
+            <span class="e-vax-title" data-i18n="vaccinesTitle">疫苗紀錄</span>
             <span class="e-vax-lights" id="e-vax-lights" role="img" aria-label="">
               <i class="e-vax-dot is-green" data-status="protected" title="薄荷：防護中"></i>
               <i class="e-vax-dot is-orange" data-status="approaching" title="暖橘：即將到期"></i>
@@ -1415,6 +1390,7 @@
               ?
             </button>
           </span>
+          <p class="e-vax-note" id="e-vaccine-sub">自行記錄施打項目與日期</p>
           <small id="e-vaccine-next" data-i18n="nextDueDash">下次 —</small>
           <div
             class="e-vax-help-pop"
@@ -1442,6 +1418,32 @@
             </ul>
           </div>
         </div>
+
+        <section class="e-block">
+          <h4 data-i18n="currentMeds">目前用藥（未到期）</h4>
+          <ul id="e-meds"></ul>
+        </section>
+
+        <section class="e-block" id="e-owner-block">
+          <h4 data-i18n="ownerContact">飼主聯絡</h4>
+          <div id="e-owner" class="e-owner"></div>
+        </section>
+
+        <footer class="e-foot">
+          <p class="e-foot-role" data-i18n="emergencySub">給獸醫師快速參考 · 非電子病歷</p>
+          <p data-i18n="eFoot">僅供參考，不取代獸醫師診斷。產生時間 2026-08-09 15:00</p>
+        </footer>
+      </article>
+
+      <nav class="e-quick-nav" data-i18n-aria="detailNav" aria-label="此寵物的詳細紀錄">
+        <button type="button" data-go="timeline">
+          <span data-i18n="timelineNav">時間軸</span>
+          <small data-i18n="timelineNavSub">就診與用藥</small>
+        </button>
+        <button type="button" class="e-nav-alerts" data-go="alerts">
+          <span data-i18n="alertsTitle">醫療警示</span>
+          <small data-i18n="alertsNavSub">過敏／慢性病</small>
+        </button>
       </nav>
 
       <nav class="e-docs-nav" data-i18n-aria="eDocsNav" aria-label="影像與檢驗資料">
@@ -1455,8 +1457,6 @@
         </button>
       </nav>
     </section>
-
-
 
     <!-- FEATURE BUTTONS HUB -->
     <section class="screen screen-feature-buttons" data-screen="feature-buttons" data-i18n-aria="featureButtonsTitle" aria-label="功能按鈕" hidden>
@@ -1752,8 +1752,8 @@
   <script defer src="../core/pets-graph.js?v=20260827-modules-w4p1"></script>
   <script defer src="../shell/navigation.js?v=20260813-layered-adopted"></script>
   <script defer src="../shell/app-nav.js?v=20260827-wire-bundles"></script>
-  <script defer src="../shell/glass-dock.js?v=20260827-dock-bubble-slide2"></script>
-  <script defer src="../shell/screen-home-btn.js?v=20260827-screen-home-icon"></script>
+  <script defer src="../shell/P260828-e-vax-in-card"></script>
+  <script defer src="../shell/screen-home-btn.js?v=20260827-screen-home-btn"></script>
   <script defer src="../shell/feature-hub.js?v=20260827-feature-hub"></script>
   <script defer src="../shell/render-coordinator.js?v=20260824-perf-adopt"></script>
   <script defer src="../shell/photo-crop.js?v=20260827-wire-bundles"></script>

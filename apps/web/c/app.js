@@ -193,6 +193,7 @@ let selectedAlertType = "drug_allergy";
 let selectedAlertSeverity = "critical";
 const vaccineList = document.getElementById("vaccine-list");
 const vaccineSub = document.getElementById("vaccine-sub");
+const eVaccineSub = document.getElementById("e-vaccine-sub");
 const vaccineForm = document.getElementById("vaccine-form");
 const vaccineChipsEl = document.getElementById("vaccine-chips");
 const vaccineCustomName = document.getElementById("vaccine-custom-name");
@@ -1949,6 +1950,7 @@ function renderPetHeader(pet) {
     if (timelineSub) timelineSub.textContent = copy.timelineSub;
     if (visitFormSub) visitFormSub.textContent = copy.visitFormSub;
     if (vaccineSub) vaccineSub.textContent = copy.vaccineSub;
+    if (eVaccineSub) eVaccineSub.textContent = copy.vaccineSub;
     return;
   }
 
@@ -1957,6 +1959,7 @@ function renderPetHeader(pet) {
   timelineSub.textContent = copy.timelineSub;
   visitFormSub.textContent = copy.visitFormSub;
   vaccineSub.textContent = copy.vaccineSub;
+  if (eVaccineSub) eVaccineSub.textContent = copy.vaccineSub;
 }
 
 function syncAlertNavTone(alerts) {
