@@ -58,5 +58,7 @@ describe("shell screen-home-btn", () => {
     assert.match(html, /data-go="home"/);
     assert.match(html, /data-i18n-aria="dockHome"/);
     assert.match(html, /class="screen-home-btn"/);
+    assert.match(html, /data-i18n="dockHome"/);
+    assert.match(html, /screen-home-btn-label/);
   });
 });

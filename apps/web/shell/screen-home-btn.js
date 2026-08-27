@@ -5,7 +5,7 @@
   root.shell = root.shell || {};
 
   /**
-   * Small house icon — go home from any non-home screen-head.
+   * Compact house control — icon + 主頁 label under it.
    * Place leftmost inside `.screen-head-actions` (e.g. left of copy-card).
    */
   function screenHomeBtnMarkup() {
@@ -21,11 +21,12 @@
   title="主頁"
 >
   <span class="screen-home-btn-ico" aria-hidden="true">
-    <svg viewBox="0 0 24 24" width="18" height="18" focusable="false">
-      <path fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" d="M4 11.5 12 4.5l8 7" />
-      <path fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" d="M7 10.5V19h10v-8.5" />
+    <svg viewBox="0 0 24 24" width="14" height="14" focusable="false">
+      <path fill="none" stroke="currentColor" stroke-width="1.9" stroke-linejoin="round" d="M4 11.5 12 4.5l8 7" />
+      <path fill="none" stroke="currentColor" stroke-width="1.9" stroke-linejoin="round" d="M7 10.5V19h10v-8.5" />
     </svg>
   </span>
+  <span class="screen-home-btn-label" data-i18n="dockHome">主頁</span>
 </button>`;
   }
 
@@ -35,7 +36,7 @@
   }
 
   /**
-   * Ensure every non-home / non-intro screen-head has a home icon
+   * Ensure every non-home / non-intro screen-head has a home control
    * at the start of `.screen-head-actions` (creates the actions row if needed).
    * @param {Document} doc
    * @param {{ onGo?: (screen: string) => void }} [hooks]
@@ -63,8 +64,16 @@
       if (!btn) {
         actions.insertAdjacentHTML("afterbegin", screenHomeBtnMarkup());
         btn = actions.querySelector("[data-screen-home-btn]");
-      } else if (actions.firstElementChild !== btn) {
-        actions.insertBefore(btn, actions.firstElementChild);
+      } else {
+        if (!btn.querySelector(".screen-home-btn-label")) {
+          const wired = btn.getAttribute("data-nav-wired");
+          btn.outerHTML = screenHomeBtnMarkup();
+          btn = actions.querySelector("[data-screen-home-btn]");
+          if (wired) btn.setAttribute("data-nav-wired", wired);
+        }
+        if (actions.firstElementChild !== btn) {
+          actions.insertBefore(btn, actions.firstElementChild);
+        }
       }
 
       if (btn && typeof onGo === "function" && btn.getAttribute("data-nav-wired") !== "1") {
