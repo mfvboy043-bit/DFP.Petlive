@@ -9,9 +9,9 @@
 | Emergency photo frame | `PET_FRAME_EMPTY_SVG` + class/style in facade | `buildEmergencyPhotoFrame` + apply-only facade |
 | Header `is-updating` animation | facade | unchanged (facade) |
 | Archive button aria/title | facade | unchanged (facade) |
-| B surface | unchanged | not covered yet (C only) |
+| B surface | covered — same facades + `index.html` `?v=20260827-sh-06` |
 
-## Facade delta (C)
+## Facade delta (C + B)
 
 - Removed `PET_FRAME_EMPTY_SVG`
 - `petsRenderer` now also injects `speciesLabelOf`, `breedLabelOf`, `ageLabelOf`
@@ -25,11 +25,11 @@
 - `syncPetPickerSelection`, `petPickerNeedsRebuild`
 - Archive / remove pet flows
 - Empty `archive-item-photo` box (no avatars filled in)
-- Formal B `createRenderer({ label, getPetPhoto })` still boots (chrome label deps are required only when header/archive builders run)
+- Chrome label deps stay lazy-required so a SH-05-only `createRenderer({ label, getPetPhoto })` still boots
 
 ## Verify
 
 ```bash
-node --check apps/web/c/app.js
+node --check apps/web/c/app.js apps/web/app.js
 node --test qa/tests/web-pets-render.test.js
 ```

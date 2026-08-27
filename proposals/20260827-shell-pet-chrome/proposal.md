@@ -1,7 +1,7 @@
 ---
 id: 20260827-shell-pet-chrome
 title: Shell — pet header, archive list, emergency photo render
-status: candidate_ready
+status: adopted
 author: planner
 candidate_branch: "cursor/shell-pet-chrome-8ec1"
 candidate_path: "proposals/20260827-shell-pet-chrome"
@@ -103,13 +103,13 @@ Mirror onto `apps/web/app.js` + B `index.html` cache `?v=`. Not in Gate A build.
 
 ## Acceptance criteria
 
-- [ ] Header / archive / emergency-photo markup or copy live under `domains/pets/render.js`
-- [ ] C facades only assign DOM + keep `is-updating` animation and archive-btn aria
-- [ ] Empty archive list, memorial line, and empty photo box match current HTML
-- [ ] Emergency frame still toggles `has-photo` + camera SVG vs photo background
-- [ ] Existing SH-05 picker tests still pass; new SH-06 cases pass; `node --check apps/web/c/app.js`
-- [ ] Follows `.cursor/rules/web-building-blocks.mdc`
-- [ ] No silent C → B cover in this slice
+- [x] Header / archive / emergency-photo markup or copy live under `domains/pets/render.js`
+- [x] C facades only assign DOM + keep `is-updating` animation and archive-btn aria
+- [x] Empty archive list, memorial line, and empty photo box match current HTML
+- [x] Emergency frame still toggles `has-photo` + camera SVG vs photo background
+- [x] Existing SH-05 picker tests still pass; new SH-06 cases pass; `node --check apps/web/c/app.js`
+- [x] Follows `.cursor/rules/web-building-blocks.mdc`
+- [x] No silent C → B cover in this slice
 
 ## Notes for Victor（白話）
 
