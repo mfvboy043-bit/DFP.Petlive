@@ -3313,6 +3313,16 @@ function enhanceGlassScreenHeads() {
   });
   PetLiveWeb.shell.ensureFeatureHub?.(document, {
     onGo: (screen) => go(screen),
+    onMounted: () => {
+      wireFeatureHubVaxHelp();
+      const pet = typeof currentPet === "function" ? currentPet() : null;
+      if (pet) {
+        if (typeof renderEmergencyVaccineNav === "function") renderEmergencyVaccineNav(pet);
+        if (typeof renderAlertBadge === "function") renderAlertBadge(pet);
+        if (typeof renderLabNav === "function") renderLabNav(pet);
+        if (typeof renderImagingNav === "function") renderImagingNav(pet);
+      }
+    },
   });
   if (typeof applyI18n === "function") applyI18n();
 }
@@ -3371,6 +3381,22 @@ document.querySelectorAll("[data-go]").forEach((btn) => {
     });
   }
 });
+
+
+function wireFeatureHubVaxHelp() {
+  const helpBtn = document.getElementById("e-vax-help");
+  const pop = document.getElementById("e-vax-help-pop");
+  if (!helpBtn || !pop || helpBtn.getAttribute("data-vax-help-wired") === "1") return;
+  helpBtn.setAttribute("data-vax-help-wired", "1");
+  helpBtn.addEventListener("click", (event) => {
+    event.preventDefault();
+    event.stopPropagation();
+    setVaxHelpOpen(Boolean(pop.hidden));
+  });
+  pop.addEventListener("click", (event) => {
+    event.stopPropagation();
+  });
+}
 
 function setVaxHelpOpen(open) {
   const helpBtn = document.getElementById("e-vax-help");

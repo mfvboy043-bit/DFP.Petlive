@@ -14,7 +14,7 @@
   <link rel="stylesheet" href="./styles.css?v=20260828-e-vax-in-card" />
   <link rel="stylesheet" href="./shell/glass-dock.css?v=20260828-e-vax-in-card" />
   <link rel="stylesheet" href="./shell/screen-home-btn.css?v=20260827-screen-home-icon" />
-  <link rel="stylesheet" href="./shell/feature-hub.css?v=20260827-feature-hub" />
+  <link rel="stylesheet" href="./shell/feature-hub.css?v=20260827-feature-hub-xfer" />
 </head>
 <body>
   <div class="atmosphere" aria-hidden="true">
@@ -1590,63 +1590,6 @@
           <ul id="e-alerts"></ul>
         </section>
 
-        <div
-          class="e-vax-nav"
-          id="e-vaccine-btn"
-          data-go="vaccines"
-          role="button"
-          tabindex="0"
-        >
-          <span class="e-vaccine-label">
-            <span class="e-vax-title" data-i18n="vaccinesTitle">疫苗紀錄</span>
-            <span class="e-vax-lights" id="e-vax-lights" role="img" aria-label="">
-              <i class="e-vax-dot is-green" data-status="protected" title="薄荷：防護中"></i>
-              <i class="e-vax-dot is-orange" data-status="approaching" title="暖橘：即將到期"></i>
-              <i class="e-vax-dot is-red" data-status="expired" title="玫瑰：已到期／需留意"></i>
-            </span>
-            <button
-              type="button"
-              class="e-vax-help"
-              id="e-vax-help"
-              data-i18n-aria="vaxLightsHelpAria"
-              data-i18n-title="vaxLightsHelpTitle"
-              aria-label="疫苗燈號說明"
-              aria-expanded="false"
-              aria-controls="e-vax-help-pop"
-              title="燈號說明"
-            >
-              ?
-            </button>
-          </span>
-          <p class="e-vax-note" id="e-vaccine-sub">自行記錄施打項目與日期</p>
-          <small id="e-vaccine-next" data-i18n="nextDueDash">下次 —</small>
-          <div
-            class="e-vax-help-pop"
-            id="e-vax-help-pop"
-            hidden
-            role="dialog"
-            aria-labelledby="e-vax-help-title"
-          >
-            <p class="e-vax-help-title" id="e-vax-help-title" data-i18n="vaxLightsHelpTitle">
-              燈號說明
-            </p>
-            <ul class="e-vax-help-list">
-              <li>
-                <i class="e-vax-dot is-green is-on" aria-hidden="true"></i>
-                <span data-i18n="vaxLightGreen">薄荷：防護中</span>
-              </li>
-              <li>
-                <i class="e-vax-dot is-orange is-on" aria-hidden="true"></i>
-                <span data-i18n="vaxLightOrange">暖橘：即將到期</span>
-              </li>
-              <li>
-                <i class="e-vax-dot is-red is-on" aria-hidden="true"></i>
-                <span data-i18n="vaxLightRed">玫瑰：已到期／需留意</span>
-              </li>
-            </ul>
-          </div>
-        </div>
-
         <section class="e-block">
           <h4 data-i18n="currentMeds">目前用藥（未到期）</h4>
           <ul id="e-meds"></ul>
@@ -1662,28 +1605,6 @@
           <p data-i18n="eFoot">僅供參考，不取代獸醫師診斷。產生時間 2026-08-09 15:00</p>
         </footer>
       </article>
-
-      <nav class="e-quick-nav" data-i18n-aria="detailNav" aria-label="此寵物的詳細紀錄">
-        <button type="button" data-go="timeline">
-          <span data-i18n="timelineNav">時間軸</span>
-          <small data-i18n="timelineNavSub">就診與用藥</small>
-        </button>
-        <button type="button" class="e-nav-alerts" data-go="alerts">
-          <span data-i18n="alertsTitle">醫療警示</span>
-          <small data-i18n="alertsNavSub">過敏／慢性病</small>
-        </button>
-      </nav>
-
-      <nav class="e-docs-nav" data-i18n-aria="eDocsNav" aria-label="影像與檢驗資料">
-        <button type="button" class="e-docs-btn" data-e-doc="xray" data-go="imaging" id="e-xray-btn">
-          <span data-i18n="eXrayTitle">X-Ray&超音波 影像</span>
-          <small id="e-xray-sub" data-i18n="eXraySubEmpty">尚未存檔</small>
-        </button>
-        <button type="button" class="e-docs-btn" data-e-doc="labs" data-go="labs" id="e-lab-btn">
-          <span data-i18n="eLabTitle">血檢報告／檢驗報告</span>
-          <small id="e-lab-sub" data-i18n="eLabSubEmpty">尚未存檔</small>
-        </button>
-      </nav>
     </section>
 
 
@@ -2010,7 +1931,7 @@
   <script defer src="./shell/app-nav.js?v=20260827-wire-bundles"></script>
   <script defer src="./shell/glass-dock.js?v=20260828-e-vax-in-card"></script>
   <script defer src="./shell/screen-home-btn.js?v=20260827-screen-home-icon"></script>
-  <script defer src="./shell/feature-hub.js?v=20260827-feature-hub"></script>
+  <script defer src="./shell/feature-hub.js?v=20260827-feature-hub-xfer"></script>
   <script defer src="./shell/render-coordinator.js?v=20260824-perf-adopt"></script>
   <script defer src="./shell/photo-crop.js?v=20260827-wire-bundles"></script>
   <script defer src="./shell/calendar-chooser.js?v=20260827-abcd"></script>
@@ -2064,6 +1985,6 @@
   <script defer src="./domains/owner/controller.js?v=20260827-ow-st-cover"></script>
   <script defer src="./domains/cloud/selectors.js?v=20260827-cl-cover"></script>
   <script defer src="./domains/cloud/controller.js?v=20260827-modules-w4p1"></script>
-  <script defer src="./app.js?v=20260828-e-vax-in-card"></script>
+  <script defer src="./app.js?v=20260827-feature-hub-xfer"></script>
 </body>
 </html>
