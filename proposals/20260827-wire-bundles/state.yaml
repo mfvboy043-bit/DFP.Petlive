@@ -1,7 +1,7 @@
 id: "20260827-wire-bundles"
 title: "C — bundle facade wires into shell (photo-crop, nav, account/cloud, intro)"
 version: 2
-status: reviewing
+status: candidate_ready
 
 gate_a:
   status: approved
@@ -10,7 +10,7 @@ gate_a:
 gate_b:
   status: pending
 
-iteration: 0
+iteration: 1
 max_iterations: 3
 
 candidate:
@@ -19,22 +19,14 @@ candidate:
   worktree: ""
 
 reviews:
-  pharmacist: pending
-  qa: pending
-  ui: pending
+  pharmacist: skipped
+  qa: pass
+  ui: pass
   # pending | skipped | pass | conditional | reject
   # Expect pharmacist/ui skip (no med copy / no visual redesign); qa on wire behavior.
 
 rerun: []
 blocking_issues: []
 non_blocking: []
-builder_scope:
-  - "CREATE|EDIT apps/web/shell/photo-crop.js  # A bindPhotoCropUi (or equiv) wire helpers"
-  - "EDIT apps/web/shell/navigation.js AND/OR CREATE apps/web/shell/app-nav.js  # B nav menu open/close wires"
-  - "EDIT apps/web/shell/account-chrome.js  # C paintAccountMenu/paintCloudChrome orchestration"
-  - "CREATE optional apps/web/shell/intro-cloud.js  # D initIntroAndCloud listener bundle if not folded into account-chrome"
-  - "EDIT apps/web/c/app.js  # thin facade: call shell + inject toast/setPetPhoto/go/session adapters"
-  - "EDIT apps/web/c/index.html  # script tags + ?v= for new/changed shell before c/app.js"
-  - "CREATE optional qa/tests/web-shell-*.test.js  # pure bind/paint helpers"
-  - "EDIT proposals/20260827-wire-bundles/*  # contrast/reviews as loop proceeds"
+builder_scope: []
 halt_reason: ""
