@@ -13,6 +13,7 @@ function loadMedicationsDomain() {
   context.window = context;
   [
     "domains/visits/controller.js",
+    "domains/drugs/adapter.js",
     "domains/medications/controller.js",
     "domains/medications/selectors.js",
   ].forEach((path) => {
@@ -29,6 +30,11 @@ function createPair(opts = {}) {
     clinicLabelOf:
       opts.clinicLabelOf ||
       ((visit) => visit?.clinicId || visit?.clinic || ""),
+  });
+  const drugs = context.PetLiveWeb.domains.drugs.createAdapter({
+    searchDrugsApi: opts.searchDrugsApi,
+    getDrugByIdApi: opts.getDrugByIdApi,
+    localDrugs: opts.localDrugs || [],
   });
   const selectors = context.PetLiveWeb.domains.medications.createSelectors({
     formatFrequencyLabelOf: (code) => code || "",
@@ -48,15 +54,14 @@ function createPair(opts = {}) {
   });
   const meds = context.PetLiveWeb.domains.medications.createController({
     visits,
-    searchDrugs: opts.searchDrugs,
-    getDrugById: opts.getDrugById,
-    localDrugs: opts.localDrugs || [],
+    searchDrugs: (query) => drugs.searchDrugs(query),
+    resolveEnrichedDrug: (drugOrId) => drugs.resolveEnrichedDrug(drugOrId),
     formatFrequencyLabelOf: (code) => code || "",
     durationDaysLabelOf: (n) => `${n} days`,
     compoundFormLabelOf: (form) => `compound:${form}`,
     formatDraftDoseLineOf: (draft) => selectors.formatDraftDoseLine(draft),
   });
-  return { context, visits, meds, selectors };
+  return { context, visits, meds, selectors, drugs };
 }
 
 describe("MD-01 / MD-02 medications controller + selectors", () => {
@@ -317,7 +322,7 @@ describe("MD-01 / MD-02 medications controller + selectors", () => {
     );
   });
 
-  it("searchDrugs / resolveEnrichedDrug with injected fakes", () => {
+  it("searchDrugs / resolveEnrichedDrug via drugs adapter", () => {
     const local = [
       {
         id: "d1",
@@ -334,7 +339,7 @@ describe("MD-01 / MD-02 medications controller + selectors", () => {
     let apiCalls = 0;
     const { meds } = createPair({
       localDrugs: local,
-      searchDrugs: (q) => {
+      searchDrugsApi: (q) => {
         apiCalls += 1;
         if (String(q).includes("fail")) return { ok: false, error: "x" };
         if (String(q).includes("api")) {

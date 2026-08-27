@@ -18,8 +18,7 @@
   function createController({
     visits,
     searchDrugs: searchDrugsFn,
-    getDrugById: getDrugByIdFn,
-    localDrugs,
+    resolveEnrichedDrug: resolveEnrichedDrugFn,
     formatFrequencyLabelOf,
     durationDaysLabelOf,
     compoundFormLabelOf,
@@ -28,10 +27,13 @@
     if (!visits || typeof visits.findVisitByDateClinic !== "function") {
       throw new TypeError("createController requires visits public API");
     }
-
-    function resolveLocalDrugs() {
-      if (typeof localDrugs === "function") return localDrugs() || [];
-      return Array.isArray(localDrugs) ? localDrugs : [];
+    if (typeof searchDrugsFn !== "function") {
+      throw new TypeError("createController requires searchDrugs from drugs adapter");
+    }
+    if (typeof resolveEnrichedDrugFn !== "function") {
+      throw new TypeError(
+        "createController requires resolveEnrichedDrug from drugs adapter"
+      );
     }
 
     function normalizeMedUnitForStore(unit) {
@@ -329,60 +331,18 @@
       return visits.saveVisitWeight(pet, visitIndex, weightKg);
     }
 
-    function searchLocal(query) {
-      const q = String(query || "")
-        .trim()
-        .toLowerCase();
-      if (!q) return [];
-      return resolveLocalDrugs().filter((drug) => {
-        const hay = [
-          drug.genericName,
-          drug.brandNameZh,
-          drug.brandNameEn,
-          drug.drugClass,
-          drug.purpose,
-          ...(drug.commonAliases || []),
-          ...(drug.commonSideEffects || []),
-          ...(drug.precautions || []),
-        ]
-          .join(" ")
-          .toLowerCase();
-        return hay.includes(q);
-      });
-    }
-
     function searchDrugs(query) {
-      if (typeof searchDrugsFn === "function") {
-        const result = searchDrugsFn(query);
-        if (Array.isArray(result)) return result;
-        if (result && typeof result === "object" && "ok" in result) {
-          if (result.ok) return result.data || [];
-          return [];
-        }
-        if (result == null) {
-          return searchLocal(query);
-        }
+      const result = searchDrugsFn(query);
+      if (Array.isArray(result)) return result;
+      if (result && typeof result === "object" && "ok" in result) {
+        if (result.ok) return result.data || [];
         return [];
       }
-      return searchLocal(query);
+      return [];
     }
 
     function resolveEnrichedDrug(drugOrId) {
-      const id = typeof drugOrId === "string" ? drugOrId : drugOrId?.id;
-      const list = resolveLocalDrugs();
-      if (id && list.length) {
-        const local = list.find((item) => item.id === id);
-        if (local) return local;
-      }
-      if (id && typeof getDrugByIdFn === "function") {
-        const fromApi = getDrugByIdFn(id);
-        if (fromApi && typeof fromApi === "object" && "ok" in fromApi) {
-          if (fromApi.ok && fromApi.data) return fromApi.data;
-        } else if (fromApi) {
-          return fromApi;
-        }
-      }
-      return typeof drugOrId === "object" && drugOrId ? drugOrId : null;
+      return resolveEnrichedDrugFn(drugOrId);
     }
 
     return {

@@ -4551,6 +4551,11 @@ const visitsController = PetLiveWeb.domains.visits.createController({
   clinicLabelOf: (visit) => visitClinicLabel(visit),
 });
 const imagingController = PetLiveWeb.domains.imaging.createController();
+const drugsAdapter = PetLiveWeb.domains.drugs.createAdapter({
+  searchDrugsApi: (query) => window.PetLive?.drug?.searchDrugs?.(query),
+  getDrugByIdApi: (id) => window.PetLive?.drug?.getDrugById?.(id),
+  localDrugs: () => (typeof drugs !== "undefined" ? drugs : []),
+});
 const timelineSelectors = PetLiveWeb.domains.timeline.createSelectors({
   visits: visitsController,
   imaging: imagingController,
@@ -5178,43 +5183,12 @@ clinicResults.addEventListener("click", (event) => {
 });
 
 function searchDrugs(query) {
-  // Prefer modular Drug API when runtime bridge is available
-  if (window.PetLive?.drug?.searchDrugs) {
-    const result = window.PetLive.drug.searchDrugs(query);
-    if (result?.ok) return result.data;
-    if (result && result.ok === false) {
-      console.warn("[drug.searchDrugs]", result.error);
-      return [];
-    }
-  }
-
-  const q = query.trim().toLowerCase();
-  if (!q) return [];
-  return drugs.filter((drug) => {
-    const hay = [
-      drug.genericName,
-      drug.brandNameZh,
-      drug.brandNameEn,
-      drug.drugClass,
-      drug.purpose,
-      ...drug.commonAliases,
-      ...(drug.commonSideEffects || []),
-      ...(drug.precautions || []),
-    ]
-      .join(" ")
-      .toLowerCase();
-    return hay.includes(q);
-  });
+  return drugsAdapter.searchDrugs(query);
 }
 
 /** Prefer the enriched local seed so side effects / precautions always show. */
 function resolveEnrichedDrug(drugOrId) {
-  const id = typeof drugOrId === "string" ? drugOrId : drugOrId?.id;
-  if (id && typeof drugs !== "undefined") {
-    const local = drugs.find((item) => item.id === id);
-    if (local) return local;
-  }
-  return typeof drugOrId === "object" && drugOrId ? drugOrId : null;
+  return drugsAdapter.resolveEnrichedDrug(drugOrId);
 }
 
 function renderDrugInfoCard(drug) {

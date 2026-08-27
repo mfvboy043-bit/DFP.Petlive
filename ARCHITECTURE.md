@@ -48,6 +48,8 @@ petlive/
 
 **New web logic:** classify → write under `domains/` / `core/` / `shell/` → thin facade wire. Rule: `.cursor/rules/web-building-blocks.mdc`.
 
+**Drug catalog:** single seed `modules/drug/seed.js` (via `runtime/petlive.js` → `window.drugs` + `PetLive.drug`); web search/enrich goes through `apps/web/domains/drugs/`.
+
 ## Dependency batches (contracts §8)
 
 1. Pet + Drug  

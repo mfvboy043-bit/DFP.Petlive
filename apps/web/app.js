@@ -4718,6 +4718,11 @@ const visitsController = PetLiveWeb.domains.visits.createController({
   clinicLabelOf: (visit) => visitClinicLabel(visit),
 });
 const imagingController = PetLiveWeb.domains.imaging.createController();
+const drugsAdapter = PetLiveWeb.domains.drugs.createAdapter({
+  searchDrugsApi: (query) => window.PetLive?.drug?.searchDrugs?.(query),
+  getDrugByIdApi: (id) => window.PetLive?.drug?.getDrugById?.(id),
+  localDrugs: () => (typeof drugs !== "undefined" ? drugs : []),
+});
 const timelineSelectors = PetLiveWeb.domains.timeline.createSelectors({
   visits: visitsController,
   imaging: imagingController,
@@ -4737,23 +4742,8 @@ const medicationsSelectors = PetLiveWeb.domains.medications.createSelectors({
 });
 const medicationsController = PetLiveWeb.domains.medications.createController({
   visits: visitsController,
-  searchDrugs: (query) => {
-    if (window.PetLive?.drug?.searchDrugs) {
-      const result = window.PetLive.drug.searchDrugs(query);
-      if (result && result.ok === false) {
-        console.warn("[drug.searchDrugs]", result.error);
-      }
-      return result;
-    }
-    return null;
-  },
-  getDrugById: (id) => {
-    if (window.PetLive?.drug?.getDrugById) {
-      return window.PetLive.drug.getDrugById(id);
-    }
-    return null;
-  },
-  localDrugs: () => (typeof drugs !== "undefined" ? drugs : []),
+  searchDrugs: (query) => drugsAdapter.searchDrugs(query),
+  resolveEnrichedDrug: (drugOrId) => drugsAdapter.resolveEnrichedDrug(drugOrId),
   formatFrequencyLabelOf: formatFrequencyLabel,
   durationDaysLabelOf: (n) => t("durationDaysCount", { n }),
   compoundFormLabelOf: compoundFormLabel,
