@@ -1776,10 +1776,10 @@ function paintParasiteStripRowEmpty(kind) {
     "is-unprotected",
     "is-optional"
   );
-  row.classList.add("is-unprotected");
-  meta.textContent =
-    kind === "vaccine" ? t("vaccineNotSet") : t("parasiteNotSet");
-  statusEl.textContent = t("parasiteUnprotected");
+  const presentation = parasiteRenderer.buildEmptyStripRowPresentation(kind);
+  row.classList.add(presentation.rowClass);
+  meta.textContent = presentation.metaText;
+  statusEl.textContent = presentation.statusText;
 }
 
 /** No pet (or shell only): same CTA cues as unset records on a pet. */
@@ -1807,28 +1807,17 @@ function renderParasiteStrip(pet) {
     );
 
     const status = getParasiteSlotStatus(pet, kind);
-    // Cats: heartworm is optional — unset = no alarm; set = normal status UI.
-    if (status === "optional") {
-      row.classList.add("is-optional");
-      meta.textContent = t("parasiteHeartwormOptional");
-      statusEl.textContent = t("parasiteOptional");
-      return;
-    }
-
-    row.classList.add(`is-${status}`);
-
-    if (!record?.nextDue) {
-      meta.textContent = t("parasiteNotSet");
-    } else {
-      const product = record.productKey
-        ? t(record.productKey)
-        : record.product || t("parasiteProductFallback");
-      meta.textContent = t("parasiteStripMeta", {
-        product,
-        date: record.nextDue,
-      });
-    }
-    statusEl.textContent = parasiteStatusLabel(status);
+    const productLabel = record?.productKey
+      ? t(record.productKey)
+      : record?.product || t("parasiteProductFallback");
+    const presentation = parasiteRenderer.buildKindStripPresentation({
+      record,
+      status,
+      productLabel,
+    });
+    row.classList.add(presentation.rowClass);
+    meta.textContent = presentation.metaText;
+    statusEl.textContent = presentation.statusText;
   });
   renderVaccineStrip(pet);
 }
@@ -5474,6 +5463,7 @@ function hasLinkedLabsForVisit(visit) {
 
 let emergencyRenderer;
 let vaccineRenderer;
+let parasiteRenderer;
 
 timelineRenderer = PetLiveWeb.domains.timeline.createRenderer({
   label: (key, params) => t(key, params),
@@ -5515,6 +5505,11 @@ vaccineRenderer = PetLiveWeb.domains.vaccines.createRenderer({
   getVaccineSuccessor,
   getVaccineProtectionStatus,
   vaccineLabelOf,
+});
+
+parasiteRenderer = PetLiveWeb.domains.parasite.createRenderer({
+  label: (key, params) => t(key, params),
+  parasiteStatusLabel,
 });
 
 function renderTimeline(pet) {
