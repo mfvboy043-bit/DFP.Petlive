@@ -118,4 +118,17 @@ describe("AL-05 alerts render builders", () => {
     assert.equal(/\bt\s*\(/.test(src), false);
     assert.equal(/\bPetLive\b/.test(src), false);
   });
+
+  it("buildHomeBadgePresentation empty vs counted", () => {
+    const { renderer } = loadAlertsRenderer();
+    const none = renderer.buildHomeBadgePresentation({ name: "Mochi" }, []);
+    assert.equal(none.count, 0);
+    assert.equal(none.text, "alertsPetNone");
+    assert.equal(none.ariaLabel, "alertsPetNone");
+
+    const some = renderer.buildHomeBadgePresentation({ name: "Mochi" }, [{}, {}]);
+    assert.equal(some.count, 2);
+    assert.equal(some.text, "alertsPetBtn");
+    assert.equal(some.ariaLabel, "alertsPetBtnAria");
+  });
 });

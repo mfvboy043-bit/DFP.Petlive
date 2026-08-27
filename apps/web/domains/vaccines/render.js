@@ -146,11 +146,34 @@
       };
     }
 
+    function buildFormChipsHtml(groups) {
+      const list = Array.isArray(groups) ? groups : [];
+      return list
+        .map(
+          (group) => `
+        <div class="vaccine-chip-row">
+          <p class="vaccine-chip-row-label">${label(group.labelKey)}</p>
+          <div class="chips">
+            ${(group.keys || [])
+              .map(
+                (key) =>
+                  `<button type="button" class="chip" data-vaccine-key="${key}">${label(
+                    key
+                  )}</button>`
+              )
+              .join("")}
+          </div>
+        </div>`
+        )
+        .join("");
+    }
+
     return {
       buildEmptyListHtml,
       buildVaccineListHtml,
       buildStripPresentation,
       buildEmergencyNavPresentation,
+      buildFormChipsHtml,
     };
   }
 
