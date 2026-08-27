@@ -2924,6 +2924,9 @@ const petsController = PetLiveWeb.domains.pets.createController({
 const visitsController = PetLiveWeb.domains.visits.createController({
   clinicLabelOf: (visit) => visitClinicLabel(visit),
 });
+pets.forEach((pet) => {
+  if (pet?.visits) visitsController.sortVisitsNewestFirst(pet.visits);
+});
 const imagingController = PetLiveWeb.domains.imaging.createController();
 const drugsAdapter = PetLiveWeb.domains.drugs.createAdapter({
   searchDrugsApi: (query) => window.PetLive?.drug?.searchDrugs?.(query),
@@ -4253,6 +4256,7 @@ function applyMorphTimelinePatches(patches) {
 }
 
 function renderTimeline(pet) {
+  if (pet?.visits) visitsController.sortVisitsNewestFirst(pet.visits);
   const lang =
     (typeof getCurrentLang === "function" && getCurrentLang()) || "zh-Hant";
   const nextVisits = pet?.visits || [];
@@ -4462,6 +4466,7 @@ function getOrCreateVisitForMedSave() {
       medications: [],
     };
     pet.visits.unshift(visit);
+    visitsController.sortVisitsNewestFirst(pet.visits);
   }
   if (weightValue != null) {
     medicationsController.applyVisitWeightOnMedSave(pet, visit, weightValue);

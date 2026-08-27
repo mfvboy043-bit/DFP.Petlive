@@ -41,6 +41,21 @@ function plain(value) {
 }
 
 describe("TV-01 / TV-02 timeline + visits controllers", () => {
+  it("sortVisitsNewestFirst orders by date desc; same-day keeps relative order", () => {
+    const { visits } = createPair();
+    const list = [
+      { date: "2026-04-07", id: "older-added-last" },
+      { date: "2026-08-02", id: "newest" },
+      { date: "2026-08-02", id: "same-day-older" },
+      { date: "2026-01-01", id: "oldest" },
+    ];
+    visits.sortVisitsNewestFirst(list);
+    assert.deepEqual(
+      list.map((v) => v.id),
+      ["newest", "same-day-older", "older-added-last", "oldest"]
+    );
+  });
+
   it("buildPreviousVisitByIndex is chronological; same-day higher index is older", () => {
     const { visits } = createPair();
     const list = [
