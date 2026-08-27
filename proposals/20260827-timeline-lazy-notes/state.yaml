@@ -1,14 +1,15 @@
 id: "20260827-timeline-lazy-notes"
 title: "Timeline view models + lazy drug-note hydration"
 version: 2
-status: candidate_ready
+status: adopted
 
 gate_a:
   status: approved
   note: "Victor 確認 2026-08-27（與 Breed 平行）"
 
 gate_b:
-  status: pending
+  status: adopted
+  note: "Victor 採用 2026-08-27 — C + domains/timeline/view; B cover pending"
 
 iteration: 1
 max_iterations: 3
@@ -17,7 +18,7 @@ candidate:
   branch: "proposal/timeline-lazy-notes"
   path: "proposals/20260827-timeline-lazy-notes"
   worktree: ""
-  note: "fabfc16 on C; lazy drug-note shell + hydrate on first open"
+  note: "Adopted on main abbe909..ab09e48; C only"
 
 reviews:
   pharmacist: skipped
