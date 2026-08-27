@@ -41,6 +41,14 @@
   </svg>
 `.trim();
 
+  const PET_FRAME_EMPTY_SVG = `
+  <svg viewBox="0 0 48 48" aria-hidden="true" focusable="false">
+    <rect x="9" y="13" width="30" height="22" rx="3.5" fill="none" stroke="currentColor" stroke-width="2"/>
+    <circle cx="17.5" cy="21.5" r="2.6" fill="none" stroke="currentColor" stroke-width="2"/>
+    <path d="M11.5 31.5l7.2-7.2 5.2 5.2 4.1-4.1 8.5 6.1" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+  </svg>
+`.trim();
+
   function petAvatarSvgForSpecies(species) {
     if (species === "dog") return PET_AVATAR_SVG_DOG;
     if (species === "cat") return PET_AVATAR_SVG_CAT;
@@ -48,13 +56,22 @@
   }
 
   function createRenderer(deps = {}) {
-    const { label, getPetPhoto } = deps;
+    const { label, getPetPhoto, speciesLabelOf, breedLabelOf, ageLabelOf } = deps;
 
     if (typeof label !== "function") {
       throw new TypeError("createRenderer requires label(key, params?)");
     }
     if (typeof getPetPhoto !== "function") {
       throw new TypeError("createRenderer requires getPetPhoto(petId)");
+    }
+    if (typeof speciesLabelOf !== "function") {
+      throw new TypeError("createRenderer requires speciesLabelOf(pet)");
+    }
+    if (typeof breedLabelOf !== "function") {
+      throw new TypeError("createRenderer requires breedLabelOf(pet)");
+    }
+    if (typeof ageLabelOf !== "function") {
+      throw new TypeError("createRenderer requires ageLabelOf(pet)");
     }
 
     function buildPetAvatarMarkup(pet, { className = "pet-option-photo" } = {}) {
@@ -116,11 +133,82 @@
         .concat(buildAddPetOptionHtml());
     }
 
+    function buildPetHeaderCopy(pet) {
+      if (!pet) {
+        return {
+          nameText: label("emptyPetsTitle"),
+          subText: label("emptyPetsSub"),
+          timelineSub: "",
+          visitFormSub: "",
+          vaccineSub: "",
+        };
+      }
+      return {
+        nameText: pet.name,
+        subText: label("petSub", {
+          species: speciesLabelOf(pet),
+          breed: breedLabelOf(pet),
+          age: ageLabelOf(pet),
+          weight: pet.weight,
+        }),
+        timelineSub: label("timelineSub", { name: pet.name }),
+        visitFormSub: label("visitFormSub", { name: pet.name }),
+        vaccineSub: label("vaccineSub", { name: pet.name }),
+      };
+    }
+
+    function buildArchiveEmptyHtml() {
+      return `<li class="archive-empty">${label("archiveEmpty")}</li>`;
+    }
+
+    function buildArchiveItemHtml(pet) {
+      return `
+      <li class="archive-item" style="--pet-tone: ${pet.tone}">
+        <div class="archive-item-photo" aria-hidden="true"></div>
+        <div>
+          <strong>${pet.name}</strong>
+          <p>${speciesLabelOf(pet)} · ${breedLabelOf(pet)}</p>
+          <p>${label("leftOn", { date: pet.passedAwayDate })}${
+            pet.memorialNote ? ` · ${pet.memorialNote}` : ""
+          }</p>
+        </div>
+      </li>`;
+    }
+
+    function buildArchiveListHtml(archivedPets) {
+      const list = Array.isArray(archivedPets) ? archivedPets : [];
+      if (!list.length) return buildArchiveEmptyHtml();
+      return list.map((pet) => buildArchiveItemHtml(pet)).join("");
+    }
+
+    function buildEmergencyPhotoFrame(pet) {
+      const photo = pet?.photo || getPetPhoto(pet?.id);
+      if (photo) {
+        return {
+          hasPhoto: true,
+          backgroundImage: `url('${photo}')`,
+          frameInnerHtml: "",
+          labelKey: "petPhotoChange",
+        };
+      }
+      return {
+        hasPhoto: false,
+        backgroundImage: "",
+        frameInnerHtml: PET_FRAME_EMPTY_SVG,
+        labelKey: "petPhotoUpload",
+      };
+    }
+
     return {
       buildPetAvatarMarkup,
       buildPetOptionHtml,
       buildAddPetOptionHtml,
       buildPetPickerHtml,
+      buildPetHeaderCopy,
+      buildArchiveEmptyHtml,
+      buildArchiveItemHtml,
+      buildArchiveListHtml,
+      buildEmergencyPhotoFrame,
     };
   }
 

@@ -1,11 +1,12 @@
 id: "20260827-shell-pet-chrome"
 title: "Shell — pet header, archive list, emergency photo render"
 version: 2
-status: proposed
+status: building
 # proposed | building | reviewing | revising | candidate_ready | halted | adopted | rejected
 
 gate_a:
-  status: pending
+  status: approved
+  note: "Victor 確認 2026-08-27"
   # pending | approved | modified | rejected
 
 gate_b:
@@ -29,5 +30,9 @@ reviews:
 rerun: []
 blocking_issues: []
 non_blocking: []
-builder_scope: []
+builder_scope:
+  - "apps/web/domains/pets/render.js"
+  - "apps/web/c/app.js"
+  - "apps/web/c/index.html"
+  - "qa/tests/web-pets-render.test.js"
 halt_reason: ""

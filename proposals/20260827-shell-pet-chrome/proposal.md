@@ -1,7 +1,7 @@
 ---
 id: 20260827-shell-pet-chrome
 title: Shell — pet header, archive list, emergency photo render
-status: proposed
+status: building
 author: planner
 candidate_branch: "cursor/shell-pet-chrome-8ec1"
 candidate_path: "proposals/20260827-shell-pet-chrome"
