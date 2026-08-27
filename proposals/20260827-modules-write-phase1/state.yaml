@@ -1,7 +1,7 @@
 id: "20260827-modules-write-phase1"
 title: "Wave 4 Phase 1 — pets[] write-path inventory + single-door enforcement (no modules flip)"
 version: 2
-status: reviewing
+status: candidate_ready
 # proposed | building | reviewing | revising | candidate_ready | halted | adopted | rejected
 
 gate_a:
@@ -12,7 +12,7 @@ gate_b:
   status: pending
   # pending | adopted | rejected
 
-iteration: 0
+iteration: 1
 max_iterations: 3
 
 candidate:
@@ -21,9 +21,9 @@ candidate:
   worktree: ""
 
 reviews:
-  pharmacist: pending
-  qa: pending
-  ui: pending
+  pharmacist: skipped
+  qa: pass
+  ui: skipped
   # Expect pharmacist skip (no med copy/dose); ui skip/light (no visual); qa on structural writes + persist.
 
 rerun: []
