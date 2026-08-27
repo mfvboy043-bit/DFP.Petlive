@@ -3002,7 +3002,44 @@ const I18N = {
   },
 };
 
-let currentLang = localStorage.getItem("petlive-lang") || "zh-Hant";
+/** Map browser locale tags to supported app langs (no zh-Hans). */
+function mapBrowserLang(tag) {
+  if (!tag || typeof tag !== "string") return null;
+  const lower = tag.trim().toLowerCase().replace(/_/g, "-");
+  if (!lower) return null;
+  if (lower === "zh-hant" || lower.startsWith("zh-hant-")) return "zh-Hant";
+  if (lower === "zh-tw" || lower.startsWith("zh-tw-")) return "zh-Hant";
+  if (lower === "zh-hk" || lower.startsWith("zh-hk-")) return "zh-Hant";
+  if (lower === "zh-mo" || lower.startsWith("zh-mo-")) return "zh-Hant";
+  // Any other Chinese (incl. zh, zh-CN) → Traditional until we ship Simplified.
+  if (lower === "zh" || lower.startsWith("zh-")) return "zh-Hant";
+  if (lower === "en" || lower.startsWith("en-")) return "en";
+  if (lower === "ja" || lower.startsWith("ja-")) return "ja";
+  if (lower === "ko" || lower.startsWith("ko-")) return "ko";
+  return null;
+}
+
+function detectPreferredLang() {
+  const list =
+    typeof navigator !== "undefined" && Array.isArray(navigator.languages) && navigator.languages.length
+      ? navigator.languages
+      : typeof navigator !== "undefined" && navigator.language
+        ? [navigator.language]
+        : [];
+  for (const tag of list) {
+    const mapped = mapBrowserLang(tag);
+    if (mapped && I18N[mapped]) return mapped;
+  }
+  return "zh-Hant";
+}
+
+function resolveInitialLang() {
+  const saved = localStorage.getItem("petlive-lang");
+  if (saved && I18N[saved]) return saved;
+  return detectPreferredLang();
+}
+
+let currentLang = resolveInitialLang();
 if (!I18N[currentLang]) currentLang = "zh-Hant";
 
 function t(key, vars = {}) {

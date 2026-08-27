@@ -463,6 +463,8 @@ const I18N = {
     toastParasiteSavedDual: "已更新 {name}：{product}（體外＋心絲蟲同步）",
     toastParasiteNeedNext: "請先儲存下次投藥日",
     emergencyTitle: "醫療資訊卡",
+    emergencyTitleLine1: "醫療資訊卡",
+    emergencyTitleLine2: "",
     emergencySub: "給獸醫師快速參考 · 非電子病歷",
     copySummary: "複製摘要",
     detailNav: "此寵物的詳細紀錄",
@@ -1149,6 +1151,8 @@ const I18N = {
     toastParasiteSavedDual: "Updated {name}: {product} (synced external + heartworm)",
     toastParasiteNeedNext: "Save a next due date first",
     emergencyTitle: "Medical info card",
+    emergencyTitleLine1: "Medical info",
+    emergencyTitleLine2: "card",
     emergencySub: "Quick reference for vets · Not an EMR",
     copySummary: "Copy summary",
     detailNav: "Detailed records for this pet",
@@ -1840,6 +1844,8 @@ const I18N = {
     toastParasiteSavedDual: "{name}を更新：{product}（体外＋フィラリア同期）",
     toastParasiteNeedNext: "先に次回日を保存してください",
     emergencyTitle: "医療情報カード",
+    emergencyTitleLine1: "医療情報",
+    emergencyTitleLine2: "カード",
     emergencySub: "獣医師向けクイック参考 · 電子カルテではありません",
     copySummary: "要約をコピー",
     detailNav: "この子の詳細記録",
@@ -2531,6 +2537,8 @@ const I18N = {
     toastParasiteSavedDual: "{name} 업데이트: {product}(외부+심장사상충 동기화)",
     toastParasiteNeedNext: "먼저 다음 투약일을 저장하세요",
     emergencyTitle: "의료 정보 카드",
+    emergencyTitleLine1: "의료 정보 카드",
+    emergencyTitleLine2: "",
     emergencySub: "수의사 빠른 참고 · 전자의무기록 아님",
     copySummary: "요약 복사",
     detailNav: "이 아이의 상세 기록",
@@ -2755,7 +2763,44 @@ const I18N = {
   },
 };
 
-let currentLang = localStorage.getItem("petlive-c-lang") || "zh-Hant";
+/** Map browser locale tags to supported app langs (no zh-Hans). */
+function mapBrowserLang(tag) {
+  if (!tag || typeof tag !== "string") return null;
+  const lower = tag.trim().toLowerCase().replace(/_/g, "-");
+  if (!lower) return null;
+  if (lower === "zh-hant" || lower.startsWith("zh-hant-")) return "zh-Hant";
+  if (lower === "zh-tw" || lower.startsWith("zh-tw-")) return "zh-Hant";
+  if (lower === "zh-hk" || lower.startsWith("zh-hk-")) return "zh-Hant";
+  if (lower === "zh-mo" || lower.startsWith("zh-mo-")) return "zh-Hant";
+  // Any other Chinese (incl. zh, zh-CN) → Traditional until we ship Simplified.
+  if (lower === "zh" || lower.startsWith("zh-")) return "zh-Hant";
+  if (lower === "en" || lower.startsWith("en-")) return "en";
+  if (lower === "ja" || lower.startsWith("ja-")) return "ja";
+  if (lower === "ko" || lower.startsWith("ko-")) return "ko";
+  return null;
+}
+
+function detectPreferredLang() {
+  const list =
+    typeof navigator !== "undefined" && Array.isArray(navigator.languages) && navigator.languages.length
+      ? navigator.languages
+      : typeof navigator !== "undefined" && navigator.language
+        ? [navigator.language]
+        : [];
+  for (const tag of list) {
+    const mapped = mapBrowserLang(tag);
+    if (mapped && I18N[mapped]) return mapped;
+  }
+  return "zh-Hant";
+}
+
+function resolveInitialLang() {
+  const saved = localStorage.getItem("petlive-c-lang");
+  if (saved && I18N[saved]) return saved;
+  return detectPreferredLang();
+}
+
+let currentLang = resolveInitialLang();
 if (!I18N[currentLang]) currentLang = "zh-Hant";
 
 function t(key, vars = {}) {
