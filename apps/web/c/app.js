@@ -3005,7 +3005,7 @@ function initGlassDock() {
     getActiveScreen: () =>
       app.querySelector(".screen.is-active")?.dataset.screen || "home",
     hideOnScreens: ["home"],
-    passportGo: "home",
+    passportGo: "emergency",
     startHidden: false,
     onGo: (screen) => go(screen),
     onMounted: () => {

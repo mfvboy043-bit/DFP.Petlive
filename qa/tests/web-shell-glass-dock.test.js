@@ -25,7 +25,7 @@ describe("shell glass-dock", () => {
     assert.equal(shell.dockKeyForScreen("add-med"), "timeline");
     assert.equal(shell.dockKeyForScreen("alerts"), "alerts");
     assert.equal(shell.dockKeyForScreen("home"), "home");
-    assert.equal(shell.dockKeyForScreen("emergency"), "home");
+    assert.equal(shell.dockKeyForScreen("emergency"), "passport");
     assert.equal(shell.dockKeyForScreen("imaging"), "imaging");
     assert.equal(shell.dockKeyForScreen("imaging-proof"), "imaging");
     assert.equal(shell.dockKeyForScreen("labs"), "labs");
@@ -34,14 +34,19 @@ describe("shell glass-dock", () => {
     assert.equal(shell.dockKeyForScreen("owner-settings"), null);
   });
 
-  it("glassDockMarkup includes five tabs and passportGo", () => {
+  it("glassDockMarkup includes home + passport tabs and passportGo", () => {
     const shell = loadShell(["shell/glass-dock.js"]);
-    const home = shell.glassDockMarkup({ passportGo: "home" });
-    assert.match(home, /id="glass-dock"/);
-    assert.match(home, /data-dock="timeline"/);
-    assert.match(home, /data-go="home"/);
-    const em = shell.glassDockMarkup({ passportGo: "emergency", startHidden: true });
-    assert.match(em, /data-go="emergency"/);
-    assert.match(em, /\shidden/);
+    const markup = shell.glassDockMarkup({ passportGo: "emergency" });
+    assert.match(markup, /id="glass-dock"/);
+    assert.match(markup, /data-dock="home"[^>]*data-go="home"|data-go="home"[^>]*data-dock="home"/);
+    assert.match(markup, /data-i18n="dockHome"/);
+    assert.match(markup, /data-dock="passport"/);
+    assert.match(markup, /data-go="emergency"/);
+    assert.match(markup, /data-dock="timeline"/);
+    const hidden = shell.glassDockMarkup({ passportGo: "emergency", startHidden: true });
+    assert.match(hidden, /\shidden/);
+    const defaultGo = shell.glassDockMarkup({});
+    assert.match(defaultGo, /data-go="emergency"/);
   });
 });
+
