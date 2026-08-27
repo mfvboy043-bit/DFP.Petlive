@@ -64,14 +64,17 @@
     if (typeof getPetPhoto !== "function") {
       throw new TypeError("createRenderer requires getPetPhoto(petId)");
     }
-    if (typeof speciesLabelOf !== "function") {
-      throw new TypeError("createRenderer requires speciesLabelOf(pet)");
-    }
-    if (typeof breedLabelOf !== "function") {
-      throw new TypeError("createRenderer requires breedLabelOf(pet)");
-    }
-    if (typeof ageLabelOf !== "function") {
-      throw new TypeError("createRenderer requires ageLabelOf(pet)");
+
+    function requirePetChromeLabels(builderName) {
+      if (typeof speciesLabelOf !== "function") {
+        throw new TypeError(`${builderName} requires speciesLabelOf(pet)`);
+      }
+      if (typeof breedLabelOf !== "function") {
+        throw new TypeError(`${builderName} requires breedLabelOf(pet)`);
+      }
+      if (typeof ageLabelOf !== "function") {
+        throw new TypeError(`${builderName} requires ageLabelOf(pet)`);
+      }
     }
 
     function buildPetAvatarMarkup(pet, { className = "pet-option-photo" } = {}) {
@@ -134,6 +137,7 @@
     }
 
     function buildPetHeaderCopy(pet) {
+      requirePetChromeLabels("buildPetHeaderCopy");
       if (!pet) {
         return {
           nameText: label("emptyPetsTitle"),
@@ -162,6 +166,7 @@
     }
 
     function buildArchiveItemHtml(pet) {
+      requirePetChromeLabels("buildArchiveItemHtml");
       return `
       <li class="archive-item" style="--pet-tone: ${pet.tone}">
         <div class="archive-item-photo" aria-hidden="true"></div>

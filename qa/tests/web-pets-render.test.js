@@ -95,6 +95,26 @@ describe("SH-05 pets render builders", () => {
 });
 
 describe("SH-06 pets chrome builders", () => {
+  it("createRenderer still boots with SH-05 deps only (formal B compat)", () => {
+    const context = vm.createContext({ console });
+    context.globalThis = context;
+    context.window = context;
+    vm.runInContext(
+      readFileSync(new URL("domains/pets/render.js", WEB_ROOT), "utf8"),
+      context,
+      { filename: "domains/pets/render.js" }
+    );
+    const renderer = context.PetLiveWeb.domains.pets.createRenderer({
+      label: (key) => key,
+      getPetPhoto: () => null,
+    });
+    assert.equal(typeof renderer.buildPetPickerHtml, "function");
+    assert.throws(
+      () => renderer.buildPetHeaderCopy({ name: "Mochi" }),
+      /speciesLabelOf/
+    );
+  });
+
   it("buildPetHeaderCopy empty vs named pet", () => {
     const renderer = loadPetsRenderer();
     const empty = renderer.buildPetHeaderCopy(null);

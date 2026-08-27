@@ -13,7 +13,7 @@ gate_b:
   status: pending
   # pending | adopted | rejected
 
-iteration: 0
+iteration: 2
 max_iterations: 3
 
 candidate:
@@ -23,16 +23,15 @@ candidate:
 
 reviews:
   pharmacist: skipped
-  qa: pending
+  qa: reject
   ui: skipped
   # pending | skipped | pass | conditional | reject
 
-rerun: []
-blocking_issues: []
+rerun:
+  - qa
+blocking_issues:
+  - QA-001
 non_blocking: []
 builder_scope:
-  - "apps/web/domains/pets/render.js"
-  - "apps/web/c/app.js"
-  - "apps/web/c/index.html"
-  - "qa/tests/web-pets-render.test.js"
+  - QA-001
 halt_reason: ""
