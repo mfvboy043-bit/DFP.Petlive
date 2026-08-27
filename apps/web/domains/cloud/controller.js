@@ -142,34 +142,26 @@
 
     function replaceActiveGraph(nextPets, nextArchived) {
       if (
-        petsGraph &&
-        typeof petsGraph.replaceGraph === "function"
+        !petsGraph ||
+        typeof petsGraph.replaceGraph !== "function"
       ) {
-        petsGraph.replaceGraph({
-          pets: nextPets,
-          archivedPets: nextArchived || [],
-        });
-        return;
+        throw new TypeError(
+          "createController requires petsGraph.replaceGraph (Wave 4 Phase 1 door)"
+        );
       }
-      // Legacy fallback for formal B until Gate B wires petsGraph (Phase 1 C-only).
-      const pets = getPets();
-      const archivedPets = getArchivedPets();
-      pets.length = 0;
-      archivedPets.length = 0;
-      for (const pet of nextPets || []) pets.push(pet);
-      for (const pet of nextArchived || []) archivedPets.push(pet);
+      petsGraph.replaceGraph({
+        pets: nextPets,
+        archivedPets: nextArchived || [],
+      });
     }
 
     function clearActiveGraph() {
-      if (petsGraph && typeof petsGraph.clearGraph === "function") {
-        petsGraph.clearGraph();
-        return;
+      if (!petsGraph || typeof petsGraph.clearGraph !== "function") {
+        throw new TypeError(
+          "createController requires petsGraph.clearGraph (Wave 4 Phase 1 door)"
+        );
       }
-      // Legacy fallback for formal B until Gate B wires petsGraph (Phase 1 C-only).
-      const pets = getPets();
-      const archivedPets = getArchivedPets();
-      pets.length = 0;
-      archivedPets.length = 0;
+      petsGraph.clearGraph();
     }
 
     function applyCloudPayload(payload) {

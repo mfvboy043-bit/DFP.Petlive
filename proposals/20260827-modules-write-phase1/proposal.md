@@ -1,7 +1,7 @@
 ---
 id: 20260827-modules-write-phase1
 title: "Wave 4 Phase 1 — pets[] write-path inventory + single-door enforcement (no modules flip)"
-status: reviewing
+status: adopted
 author: planner
 candidate_branch: "cursor/modules-write-phase1-6f84"
 candidate_path: "proposals/20260827-modules-write-phase1"
@@ -40,7 +40,7 @@ Lock every **structural** mutate of the active/archived pets graph behind one do
 | Hydrate / persist | `petsGraph.hydrate` / `schedulePersist` → slot | Yes |
 | Archive / remove | `domains/pets/lifecycle.js` `splice` / `unshift` then facade `schedulePetsGraphPersist` | Structural mutate **inside domain** (allowed pattern from leftover-17); not via door helpers yet |
 | Cloud apply / clear seed | `domains/cloud/controller.js` raw `length=0` + `push` + `petsGraphSlot.write` | **Off-door** array rewrite |
-| B seed reset / demo paths | `apps/web/app.js` raw `pets.push` / `length=0` | **Off-door** (B out until Gate B) |
+| B seed reset / demo paths | `apps/web/app.js` via `replaceGraph` / `clearGraph` | **Yes (Gate B)** |
 | Nested content (visits, meds, vaccines, …) | Domain controllers mutate fields on pet objects already in `pets[]`, then `schedulePetsGraphPersist` | Content mutate + persist (inventory must list; Phase 1 does **not** move these into modules Maps) |
 | `modules/pet` etc. | Own `Map` stores for ModuleResult APIs | Parallel toy/runtime store — **not** UI write truth |
 
@@ -145,8 +145,8 @@ Do **not** stack Phase 2+ into this candidate.
 - [x] Tests fail if C facade reintroduces raw `pets.push` / structural array clear outside the door
 - [x] Behavior-preserving: add / edit / archive / remove pet, cloud apply/clear seed, nested visit/med save + persist still work
 - [x] C `index.html` `?v=` bumped for changed scripts; zero-build preview unchanged
-- [ ] Reviews: QA on write paths + persist; UI **skip** or light (no visual redesign); pharmacist **skip** (no med copy/dose)
-- [ ] Gate B: cover B facade seed-reset discipline — **after** Victor adopt of C
+- [x] Reviews: QA on write paths + persist; UI **skip** or light (no visual redesign); pharmacist **skip** (no med copy/dose)
+- [x] Gate B: cover B facade seed-reset discipline — Victor「採用、覆蓋」2026-08-27
 
 ## Rollback
 

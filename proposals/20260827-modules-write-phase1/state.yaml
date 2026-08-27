@@ -1,7 +1,7 @@
 id: "20260827-modules-write-phase1"
 title: "Wave 4 Phase 1 — pets[] write-path inventory + single-door enforcement (no modules flip)"
 version: 2
-status: candidate_ready
+status: adopted
 # proposed | building | reviewing | revising | candidate_ready | halted | adopted | rejected
 
 gate_a:
@@ -9,8 +9,8 @@ gate_a:
   note: "Victor 2026-08-27 — 第4波，請總指揮開始指揮（Phase 1: 寫入走同一扇門；pets[] 仍是帳本）"
 
 gate_b:
-  status: pending
-  # pending | adopted | rejected
+  status: adopted
+  note: "Victor 2026-08-27 —「採用、覆蓋」; B cover onto apps/web/app.js + index.html ?v=20260827-modules-w4p1"
 
 iteration: 1
 max_iterations: 3
@@ -30,4 +30,8 @@ rerun: []
 blocking_issues: []
 non_blocking: []
 builder_scope: []
+builder_note: >-
+  Gate B: cover pets-graph single-door onto formal B (app.js seed-reset/clear +
+  petsGraph into cloud controller; remove cloud legacy raw fallback; B source-scan;
+  index.html ?v=). pets[] remains write truth; no modules dual-write.
 halt_reason: ""

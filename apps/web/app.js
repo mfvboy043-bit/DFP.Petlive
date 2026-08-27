@@ -237,21 +237,17 @@ const petsGraph = PetLiveWeb.core.createPetsGraph({
 
 function hydratePetsGraphFromStorage() {
   if (DEMO_MODE) {
-    pets.length = 0;
-    archivedPets.length = 0;
-    for (const pet of cloneSeedPets()) pets.push(pet);
+    petsGraph.replaceGraph({ pets: cloneSeedPets(), archivedPets: [] });
     return pets[0]?.id || null;
   }
   if (!hasStoredPetsGraph()) {
-    pets.length = 0;
-    archivedPets.length = 0;
+    petsGraph.clearGraph();
     return null;
   }
   const currentId = petsGraph.hydrate();
   // Drop leftover prototype seed graphs left from unsigned browsing.
   if (isSeedOnlyPets(pets) && !DEMO_MODE) {
-    pets.length = 0;
-    archivedPets.length = 0;
+    petsGraph.clearGraph();
     try {
       petsGraphSlot.write({
         version: 1,
@@ -268,9 +264,7 @@ function hydratePetsGraphFromStorage() {
 }
 
 function loadSeedPetsIntoMemory() {
-  pets.length = 0;
-  archivedPets.length = 0;
-  for (const pet of cloneSeedPets()) pets.push(pet);
+  petsGraph.replaceGraph({ pets: cloneSeedPets(), archivedPets: [] });
   const nextId = pets[0]?.id || null;
   if (nextId) {
     currentPetId = nextId;
@@ -5638,6 +5632,7 @@ cloudController = PetLiveWeb.domains.cloud.createController({
     currentPetId = id;
     appState.setCurrentPetId(id);
   },
+  petsGraph,
   petsGraphSlot,
   ownerProfileSlot,
   ownerAlertsSlot,
@@ -6273,9 +6268,7 @@ function getDemoTourSteps() {
 }
 
 function resetDemoSeed() {
-  pets.length = 0;
-  archivedPets.length = 0;
-  for (const pet of cloneSeedPets()) pets.push(pet);
+  petsGraph.replaceGraph({ pets: cloneSeedPets(), archivedPets: [] });
   const nextId = pets[0]?.id || null;
   currentPetId = nextId;
   if (nextId) appState.setCurrentPetId(nextId);

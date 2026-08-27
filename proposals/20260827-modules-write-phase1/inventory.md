@@ -1,4 +1,4 @@
-# Wave 4 Phase 1 — C write-path inventory
+# Wave 4 Phase 1 — write-path inventory (C + B after Gate B)
 
 **Write truth:** `pets[]` + `archivedPets` (+ pets-graph slot persist) remain the **sole UI write truth**.  
 **Not DB:** `modules/*` in-memory `Map`s are ModuleResult / compose helpers only — **no** dual-write, **no** sync TO modules in Phase 1.
@@ -10,13 +10,13 @@ Door: `apps/web/core/pets-graph.js` (`createPetsGraph`).
 | Op | Where | Through door? | Notes |
 |---|---|---|---|
 | Hydrate from slot / seed | `core/pets-graph.js` `hydrate` → `replaceGraph` | **Yes** (door) | Clears + fills `pets` / `archivedPets` |
-| Add pet | C `petsGraph.pushPet` (`c/app.js`) | **Yes** | |
-| Replace whole graph | `petsGraph.replaceGraph` | **Yes** | Used by cloud apply |
-| Clear graph | `petsGraph.clearGraph` | **Yes** | Used by cloud clear-seed |
+| Add pet | C/B `petsGraph.pushPet` | **Yes** | |
+| Replace whole graph | `petsGraph.replaceGraph` | **Yes** | Cloud apply; B seed load / demo reset |
+| Clear graph | `petsGraph.clearGraph` | **Yes** | Cloud clear-seed; B empty / seed-only drop |
 | Persist (coalesced) | `petsGraph.schedulePersist` → slot | **Yes** | After content + lifecycle |
-| Archive / remove | `domains/pets/lifecycle.js` `splice` / `unshift` | **Domain allowed** | Facade then `applySelectedPet` → `schedulePetsGraphPersist`. Phase 1 keeps domain + persist (smaller diff); not facade raw push. |
-| Cloud apply / clear-seed | `domains/cloud/controller.js` via `petsGraph.replaceGraph` / `clearGraph` when wired | **Yes on C** | Formal B may still omit `petsGraph` until Gate B (legacy raw fallback in controller). |
-| Formal B seed-reset / demo | `apps/web/app.js` raw `length=0` / `push` | **Out (Gate B)** | Not this Phase 1 build |
+| Archive / remove | `domains/pets/lifecycle.js` `splice` / `unshift` | **Domain allowed** | Facade then `applySelectedPet` → `schedulePetsGraphPersist` |
+| Cloud apply / clear-seed | `domains/cloud/controller.js` via `petsGraph.replaceGraph` / `clearGraph` | **Yes (C + B)** | Door required; legacy raw fallback removed at Gate B |
+| Formal B seed-reset / demo / hydrate | `apps/web/app.js` via door | **Yes (Gate B)** | `replaceGraph` / `clearGraph` |
 
 ## Content mutates (nested fields on pets already in `pets[]`)
 

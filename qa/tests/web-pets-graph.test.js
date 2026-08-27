@@ -125,8 +125,8 @@ describe("core/pets-graph write door", () => {
     assert.equal(archivedPets.length, 0);
   });
 
-  it("fails if C facade has raw structural pets mutates", () => {
-    const source = readFileSync(new URL("c/app.js", WEB_ROOT), "utf8");
+  function assertFacadeNoRawStructuralMutates(relPath) {
+    const source = readFileSync(new URL(relPath, WEB_ROOT), "utf8");
     const stripped = source
       .replace(/\/\*[\s\S]*?\*\//g, "")
       .replace(/(^|[^:])\/\/.*$/gm, "$1");
@@ -134,32 +134,40 @@ describe("core/pets-graph write door", () => {
     assert.equal(
       /pets\.push\s*\(/.test(stripped),
       false,
-      "c/app.js must not raw pets.push (use petsGraph.pushPet)"
+      `${relPath} must not raw pets.push (use petsGraph.pushPet / replaceGraph)`
     );
     assert.equal(
       /pets\.splice\s*\(/.test(stripped),
       false,
-      "c/app.js must not raw pets.splice"
+      `${relPath} must not raw pets.splice`
     );
     assert.equal(
       /pets\.length\s*=\s*0/.test(stripped),
       false,
-      "c/app.js must not raw pets.length = 0"
+      `${relPath} must not raw pets.length = 0`
     );
     assert.equal(
       /archivedPets\.push\s*\(/.test(stripped),
       false,
-      "c/app.js must not raw archivedPets.push"
+      `${relPath} must not raw archivedPets.push`
     );
     assert.equal(
       /archivedPets\.length\s*=\s*0/.test(stripped),
       false,
-      "c/app.js must not raw archivedPets.length = 0"
+      `${relPath} must not raw archivedPets.length = 0`
     );
     assert.match(
       stripped,
       /petsGraph\s*,/,
-      "c/app.js cloud controller must receive petsGraph door"
+      `${relPath} cloud controller must receive petsGraph door`
     );
+  }
+
+  it("fails if C facade has raw structural pets mutates", () => {
+    assertFacadeNoRawStructuralMutates("c/app.js");
+  });
+
+  it("fails if B facade has raw structural pets mutates", () => {
+    assertFacadeNoRawStructuralMutates("app.js");
   });
 });
