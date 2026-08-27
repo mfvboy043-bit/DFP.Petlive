@@ -341,5 +341,29 @@ describe("TL-05 timeline render builders", () => {
       visitDates: weightNext.map((v) => v.date),
     });
     assert.notEqual(weightPlan.mode, "morph");
+
+    // Facade shallow snapshot: same visit object refs after in-place mutate
+    // must NOT morph (would leave weight/meds DOM stale).
+    const shared = [
+      { date: "2026-08-01", clinic: "A", note: "old", medications: [], weightAtVisit: 5 },
+      { date: "2026-08-02", clinic: "B", medications: [] },
+    ];
+    const beforeSigs = renderer.buildItemSignatures(
+      { id: "p1", visits: shared },
+      { lang: "zh-Hant" }
+    );
+    const shallowPrev = shared.slice();
+    shared[0].weightAtVisit = 9;
+    shared[0].medications = [{ name: "Med", dose: "1", kind: "tablet" }];
+    const afterSigs = renderer.buildItemSignatures(
+      { id: "p1", visits: shared },
+      { lang: "zh-Hant" }
+    );
+    const trapPlan = renderer.planKeyedListReconcile(beforeSigs, afterSigs, {
+      previousVisits: shallowPrev,
+      nextVisits: shared,
+      visitDates: shared.map((v) => v.date),
+    });
+    assert.notEqual(trapPlan.mode, "morph");
   });
 });

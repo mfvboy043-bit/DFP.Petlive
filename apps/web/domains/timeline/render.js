@@ -631,6 +631,13 @@
       );
     }
 
+    function structuralFromItemSignature(sig) {
+      // Item sig: lang\u001dpetId\u001dstructural\u001esurface
+      const parts = String(sig || "").split("\u001d");
+      const fingerprint = parts[2] || "";
+      return fingerprint.split("\u001e")[0] || "";
+    }
+
     function planKeyedListReconcile(
       previousSignatures,
       nextSignatures,
@@ -659,19 +666,21 @@
 
       const prevList = Array.isArray(previousVisits) ? previousVisits : null;
       const nextList = Array.isArray(nextVisits) ? nextVisits : null;
-      if (
-        prevList &&
-        nextList &&
-        prevList.length === next.length &&
-        nextList.length === next.length &&
-        indices.length
-      ) {
-        const surfaceOnly = indices.every((i) => {
-          return (
-            visitStructuralFingerprint(prevList[i], i) ===
-            visitStructuralFingerprint(nextList[i], i)
+      // Morph only when *prior signatures* show structural parity (clinic/note
+      // surface change). Never trust live visit object fingerprints alone —
+      // facade shallow snapshots keep the same refs after in-place mutate.
+      if (nextList && nextList.length === next.length && indices.length) {
+        const sameRefTrap =
+          prevList &&
+          prevList.length === next.length &&
+          indices.some((i) => prevList[i] === nextList[i]);
+        const surfaceOnly =
+          !sameRefTrap &&
+          indices.every(
+            (i) =>
+              structuralFromItemSignature(prev[i]) ===
+              structuralFromItemSignature(next[i])
           );
-        });
         if (surfaceOnly) {
           return {
             mode: "morph",
