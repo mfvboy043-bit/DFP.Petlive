@@ -1,0 +1,29 @@
+id: "20260827-timeline-view-render"
+title: "Timeline view render — extract HTML builders from app.js"
+version: 2
+status: proposed
+
+gate_a:
+  status: pending
+
+gate_b:
+  status: pending
+
+iteration: 0
+max_iterations: 3
+
+candidate:
+  branch: "proposal/timeline-view-render"
+  path: "proposals/20260827-timeline-view-render"
+  worktree: ""
+
+reviews:
+  pharmacist: skipped
+  qa: pending
+  ui: skipped
+
+rerun: []
+blocking_issues: []
+non_blocking: []
+builder_scope: []
+halt_reason: ""
