@@ -1,7 +1,7 @@
 ---
 id: 20260827-css-consolidate
 title: "Wave 3 — CSS consolidation (organize tokens / layers / dead rules; C first)"
-status: reviewing
+status: adopted
 author: planner
 candidate_branch: "cursor/css-consolidate-6faf"
 candidate_path: "proposals/20260827-css-consolidate"
@@ -123,7 +123,8 @@ Make C’s stylesheet easier to maintain without changing how the app looks: cla
 - [x] Any deleted rules listed with evidence (or zero deletions if none proven)
 - [x] Visual parity: no intentional redesign; Morandi sage/beige/milktea + existing fonts unchanged
 - [x] No bundler / npm build step introduced
-- [ ] Reviews: UI on parity; QA on load + key screens; pharmacist **skip** (no med logic/copy)
+- [x] Reviews: UI on parity; QA on load + key screens; pharmacist **skip** (no med logic/copy)
+- [x] Gate B: Victor「採用、覆蓋」— B `styles.css` hygiene + `index.html` `?v=` covered
 
 ## Rollback
 

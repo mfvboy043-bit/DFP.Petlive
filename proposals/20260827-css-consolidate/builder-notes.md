@@ -47,6 +47,19 @@ Removed only when class/id had **no** HTML match and **no** JS string / template
 - **Dead removals:** shelved rainbow / Drive chrome / legacy stamps — spot-check intro, home top bar, alerts severity rows, parasite chooser, settings chip.
 - **No redesign intent** — tokens/fonts unchanged; pharmacist skip; UI parity + QA load/key screens.
 
-## Not done (Gate B)
+## Gate B cover (Victor 2026-08-27「採用、覆蓋」)
 
-- `apps/web/styles.css` / B `?v=` cover — do not merge until Victor adopt.
+**Formal B:** `apps/web/styles.css` **8492 → 8310** (−182)  
+**Facade:** `apps/web/index.html` stylesheet `?v=20260827-css-consolidate`
+
+Same class of changes as C on the divergent B copy (not a blind overwrite):
+
+- LAYER TOC + renumber (intro `6` … language `30`; `20b` after timeline)
+- §36–37 purpose banners; §38 = **B SURFACE LEFTOVERS** (demo + manual — kept)
+- Dead-rule removals re-evidence-gated on B HTML/JS corpus (same selector set as C where unused on B)
+- Did **not** add C-only `#cloud-account-card{display:none}` / `.surface-c-banner`
+- Morandi tokens unchanged; no bundler
+
+## Not done
+
+- Bundler / multi-file CSS split — separate future proposal.

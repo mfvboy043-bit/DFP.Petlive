@@ -1,7 +1,7 @@
 id: "20260827-css-consolidate"
 title: "Wave 3 — CSS consolidation (organize tokens / layers / dead rules; C first)"
 version: 2
-status: candidate_ready
+status: adopted
 # proposed | building | reviewing | revising | candidate_ready | halted | adopted | rejected
 
 gate_a:
@@ -9,8 +9,8 @@ gate_a:
   note: "Victor 2026-08-27 — 第3波，請總指揮開始指揮（CSS consolidate; bundler deferred）"
 
 gate_b:
-  status: pending
-  # pending | adopted | rejected
+  status: adopted
+  note: "Victor 2026-08-27 —「採用、覆蓋」; B cover onto apps/web/styles.css + index.html ?v="
 
 iteration: 1
 max_iterations: 3
@@ -34,6 +34,7 @@ non_blocking:
   - "UI-2 [P3] §20b move — content-identical winners; optional phone glance on timeline med expand / compound chips before adopt"
 builder_scope: []
 builder_note: >-
-  Arbiter iteration 1: candidate_ready. Pharmacist skipped; QA/UI pass.
-  UI P3 notes non-blocking only. No Builder revision. Gate B pending Victor adopt.
+  Gate B: cover Wave 3 CSS hygiene onto formal B (styles.css + index.html ?v=).
+  Same class of changes as C — not a blind file overwrite. B demo/manual leftovers
+  kept under §38; Morandi tokens unchanged. Bundler still deferred.
 halt_reason: ""
