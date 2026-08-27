@@ -235,11 +235,13 @@ describe("TL-05 timeline render builders", () => {
       visits: [
         { date: "2026-08-01", clinic: "A", medications: [] },
         { date: "2026-08-02", clinic: "B", medications: [] },
+        { date: "2026-08-03", clinic: "C", medications: [] },
       ],
     };
     const { html } = renderer.buildTimelineListHtml(pet);
     assert.match(html, /data-visit-index="0"/);
     assert.match(html, /data-visit-index="1"/);
+    assert.match(html, /data-visit-index="2"/);
 
     const sigs = renderer.buildItemSignatures(pet, { lang: "zh-Hant" });
     assert.equal(renderer.planKeyedListReconcile(sigs, sigs).mode, "skip");
@@ -249,11 +251,13 @@ describe("TL-05 timeline render builders", () => {
       visits: [
         pet.visits[0],
         { date: "2026-08-02", clinic: "B-edited", medications: [] },
+        pet.visits[2],
       ],
     };
     const next = renderer.buildItemSignatures(changed, { lang: "zh-Hant" });
     const plan = renderer.planKeyedListReconcile(sigs, next);
     assert.equal(plan.mode, "partial");
+    // Changed row 1 plus neighbor 2 (weight-vs depends on previousVisit).
     assert.equal(plan.indices.length, 2);
     assert.equal(plan.indices[0], 1);
     assert.equal(plan.indices[1], 2);
