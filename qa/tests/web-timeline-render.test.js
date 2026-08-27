@@ -180,4 +180,22 @@ describe("TL-05 timeline render builders", () => {
     assert.equal(/\blocalStorage\b/.test(src), false);
     assert.equal(/\bt\s*\(/.test(src), false);
   });
+
+  it("visit RX/imaging toggle presentation and auto-expand", () => {
+    const { renderer } = loadRenderer();
+    const openRx = renderer.buildVisitRxTogglePresentation(true);
+    assert.equal(openRx.panelHidden, false);
+    assert.equal(openRx.ariaExpanded, "true");
+    assert.equal(openRx.text, "timelineVisitRxHide");
+    assert.equal(openRx.isOpen, true);
+
+    const closedImaging = renderer.buildVisitImagingTogglePresentation(false);
+    assert.equal(closedImaging.panelHidden, true);
+    assert.equal(closedImaging.ariaExpanded, "false");
+    assert.equal(closedImaging.text, "timelineVisitImagingBtn");
+    assert.equal(closedImaging.isOpen, false);
+
+    assert.equal(renderer.shouldAutoExpandLatestRx(false), true);
+    assert.equal(renderer.shouldAutoExpandLatestRx(true), false);
+  });
 });

@@ -506,6 +506,32 @@
       return { html, drugNotePanels };
     }
 
+    function buildVisitRxTogglePresentation(open) {
+      const isOpen = Boolean(open);
+      return {
+        panelHidden: !isOpen,
+        ariaExpanded: isOpen ? "true" : "false",
+        text: isOpen ? label("timelineVisitRxHide") : label("timelineVisitRxBtn"),
+        isOpen,
+      };
+    }
+
+    function buildVisitImagingTogglePresentation(open) {
+      const isOpen = Boolean(open);
+      return {
+        panelHidden: !isOpen,
+        ariaExpanded: isOpen ? "true" : "false",
+        text: isOpen
+          ? label("timelineVisitImagingHide")
+          : label("timelineVisitImagingBtn"),
+        isOpen,
+      };
+    }
+
+    function shouldAutoExpandLatestRx(userCollapsed) {
+      return !userCollapsed;
+    }
+
     return {
       buildDrugNotesBodyHtml,
       buildDrugNotesShellHtml,
@@ -517,6 +543,9 @@
       buildVisitRxBlockHtml,
       buildTimelineMedItemHtml,
       buildTimelineListHtml,
+      buildVisitRxTogglePresentation,
+      buildVisitImagingTogglePresentation,
+      shouldAutoExpandLatestRx,
     };
   }
 

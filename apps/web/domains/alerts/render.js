@@ -128,11 +128,29 @@
         .join("");
     }
 
+    function buildHomeBadgePresentation(pet, alerts) {
+      const name = pet?.name || "";
+      const n = Array.isArray(alerts) ? alerts.length : 0;
+      if (n) {
+        return {
+          count: n,
+          text: label("alertsPetBtn", { name, n }),
+          ariaLabel: label("alertsPetBtnAria", { name, n }),
+        };
+      }
+      return {
+        count: 0,
+        text: label("alertsPetNone", { name }),
+        ariaLabel: label("alertsPetNone", { name }),
+      };
+    }
+
     return {
       buildAlertItemHtml,
       buildFlatEmptyListHtml,
       buildFlatListHtml,
       buildSectionsHtml,
+      buildHomeBadgePresentation,
     };
   }
 

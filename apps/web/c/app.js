@@ -1727,26 +1727,35 @@ function buildParasiteCalendarPayload(pet, kind) {
   });
 }
 
-let pendingCalendarPayload = null;
-
 function closeCalendarChooser() {
   const overlay = document.getElementById("parasite-cal-chooser");
-  if (!overlay) return;
-  overlay.hidden = true;
-  delete overlay.dataset.parasiteKind;
-  pendingCalendarPayload = null;
+  if (!calendarChooserShell) {
+    if (overlay) {
+      overlay.hidden = true;
+      delete overlay.dataset.parasiteKind;
+    }
+    return;
+  }
+  calendarChooserShell.close({ overlay });
 }
 
 function showCalendarChooser(payload, metaText) {
   const overlay = document.getElementById("parasite-cal-chooser");
   const meta = document.getElementById("parasite-cal-chooser-meta");
-  if (!overlay || !payload?.nextDue) {
+  if (!calendarChooserShell?.canShow(payload)) {
     showToast(t("toastParasiteNeedNext"));
     return false;
   }
-  pendingCalendarPayload = payload;
-  if (meta) meta.textContent = metaText || t("parasiteCalChooserMeta", { date: payload.nextDue });
-  overlay.hidden = false;
+  const ok = calendarChooserShell.show({
+    overlay,
+    metaEl: meta,
+    payload,
+    metaText: metaText || t("parasiteCalChooserMeta", { date: payload.nextDue }),
+  });
+  if (!ok) {
+    showToast(t("toastParasiteNeedNext"));
+    return false;
+  }
   return true;
 }
 
@@ -1901,25 +1910,10 @@ function syncVaccineFormHint(pet) {
 }
 
 function fillVaccineNameOptions(pet) {
-  if (!vaccineChipsEl) return;
+  if (!vaccineChipsEl || !vaccineRenderer) return;
   const groups = VACCINE_PRESETS[pet.species] || VACCINE_PRESETS.other;
   selectedVaccineKeys.clear();
-  vaccineChipsEl.innerHTML = groups
-    .map(
-      (group) => `
-        <div class="vaccine-chip-row">
-          <p class="vaccine-chip-row-label">${t(group.labelKey)}</p>
-          <div class="chips">
-            ${group.keys
-              .map(
-                (key) =>
-                  `<button type="button" class="chip" data-vaccine-key="${key}">${t(key)}</button>`
-              )
-              .join("")}
-          </div>
-        </div>`
-    )
-    .join("");
+  vaccineChipsEl.innerHTML = vaccineRenderer.buildFormChipsHtml(groups);
   if (vaccineCustomName) vaccineCustomName.value = "";
   syncVaccineFormHint(pet);
 }
@@ -2771,15 +2765,10 @@ function syncAlertNavTone(alerts) {
 
 function renderAlertBadge(pet) {
   const alerts = getAlertsForPet(pet);
-  const n = alerts.length;
-  if (alertCountBtn) {
-    alertCountBtn.textContent = n
-      ? t("alertsPetBtn", { name: pet.name, n })
-      : t("alertsPetNone", { name: pet.name });
-    alertCountBtn.setAttribute(
-      "aria-label",
-      n ? t("alertsPetBtnAria", { name: pet.name, n }) : t("alertsPetNone", { name: pet.name })
-    );
+  if (alertCountBtn && alertsRenderer) {
+    const badge = alertsRenderer.buildHomeBadgePresentation(pet, alerts);
+    alertCountBtn.textContent = badge.text;
+    alertCountBtn.setAttribute("aria-label", badge.ariaLabel);
   }
   syncAlertNavTone(alerts);
 }
@@ -3663,6 +3652,7 @@ let imagingRenderer;
 let alertsRenderer;
 let petsRenderer;
 let photoCropShell;
+let calendarChooserShell;
 let breedRenderer;
 let medicationsRenderer;
 let proofPreviewShell;
@@ -4885,6 +4875,7 @@ petsRenderer = PetLiveWeb.domains.pets.createRenderer({
 });
 
 photoCropShell = PetLiveWeb.shell.createPhotoCrop();
+calendarChooserShell = PetLiveWeb.shell.createCalendarChooser();
 
 breedRenderer = PetLiveWeb.domains.breed.createRenderer({
   label: (key, params) => t(key, params),
@@ -5345,26 +5336,21 @@ function openVisitProof(visitIndex) {
 function toggleVisitRxButton(toggle) {
   const panelId = toggle.getAttribute("aria-controls");
   const panel = panelId ? document.getElementById(panelId) : null;
-  if (!panel) return;
+  if (!panel || !timelineRenderer) return;
   const open = panel.hasAttribute("hidden");
-  if (open) {
-    panel.removeAttribute("hidden");
-    toggle.setAttribute("aria-expanded", "true");
-    toggle.textContent = t("timelineVisitRxHide");
-    toggle.classList.add("is-open");
-  } else {
-    panel.setAttribute("hidden", "");
-    toggle.setAttribute("aria-expanded", "false");
-    toggle.textContent = t("timelineVisitRxBtn");
-    toggle.classList.remove("is-open");
-  }
+  const view = timelineRenderer.buildVisitRxTogglePresentation(open);
+  if (view.panelHidden) panel.setAttribute("hidden", "");
+  else panel.removeAttribute("hidden");
+  toggle.setAttribute("aria-expanded", view.ariaExpanded);
+  toggle.textContent = view.text;
+  toggle.classList.toggle("is-open", view.isOpen);
   if (panelId === "visit-rx-0") {
     latestRxUserCollapsed = !open;
   }
 }
 
 function expandLatestVisitRx() {
-  if (latestRxUserCollapsed) return;
+  if (!timelineRenderer?.shouldAutoExpandLatestRx(latestRxUserCollapsed)) return;
   const toggle = document.querySelector(
     '[data-visit-rx-toggle][aria-controls="visit-rx-0"]'
   );
@@ -5376,19 +5362,14 @@ function expandLatestVisitRx() {
 function toggleVisitImagingButton(toggle) {
   const panelId = toggle.getAttribute("aria-controls");
   const panel = panelId ? document.getElementById(panelId) : null;
-  if (!panel) return;
+  if (!panel || !timelineRenderer) return;
   const open = panel.hasAttribute("hidden");
-  if (open) {
-    panel.removeAttribute("hidden");
-    toggle.setAttribute("aria-expanded", "true");
-    toggle.textContent = t("timelineVisitImagingHide");
-    toggle.classList.add("is-open");
-  } else {
-    panel.setAttribute("hidden", "");
-    toggle.setAttribute("aria-expanded", "false");
-    toggle.textContent = t("timelineVisitImagingBtn");
-    toggle.classList.remove("is-open");
-  }
+  const view = timelineRenderer.buildVisitImagingTogglePresentation(open);
+  if (view.panelHidden) panel.setAttribute("hidden", "");
+  else panel.removeAttribute("hidden");
+  toggle.setAttribute("aria-expanded", view.ariaExpanded);
+  toggle.textContent = view.text;
+  toggle.classList.toggle("is-open", view.isOpen);
 }
 
 function revealVisitImagingPanel(visitIndex, { scroll = false } = {}) {
@@ -6221,7 +6202,7 @@ document.getElementById("parasite-cal-chooser")?.addEventListener("click", (even
   const providerBtn = target.closest("[data-parasite-cal-provider]");
   if (!providerBtn) return;
   const provider = providerBtn.getAttribute("data-parasite-cal-provider");
-  const payload = pendingCalendarPayload;
+  const payload = calendarChooserShell?.getPending?.() || null;
   closeCalendarChooser();
   if (!payload) return;
   if (provider === "apple") openAppleCalendar(payload);

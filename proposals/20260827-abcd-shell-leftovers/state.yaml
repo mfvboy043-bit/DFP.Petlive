@@ -1,0 +1,30 @@
+id: "20260827-abcd-shell-leftovers"
+title: "ABCD leftovers — vaccine chips, calendar chooser, alert badge, timeline toggles"
+version: 2
+status: candidate_ready
+
+gate_a:
+  status: approved
+  note: "Victor 2026-08-27 — ABCD先做完，問是否採用與覆蓋"
+
+gate_b:
+  status: pending
+
+iteration: 1
+max_iterations: 3
+
+candidate:
+  branch: "cursor/abcd-shell-leftovers-8ec1"
+  path: "proposals/20260827-abcd-shell-leftovers"
+  worktree: ""
+
+reviews:
+  pharmacist: skipped
+  qa: pass
+  ui: skipped
+
+rerun: []
+blocking_issues: []
+non_blocking: []
+builder_scope: []
+halt_reason: ""

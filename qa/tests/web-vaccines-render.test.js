@@ -155,4 +155,15 @@ describe("VA-05 vaccines render builders", () => {
     assert.equal(/\bt\s*\(/.test(src), false);
     assert.equal(/\bPetLive\b/.test(src), false);
   });
+
+  it("buildFormChipsHtml rows and keys", () => {
+    const { renderer } = loadVaccinesRenderer();
+    const html = renderer.buildFormChipsHtml([
+      { labelKey: "vaccineChipCore", keys: ["v5in1", "vRabies"] },
+    ]);
+    assert.match(html, /vaccine-chip-row/);
+    assert.match(html, /vaccineChipCore/);
+    assert.match(html, /data-vaccine-key="v5in1"/);
+    assert.match(html, /data-vaccine-key="vRabies"/);
+  });
 });
