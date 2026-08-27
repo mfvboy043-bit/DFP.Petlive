@@ -1,0 +1,43 @@
+id: "20260827-wire-bundles"
+title: "C — bundle facade wires into shell (photo-crop, nav, account/cloud, intro)"
+version: 2
+status: proposed
+# proposed | building | reviewing | revising | candidate_ready | halted | adopted | rejected
+
+gate_a:
+  status: pending
+  # pending | approved | modified | rejected
+  # Parent flips to approved after this write. Victor 2026-08-27 —「1. 可以整理電線？」then「確認」.
+
+gate_b:
+  status: pending
+  # pending | adopted | rejected
+
+iteration: 0
+max_iterations: 3
+
+candidate:
+  branch: "cursor/wire-bundles-6f84"
+  path: "proposals/20260827-wire-bundles"
+  worktree: ""
+
+reviews:
+  pharmacist: pending
+  qa: pending
+  ui: pending
+  # pending | skipped | pass | conditional | reject
+  # Expect pharmacist/ui skip (no med copy / no visual redesign); qa on wire behavior.
+
+rerun: []
+blocking_issues: []
+non_blocking: []
+builder_scope:
+  - "CREATE|EDIT apps/web/shell/photo-crop.js  # A bindPhotoCropUi (or equiv) wire helpers"
+  - "EDIT apps/web/shell/navigation.js AND/OR CREATE apps/web/shell/app-nav.js  # B nav menu open/close wires"
+  - "EDIT apps/web/shell/account-chrome.js  # C paintAccountMenu/paintCloudChrome orchestration"
+  - "CREATE optional apps/web/shell/intro-cloud.js  # D initIntroAndCloud listener bundle if not folded into account-chrome"
+  - "EDIT apps/web/c/app.js  # thin facade: call shell + inject toast/setPetPhoto/go/session adapters"
+  - "EDIT apps/web/c/index.html  # script tags + ?v= for new/changed shell before c/app.js"
+  - "CREATE optional qa/tests/web-shell-*.test.js  # pure bind/paint helpers"
+  - "EDIT proposals/20260827-wire-bundles/*  # contrast/reviews as loop proceeds"
+halt_reason: ""
