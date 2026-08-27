@@ -1,15 +1,15 @@
 id: "20260827-small-brains"
 title: "Wave 1 — leftover small brains out of C facade"
 version: 2
-status: candidate_ready
+status: adopted
 
 gate_a:
   status: approved
   note: "Victor 2026-08-27 — 確認（先做小腦袋／Wave 1）"
 
 gate_b:
-  status: pending
-  note: "Formal B out of scope until Victor 採用"
+  status: adopted
+  note: "Victor 2026-08-27 — 採用，覆蓋"
 
 iteration: 1
 max_iterations: 3
@@ -33,7 +33,7 @@ non_blocking:
   - "QA-2: pre-existing upsertPetVaccines newest-first assert (out of Wave 1)"
 builder_scope: []
 builder_note: >-
-  Iteration 0 FULL A–D on C. New labels.js for parasite/vaccines/medications;
-  breed resolveSearchFaceValue; D verified already in emergency render.
-  Formal B untouched. Arbiter: candidate_ready (iter 1).
+  Gate B: cover Wave 1 labels onto formal B (app.js + index.html script tags).
+  Domains unchanged; B wires parasite/vaccines/medications labels + breed
+  resolveSearchFaceValue; emergency already domain path. Arbiter iter 1 ready.
 halt_reason: ""

@@ -1,7 +1,7 @@
 ---
 id: 20260827-small-brains
 title: Wave 1 — leftover small brains out of C facade
-status: reviewing
+status: adopted
 author: planner
 candidate_branch: "cursor/small-brains-6f84"
 candidate_path: "proposals/20260827-small-brains"
@@ -9,15 +9,17 @@ created: 2026-08-27
 updated: 2026-08-27
 ---
 
-# Proposal: Wave 1 — leftover small brains (C only)
+# Proposal: Wave 1 — leftover small brains (C → B cover)
 
 Companion: `state.yaml`. Contrast: `contrast.md`.
 
 **Gate A:** Victor 2026-08-27 —「確認」(對「確認：先做小腦袋」). Approved; Builder iteration 0 on `cursor/small-brains-6f84`.
 
+**Gate B:** Victor 2026-08-27 —「採用，覆蓋」. Formal B covered from C wiring.
+
 ## Goal
 
-Move leftover **pure presentation / text-builder** helpers out of the C facade into the right domains. Behavior-preserving. Facade keeps DOM, `t()` wiring, chooser overlays, `window.open` / clipboard I/O. C only until Gate B; formal B out of scope until Victor 採用.
+Move leftover **pure presentation / text-builder** helpers out of the C facade into the right domains. Behavior-preserving. Facade keeps DOM, `t()` wiring, chooser overlays, `window.open` / clipboard I/O. After Gate B, formal B mirrors the same domain wires.
 
 ## In scope
 
@@ -63,7 +65,6 @@ Move leftover **pure presentation / text-builder** helpers out of the C facade i
 - Form save / render orchestration (Wave 2 wires)
 - `modules/*` write truth (Wave 4)
 - CSS / bundler (Wave 3)
-- Formal B / `apps/web/app.js` cover (Gate B later)
 - Drive-by refactors, medical copy / i18n key renames
 - Moving chooser DOM, `window.open`, blob download, or clipboard I/O into domains
 
@@ -71,10 +72,10 @@ Move leftover **pure presentation / text-builder** helpers out of the C facade i
 
 | Slice | Layer / path |
 |---|---|
-| A | `domains/parasite/controller.js` (or labels helper), `domains/vaccines/controller.js` (or labels), optional `domains/calendar/helpers.js` only if shared; `c/app.js`; `c/index.html` `?v=` |
-| B | `domains/medications/selectors.js` and/or `domains/medications/labels.js` (new); `c/app.js`; `?v=` |
-| C | `domains/breed/render.js` or `selectors.js`; `c/app.js`; `?v=` |
-| D | `domains/emergency/render.js` and/or `adapters.js` if leftover; else no-op; `c/app.js` |
+| A | `domains/parasite/labels.js`, `domains/vaccines/labels.js`; `c/app.js` + Gate B `app.js`; `?v=` |
+| B | `domains/medications/labels.js`; facades; `?v=` |
+| C | `domains/breed/selectors.js`; facades |
+| D | Verified already in `domains/emergency/render.js`; thin wire |
 | QA | extend `qa/tests/web-medications*`, parasite/vaccines/calendar, breed, emergency as needed |
 | Meta | `proposals/20260827-small-brains/*` |
 
@@ -93,7 +94,7 @@ Move leftover **pure presentation / text-builder** helpers out of the C facade i
 - [x] C facade only wires `label`/DOM/open/clipboard; no duplicate algorithms
 - [x] Behavior identical on surface C (calendar text, med labels/badges/tones, breed search face, emergency copy card)
 - [x] `node --check apps/web/c/app.js`; related qa tests pass (2 pre-existing vaccines order asserts still fail)
-- [x] Formal B / `apps/web/app.js` untouched this Gate A cycle
+- [x] Gate B: formal B (`apps/web/app.js` + `index.html`) covered; same domain wires; B Google chrome intact
 
 ## Notes for Victor（白話／五歲聽得懂）
 
@@ -104,4 +105,4 @@ Move leftover **pure presentation / text-builder** helpers out of the C facade i
 3. **品種搜尋框顯示什麼字**——選了品種後搜尋框要秀哪個名字  
 4. **急診複製卡組字**——若還有拼字剩在外面，收進急診積木（很多已經搬過了）
 
-按鈕、開視窗、複製到剪貼簿還留在 C。這波**只做 C**；你說採用後再蓋 B。
+按鈕、開視窗、複製到剪貼簿還留在 facade。Gate A 先做 C；你說採用後已蓋 B。
