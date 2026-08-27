@@ -8377,6 +8377,11 @@ body.demo-tour-active .demo-tour-target {
   isolation: isolate;
 }
 
+/* display:flex above beats the UA [hidden] rule — force hide */
+.glass-dock[hidden] {
+  display: none !important;
+}
+
 /* Sliding selection pill — slides + resizes under the active tab */
 .glass-dock-thumb {
   position: absolute;

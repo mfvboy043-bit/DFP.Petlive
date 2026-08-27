@@ -7795,27 +7795,28 @@ html.is-proof-lightbox-open body {
    --------------------------------------------------------- */
 
 :root {
-  --glass-dock-h: 64px;
-  --glass-dock-offset: 78px;
+  --glass-dock-h: 52px;
+  --glass-dock-offset: 66px;
 }
 
 .glass-dock {
   position: fixed;
-  left: var(--screen-padding);
-  right: var(--screen-padding);
+  left: 50%;
+  right: auto;
   bottom: max(10px, env(safe-area-inset-bottom, 0px));
   z-index: 46;
 
   display: flex;
   align-items: stretch;
   justify-content: space-between;
-  gap: 2px;
+  gap: 0;
 
   box-sizing: border-box;
-  width: auto;
-  max-width: none;
+  width: min(420px, calc(100% - 2 * var(--screen-padding) - 48px));
+  max-width: min(420px, calc(100% - 2 * var(--screen-padding) - 48px));
   margin: 0;
-  padding: 6px 8px;
+  padding: 4px 6px;
+  transform: translateX(-50%);
 
   border: 1px solid rgba(255, 255, 255, 0.42);
   border-radius: 999px;
@@ -7840,14 +7841,19 @@ html.is-proof-lightbox-open body {
   isolation: isolate;
 }
 
+/* display:flex above beats the UA [hidden] rule — force hide */
+.glass-dock[hidden] {
+  display: none !important;
+}
+
 /* Sliding selection pill — slides + resizes under the active tab */
 .glass-dock-thumb {
   position: absolute;
-  top: 6px;
-  bottom: 6px;
+  top: 4px;
+  bottom: 4px;
   left: 0;
   width: 0;
-  border-radius: 22px;
+  border-radius: 18px;
   background: rgba(245, 239, 228, 0.55);
   box-shadow: 0 1px 0 rgba(255, 255, 255, 0.4) inset;
   pointer-events: none;
@@ -7872,13 +7878,13 @@ html.is-proof-lightbox-open body {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 2px;
+  gap: 1px;
   min-width: 0;
   min-height: var(--glass-dock-h);
-  padding: 6px 4px 8px;
+  padding: 4px 2px 5px;
   margin: 0;
   border: 0;
-  border-radius: 22px;
+  border-radius: 18px;
   background: transparent;
   color: var(--text-muted, #5c6b64);
   box-shadow: none;
@@ -7905,8 +7911,8 @@ html.is-proof-lightbox-open body {
 .glass-dock-ico {
   display: grid;
   place-items: center;
-  width: 28px;
-  height: 28px;
+  width: 22px;
+  height: 22px;
   line-height: 0;
   transform: scale(1);
   transform-origin: center bottom;
@@ -7938,6 +7944,8 @@ html.is-proof-lightbox-open body {
 
 .glass-dock-ico svg {
   display: block;
+  width: 18px;
+  height: 18px;
 }
 
 .glass-dock-label {
@@ -7946,10 +7954,10 @@ html.is-proof-lightbox-open body {
   text-overflow: ellipsis;
   white-space: nowrap;
   font-family: "Noto Sans TC", system-ui, sans-serif;
-  font-size: 11px;
+  font-size: 10px;
   font-weight: 600;
   letter-spacing: 0.01em;
-  line-height: 1.2;
+  line-height: 1.15;
 }
 
 @media (prefers-reduced-motion: reduce) {
