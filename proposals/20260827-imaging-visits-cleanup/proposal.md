@@ -1,7 +1,7 @@
 ---
 id: 20260827-imaging-visits-cleanup
 title: Imaging visits cleanup — single imaging domain
-status: building
+status: adopted
 author: planner
 candidate_branch: "cursor/imaging-visits-cleanup-f35c"
 candidate_path: "proposals/20260827-imaging-visits-cleanup"

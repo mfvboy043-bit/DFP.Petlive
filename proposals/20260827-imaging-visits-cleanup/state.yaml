@@ -1,14 +1,15 @@
 id: "20260827-imaging-visits-cleanup"
 title: "Imaging visits cleanup — single imaging domain"
 version: 2
-status: candidate_ready
+status: adopted
 
 gate_a:
   status: approved
   note: "Victor 請繼續完成 2026-08-27 — finish deferred imaging/visits duplicate"
 
 gate_b:
-  status: pending
+  status: adopted
+  note: "Victor 採用 2026-08-27 — land cursor/imaging-visits-cleanup-f35c onto main"
 
 iteration: 1
 max_iterations: 3

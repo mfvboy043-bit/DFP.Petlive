@@ -1,4 +1,4 @@
-# Contrast: imaging visits cleanup
+# Contrast: imaging visits cleanup — adopted
 
 ## Mainline before
 
@@ -7,7 +7,7 @@
 - C facades still call `visitsController.*Imaging*`; no imaging script on C
 - Timeline accepts visits.visitHasImaging fallback
 
-## After candidate
+## After adopt
 
 - Imaging APIs only on `domains/imaging`
 - C + B both inject imaging into timeline
@@ -19,5 +19,6 @@
 - `apps/web/domains/visits/controller.js`
 - `apps/web/domains/timeline/selectors.js`
 - `apps/web/c/app.js`, `c/index.html`
-- `qa/tests/web-timeline-visits.test.js`
+- `apps/web/index.html` (cache bump)
+- `qa/tests/web-timeline-visits.test.js`, `web-imaging.test.js`
 - `proposals/20260827-imaging-visits-cleanup/*`
