@@ -1,15 +1,16 @@
 id: "20260827-drug-catalog-single-path"
 title: "Drug catalog single path — one seed, one search brain"
 version: 2
-status: proposed
+status: candidate_ready
 
 gate_a:
-  status: pending
+  status: approved
+  note: "Victor 確認 2026-08-27"
 
 gate_b:
   status: pending
 
-iteration: 0
+iteration: 1
 max_iterations: 3
 
 candidate:
@@ -18,8 +19,8 @@ candidate:
   worktree: ""
 
 reviews:
-  pharmacist: pending
-  qa: pending
+  pharmacist: pass
+  qa: pass
   ui: skipped
 
 rerun: []
