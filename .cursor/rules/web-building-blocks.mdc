@@ -1,27 +1,49 @@
 ---
 description: >-
-  New apps/web logic must be written as layered building blocks (domains/core/shell),
-  then wired via thin facades — never dump new brain into app.js monolith.
+  ALWAYS classify then write into domains/core/shell first — never draft chrome or
+  product brain in app.js / c/app.js and “extract later.” Victor standing order.
 alwaysApply: true
 ---
 
 # Web building blocks (積木規則)
 
-Reference: adopted `20260813-web-layered-building-blocks` + current `apps/web/domains/*`.
+**Victor standing order (2026-08-27):** Do **not** wait for him to say「照積木規則」.  
+Every new `apps/web` feature/chrome must land in the right block **on the first write**.  
+Forbidden: paste into `app.js` / `c/app.js` / surface `styles.css` “to show quickly”, then refactor into `shell/` or `domains/` after he complains.
+
+Reference: adopted `20260813-web-layered-building-blocks` + `apps/web/domains/*` + `apps/web/shell/*`.
 
 ## When this applies
 
-Any **new** product logic for `apps/web` (and covers onto B). Tiny typos / copy-only edits are exempt.
+- Any **new** product logic, UI chrome, nav, dock, menu, sync paint, or shared styles for `apps/web` (C and covers onto B)
+- Self-iteration Builder / in-chat “先做一個…” drafts on C — **same rule**
+- Exempt only: typos, comment-only, or a one-line copy tweak Victor scoped in chat
+
+## Hard stop — write order
+
+```text
+1. Classify layer (domain | core | shell | runtime)
+2. Create/extend file under that folder
+3. Thin-wire from surface app.js + index.html script/link tags
+4. Only then paint DOM / go() / i18n in the facade
+```
+
+If you cannot name the target path (`apps/web/shell/<x>.js` or `apps/web/domains/<x>/…`) **before** typing implementation, stop and classify first.
+
+**Never:**
+
+- Grow algorithms inside `apps/web/app.js` or `apps/web/c/app.js`
+- Duplicate the same chrome HTML/CSS in both C and B surfaces
+- Put shared floating-chrome CSS only in `c/styles.css` / `styles.css` (use `shell/<name>.css` when C and B share it)
+- Say “稍後再拆積木” / “先寫在 app.js 再搬”
 
 ## Default workflow (must follow)
 
-1. **Classify** — Which layer / domain owns this brain?
-2. **Write the block** — Put pure logic under the right folder (not into fat `app.js` / `c/app.js`).
-3. **Wire** — Thin facade in surface `app.js`: createController / createSelectors, delegate; DOM / `t()` / listeners stay in the shell.
-4. **Load** — Add `<script defer src="…">` in the surface `index.html` (correct path + cache `?v=`).
-5. **Test** — Prefer `qa/tests/web-<domain>.test.js` or `web-shell-*.test.js` (node:test + vm), behavior-preserving.
-
-Do **not** grow the monolith: no new domain or chrome brain pasted straight into `app.js`.
+1. **Classify** — Which layer owns this brain? (table below)
+2. **Write the block** — `domains/` / `core/` / `shell/` (IIFE + `PetLiveWeb.domains.*` or `PetLiveWeb.shell.*`)
+3. **Wire** — Thin facade: `initX` / `paintX` that call the public API; pass hooks (`getActiveScreen`, `onGo`, `t` via re-apply i18n)
+4. **Load** — `<script defer src="…">` and/or `<link rel="stylesheet" href="…">` in surface `index.html` **before** `app.js` (bump `?v=`)
+5. **Test** — Prefer `qa/tests/web-<domain>.test.js` or `web-shell-*.test.js` (node:test + vm)
 
 ## Layers (put code here)
 
@@ -29,26 +51,36 @@ Do **not** grow the monolith: no new domain or chrome brain pasted straight into
 |-------|------|------|----------|
 | Domain | `apps/web/domains/<name>/` | Pure selectors / controllers / adapters on `pets[]` | DOM, `localStorage`, `t()`, another domain’s private state |
 | Core | `apps/web/core/` | Shared state, storage slots | Screen HTML |
-| Shell | `apps/web/shell/` | Navigation, floating chrome, render coordinator | Pet/domain writes, direct storage |
+| Shell | `apps/web/shell/` | Navigation, **floating chrome**, docks, account menus, render coordinator | Pet/domain writes, direct storage |
 | Runtime | `apps/web/runtime/` | `PetLive.*` bridges / ModuleResult unwrap | UI chrome |
-| Surface facade | `apps/web/c/app.js` or `apps/web/app.js` | Compose factories, DOM, i18n, events | Duplicate domain / chrome algorithms |
+| Surface facade | `apps/web/c/app.js` or `apps/web/app.js` | Compose factories, DOM events, i18n apply | Duplicate domain / chrome algorithms or markup |
 
 Existing domains (reuse before inventing): `pets`, `visits`, `timeline`, `medications`, `alerts`, `vaccines`, `parasite`, `emergency`, `cloud`, `owner`, `breed`, `labs`, `imaging`.
 
-Existing shell chrome (extend these — do not re-paste into `app.js`): `navigation.js`, `app-nav.js`, `account-chrome.js`, `intro-cloud.js`, `glass-dock.js`, …
+Existing shell chrome (extend — do not re-paste into `app.js`):  
+`navigation.js`, `app-nav.js`, `account-chrome.js`, `intro-cloud.js`, `glass-dock.js` (+ `glass-dock.css`), …
 
-## Chrome / nav UI (hard rule — Victor 2026-08-27)
+## Quick classify (use this every time)
 
-Floating top/bottom glass chrome, tab docks, account menus, app-nav panels, and similar **shell chrome** belong in `apps/web/shell/<name>.js` as `PetLiveWeb.shell.*`.
+| What Victor asked for | Put it here |
+|---|---|
+| Floating top/bottom glass bar, tab dock, account chip/popover, app-nav panel | `shell/<name>.js` (+ shared `shell/<name>.css` + markup helper) |
+| Screen map / `go()` chrome paint / sliding thumb / tab→screen key | `shell/` pure helpers + paint |
+| Pet visits, meds, vaccines, alerts, labs, imaging logic | `domains/<name>/` |
+| Storage keys / slots / sync-meta math without DOM | `core/` or domain selectors |
+| One surface’s `data-go` / `hideOnScreens` / `passportGo` only | Thin facade args into shell `init*` |
+
+**Rule of thumb:** If it is not writing `pets[]` / domain records, and it is nav or floating chrome → **shell**, not domain, not `app.js`.
+
+## Chrome / nav UI (hard rule)
 
 | Do | Do not |
 |----|--------|
-| New file under `shell/` (IIFE + `PetLiveWeb.shell`) | Paste `paint*` / tab-map / thumb-slide brain into `app.js` or `c/app.js` |
-| Pure helpers testable without DOM (e.g. `dockKeyForScreen`) | Grow `go()` with chrome algorithms |
-| Facade: thin `paintX` / `initX` that call shell + pass `getActiveScreen` | Duplicate the same chrome block on C and B |
-| `<script defer src="…/shell/….js?v=…">` **before** surface `app.js` | Ship chrome that only exists inline in one surface |
-
-**Classify first:** if it is not writing `pets[]` / domain records, and it is nav or floating chrome → **shell**, not domain.
+| New/extend `apps/web/shell/<name>.js` (`PetLiveWeb.shell.*`) | Paste `paint*` / tab-map / thumb-slide into `app.js` or `c/app.js` |
+| Shared chrome CSS in `apps/web/shell/<name>.css` linked from C + B | Copy the same dock CSS into both `styles.css` files |
+| Markup factory on shell (e.g. `glassDockMarkup`) mounted by `init*` | Duplicate large `<nav class="glass-dock">` blocks in both `index.html`s |
+| Facade: thin `initX` / `paintX` + hooks | Grow `go()` with chrome algorithms |
+| Script/link tags before surface `app.js` | Ship chrome that only exists inline in one surface |
 
 ## Dependency direction
 
@@ -60,16 +92,19 @@ views       -X-> localStorage
 domains     -X-> another domain’s private internals
 ```
 
-## Planner / Builder must
+## Planner / Builder / in-chat agent must
 
-- **Planner:** In every proposal that adds logic, name the target layer + path (`domains/<x>` **or** `shell/<x>`), and list facade / script-tag files. Non-goal: dumping brain into `app.js`.
-- **Builder:** Implement domain/core/shell files first; facades only call public `PetLiveWeb.domains.*` / `PetLiveWeb.shell.*` APIs. Match classic IIFE style (zero-build).
-- **C first** for passport work per `c-to-b-cover` rule; shared `domains/*` and `shell/*` are used by both surfaces.
+- **Before coding:** state the target path in one line (e.g. `shell/glass-dock.js` + `shell/glass-dock.css`).
+- **Planner proposals:** name layer + path + facade + script/link tags. Non-goal: dumping brain into `app.js`.
+- **Builder / direct edits:** implement block files **first**; facade last.
+- **C first** for passport shell per `c-to-b-cover`; shared `domains/*` and `shell/*` serve both surfaces — edit the shared block once, wire both.
 
-## Done check
+## Done check (before telling Victor it’s done)
 
+- [ ] Named the layer/path **before** implementing
 - [ ] New brain lives under `domains/` / `core/` / `shell/` (not only `app.js`)
+- [ ] Shared chrome CSS/markup not duplicated across C and B
 - [ ] Surface `app.js` only wires + renders
-- [ ] `index.html` script order loads the new block before `app.js`
-- [ ] Chrome / dock / nav work landed in `shell/`, not a second copy inside the facade
+- [ ] `index.html` loads the block (`?v=` bumped) before `app.js`
+- [ ] No “稍後再拆” debt left for Victor to catch
 - [ ] No second pet store; `pets[]` remains write truth unless a proposal explicitly changes that
