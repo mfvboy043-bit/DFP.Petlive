@@ -1,36 +1,30 @@
-# Contrast: mainline vs Labs candidate
+# Contrast: Labs candidate vs mainline
 
 ## Candidate
 
-- Branch: `proposal/labs-imaging-controller` (C slice)
-- Path: `proposals/20260827-labs-controller`
-- Surface: **C only** + shared `domains/labs`
-- Status: `candidate_ready` (iteration 1)
+- Branch: `proposal/labs-controller` (`f6f8922`)
+- Surface: **C** + shared `domains/labs`
+- Formal B already loads labs domain (prior cover); this Gate B finishes C
 
-## Mainline vs candidate
+## Before (main C)
 
-1. **Before:** Lab type/sort/match/CRUD inline in `c/app.js` (~2578–2664 + form handlers).
-2. **After:** `domains/labs` selectors + controller; C facades delegate; shell keeps render/forms/compress/`t()`.
-3. **Storage:** C `petlive-c-lab-reports` unchanged; formal B `petlive-lab-reports` untouched until cover.
-4. **Cloud:** already injects `labReportsSlot` — no cloud edits.
+1. Labs type/sort/match/CRUD inlined in `c/app.js`
+2. No labs script tags on C (or incomplete wire)
 
-## Files
+## After (candidate)
 
-### Add
-- `apps/web/domains/labs/selectors.js`
-- `apps/web/domains/labs/controller.js`
+1. `domains/labs` selectors + controller
+2. C facades + `?v=20260827-lb-ctrl`
+3. Empty-photo add rejected; chrome unchanged
+
+## Files to adopt
+
+- `apps/web/domains/labs/*` (if not already on main)
+- `apps/web/c/app.js`, `apps/web/c/index.html`
 - `qa/tests/web-labs.test.js`
+- `proposals/20260827-labs-controller/*`
 
-### Change
-- `apps/web/c/app.js` — labs facades + build/add/remove via controller
-- `apps/web/c/index.html` — labs script tags + cache bump
+## Exclude
 
-### Exclude
-- Formal B / Pages until Victor confirms cover
-- UX redesign, CBC values, cloud brain moves
-
-## Merge checklist (after 採用)
-
-- [x] Victor said 採用 + 覆蓋 B (2026-08-27)
-- [x] Land on main (C + domains/labs)
-- [x] C → B cover (formal B facades + `petlive-lab-reports` + DEMO_MODE bump)
+- Owner / storage / imaging WIP
+- Re-cover B unless Victor asks

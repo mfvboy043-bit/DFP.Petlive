@@ -2,15 +2,35 @@
 
 **Decision:** `candidate_ready`
 
+## Reviews present
+
+| Reviewer | Verdict |
+|---|---|
+| QA | pass |
+| UI | pass |
+| Pharmacist | skipped (photo archive; no meds) |
+
 ## Issue map
 
 | ID | Source | Severity | Classification | Notes |
 |---|---|---|---|---|
-| QA-001 | QA iter0 | high | **resolved** | `c/index.html` loads `domains/labs/*` before `app.js`. |
-| QA-002 | QA iter0 | medium | non_blocking | Facades delegate read/write to `labsController`; acceptable shell pattern. |
-| QA-003 | QA iter0 | medium | non_blocking | Commit artifacts at Gate B adopt. |
-| UI-001 | UI | low | non_blocking | Script-order hygiene only. |
+| QA-001 | QA | high | **resolved** | C script tags present @ f6f8922 |
+| QA-002 | QA | medium | **resolved** | Facades delegate to domain |
+| QA-003 | QA | medium | **resolved** | Domain + tests on branch HEAD |
+| (none) | UI | — | — | UI pass |
+
+## Blocking
+
+- (none)
+
+## Non-blocking
+
+- (none)
 
 ## Decision rationale
 
-Iteration-1 fixes script tags. Domain APIs match proposal LB-01..04. C-only; B untouched. No medical-safety regressions.
+QA/UI both pass after C wire on `f6f8922`. Formal B already has labs domain from prior cover; this Gate B adopts **C** onto main. No medical-safety blockers.
+
+## Next
+
+Gate B — ask Victor 採用 / 否決. On adopt: land C labs wire (+ domain/tests if missing on main). Do not re-cover B unless Victor asks.

@@ -1,7 +1,7 @@
 id: "20260827-labs-controller"
 title: "Labs controller building blocks"
 version: 2
-status: reviewing
+status: candidate_ready
 
 gate_a:
   status: approved
@@ -17,19 +17,15 @@ candidate:
   branch: "proposal/labs-controller"
   path: "proposals/20260827-labs-controller"
   worktree: ".worktrees/main-adopt"
-  note: "LB-01..04 on C; formal B already has labs domain from prior cover — this Gate B is C adopt"
+  note: "f6f8922 C wire; B already has labs domain — Gate B = C adopt"
 
 reviews:
   pharmacist: skipped
-  qa: pending
-  ui: pending
+  qa: pass
+  ui: pass
 
 rerun: []
 blocking_issues: []
 non_blocking: []
-builder_scope:
-  - LB-01
-  - LB-02
-  - LB-03
-  - LB-04
+builder_scope: []
 halt_reason: ""
