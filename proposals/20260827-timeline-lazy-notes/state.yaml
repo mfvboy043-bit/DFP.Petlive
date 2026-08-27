@@ -1,0 +1,31 @@
+id: "20260827-timeline-lazy-notes"
+title: "Timeline view models + lazy drug-note hydration"
+version: 2
+status: candidate_ready
+
+gate_a:
+  status: approved
+  note: "Victor 確認 2026-08-27（與 Breed 平行）"
+
+gate_b:
+  status: pending
+
+iteration: 1
+max_iterations: 3
+
+candidate:
+  branch: "proposal/timeline-lazy-notes"
+  path: "proposals/20260827-timeline-lazy-notes"
+  worktree: ""
+  note: "fabfc16 on C; lazy drug-note shell + hydrate on first open"
+
+reviews:
+  pharmacist: skipped
+  qa: pass
+  ui: pass
+
+rerun: []
+blocking_issues: []
+non_blocking: []
+builder_scope: []
+halt_reason: ""
