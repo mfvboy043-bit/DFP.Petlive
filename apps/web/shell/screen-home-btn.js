@@ -5,7 +5,7 @@
   root.shell = root.shell || {};
 
   /**
-   * Compact house control — icon + 主頁 label under it.
+   * Compact house icon — go home from any non-home screen-head.
    * Place leftmost inside `.screen-head-actions` (e.g. left of copy-card).
    */
   function screenHomeBtnMarkup() {
@@ -26,7 +26,6 @@
       <path fill="none" stroke="currentColor" stroke-width="1.9" stroke-linejoin="round" d="M7 10.5V19h10v-8.5" />
     </svg>
   </span>
-  <span class="screen-home-btn-label" data-i18n="dockHome">主頁</span>
 </button>`;
   }
 
@@ -65,7 +64,8 @@
         actions.insertAdjacentHTML("afterbegin", screenHomeBtnMarkup());
         btn = actions.querySelector("[data-screen-home-btn]");
       } else {
-        if (!btn.querySelector(".screen-home-btn-label")) {
+        // Drop legacy visible label if an older markup is still in the DOM.
+        if (btn.querySelector(".screen-home-btn-label")) {
           const wired = btn.getAttribute("data-nav-wired");
           btn.outerHTML = screenHomeBtnMarkup();
           btn = actions.querySelector("[data-screen-home-btn]");
