@@ -594,7 +594,11 @@
       );
     }
 
-    function planKeyedListReconcile(previousSignatures, nextSignatures) {
+    function planKeyedListReconcile(
+      previousSignatures,
+      nextSignatures,
+      { visitDates } = {}
+    ) {
       const prev = Array.isArray(previousSignatures) ? previousSignatures : [];
       const next = Array.isArray(nextSignatures) ? nextSignatures : [];
       // Empty list must paint empty-state HTML. Never skip []→[] (matches
@@ -615,10 +619,25 @@
       for (let i = 0; i < next.length; i += 1) {
         if (prev[i] !== next[i]) indices.push(i);
       }
-      // Weight-vs chrome on row i+1 reads previousVisit — bump neighbor too.
       const withNeighbors = new Set(indices);
+      const dates = Array.isArray(visitDates) ? visitDates : null;
       for (const i of indices) {
-        if (i + 1 < next.length) withNeighbors.add(i + 1);
+        if (dates && dates.length === next.length) {
+          // Chronological next visit (weight-vs reads previousVisit by date order).
+          const di = String(dates[i] || "");
+          let bestJ = -1;
+          let bestDate = null;
+          for (let j = 0; j < dates.length; j += 1) {
+            const dj = String(dates[j] || "");
+            if (dj > di && (bestDate == null || dj < bestDate)) {
+              bestDate = dj;
+              bestJ = j;
+            }
+          }
+          if (bestJ >= 0) withNeighbors.add(bestJ);
+        } else if (i + 1 < next.length) {
+          withNeighbors.add(i + 1);
+        }
       }
       const expanded = [...withNeighbors].sort((a, b) => a - b);
       // Too many churned rows → cheaper full rebuild

@@ -246,21 +246,51 @@ describe("TL-05 timeline render builders", () => {
     const sigs = renderer.buildItemSignatures(pet, { lang: "zh-Hant" });
     assert.equal(renderer.planKeyedListReconcile(sigs, sigs).mode, "skip");
 
-    const changed = {
+    // Change last row only → partial (no neighbor after it).
+    const changedLast = {
       ...pet,
       visits: [
         pet.visits[0],
-        { date: "2026-08-02", clinic: "B-edited", medications: [] },
-        pet.visits[2],
+        pet.visits[1],
+        { date: "2026-08-03", clinic: "C-edited", medications: [] },
       ],
     };
-    const next = renderer.buildItemSignatures(changed, { lang: "zh-Hant" });
-    const plan = renderer.planKeyedListReconcile(sigs, next);
-    assert.equal(plan.mode, "partial");
-    // Changed row 1 plus neighbor 2 (weight-vs depends on previousVisit).
-    assert.equal(plan.indices.length, 2);
-    assert.equal(plan.indices[0], 1);
-    assert.equal(plan.indices[1], 2);
+    const nextLast = renderer.buildItemSignatures(changedLast, { lang: "zh-Hant" });
+    const planLast = renderer.planKeyedListReconcile(sigs, nextLast);
+    assert.equal(planLast.mode, "partial");
+    assert.equal(planLast.indices.length, 1);
+    assert.equal(planLast.indices[0], 2);
+
+    // Newest-first array: change older row (index 2) → also refresh chrono next (index 1).
+    const newestFirst = {
+      id: "p1",
+      visits: [
+        { date: "2026-08-03", clinic: "C", medications: [], weightAtVisit: 7 },
+        { date: "2026-08-02", clinic: "B", medications: [], weightAtVisit: 6.5 },
+        { date: "2026-08-01", clinic: "A", medications: [], weightAtVisit: 6 },
+      ],
+    };
+    const nfSigs = renderer.buildItemSignatures(newestFirst, { lang: "zh-Hant" });
+    const nfChanged = {
+      ...newestFirst,
+      visits: [
+        newestFirst.visits[0],
+        newestFirst.visits[1],
+        {
+          date: "2026-08-01",
+          clinic: "A",
+          medications: [],
+          weightAtVisit: 6.2,
+        },
+      ],
+    };
+    const nfNext = renderer.buildItemSignatures(nfChanged, { lang: "zh-Hant" });
+    const nfDates = nfChanged.visits.map((v) => v.date);
+    const nfPlan = renderer.planKeyedListReconcile(nfSigs, nfNext, {
+      visitDates: nfDates,
+    });
+    assert.ok(nfPlan.indices.includes(2));
+    assert.ok(nfPlan.indices.includes(1));
 
     const shorter = renderer.buildItemSignatures(
       { id: "p1", visits: [pet.visits[0]] },

@@ -4269,9 +4269,11 @@ function renderTimeline(pet) {
   const lang =
     (typeof getCurrentLang === "function" && getCurrentLang()) || "zh-Hant";
   const nextItemSignatures = timelineRenderer.buildItemSignatures(pet, { lang });
+  const visitDates = (pet?.visits || []).map((visit) => visit?.date || "");
   const plan = timelineRenderer.planKeyedListReconcile(
     lastTimelineItemSignatures,
-    nextItemSignatures
+    nextItemSignatures,
+    { visitDates }
   );
   if (plan.mode === "skip") {
     const imagingPending = pendingVisitImagingIndex;
