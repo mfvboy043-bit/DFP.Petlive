@@ -11,7 +11,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,700&family=Noto+Sans+TC:wght@400;500;700&family=Noto+Serif+TC:wght@600;700&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="./styles.css?v=20260827-google-session" />
+  <link rel="stylesheet" href="./styles.css?v=20260827-glass-dock-slide" />
 </head>
 <body>
   <div class="atmosphere" aria-hidden="true">
@@ -1954,6 +1954,148 @@
     </div>
   </div>
 
+  <!-- Bottom glass dock (C draft) — mirrors floating screen-head glass, pinned bottom -->
+  <nav
+    class="glass-dock"
+    id="glass-dock"
+    data-i18n-aria="glassDockAria"
+    aria-label="主選單"
+  >
+    <span class="glass-dock-thumb" id="glass-dock-thumb" aria-hidden="true"></span>
+    <button
+      class="glass-dock-item"
+      type="button"
+      data-go="timeline"
+      data-dock="timeline"
+    >
+      <span class="glass-dock-ico" aria-hidden="true">
+        <svg viewBox="0 0 24 24" width="22" height="22" focusable="false">
+          <path
+            fill="none"
+            stroke="currentColor"
+            stroke-width="1.8"
+            stroke-linecap="round"
+            d="M4 7h16M4 12h12M4 17h8"
+          />
+        </svg>
+      </span>
+      <span class="glass-dock-label" data-i18n="dockTimeline">時間軸</span>
+    </button>
+    <button
+      class="glass-dock-item"
+      type="button"
+      data-go="alerts"
+      data-dock="alerts"
+    >
+      <span class="glass-dock-ico" aria-hidden="true">
+        <svg viewBox="0 0 24 24" width="22" height="22" focusable="false">
+          <path
+            fill="none"
+            stroke="currentColor"
+            stroke-width="1.8"
+            stroke-linejoin="round"
+            d="M12 4 3.5 19h17L12 4z"
+          />
+          <path
+            fill="none"
+            stroke="currentColor"
+            stroke-width="1.8"
+            stroke-linecap="round"
+            d="M12 10v4M12 16.5v.5"
+          />
+        </svg>
+      </span>
+      <span class="glass-dock-label" data-i18n="dockAlerts">警示</span>
+    </button>
+    <button
+      class="glass-dock-item is-active"
+      type="button"
+      data-go="home"
+      data-dock="home"
+      aria-current="page"
+    >
+      <span class="glass-dock-ico" aria-hidden="true">
+        <svg viewBox="0 0 24 24" width="22" height="22" focusable="false">
+          <rect
+            x="5"
+            y="4"
+            width="14"
+            height="16"
+            rx="2.5"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="1.8"
+          />
+          <path
+            fill="none"
+            stroke="currentColor"
+            stroke-width="1.8"
+            stroke-linecap="round"
+            d="M8.5 9h7M8.5 12.5h7M8.5 16h4"
+          />
+        </svg>
+      </span>
+      <span class="glass-dock-label" data-i18n="dockPassport">護照</span>
+    </button>
+    <button
+      class="glass-dock-item"
+      type="button"
+      data-go="imaging"
+      data-dock="imaging"
+    >
+      <span class="glass-dock-ico" aria-hidden="true">
+        <svg viewBox="0 0 24 24" width="22" height="22" focusable="false">
+          <rect
+            x="3.5"
+            y="6"
+            width="17"
+            height="12"
+            rx="2"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="1.8"
+          />
+          <circle cx="9" cy="12" r="2.2" fill="none" stroke="currentColor" stroke-width="1.8" />
+          <path
+            fill="none"
+            stroke="currentColor"
+            stroke-width="1.8"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            d="m12.5 14.5 2.2-2.2 3.3 3.2"
+          />
+        </svg>
+      </span>
+      <span class="glass-dock-label" data-i18n="dockImaging">影像</span>
+    </button>
+    <button
+      class="glass-dock-item"
+      type="button"
+      data-go="labs"
+      data-dock="labs"
+    >
+      <span class="glass-dock-ico" aria-hidden="true">
+        <svg viewBox="0 0 24 24" width="22" height="22" focusable="false">
+          <path
+            fill="none"
+            stroke="currentColor"
+            stroke-width="1.8"
+            stroke-linejoin="round"
+            d="M9 3.5h6v5.2l3.5 8.3A2.2 2.2 0 0 1 16.5 20.5h-9a2.2 2.2 0 0 1-2-3.5L9 8.7z"
+          />
+          <path
+            fill="none"
+            stroke="currentColor"
+            stroke-width="1.8"
+            stroke-linecap="round"
+            d="M9 3.5h6"
+          />
+        </svg>
+      </span>
+      <span class="glass-dock-label" data-i18n="dockLabs">報告</span>
+    </button>
+  </nav>
+
   <div class="lang-switcher" id="lang-switcher">
     <div class="lang-menu" id="lang-menu" hidden>
       <button type="button" data-lang="zh-Hant">繁中</button>
@@ -1969,7 +2111,7 @@
   <script defer src="./auth/google-drive.js?v=20260827-google-session"></script>
   <script type="module" src="./runtime/petlive.js?v=20260824-drug-seed-dedupe"></script>
   <script defer src="./runtime/safe-ui.js?v=20260812-local-first"></script>
-  <script defer src="./i18n.js?v=20260827-google-session"></script>
+  <script defer src="./i18n.js?v=20260827-glass-dock-slide"></script>
   <script defer src="./breeds-database.js?v=20260825-breed-typeahead-adopt"></script>
   <script defer src="./domains/breed/selectors.js?v=20260827-small-brains"></script>
   <script defer src="./domains/breed/controller.js?v=20260827-tl-br-cover-b"></script>
@@ -2034,6 +2176,6 @@
   <script defer src="./domains/owner/controller.js?v=20260827-ow-st-cover"></script>
   <script defer src="./domains/cloud/selectors.js?v=20260827-cl-cover"></script>
   <script defer src="./domains/cloud/controller.js?v=20260827-modules-w4p1"></script>
-  <script defer src="./app.js?v=20260827-google-session"></script>
+  <script defer src="./app.js?v=20260827-glass-dock-slide"></script>
 </body>
 </html>
