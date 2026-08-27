@@ -10,4 +10,6 @@ Scope: LI-05 C candidate (`proposal/labs-imaging-view-render`).
 
 ## Result
 
-pass — `node --test qa/tests/web-labs-render.test.js qa/tests/web-imaging-render.test.js`
+pass — `node --test qa/tests/web-labs-render.test.js qa/tests/web-imaging-render.test.js` (8/8)
+
+Note: `web-labs.test.js` may show vm-realm `deepStrictEqual` false positives; unchanged by this slice.
