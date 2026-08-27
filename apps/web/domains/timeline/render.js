@@ -532,6 +532,62 @@
       return !userCollapsed;
     }
 
+    function shouldHydrateDrugNotesPanel({ hydrated, hasMed } = {}) {
+      return Boolean(hasMed) && hydrated !== "true";
+    }
+
+    function buildDrugNotesHydrateSlot(model) {
+      return {
+        className: "tl-drug-notes-body",
+        html: buildDrugNotesBodyHtml(model),
+      };
+    }
+
+    function visitFingerprint(visit, index) {
+      const proofs = visit?.proofPhotos || {};
+      const imaging = visit?.imaging || {};
+      const meds = Array.isArray(visit?.medications) ? visit.medications : [];
+      const bag = Array.isArray(proofs.bag) ? proofs.bag.length : 0;
+      const rx = Array.isArray(proofs.rx) ? proofs.rx.length : 0;
+      const drug = Array.isArray(proofs.drug) ? proofs.drug.length : 0;
+      const xray = Array.isArray(imaging.xrayPhotos) ? imaging.xrayPhotos.length : 0;
+      const us = Array.isArray(imaging.usPhotos) ? imaging.usPhotos.length : 0;
+      const medKey = meds
+        .map((med) =>
+          [med?.name || "", med?.dose || "", med?.kind || "", med?.compoundGroup || ""].join(
+            ":"
+          )
+        )
+        .join("|");
+      return [
+        index,
+        visit?.date || "",
+        visit?.clinic || "",
+        visit?.note || "",
+        visit?.weightAtVisit ?? visit?.weight ?? "",
+        medKey,
+        bag,
+        rx,
+        drug,
+        xray,
+        us,
+      ].join("\u001f");
+    }
+
+    function buildListSignature(pet, { lang } = {}) {
+      const visits = Array.isArray(pet?.visits) ? pet.visits : [];
+      return [
+        lang || "",
+        pet?.id || "",
+        String(visits.length),
+        visits.map((visit, index) => visitFingerprint(visit, index)).join("\u001e"),
+      ].join("\u001d");
+    }
+
+    function shouldSkipListRebuild(previousSignature, nextSignature) {
+      return Boolean(previousSignature) && previousSignature === nextSignature;
+    }
+
     return {
       buildDrugNotesBodyHtml,
       buildDrugNotesShellHtml,
@@ -546,6 +602,10 @@
       buildVisitRxTogglePresentation,
       buildVisitImagingTogglePresentation,
       shouldAutoExpandLatestRx,
+      shouldHydrateDrugNotesPanel,
+      buildDrugNotesHydrateSlot,
+      buildListSignature,
+      shouldSkipListRebuild,
     };
   }
 
