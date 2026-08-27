@@ -1158,27 +1158,30 @@ function clearVisitProofSlot(visit, slot) {
 }
 
 function getVisitImaging(visit) {
-  return visitsController.getVisitImaging(visit);
+  return imagingController.getVisitImaging(visit);
 }
 
 function ensureVisitImaging(visit) {
-  return visitsController.ensureVisitImaging(visit);
+  return imagingController.ensureVisitImaging(visit);
 }
 
 function visitHasImaging(visit) {
-  return visitsController.visitHasImaging(visit);
+  return imagingController.visitHasImaging(visit);
 }
 
 function formatImagingTypes(visit) {
-  const img = getVisitImaging(visit);
-  const parts = [];
-  if (img.xrayPhotos.length) parts.push(t("imagingXrayCaption"));
-  if (img.usPhotos.length) parts.push(t("imagingUsCaption"));
-  return parts.join("／");
+  const captionByKey = {
+    xray: "imagingXrayCaption",
+    us: "imagingUsCaption",
+  };
+  return imagingController
+    .imagingTypeKeys(visit)
+    .map((key) => t(captionByKey[key] || key))
+    .join("／");
 }
 
 function getImagingVisitEntries(pet) {
-  return visitsController.getImagingVisitEntries(pet);
+  return imagingController.getImagingVisitEntries(pet);
 }
 
 function renderVisitImagingThumbs(imaging, visitIndex) {
@@ -1214,7 +1217,7 @@ function renderVisitImagingThumbs(imaging, visitIndex) {
 }
 
 function clearVisitImagingPhoto(visit, slot, index) {
-  visitsController.clearVisitImagingPhoto(visit, slot, index);
+  imagingController.clearVisitImagingPhoto(visit, slot, index);
 }
 
 function getProofLightboxEls() {
@@ -2740,28 +2743,25 @@ const petsMedia = PetLiveWeb.domains.pets.createMedia({
 });
 
 const LAB_REPORTS_KEY = "petlive-lab-reports";
-const LAB_PHOTOS_MAX = 6;
-const LAB_TYPE_ORDER = [
-  "blood",
-  "chemistry",
-  "urine",
-  "fecal",
-  "snap",
-  "other",
-];
-const LAB_TYPE_I18N = {
-  blood: "labTypeBlood",
-  chemistry: "labTypeChem",
-  urine: "labTypeUrine",
-  fecal: "labTypeFecal",
-  snap: "labTypeSnap",
-  other: "labTypeOther",
-};
+const labsSelectors = PetLiveWeb.domains.labs.createSelectors({
+  visitClinicLabel,
+});
 const labReportsSlot = PetLiveWeb.storage.createJsonSlot({
   key: LAB_REPORTS_KEY,
   fallback: () => ({}),
   validate: isStorageMap,
 });
+const labsController = PetLiveWeb.domains.labs.createController({
+  labReportsSlot,
+  selectors: labsSelectors,
+  isDemoMode: () => DEMO_MODE,
+  onAfterWrite: () => {
+    if (typeof bumpLocalDataRevision === "function") bumpLocalDataRevision();
+  },
+});
+const LAB_PHOTOS_MAX = labsSelectors.LAB_PHOTOS_MAX;
+const LAB_TYPE_ORDER = labsSelectors.LAB_TYPE_ORDER;
+const LAB_TYPE_I18N = labsSelectors.LAB_TYPE_I18N;
 let pendingLabPhotos = [];
 let labAddBoundPetId = null;
 let selectedLabClinic = null;
@@ -2790,44 +2790,15 @@ function findVisitByLink(pet, value) {
 }
 
 function reportMatchesVisit(report, visit) {
-  if (!report?.visitDate || !visit?.date) return false;
-  if (report.visitDate !== visit.date) return false;
-  if (report.visitClinicId && visit.clinicId) {
-    return report.visitClinicId === visit.clinicId;
-  }
-  const reportClinic = report.clinic || "";
-  if (!reportClinic && !report.visitClinicId) return true;
-  return (
-    reportClinic === visitClinicLabel(visit) || reportClinic === visit.clinic
-  );
+  return labsSelectors.reportMatchesVisit(report, visit);
 }
 
 function getLabReportsForPet(petId) {
-  if (!petId) return [];
-  const map = labReportsSlot.read();
-  const rows = map[petId];
-  if (!Array.isArray(rows)) return [];
-  return rows
-    .filter((row) => row && Array.isArray(row.photos) && row.photos.length)
-    .slice()
-    .sort((a, b) => {
-      const da = String(a.date || "");
-      const db = String(b.date || "");
-      if (da !== db) return da < db ? 1 : -1;
-      return String(b.createdAt || b.id || "").localeCompare(
-        String(a.createdAt || a.id || "")
-      );
-    });
+  return labsController.getLabReportsForPet(petId);
 }
 
 function writeLabReportsForPet(petId, reports) {
-  if (!petId) return false;
-  if (DEMO_MODE) return false;
-  const map = labReportsSlot.read();
-  map[petId] = reports;
-  const ok = labReportsSlot.write(map);
-  if (ok) bumpLocalDataRevision();
-  return ok;
+  return labsController.writeLabReportsForPet(petId, reports);
 }
 
 function renderEmergencyLabNav(pet) {
@@ -4738,6 +4709,9 @@ const petsController = PetLiveWeb.domains.pets.createController({
     // Drop in-flight med session so Pet A pending / complete-drugs cannot write onto Pet B.
     pendingMeds = [];
     completingVisitRef = null;
+    pendingImagingVisitIndex = null;
+    pendingXrayPhotos = [];
+    pendingUsPhotos = [];
     Object.keys(compoundColorByGroup).forEach((key) => {
       delete compoundColorByGroup[key];
     });
@@ -4759,8 +4733,10 @@ const petsController = PetLiveWeb.domains.pets.createController({
 const visitsController = PetLiveWeb.domains.visits.createController({
   clinicLabelOf: (visit) => visitClinicLabel(visit),
 });
+const imagingController = PetLiveWeb.domains.imaging.createController();
 const timelineSelectors = PetLiveWeb.domains.timeline.createSelectors({
   visits: visitsController,
+  imaging: imagingController,
 });
 const timelineViewHelpers = PetLiveWeb.domains.timeline.createViewHelpers({
   findDrugByName: findDrugByMedName,
@@ -4895,7 +4871,7 @@ function upsertPetVaccines(pet, entries) {
   return vaccinesController.upsertPetVaccines(pet, entries);
 }
 
-const IMAGING_PHOTOS_MAX = visitsController.IMAGING_PHOTOS_MAX;
+const IMAGING_PHOTOS_MAX = imagingController.IMAGING_PHOTOS_MAX;
 
 const VIEWPORT_DEFAULT =
   "width=device-width, initial-scale=1, viewport-fit=cover";
@@ -7047,10 +7023,10 @@ document.getElementById("imaging-proof-form")?.addEventListener("submit", (event
   const visit = pet?.visits?.[visitIndex];
   if (!visit) return;
 
-  visit.imaging = {
-    xrayPhotos: pendingXrayPhotos.slice(0, IMAGING_PHOTOS_MAX),
-    usPhotos: pendingUsPhotos.slice(0, IMAGING_PHOTOS_MAX),
-  };
+  imagingController.setVisitImaging(visit, {
+    xrayPhotos: pendingXrayPhotos,
+    usPhotos: pendingUsPhotos,
+  });
 
   // Clear pendings only after write; compress-guard above blocks mid-append Save.
   pendingImagingVisitIndex = null;
@@ -7187,23 +7163,19 @@ document.getElementById("lab-add-form")?.addEventListener("submit", (event) => {
     ? visit.clinicId
     : document.getElementById("lab-clinic-id")?.value || "");
 
-  const report = {
-    id: `lab-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
+  const report = labsController.buildLabReport({
     petId: pet.id,
     date,
     types: LAB_TYPE_ORDER.filter((type) => selectedLabTypes.has(type)),
     clinic: clinicName || "",
-    clinicId: clinicId && clinicId !== "anonymous" ? clinicId : undefined,
+    clinicId,
     visitDate: visit?.date || "",
     visitClinicId: visit?.clinicId || "",
     note: document.getElementById("lab-note")?.value.trim() || "",
     photos: [...pendingLabPhotos],
-    source: "owner_proof",
-    createdAt: new Date().toISOString(),
-  };
+  });
 
-  const next = [report, ...getLabReportsForPet(pet.id)];
-  if (!writeLabReportsForPet(pet.id, next)) {
+  if (!labsController.addLabReport(pet.id, report)) {
     showPersistenceFailure();
     showToast(t("toastLabSaveFail"));
     return;
@@ -7221,8 +7193,7 @@ document.getElementById("lab-list")?.addEventListener("click", (event) => {
     const pet = getCurrentPet();
     if (!pet) return;
     const id = removeBtn.dataset.labRemove;
-    const next = getLabReportsForPet(pet.id).filter((row) => row.id !== id);
-    if (!writeLabReportsForPet(pet.id, next)) {
+    if (!labsController.removeLabReport(pet.id, id)) {
       showPersistenceFailure();
       showToast(t("toastLabSaveFail"));
       return;

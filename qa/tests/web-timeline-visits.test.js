@@ -13,6 +13,7 @@ function loadTimelineVisits() {
   context.window = context;
   [
     "domains/visits/controller.js",
+    "domains/imaging/controller.js",
     "domains/timeline/selectors.js",
   ].forEach((path) => {
     vm.runInContext(readFileSync(new URL(path, WEB_ROOT), "utf8"), context, {
@@ -29,8 +30,9 @@ function createPair(clinicLabelOf) {
       clinicLabelOf ||
       ((visit) => visit?.clinicId || visit?.clinic || ""),
   });
-  const timeline = api.domains.timeline.createSelectors({ visits });
-  return { api, visits, timeline };
+  const imaging = api.domains.imaging.createController();
+  const timeline = api.domains.timeline.createSelectors({ visits, imaging });
+  return { api, visits, imaging, timeline };
 }
 
 /** Normalize vm-realm objects for deepStrictEqual (different Object/Array prototypes). */
@@ -137,33 +139,6 @@ describe("TV-01 / TV-02 timeline + visits controllers", () => {
     assert.equal(visit.rxPhoto, "rx-v");
   });
 
-  it("ensureVisitImaging / clear / append enforce max 4", () => {
-    const { visits } = createPair();
-    const visit = {};
-    const imaging = plain(visits.ensureVisitImaging(visit));
-    assert.ok(visit.imaging);
-    assert.deepEqual(imaging.xrayPhotos, []);
-    assert.deepEqual(imaging.usPhotos, []);
-
-    for (let i = 0; i < 4; i++) {
-      assert.equal(visits.appendVisitImagingPhoto(visit, "xray", `x${i}`).ok, true);
-    }
-    assert.deepEqual(plain(visits.appendVisitImagingPhoto(visit, "xray", "x4")), {
-      ok: false,
-      reason: "cap",
-    });
-    assert.deepEqual(plain(visits.appendVisitImagingPhoto(visit, "us", "")), {
-      ok: false,
-      reason: "empty",
-    });
-    assert.equal(visit.imaging.xrayPhotos.length, 4);
-    assert.equal(visits.IMAGING_PHOTOS_MAX, 4);
-
-    visits.clearVisitImagingPhoto(visit, "xray", 1);
-    assert.deepEqual(plain(visit.imaging.xrayPhotos), ["x0", "x2", "x3"]);
-    assert.equal(visits.visitHasImaging(visit), true);
-  });
-
   it("parseVisitLinkValue + findVisitByLink use clinicLabelOf", () => {
     const { visits } = createPair((visit) =>
       visit.clinicId === "c1" ? "Clinic One" : visit.clinic || ""
@@ -241,6 +216,16 @@ describe("TV-01 / TV-02 timeline + visits controllers", () => {
     });
   });
 
+  it("timeline accepts visits-only inject for formal B compat", () => {
+    const api = loadTimelineVisits();
+    const visits = api.domains.visits.createController();
+    const timeline = api.domains.timeline.createSelectors({ visits });
+    const pet = {
+      visits: [{ date: "2026-08-20", imaging: { xrayPhotos: ["x"], usPhotos: [] } }],
+    };
+    assert.equal(timeline.buildTimelineEntries(pet)[0].hasImaging, true);
+  });
+
   it("controllers never reference document or localStorage", () => {
     const visitsSrc = readFileSync(
       new URL("domains/visits/controller.js", WEB_ROOT),
@@ -250,7 +235,11 @@ describe("TV-01 / TV-02 timeline + visits controllers", () => {
       new URL("domains/timeline/selectors.js", WEB_ROOT),
       "utf8"
     );
-    for (const src of [visitsSrc, timelineSrc]) {
+    const imagingSrc = readFileSync(
+      new URL("domains/imaging/controller.js", WEB_ROOT),
+      "utf8"
+    );
+    for (const src of [visitsSrc, timelineSrc, imagingSrc]) {
       assert.equal(/\bdocument\b/.test(src), false);
       assert.equal(/\blocalStorage\b/.test(src), false);
       assert.equal(/\bmodules\/visit\b/.test(src), false);
@@ -266,14 +255,20 @@ describe("TV-01 / TV-02 timeline + visits controllers", () => {
       context
     );
     vm.runInContext(
+      readFileSync(new URL("domains/imaging/controller.js", WEB_ROOT), "utf8"),
+      context
+    );
+    vm.runInContext(
       readFileSync(new URL("domains/timeline/selectors.js", WEB_ROOT), "utf8"),
       context
     );
     assert.equal("document" in context, false);
     assert.equal("localStorage" in context, false);
     const visits = context.PetLiveWeb.domains.visits.createController();
+    const imaging = context.PetLiveWeb.domains.imaging.createController();
     const timeline = context.PetLiveWeb.domains.timeline.createSelectors({
       visits,
+      imaging,
     });
     const pet = {
       visits: [{ date: "2026-01-01", weightAtVisit: 3, medications: [] }],

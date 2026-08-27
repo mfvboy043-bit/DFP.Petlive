@@ -5,15 +5,26 @@
   root.domains = root.domains || {};
   root.domains.timeline = root.domains.timeline || {};
 
-  function createSelectors({ visits } = {}) {
+  function createSelectors({ visits, imaging } = {}) {
     if (
       !visits ||
       typeof visits.buildPreviousVisitByIndex !== "function" ||
       typeof visits.visitWeightKg !== "function" ||
-      typeof visits.visitHasAnyProof !== "function" ||
-      typeof visits.visitHasImaging !== "function"
+      typeof visits.visitHasAnyProof !== "function"
     ) {
       throw new TypeError("createSelectors requires visits controller helpers");
+    }
+
+    const visitHasImagingFn =
+      imaging && typeof imaging.visitHasImaging === "function"
+        ? (visit) => imaging.visitHasImaging(visit)
+        : typeof visits.visitHasImaging === "function"
+          ? (visit) => visits.visitHasImaging(visit)
+          : null;
+    if (!visitHasImagingFn) {
+      throw new TypeError(
+        "createSelectors requires imaging.visitHasImaging or visits.visitHasImaging"
+      );
     }
 
     function buildPreviousVisitByIndex(visitsArr) {
@@ -23,7 +34,7 @@
     function visitTimelineFlags(visit) {
       return {
         hasProof: visits.visitHasAnyProof(visit),
-        hasImaging: visits.visitHasImaging(visit),
+        hasImaging: visitHasImagingFn(visit),
         hasRx: Array.isArray(visit?.medications) && visit.medications.length > 0,
       };
     }

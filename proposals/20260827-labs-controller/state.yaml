@@ -1,0 +1,34 @@
+id: "20260827-labs-controller"
+title: "Labs controller building blocks"
+version: 2
+status: adopted
+
+gate_a:
+  status: approved
+  note: "Victor 確認 2026-08-27"
+
+gate_b:
+  status: adopted
+  note: "Victor 採用 + 覆蓋 B 2026-08-27"
+
+iteration: 1
+max_iterations: 3
+
+candidate:
+  branch: "proposal/labs-imaging-controller"
+  path: "proposals/20260827-labs-controller"
+  worktree: ""
+  note: "C adopt + B cover (domains/labs + B facades; DEMO_MODE + bump via onAfterWrite)"
+
+reviews:
+  pharmacist: skipped
+  qa: conditional
+  ui: conditional
+
+rerun: []
+blocking_issues: []
+non_blocking:
+  - QA-003
+  - UI-001
+builder_scope: []
+halt_reason: ""
