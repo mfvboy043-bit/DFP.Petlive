@@ -18,12 +18,10 @@
     const visitHasImagingFn =
       imaging && typeof imaging.visitHasImaging === "function"
         ? (visit) => imaging.visitHasImaging(visit)
-        : typeof visits.visitHasImaging === "function"
-          ? (visit) => visits.visitHasImaging(visit)
-          : null;
+        : null;
     if (!visitHasImagingFn) {
       throw new TypeError(
-        "createSelectors requires imaging.visitHasImaging or visits.visitHasImaging"
+        "createSelectors requires imaging.visitHasImaging"
       );
     }
 

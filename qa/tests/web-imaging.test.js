@@ -58,7 +58,7 @@ describe("IM-01 imaging domain", () => {
     });
     assert.deepEqual(plain(visit.imaging.xrayPhotos), ["a", "b", "c", "d"]);
     assert.deepEqual(plain(visit.imaging.usPhotos), ["u1"]);
-    assert.deepEqual(imaging.imagingTypeKeys(visit), ["xray", "us"]);
+    assert.deepEqual(plain(imaging.imagingTypeKeys(visit)), ["xray", "us"]);
   });
 
   it("getImagingVisitEntries sorts newest visit date first", () => {

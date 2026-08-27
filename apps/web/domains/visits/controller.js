@@ -5,8 +5,6 @@
   root.domains = root.domains || {};
   root.domains.visits = root.domains.visits || {};
 
-  const IMAGING_PHOTOS_MAX = 4;
-
   function createController({ clinicLabelOf: clinicLabelOfOpt } = {}) {
     const clinicLabelOf =
       typeof clinicLabelOfOpt === "function"
@@ -59,65 +57,6 @@
           med.drugPhoto = null;
         });
       }
-    }
-
-    function getVisitImaging(visit) {
-      const img = visit?.imaging;
-      return {
-        xrayPhotos: Array.isArray(img?.xrayPhotos)
-          ? img.xrayPhotos.filter(Boolean)
-          : [],
-        usPhotos: Array.isArray(img?.usPhotos) ? img.usPhotos.filter(Boolean) : [],
-      };
-    }
-
-    function ensureVisitImaging(visit) {
-      if (!visit) return { xrayPhotos: [], usPhotos: [] };
-      const current = getVisitImaging(visit);
-      visit.imaging = {
-        xrayPhotos: [...current.xrayPhotos],
-        usPhotos: [...current.usPhotos],
-      };
-      return visit.imaging;
-    }
-
-    function visitHasImaging(visit) {
-      const img = getVisitImaging(visit);
-      return Boolean(img.xrayPhotos.length || img.usPhotos.length);
-    }
-
-    function getImagingVisitEntries(pet) {
-      return (pet?.visits || [])
-        .map((visit, index) => ({ visit, index }))
-        .filter(({ visit }) => visitHasImaging(visit))
-        .sort((a, b) => {
-          const da = String(a.visit.date || "");
-          const db = String(b.visit.date || "");
-          if (da !== db) return da < db ? 1 : -1;
-          return b.index - a.index;
-        });
-    }
-
-    function clearVisitImagingPhoto(visit, slot, index) {
-      const imaging = ensureVisitImaging(visit);
-      const key = slot === "us" ? "usPhotos" : "xrayPhotos";
-      if (!Number.isInteger(index) || index < 0 || index >= imaging[key].length) {
-        return;
-      }
-      imaging[key].splice(index, 1);
-    }
-
-    function appendVisitImagingPhoto(visit, slot, dataUrl) {
-      const imaging = ensureVisitImaging(visit);
-      const key = slot === "us" ? "usPhotos" : "xrayPhotos";
-      if (imaging[key].length >= IMAGING_PHOTOS_MAX) {
-        return { ok: false, reason: "cap" };
-      }
-      if (!dataUrl) {
-        return { ok: false, reason: "empty" };
-      }
-      imaging[key].push(dataUrl);
-      return { ok: true };
     }
 
     function visitWeightKg(visit) {
@@ -227,28 +166,20 @@
     }
 
     return {
-      IMAGING_PHOTOS_MAX,
       visitWeightKg,
       calendarDaysBetween,
       buildPreviousVisitByIndex,
       formatWeightDeltaKg,
       collectVisitProofPhotos,
       visitHasAnyProof,
-      getVisitImaging,
-      ensureVisitImaging,
-      visitHasImaging,
-      getImagingVisitEntries,
       visitLinkValue,
       parseVisitLinkValue,
       findVisitByLink,
       findVisitByDateClinic,
       saveVisitWeight,
       clearVisitProofSlot,
-      clearVisitImagingPhoto,
-      appendVisitImagingPhoto,
     };
   }
 
   root.domains.visits.createController = createController;
-  root.domains.visits.IMAGING_PHOTOS_MAX = IMAGING_PHOTOS_MAX;
 })(typeof window !== "undefined" ? window : globalThis);

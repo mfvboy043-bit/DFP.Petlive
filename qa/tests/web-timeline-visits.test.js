@@ -216,10 +216,18 @@ describe("TV-01 / TV-02 timeline + visits controllers", () => {
     });
   });
 
-  it("timeline accepts visits-only inject for formal B compat", () => {
+  it("timeline requires imaging inject; visits no longer exports imaging APIs", () => {
     const api = loadTimelineVisits();
     const visits = api.domains.visits.createController();
-    const timeline = api.domains.timeline.createSelectors({ visits });
+    assert.equal(typeof visits.visitHasImaging, "undefined");
+    assert.equal(typeof visits.getVisitImaging, "undefined");
+    assert.equal(typeof visits.IMAGING_PHOTOS_MAX, "undefined");
+    assert.throws(
+      () => api.domains.timeline.createSelectors({ visits }),
+      /imaging\.visitHasImaging/
+    );
+    const imaging = api.domains.imaging.createController();
+    const timeline = api.domains.timeline.createSelectors({ visits, imaging });
     const pet = {
       visits: [{ date: "2026-08-20", imaging: { xrayPhotos: ["x"], usPhotos: [] } }],
     };

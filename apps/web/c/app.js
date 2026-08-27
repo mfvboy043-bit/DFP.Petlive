@@ -1054,27 +1054,30 @@ function clearVisitProofSlot(visit, slot) {
 }
 
 function getVisitImaging(visit) {
-  return visitsController.getVisitImaging(visit);
+  return imagingController.getVisitImaging(visit);
 }
 
 function ensureVisitImaging(visit) {
-  return visitsController.ensureVisitImaging(visit);
+  return imagingController.ensureVisitImaging(visit);
 }
 
 function visitHasImaging(visit) {
-  return visitsController.visitHasImaging(visit);
+  return imagingController.visitHasImaging(visit);
 }
 
 function formatImagingTypes(visit) {
-  const img = getVisitImaging(visit);
-  const parts = [];
-  if (img.xrayPhotos.length) parts.push(t("imagingXrayCaption"));
-  if (img.usPhotos.length) parts.push(t("imagingUsCaption"));
-  return parts.join("／");
+  const captionByKey = {
+    xray: "imagingXrayCaption",
+    us: "imagingUsCaption",
+  };
+  return imagingController
+    .imagingTypeKeys(visit)
+    .map((key) => t(captionByKey[key] || key))
+    .join("／");
 }
 
 function getImagingVisitEntries(pet) {
-  return visitsController.getImagingVisitEntries(pet);
+  return imagingController.getImagingVisitEntries(pet);
 }
 
 function renderVisitImagingThumbs(imaging, visitIndex) {
@@ -1110,7 +1113,7 @@ function renderVisitImagingThumbs(imaging, visitIndex) {
 }
 
 function clearVisitImagingPhoto(visit, slot, index) {
-  visitsController.clearVisitImagingPhoto(visit, slot, index);
+  imagingController.clearVisitImagingPhoto(visit, slot, index);
 }
 
 function getProofLightboxEls() {
@@ -4547,8 +4550,10 @@ const petsController = PetLiveWeb.domains.pets.createController({
 const visitsController = PetLiveWeb.domains.visits.createController({
   clinicLabelOf: (visit) => visitClinicLabel(visit),
 });
+const imagingController = PetLiveWeb.domains.imaging.createController();
 const timelineSelectors = PetLiveWeb.domains.timeline.createSelectors({
   visits: visitsController,
+  imaging: imagingController,
 });
 const timelineViewHelpers = PetLiveWeb.domains.timeline.createViewHelpers({
   findDrugByName: findDrugByMedName,
@@ -4648,7 +4653,7 @@ function upsertPetVaccines(pet, entries) {
   return vaccinesController.upsertPetVaccines(pet, entries);
 }
 
-const IMAGING_PHOTOS_MAX = visitsController.IMAGING_PHOTOS_MAX;
+const IMAGING_PHOTOS_MAX = imagingController.IMAGING_PHOTOS_MAX;
 
 const VIEWPORT_DEFAULT =
   "width=device-width, initial-scale=1, viewport-fit=cover";
@@ -6870,10 +6875,10 @@ document.getElementById("imaging-proof-form")?.addEventListener("submit", (event
   const visit = pet?.visits?.[visitIndex];
   if (!visit) return;
 
-  visit.imaging = {
-    xrayPhotos: pendingXrayPhotos.slice(0, IMAGING_PHOTOS_MAX),
-    usPhotos: pendingUsPhotos.slice(0, IMAGING_PHOTOS_MAX),
-  };
+  imagingController.setVisitImaging(visit, {
+    xrayPhotos: pendingXrayPhotos,
+    usPhotos: pendingUsPhotos,
+  });
 
   // Clear pendings only after write; compress-guard above blocks mid-append Save.
   pendingImagingVisitIndex = null;
