@@ -1,7 +1,7 @@
 ---
 id: 20260827-drug-catalog-single-path
 title: Drug catalog single path — one seed, one search brain
-status: candidate_ready
+status: adopted
 author: planner
 candidate_branch: "proposal/drug-catalog-single-path"
 candidate_path: "proposals/20260827-drug-catalog-single-path"
