@@ -1,14 +1,15 @@
 id: "20260827-abcd-shell-leftovers"
 title: "ABCD leftovers — vaccine chips, calendar chooser, alert badge, timeline toggles"
 version: 2
-status: candidate_ready
+status: adopted
 
 gate_a:
   status: approved
   note: "Victor 2026-08-27 — ABCD先做完，問是否採用與覆蓋"
 
 gate_b:
-  status: pending
+  status: adopted
+  note: "Victor 採用並覆蓋 B 2026-08-27"
 
 iteration: 1
 max_iterations: 3
