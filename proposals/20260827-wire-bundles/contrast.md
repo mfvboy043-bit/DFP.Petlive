@@ -8,4 +8,4 @@
 | Intro listeners / boot-home | Inline `initIntroAndCloud` | New `shell/intro-cloud.js` bind + `bootSurfaceToHome` |
 | Formal B | unchanged | **not covered** this iteration |
 
-`c/app.js` lines: **6197 → ~5930** (behavior-preserving thin).
+`c/app.js` lines: **6197 → 5938** (behavior-preserving thin).
