@@ -34,7 +34,8 @@
     }
 
     function filterLabTypes(types) {
-      return (types || []).filter(isValidLabType);
+      const selected = new Set((types || []).filter(isValidLabType));
+      return LAB_TYPE_ORDER.filter((type) => selected.has(type));
     }
 
     function sortLabReports(rows) {

@@ -93,17 +93,44 @@ describe("LB-01 / LB-02 labs domain", () => {
     const report = controller.buildLabReport({
       petId: "p1",
       date: "2026-08-10",
-      types: ["blood", "bogus"],
+      types: ["bogus", "urine", "blood"],
       clinic: "Lab A",
       photos: ["photo://1"],
       note: "see originals",
     });
     assert.equal(report.source, "owner_proof");
-    assert.deepEqual(report.types, ["blood"]);
+    assert.deepEqual(report.types, ["blood", "urine"]);
     assert.equal(controller.addLabReport("p1", report), true);
     assert.equal(controller.getLabReportsForPet("p1").length, 1);
+    assert.equal(controller.getLabReportsForPet("p2").length, 0);
     assert.equal(controller.removeLabReport("p1", report.id), true);
     assert.equal(controller.getLabReportsForPet("p1").length, 0);
     assert.deepEqual(plain(selectors.latestLabSummary([])), null);
+  });
+
+  it("addLabReport rejects empty photos; filterLabTypes keeps LAB_TYPE_ORDER", () => {
+    const { controller, selectors, labs } = loadLabs();
+    assert.deepEqual(
+      selectors.filterLabTypes(["other", "blood", "nope", "blood"]),
+      ["blood", "other"]
+    );
+    const empty = controller.buildLabReport({
+      petId: "p1",
+      date: "2026-08-10",
+      types: ["blood"],
+      photos: [],
+    });
+    assert.equal(controller.addLabReport("p1", empty), false);
+    assert.equal(controller.getLabReportsForPet("p1").length, 0);
+    assert.equal(labs.LAB_PHOTOS_MAX, 6);
+  });
+
+  it("domain files avoid document and localStorage", () => {
+    for (const file of ["domains/labs/selectors.js", "domains/labs/controller.js"]) {
+      const src = readFileSync(new URL(file, WEB_ROOT), "utf8");
+      assert.doesNotMatch(src, /\bdocument\b/);
+      assert.doesNotMatch(src, /\blocalStorage\b/);
+      assert.doesNotMatch(src, /\bt\s*\(/);
+    }
   });
 });

@@ -1,34 +1,35 @@
 id: "20260827-labs-controller"
 title: "Labs controller building blocks"
 version: 2
-status: adopted
+status: reviewing
 
 gate_a:
   status: approved
   note: "Victor 確認 2026-08-27"
 
 gate_b:
-  status: adopted
-  note: "Victor 採用 + 覆蓋 B 2026-08-27"
+  status: pending
 
 iteration: 1
 max_iterations: 3
 
 candidate:
-  branch: "proposal/labs-imaging-controller"
+  branch: "proposal/labs-controller"
   path: "proposals/20260827-labs-controller"
-  worktree: ""
-  note: "C adopt + B cover (domains/labs + B facades; DEMO_MODE + bump via onAfterWrite)"
+  worktree: ".worktrees/main-adopt"
+  note: "LB-01..04 on C; formal B already has labs domain from prior cover — this Gate B is C adopt"
 
 reviews:
   pharmacist: skipped
-  qa: conditional
-  ui: conditional
+  qa: pending
+  ui: pending
 
 rerun: []
 blocking_issues: []
-non_blocking:
-  - QA-003
-  - UI-001
-builder_scope: []
+non_blocking: []
+builder_scope:
+  - LB-01
+  - LB-02
+  - LB-03
+  - LB-04
 halt_reason: ""

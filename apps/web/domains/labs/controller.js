@@ -76,6 +76,7 @@
 
     function addLabReport(petId, report) {
       if (!petId || !report) return false;
+      if (!Array.isArray(report.photos) || !report.photos.length) return false;
       const next = [report, ...getLabReportsForPet(petId)];
       return writeLabReportsForPet(petId, next);
     }

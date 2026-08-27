@@ -2580,28 +2580,33 @@ const petsMedia = PetLiveWeb.domains.pets.createMedia({
 });
 
 const LAB_REPORTS_KEY = "petlive-c-lab-reports";
-const LAB_PHOTOS_MAX = 6;
-const LAB_TYPE_ORDER = [
-  "blood",
-  "chemistry",
-  "urine",
-  "fecal",
-  "snap",
-  "other",
-];
-const LAB_TYPE_I18N = {
-  blood: "labTypeBlood",
-  chemistry: "labTypeChem",
-  urine: "labTypeUrine",
-  fecal: "labTypeFecal",
-  snap: "labTypeSnap",
-  other: "labTypeOther",
-};
+const labsSelectors = PetLiveWeb.domains.labs.createSelectors({
+  visitClinicLabel,
+});
 const labReportsSlot = PetLiveWeb.storage.createJsonSlot({
   key: LAB_REPORTS_KEY,
   fallback: () => ({}),
   validate: isStorageMap,
 });
+const labsController = PetLiveWeb.domains.labs.createController({
+  labReportsSlot,
+  selectors: labsSelectors,
+  isDemoMode: () => false,
+  onAfterWrite: () => {
+    if (
+      typeof cloudController !== "undefined" &&
+      cloudController &&
+      typeof cloudController.bumpLocalDataRevision === "function"
+    ) {
+      cloudController.bumpLocalDataRevision();
+    } else if (typeof scheduleCloudBackup === "function") {
+      scheduleCloudBackup();
+    }
+  },
+});
+const LAB_PHOTOS_MAX = labsSelectors.LAB_PHOTOS_MAX;
+const LAB_TYPE_ORDER = labsSelectors.LAB_TYPE_ORDER;
+const LAB_TYPE_I18N = labsSelectors.LAB_TYPE_I18N;
 let pendingLabPhotos = [];
 let labAddBoundPetId = null;
 let selectedLabClinic = null;
@@ -2612,7 +2617,7 @@ function labTypeLabel(type) {
 }
 
 function formatLabTypes(types) {
-  const list = (types || []).filter((type) => LAB_TYPE_I18N[type]);
+  const list = labsSelectors.filterLabTypes(types);
   if (!list.length) return t("labNoTypes");
   return list.map(labTypeLabel).join("／");
 }
@@ -2630,41 +2635,15 @@ function findVisitByLink(pet, value) {
 }
 
 function reportMatchesVisit(report, visit) {
-  if (!report?.visitDate || !visit?.date) return false;
-  if (report.visitDate !== visit.date) return false;
-  if (report.visitClinicId && visit.clinicId) {
-    return report.visitClinicId === visit.clinicId;
-  }
-  const reportClinic = report.clinic || "";
-  if (!reportClinic && !report.visitClinicId) return true;
-  return (
-    reportClinic === visitClinicLabel(visit) || reportClinic === visit.clinic
-  );
+  return labsSelectors.reportMatchesVisit(report, visit);
 }
 
 function getLabReportsForPet(petId) {
-  if (!petId) return [];
-  const map = labReportsSlot.read();
-  const rows = map[petId];
-  if (!Array.isArray(rows)) return [];
-  return rows
-    .filter((row) => row && Array.isArray(row.photos) && row.photos.length)
-    .slice()
-    .sort((a, b) => {
-      const da = String(a.date || "");
-      const db = String(b.date || "");
-      if (da !== db) return da < db ? 1 : -1;
-      return String(b.createdAt || b.id || "").localeCompare(
-        String(a.createdAt || a.id || "")
-      );
-    });
+  return labsController.getLabReportsForPet(petId);
 }
 
 function writeLabReportsForPet(petId, reports) {
-  if (!petId) return false;
-  const map = labReportsSlot.read();
-  map[petId] = reports;
-  return labReportsSlot.write(map);
+  return labsController.writeLabReportsForPet(petId, reports);
 }
 
 function renderEmergencyLabNav(pet) {
@@ -7041,23 +7020,19 @@ document.getElementById("lab-add-form")?.addEventListener("submit", (event) => {
     ? visit.clinicId
     : document.getElementById("lab-clinic-id")?.value || "");
 
-  const report = {
-    id: `lab-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
+  const report = labsController.buildLabReport({
     petId: pet.id,
     date,
     types: LAB_TYPE_ORDER.filter((type) => selectedLabTypes.has(type)),
     clinic: clinicName || "",
-    clinicId: clinicId && clinicId !== "anonymous" ? clinicId : undefined,
+    clinicId,
     visitDate: visit?.date || "",
     visitClinicId: visit?.clinicId || "",
     note: document.getElementById("lab-note")?.value.trim() || "",
     photos: [...pendingLabPhotos],
-    source: "owner_proof",
-    createdAt: new Date().toISOString(),
-  };
+  });
 
-  const next = [report, ...getLabReportsForPet(pet.id)];
-  if (!writeLabReportsForPet(pet.id, next)) {
+  if (!labsController.addLabReport(pet.id, report)) {
     showPersistenceFailure();
     showToast(t("toastLabSaveFail"));
     return;
@@ -7075,8 +7050,7 @@ document.getElementById("lab-list")?.addEventListener("click", (event) => {
     const pet = getCurrentPet();
     if (!pet) return;
     const id = removeBtn.dataset.labRemove;
-    const next = getLabReportsForPet(pet.id).filter((row) => row.id !== id);
-    if (!writeLabReportsForPet(pet.id, next)) {
+    if (!labsController.removeLabReport(pet.id, id)) {
       showPersistenceFailure();
       showToast(t("toastLabSaveFail"));
       return;
