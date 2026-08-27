@@ -1,0 +1,29 @@
+id: "20260827-drug-catalog-single-path"
+title: "Drug catalog single path — one seed, one search brain"
+version: 2
+status: proposed
+
+gate_a:
+  status: pending
+
+gate_b:
+  status: pending
+
+iteration: 0
+max_iterations: 3
+
+candidate:
+  branch: "proposal/drug-catalog-single-path"
+  path: "proposals/20260827-drug-catalog-single-path"
+  worktree: ""
+
+reviews:
+  pharmacist: pending
+  qa: pending
+  ui: skipped
+
+rerun: []
+blocking_issues: []
+non_blocking: []
+builder_scope: []
+halt_reason: ""
