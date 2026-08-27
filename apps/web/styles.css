@@ -4764,7 +4764,9 @@ html[lang="en"] .e-owner-k::after {
   isolation: isolate;
 
   right: max(16px, env(safe-area-inset-right));
-  bottom: max(18px, calc(18px + env(safe-area-inset-bottom)));
+  bottom: calc(
+    var(--glass-dock-offset, 78px) + env(safe-area-inset-bottom, 0px)
+  );
 }
 
 .lang-fab {
