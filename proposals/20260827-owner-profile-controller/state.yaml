@@ -1,0 +1,33 @@
+id: "20260827-owner-profile-controller"
+title: "Owner profile controller building blocks"
+version: 2
+status: adopted
+
+gate_a:
+  status: approved
+  note: "Victor 確認 2026-08-27"
+
+gate_b:
+  status: adopted
+  note: "Victor 採用 2026-08-27 — surgical land on main (domains/owner + C; B cover pending)"
+
+iteration: 2
+max_iterations: 3
+
+candidate:
+  branch: "proposal/storage-indexeddb"
+  path: "proposals/20260827-owner-profile-controller"
+  worktree: ""
+  note: "Candidate @ 4db5796 (shared branch with storage); owner-only path also 1e55322 lineage"
+
+reviews:
+  pharmacist: skipped
+  qa: pass
+  ui: pass
+
+rerun: []
+blocking_issues: []
+non_blocking:
+  - UI-001
+builder_scope: []
+halt_reason: ""

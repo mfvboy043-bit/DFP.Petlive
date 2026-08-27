@@ -1,0 +1,36 @@
+id: 20260827-storage-indexeddb
+title: Storage evolution — IndexedDB behind JSON slots
+version: 2
+status: adopted
+
+gate_a:
+  status: approved
+  note: "Victor 確認 2026-08-27"
+
+gate_b:
+  status: adopted
+  note: "Victor 採用 2026-08-27 — surgical land on main (core/storage* + C opt-in; B cover pending)"
+
+iteration: 3
+max_iterations: 3
+
+candidate:
+  branch: "proposal/storage-indexeddb"
+  path: "proposals/20260827-storage-indexeddb"
+  worktree: ""
+  note: "Candidate @ 4db5796; includes owner domain on same branch"
+
+reviews:
+  pharmacist: skipped
+  qa: conditional
+  ui: skipped
+
+rerun: []
+blocking_issues: []
+non_blocking:
+  - QA-003
+  - QA-004
+  - QA-005
+  - QA-006
+builder_scope: []
+halt_reason: ""

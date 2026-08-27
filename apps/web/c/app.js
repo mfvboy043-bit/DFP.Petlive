@@ -3560,52 +3560,38 @@ function renderAlertBadge(pet) {
 
 const OWNER_PROFILE_KEY = "petlive-c-owner-profile";
 
-/** Showcase / field-demo sample owner (not real PII). */
+const ownerSelectors = PetLiveWeb.domains.owner.createSelectors();
+
 function demoOwnerProfile() {
-  return {
-    name: "王陽明",
-    phone: "0912345678",
-    email: "wang.yangming@demo.petlive",
-    emergencyName: "王守仁",
-    emergencyPhone: "0987654321",
-    address: "那美剋星三丁目 七龍珠巷 42 弄 99 號 B1",
-  };
+  return ownerSelectors.demoProfile();
 }
 
 function emptyOwnerProfile() {
-  return {
-    name: "",
-    phone: "",
-    email: "",
-    emergencyName: "",
-    emergencyPhone: "",
-    address: "",
-  };
+  return ownerSelectors.emptyProfile();
 }
 
 const ownerProfileSlot = PetLiveWeb.storage.createJsonSlot({
   key: OWNER_PROFILE_KEY,
-  fallback: demoOwnerProfile,
+  fallback: () => ownerSelectors.demoProfile(),
   validate: isStorageMap,
 });
 
+const ownerController = PetLiveWeb.domains.owner.createController({
+  selectors: ownerSelectors,
+  ownerProfileSlot,
+  isDemoMode: () => false,
+});
+
 function loadOwnerProfile() {
-  return { ...emptyOwnerProfile(), ...ownerProfileSlot.read() };
+  return ownerController.load();
 }
 
 function saveOwnerProfile(profile) {
-  return ownerProfileSlot.write(profile);
+  return ownerController.save(profile);
 }
 
 function ownerProfileHasAny(profile) {
-  return Boolean(
-    profile.name ||
-      profile.phone ||
-      profile.email ||
-      profile.emergencyName ||
-      profile.emergencyPhone ||
-      profile.address
-  );
+  return ownerController.hasAny(profile);
 }
 
 function formatPetShareLines(pet) {
@@ -3675,26 +3661,30 @@ async function copyTextToClipboard(text) {
 }
 
 function formatOwnerCopyLines(profile) {
-  const lines = [];
-  if (profile.name || profile.phone) {
-    lines.push(
-      t("copyOwnerLine", {
-        text: [profile.name, profile.phone].filter(Boolean).join(" · "),
-      })
-    );
-  }
-  if (profile.email) lines.push(t("copyOwnerEmail", { email: profile.email }));
-  if (profile.emergencyName || profile.emergencyPhone) {
-    lines.push(
-      t("copyOwnerEmergency", {
-        text: [profile.emergencyName, profile.emergencyPhone]
-          .filter(Boolean)
-          .join(" · "),
-      })
-    );
-  }
-  if (profile.address) lines.push(t("copyOwnerAddress", { address: profile.address }));
-  return lines;
+  return ownerSelectors
+    .copyRows(profile)
+    .map((row) => {
+      if (row.kind === "ownerLine") {
+        return t("copyOwnerLine", {
+          text: [row.name, row.phone].filter(Boolean).join(" · "),
+        });
+      }
+      if (row.kind === "email") {
+        return t("copyOwnerEmail", { email: row.email });
+      }
+      if (row.kind === "emergency") {
+        return t("copyOwnerEmergency", {
+          text: [row.emergencyName, row.emergencyPhone]
+            .filter(Boolean)
+            .join(" · "),
+        });
+      }
+      if (row.kind === "address") {
+        return t("copyOwnerAddress", { address: row.address });
+      }
+      return "";
+    })
+    .filter(Boolean);
 }
 
 function fillOwnerSettingsForm(profile = loadOwnerProfile()) {
@@ -8025,6 +8015,19 @@ applyI18n();
 initAppNavMenu();
 initIntroAndCloud();
 syncDateProxies();
+
+if (typeof PetLiveWeb?.storage?.markBootComplete === "function") {
+  const storageBackend = PetLiveWeb.storage.getBackend?.();
+  PetLiveWeb.storage.markBootComplete().then(() => {
+    if (storageBackend !== "idb") return;
+    const nextId = hydratePetsGraphFromStorage();
+    if (nextId) {
+      currentPetId = nextId;
+      appState.setCurrentPetId(nextId);
+    }
+    applySelectedPet();
+  });
+}
 
 PetLiveWeb.metrics = {
   getSnapshot() {

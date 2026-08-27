@@ -31,6 +31,173 @@ class FakeStorage {
   }
 }
 
+function createFakeIndexedDb(seed = {}) {
+  const databases = new Map(Object.entries(seed));
+
+  class FakeRequest {
+    constructor(result, error = null) {
+      this.result = result;
+      this.error = error;
+      this.onsuccess = null;
+      this.onerror = null;
+      this.onblocked = null;
+      this.onupgradeneeded = null;
+    }
+
+    emitSuccess() {
+      queueMicrotask(() => this.onsuccess?.({ target: this }));
+    }
+
+    emitError() {
+      queueMicrotask(() => this.onerror?.({ target: this }));
+    }
+  }
+
+  class FakeObjectStore {
+    constructor(dbName, tx) {
+      this.dbName = dbName;
+      this.tx = tx;
+    }
+
+    get(key) {
+      const db = databases.get(this.dbName) || new Map();
+      const request = new FakeRequest(db.get(key));
+      queueMicrotask(() => {
+        request.onsuccess?.({ target: request });
+        this.tx._scheduleComplete();
+      });
+      return request;
+    }
+
+    put(value, key) {
+      const db = databases.get(this.dbName) || new Map();
+      db.set(key, value);
+      databases.set(this.dbName, db);
+      const request = new FakeRequest(undefined);
+      queueMicrotask(() => {
+        request.onsuccess?.({ target: request });
+        this.tx._scheduleComplete();
+      });
+      return request;
+    }
+
+    delete(key) {
+      const db = databases.get(this.dbName) || new Map();
+      db.delete(key);
+      const request = new FakeRequest(undefined);
+      queueMicrotask(() => {
+        request.onsuccess?.({ target: request });
+        this.tx._scheduleComplete();
+      });
+      return request;
+    }
+  }
+
+  class FakeTransaction {
+    constructor(dbName) {
+      this.dbName = dbName;
+      this.oncomplete = null;
+      this.onerror = null;
+      this.onabort = null;
+      this.error = null;
+      this._completeScheduled = false;
+    }
+
+    objectStore(_name) {
+      return new FakeObjectStore(this.dbName, this);
+    }
+
+    _scheduleComplete() {
+      if (this._completeScheduled) return;
+      this._completeScheduled = true;
+      queueMicrotask(() => {
+        this.oncomplete?.({ target: this });
+      });
+    }
+  }
+
+  class FakeDatabase {
+    constructor(name) {
+      this.name = name;
+      this.objectStoreNames = {
+        contains() {
+          return true;
+        },
+      };
+    }
+
+    transaction(storeName, _mode) {
+      return new FakeTransaction(this.name);
+    }
+  }
+
+  return {
+    databases,
+    indexedDB: {
+      open(name, _version) {
+        const request = new FakeRequest(new FakeDatabase(name));
+        queueMicrotask(() => {
+          request.onupgradeneeded?.({ target: request });
+          request.emitSuccess();
+        });
+        return request;
+      },
+    },
+  };
+}
+
+function flushMicrotasks() {
+  return new Promise((resolve) => queueMicrotask(() => queueMicrotask(resolve)));
+}
+
+function loadStorageFactories({
+  storage = new FakeStorage(),
+  indexedDB = null,
+  configure = null,
+  extraScripts = ["core/storage-idb.js", "core/storage.js"],
+} = {}) {
+  const clone =
+    globalThis.structuredClone ||
+    ((value) => JSON.parse(JSON.stringify(value)));
+  const timers = [];
+  const context = vm.createContext({
+    console,
+    localStorage: storage,
+    indexedDB: indexedDB?.indexedDB,
+    performance: { now: () => 1 },
+    structuredClone: clone,
+    queueMicrotask: queueMicrotask,
+    setTimeout: (fn, ms) => {
+      const id = timers.length + 1;
+      timers.push({ id, fn, ms });
+      return id;
+    },
+    clearTimeout: (id) => {
+      const index = timers.findIndex((entry) => entry.id === id);
+      if (index >= 0) timers.splice(index, 1);
+    },
+    addEventListener() {},
+    document: {
+      addEventListener() {},
+      visibilityState: "visible",
+    },
+  });
+  context.globalThis = context;
+  context.window = context;
+
+  for (const path of extraScripts) {
+    vm.runInContext(readFileSync(new URL(path, WEB_ROOT), "utf8"), context, {
+      filename: path,
+    });
+  }
+
+  if (configure) {
+    context.PetLiveWeb.storage.configure(configure);
+  }
+
+  return { api: context.PetLiveWeb, storage, indexedDB, timers, context };
+}
+
 function loadFactories(storage = new FakeStorage()) {
   const clone =
     globalThis.structuredClone ||
@@ -59,6 +226,7 @@ function loadFactories(storage = new FakeStorage()) {
   context.globalThis = context;
   context.window = context;
   [
+    "core/storage-idb.js",
     "core/storage.js",
     "core/state.js",
     "shell/navigation.js",
@@ -162,6 +330,137 @@ describe("ARCH-01 guarded JSON slots", () => {
     assert.deepEqual(slot.read(), { demo: true });
     assert.equal(fake.sets, 0);
     assert.equal(slot.getStats().failures, 1);
+  });
+});
+
+describe("STORAGE-IDB backend", () => {
+  it("defaults to local backend with zero behavior change", () => {
+    const fake = new FakeStorage({ demo: '{"saved":true}' });
+    const { api } = loadStorageFactories({ storage: fake });
+    assert.equal(api.storage.getBackend(), "local");
+    const slot = api.storage.createJsonSlot({
+      key: "demo",
+      fallback: () => ({}),
+    });
+    assert.equal(slot.getStats().backend, "local");
+    assert.deepEqual(slot.read(), { saved: true });
+  });
+
+  it("hydrates from localStorage once and prefers existing IDB values", async () => {
+    const fake = new FakeStorage({ demo: '{"from":"local"}' });
+    const idb = createFakeIndexedDb({
+      "petlive-web-storage": new Map([["demo", '{"from":"idb"}']]),
+    });
+    const { api, storage } = loadStorageFactories({
+      storage: fake,
+      indexedDB: idb,
+      configure: { backend: "idb", mirrorLocal: true },
+    });
+
+    const slot = api.storage.createJsonSlot({
+      key: "demo",
+      fallback: () => ({ from: "fallback" }),
+      validate: (value) => value && typeof value === "object",
+    });
+
+    assert.deepEqual(slot.read(), { from: "local" });
+    await api.storage.whenReady();
+    assert.deepEqual(slot.read(), { from: "idb" });
+    assert.equal(storage.sets, 0);
+  });
+
+  it("write-through mirrors to localStorage and supports sync read after ready", async () => {
+    const fake = new FakeStorage();
+    const idb = createFakeIndexedDb();
+    const { api } = loadStorageFactories({
+      storage: fake,
+      indexedDB: idb,
+      configure: { backend: "idb", mirrorLocal: true },
+    });
+    const slot = api.storage.createJsonSlot({
+      key: "demo",
+      fallback: () => ({}),
+      validate: (value) => value && typeof value === "object",
+    });
+
+    await api.storage.whenReady();
+    assert.equal(slot.write({ ok: true }), true);
+    await flushMicrotasks();
+    assert.deepEqual(slot.read(), { ok: true });
+    assert.equal(fake.values.get("demo"), JSON.stringify({ ok: true }));
+    assert.equal(
+      idb.databases.get("petlive-web-storage")?.get("demo"),
+      JSON.stringify({ ok: true })
+    );
+  });
+
+  it("auto falls back to local when indexedDB is unavailable", () => {
+    const fake = new FakeStorage({ demo: '{"mode":"local"}' });
+    const { api } = loadStorageFactories({
+      storage: fake,
+      indexedDB: null,
+      configure: { backend: "auto" },
+    });
+    assert.equal(api.storage.getBackend(), "local");
+    const slot = api.storage.createJsonSlot({
+      key: "demo",
+      fallback: () => ({}),
+    });
+    assert.equal(slot.getStats().backend, "local");
+    assert.deepEqual(slot.read(), { mode: "local" });
+  });
+
+  it("coalesced scheduleWrite still flushes once on idb backend", async () => {
+    const fake = new FakeStorage();
+    const idb = createFakeIndexedDb();
+    const { api, timers } = loadStorageFactories({
+      storage: fake,
+      indexedDB: idb,
+      configure: { backend: "idb" },
+    });
+    const slot = api.storage.createJsonSlot({
+      key: "petlive-pet-photos",
+      fallback: () => ({}),
+      validate: (value) => value && typeof value === "object" && !Array.isArray(value),
+      coalesceMs: 80,
+    });
+
+    await api.storage.whenReady();
+    for (let i = 0; i < 6; i += 1) {
+      assert.equal(slot.scheduleWrite({ pet: `v${i}` }), true);
+    }
+    assert.equal(slot.hasPendingWrite(), true);
+    assert.equal(slot.flush(), true);
+    assert.deepEqual(slot.read(), { pet: "v5" });
+    assert.equal(
+      idb.databases.get("petlive-web-storage")?.get("petlive-pet-photos"),
+      JSON.stringify({ pet: "v5" })
+    );
+    assert.ok(timers.length >= 0);
+  });
+
+  it("clear removes idb and mirrored local entries", async () => {
+    const fake = new FakeStorage({ demo: '{"old":true}' });
+    const idb = createFakeIndexedDb({
+      "petlive-web-storage": new Map([["demo", '{"old":true}']]),
+    });
+    const { api } = loadStorageFactories({
+      storage: fake,
+      indexedDB: idb,
+      configure: { backend: "idb", mirrorLocal: true },
+    });
+    const slot = api.storage.createJsonSlot({
+      key: "demo",
+      fallback: () => ({}),
+      validate: (value) => value && typeof value === "object",
+    });
+
+    await api.storage.whenReady();
+    assert.equal(slot.clear(), true);
+    await flushMicrotasks();
+    assert.deepEqual(slot.read(), {});
+    assert.equal(fake.values.has("demo"), false);
+    assert.equal(idb.databases.get("petlive-web-storage")?.has("demo"), false);
   });
 });
 
