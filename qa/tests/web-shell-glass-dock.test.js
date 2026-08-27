@@ -43,7 +43,8 @@ describe("shell glass-dock", () => {
     assert.match(markup, /data-dock="passport"/);
     assert.match(markup, /data-go="emergency"/);
     assert.match(markup, /data-dock="timeline"/);
-    assert.doesNotMatch(markup, /glass-dock-lens/);
+    assert.match(markup, /id="glass-dock-lens"/);
+    assert.doesNotMatch(markup, /glass-dock-lens-glow/);
     const hidden = shell.glassDockMarkup({ passportGo: "emergency", startHidden: true });
     assert.match(hidden, /\shidden/);
     const defaultGo = shell.glassDockMarkup({});

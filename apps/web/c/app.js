@@ -3035,6 +3035,10 @@ function enhanceGlassScreenHeads() {
       }
       head.insertAdjacentHTML("beforeend", glassChromeActionsMarkup());
     });
+  PetLiveWeb.shell.ensureScreenHomeBtns?.(document, {
+    onGo: (screen) => go(screen),
+  });
+  if (typeof applyI18n === "function") applyI18n();
 }
 
 function syncAppNavBtnIcons(open) {
