@@ -49,6 +49,18 @@
     0 6px 18px rgba(26, 52, 45, 0.06);
 
   isolation: isolate;
+
+  /* Chrome labels only — block long-press select / iOS callout on this dock */
+  -webkit-user-select: none;
+  user-select: none;
+  -webkit-touch-callout: none;
+}
+
+.glass-dock,
+.glass-dock * {
+  -webkit-user-select: none;
+  user-select: none;
+  -webkit-touch-callout: none;
 }
 
 /* display:flex above beats the UA [hidden] rule — force hide */
