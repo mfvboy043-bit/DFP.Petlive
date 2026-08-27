@@ -1,7 +1,7 @@
 id: "20260827-small-brains"
 title: "Wave 1 — leftover small brains out of C facade"
 version: 2
-status: reviewing
+status: candidate_ready
 
 gate_a:
   status: approved
@@ -11,7 +11,7 @@ gate_b:
   status: pending
   note: "Formal B out of scope until Victor 採用"
 
-iteration: 0
+iteration: 1
 max_iterations: 3
 
 candidate:
@@ -20,24 +20,20 @@ candidate:
   worktree: ""
 
 reviews:
-  pharmacist: pending
-  qa: pending
+  pharmacist: pass
+  qa: pass
   ui: skipped
   # pending | skipped | pass | conditional | reject
   # ui skipped: no visual redesign; presentation helpers only (labels/classes/text)
 
 rerun: []
 blocking_issues: []
-non_blocking: []
-builder_scope:
-  - "A: Extract parasite/vaccine calendar title+details text builders from c/app.js into domains/parasite and domains/vaccines (inject label); facade keeps chooser + openGoogle/Apple"
-  - "B: Move formatFrequencyLabel, expandFrequencyInText, compoundFormLabel, compoundFormBadge, compoundChipToneClass into domains/medications (selectors or labels.js); wire factories from C facade"
-  - "C: Extract pure breed search-face value resolution into domains/breed; facade keeps DOM + suppressBreedSearchInput"
-  - "D: Move any remaining emergency copy-card assemble/join into domains/emergency; if already fully in render.buildCopyCardText, verify only and thin-wire"
-  - "C surface only: apps/web/c/app.js + c/index.html ?v=; do not touch apps/web/app.js / formal B"
-  - "No Wave 2 form wires, Wave 3 CSS/bundler, Wave 4 modules write truth, no drive-by refactors"
+non_blocking:
+  - "QA-1: pre-existing getNextVaccine equal-urgency order assert (out of Wave 1)"
+  - "QA-2: pre-existing upsertPetVaccines newest-first assert (out of Wave 1)"
+builder_scope: []
 builder_note: >-
   Iteration 0 FULL A–D on C. New labels.js for parasite/vaccines/medications;
   breed resolveSearchFaceValue; D verified already in emergency render.
-  Formal B untouched. Hand off to Pharmacist + QA.
+  Formal B untouched. Arbiter: candidate_ready (iter 1).
 halt_reason: ""
