@@ -2260,14 +2260,6 @@ function ensureLabAddForPet(pet) {
   else refreshLabAddChrome(pet);
 }
 
-const PET_FRAME_EMPTY_SVG = `
-  <svg viewBox="0 0 48 48" aria-hidden="true" focusable="false">
-    <rect x="9" y="13" width="30" height="22" rx="3.5" fill="none" stroke="currentColor" stroke-width="2"/>
-    <circle cx="17.5" cy="21.5" r="2.6" fill="none" stroke="currentColor" stroke-width="2"/>
-    <path d="M11.5 31.5l7.2-7.2 5.2 5.2 4.1-4.1 8.5 6.1" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-  </svg>
-`.trim();
-
 function loadPetPhotosMap() {
   return petsMedia.loadMap();
 }
@@ -2337,21 +2329,14 @@ function resizeImageDataUrl(dataUrl, maxEdge = 480) {
 function renderEmergencyPetPhoto(pet) {
   const frameLabel = document.getElementById("e-pet-photo");
   const frame = document.getElementById("e-pet-photo-preview");
-  if (!frameLabel || !frame) return;
-  const photo = pet.photo || getPetPhoto(pet.id);
-  const key = photo ? "petPhotoChange" : "petPhotoUpload";
-  const labelText = t(key);
+  if (!frameLabel || !frame || !petsRenderer) return;
+  const view = petsRenderer.buildEmergencyPhotoFrame(pet);
+  const labelText = t(view.labelKey);
   frameLabel.title = labelText;
   frameLabel.setAttribute("aria-label", labelText);
-  if (photo) {
-    frame.classList.add("has-photo");
-    frame.style.backgroundImage = `url('${photo}')`;
-    frame.innerHTML = "";
-  } else {
-    frame.classList.remove("has-photo");
-    frame.style.backgroundImage = "";
-    frame.innerHTML = PET_FRAME_EMPTY_SVG;
-  }
+  frame.classList.toggle("has-photo", view.hasPhoto);
+  frame.style.backgroundImage = view.backgroundImage;
+  frame.innerHTML = view.frameInnerHtml;
 }
 
 const photoCropEls = {
@@ -2588,27 +2573,8 @@ function renderArchiveList() {
     archiveBtn.setAttribute("aria-label", t("rainbowArchive"));
     archiveBtn.setAttribute("title", t("rainbowArchive"));
   }
-
-  if (!archivedPets.length) {
-    archiveList.innerHTML = `<li class="archive-empty">${t("archiveEmpty")}</li>`;
-    return;
-  }
-
-  archiveList.innerHTML = archivedPets
-    .map(
-      (pet) => `
-      <li class="archive-item" style="--pet-tone: ${pet.tone}">
-        <div class="archive-item-photo" aria-hidden="true"></div>
-        <div>
-          <strong>${pet.name}</strong>
-          <p>${speciesLabelOf(pet)} · ${breedLabelOf(pet)}</p>
-          <p>${t("leftOn", { date: pet.passedAwayDate })}${
-            pet.memorialNote ? ` · ${pet.memorialNote}` : ""
-          }</p>
-        </div>
-      </li>`
-    )
-    .join("");
+  if (!petsRenderer) return;
+  archiveList.innerHTML = petsRenderer.buildArchiveListHtml(archivedPets);
 }
 
 function getPendingArchivePet() {
@@ -2770,26 +2736,22 @@ function renderPetHeader(pet) {
     petCurrentEl.classList.remove("is-updating");
   });
 
+  if (!petsRenderer) return;
+  const copy = petsRenderer.buildPetHeaderCopy(pet);
   if (!pet) {
-    petNameEl.textContent = t("emptyPetsTitle");
-    petSubEl.textContent = t("emptyPetsSub");
-    if (timelineSub) timelineSub.textContent = "";
-    if (visitFormSub) visitFormSub.textContent = "";
-    if (vaccineSub) vaccineSub.textContent = "";
+    petNameEl.textContent = copy.nameText;
+    petSubEl.textContent = copy.subText;
+    if (timelineSub) timelineSub.textContent = copy.timelineSub;
+    if (visitFormSub) visitFormSub.textContent = copy.visitFormSub;
+    if (vaccineSub) vaccineSub.textContent = copy.vaccineSub;
     return;
   }
 
-  petNameEl.textContent = pet.name;
-  petSubEl.textContent = t("petSub", {
-    species: speciesLabelOf(pet),
-    breed: breedLabelOf(pet),
-    age: ageLabelOf(pet),
-    weight: pet.weight,
-  });
-
-  timelineSub.textContent = t("timelineSub", { name: pet.name });
-  visitFormSub.textContent = t("visitFormSub", { name: pet.name });
-  vaccineSub.textContent = t("vaccineSub", { name: pet.name });
+  petNameEl.textContent = copy.nameText;
+  petSubEl.textContent = copy.subText;
+  timelineSub.textContent = copy.timelineSub;
+  visitFormSub.textContent = copy.visitFormSub;
+  vaccineSub.textContent = copy.vaccineSub;
 }
 
 function syncAlertNavTone(alerts) {
@@ -4917,6 +4879,9 @@ alertsRenderer = PetLiveWeb.domains.alerts.createRenderer({
 petsRenderer = PetLiveWeb.domains.pets.createRenderer({
   label: (key, params) => t(key, params),
   getPetPhoto,
+  speciesLabelOf,
+  breedLabelOf,
+  ageLabelOf,
 });
 
 photoCropShell = PetLiveWeb.shell.createPhotoCrop();
