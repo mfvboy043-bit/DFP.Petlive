@@ -1,0 +1,59 @@
+---
+description: >-
+  New apps/web logic must be written as layered building blocks (domains/core/shell),
+  then wired via thin facades — never dump new brain into app.js monolith.
+alwaysApply: true
+---
+
+# Web building blocks (積木規則)
+
+Reference: adopted `20260813-web-layered-building-blocks` + current `apps/web/domains/*`.
+
+## When this applies
+
+Any **new** product logic for `apps/web` (and covers onto B). Tiny typos / copy-only edits are exempt.
+
+## Default workflow (must follow)
+
+1. **Classify** — Which layer / domain owns this brain?
+2. **Write the block** — Put pure logic under the right folder (not into fat `app.js` / `c/app.js`).
+3. **Wire** — Thin facade in surface `app.js`: createController / createSelectors, delegate; DOM / `t()` / listeners stay in the shell.
+4. **Load** — Add `<script defer src="…">` in the surface `index.html` (correct path + cache `?v=`).
+5. **Test** — Prefer `qa/tests/web-<domain>.test.js` (node:test + vm), behavior-preserving.
+
+Do **not** grow the monolith: no new domain brain pasted straight into `app.js`.
+
+## Layers (put code here)
+
+| Layer | Path | Owns | Must not |
+|-------|------|------|----------|
+| Domain | `apps/web/domains/<name>/` | Pure selectors / controllers / adapters on `pets[]` | DOM, `localStorage`, `t()`, another domain’s private state |
+| Core | `apps/web/core/` | Shared state, storage slots | Screen HTML |
+| Shell | `apps/web/shell/` | Navigation, render coordinator | Pet/domain writes, direct storage |
+| Runtime | `apps/web/runtime/` | `PetLive.*` bridges / ModuleResult unwrap | UI chrome |
+| Surface facade | `apps/web/c/app.js` or `apps/web/app.js` | Compose factories, DOM, i18n, events | Duplicate domain algorithms |
+
+Existing domains (reuse before inventing): `pets`, `visits`, `timeline`, `medications`, `alerts`, `vaccines`, `parasite`, `emergency`, `cloud`, `owner`, `breed`, `labs`, `imaging`.
+
+## Dependency direction
+
+```text
+index / bootstrap → shell → domain controllers → core state/storage → runtime → modules/*
+views/facades → selectors + i18n
+controllers -X-> DOM
+views       -X-> localStorage
+domains     -X-> another domain’s private internals
+```
+
+## Planner / Builder must
+
+- **Planner:** In every proposal that adds logic, name the target layer + domain path (or “extend `domains/<x>`”), and list facade / script-tag files. Non-goal: dumping brain into `app.js`.
+- **Builder:** Implement domain/core/shell files first; facades only call public `PetLiveWeb.domains.*` APIs. Match classic IIFE + `PetLiveWeb.domains.<name>` style (zero-build).
+- **C first** for passport work per `c-to-b-cover` rule; shared `domains/*` are used by both surfaces.
+
+## Done check
+
+- [ ] New brain lives under `domains/` / `core/` / `shell/` (not only `app.js`)
+- [ ] Surface `app.js` only wires + renders
+- [ ] `index.html` script order loads the new block before `app.js`
+- [ ] No second pet store; `pets[]` remains write truth unless a proposal explicitly changes that

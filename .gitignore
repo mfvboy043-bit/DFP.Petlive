@@ -6,6 +6,12 @@ deploy/preview-server.pid
 deploy/preview-access.log
 deploy/preview-server.out
 node_modules/
-.cursor/
+# Ignore Cursor local state, but keep project rules (and optionally agents/skills) in git.
+.cursor/*
 !.cursor/rules/
-!.cursor/rules/**/*.mdc
+!.cursor/rules/**
+!.cursor/agents/
+!.cursor/agents/**
+!.cursor/skills/
+!.cursor/skills/**
+!.cursor/SELF-ITERATION-V2.md
