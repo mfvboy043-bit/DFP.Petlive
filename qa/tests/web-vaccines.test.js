@@ -223,6 +223,42 @@ describe("VC-04 vaccines selectors + controller", () => {
     );
   });
 
+  it("buildVaccineCalendarPayload null without next; fields present with next", () => {
+    const { controller } = loadVaccines();
+    const pet = { name: "Mochi", vaccines: [] };
+    assert.equal(
+      controller.buildVaccineCalendarPayload(
+        pet,
+        { vaccines: [{ name: "五合一" }], given: "2026-01-01", next: "" },
+        { title: "t", details: "d" }
+      ),
+      null
+    );
+    assert.equal(
+      controller.buildVaccineCalendarPayload(null, { vaccines: [], given: "", next: "2026-08-27" }, {}),
+      null
+    );
+    assert.deepEqual(
+      plain(
+        controller.buildVaccineCalendarPayload(
+          pet,
+          {
+            vaccines: [{ name: "五合一" }, { name: "Rabies" }],
+            given: "2026-01-01",
+            next: "2026-08-27",
+          },
+          { title: "Title", details: "Details" }
+        )
+      ),
+      {
+        title: "Title",
+        details: "Details",
+        nextDue: "2026-08-27",
+        uid: "vaccine-20260827-2",
+      }
+    );
+  });
+
   it("domain scripts do not reference document, localStorage, or modules/vaccine", () => {
     for (const path of ["domains/vaccines/selectors.js", "domains/vaccines/controller.js"]) {
       const src = readFileSync(new URL(path, WEB_ROOT), "utf8");

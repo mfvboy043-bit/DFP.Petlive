@@ -2132,18 +2132,6 @@ function saveParasiteKind(kind, { dosedToday = false, quiet = false } = {}) {
   return true;
 }
 
-function isoToCompactDate(iso) {
-  return String(iso || "").replace(/-/g, "");
-}
-
-function escapeIcsText(text) {
-  return String(text || "")
-    .replace(/\\/g, "\\\\")
-    .replace(/;/g, "\\;")
-    .replace(/,/g, "\\,")
-    .replace(/\r?\n/g, "\\n");
-}
-
 /** Recompute next due from last given + interval (does not mark dosed today). */
 function prepareParasiteNextDueFromLast(kind) {
   const lastEl = document.getElementById(`parasite-last-${kind}`);
@@ -2251,12 +2239,11 @@ function buildVaccineCalendarPayload(pet, { vaccines, given, next }) {
     given: given || "—",
     next,
   });
-  return {
-    title,
-    details,
-    nextDue: next,
-    uid: `vaccine-${isoToCompactDate(next)}-${vaccineNames.length}`,
-  };
+  return vaccinesController.buildVaccineCalendarPayload(
+    pet,
+    { vaccines, given, next },
+    { title, details }
+  );
 }
 
 function openGoogleCalendar(payload) {
@@ -2264,14 +2251,8 @@ function openGoogleCalendar(payload) {
     showToast(t("toastParasiteNeedNext"));
     return;
   }
-  const start = isoToCompactDate(payload.nextDue);
-  const end = isoToCompactDate(addDays(payload.nextDue, 1));
-  const url = new URL("https://calendar.google.com/calendar/render");
-  url.searchParams.set("action", "TEMPLATE");
-  url.searchParams.set("text", payload.title);
-  url.searchParams.set("dates", `${start}/${end}`);
-  url.searchParams.set("details", payload.details);
-  window.open(url.toString(), "_blank", "noopener,noreferrer");
+  const url = PetLiveWeb.domains.calendar.buildGoogleCalendarUrl(payload, { addDays });
+  if (url) window.open(url, "_blank", "noopener,noreferrer");
 }
 
 function openAppleCalendar(payload) {
@@ -2279,26 +2260,13 @@ function openAppleCalendar(payload) {
     showToast(t("toastParasiteNeedNext"));
     return;
   }
-  const start = isoToCompactDate(payload.nextDue);
-  const end = isoToCompactDate(addDays(payload.nextDue, 1));
-  const stamp = isoToCompactDate(todayISODate()) + "T000000Z";
-  const uid = payload.uid || `event-${start}`;
-  const ics = [
-    "BEGIN:VCALENDAR",
-    "VERSION:2.0",
-    "PRODID:-//Petlive//Dragon Fruit Passport//EN",
-    "CALSCALE:GREGORIAN",
-    "METHOD:PUBLISH",
-    "BEGIN:VEVENT",
-    `UID:petlive-${uid}@petlive`,
-    `DTSTAMP:${stamp}`,
-    `DTSTART;VALUE=DATE:${start}`,
-    `DTEND;VALUE=DATE:${end}`,
-    `SUMMARY:${escapeIcsText(payload.title)}`,
-    `DESCRIPTION:${escapeIcsText(payload.details)}`,
-    "END:VEVENT",
-    "END:VCALENDAR",
-  ].join("\r\n");
+  const uid = payload.uid || `event-${PetLiveWeb.domains.calendar.isoToCompactDate(payload.nextDue)}`;
+  const ics = PetLiveWeb.domains.calendar.buildAppleIcsDocument(payload, {
+    todayISO: todayISODate(),
+    addDays,
+    uid,
+  });
+  if (!ics) return;
   const blob = new Blob([ics], { type: "text/calendar;charset=utf-8" });
   const href = URL.createObjectURL(blob);
   const link = document.createElement("a");
@@ -2323,7 +2291,9 @@ function openParasiteGoogleCalendar(kind) {
 function openParasiteAppleCalendar(kind) {
   const pet = getCurrentPet();
   const payload = buildParasiteCalendarPayload(pet, kind);
-  if (payload) payload.uid = `parasite-${kind}-${isoToCompactDate(payload.nextDue)}`;
+  if (payload) {
+    payload.uid = `parasite-${kind}-${PetLiveWeb.domains.calendar.isoToCompactDate(payload.nextDue)}`;
+  }
   openAppleCalendar(payload);
 }
 

@@ -76,10 +76,31 @@
       return { ok: true, entries, updated };
     }
 
+    function buildVaccineCalendarPayload(pet, { vaccines, given, next }, options = {}) {
+      if (!pet || !next) return null;
+      const vaccineNames = (vaccines || []).map((entry) => entry.name).filter(Boolean);
+      let title = options.title;
+      let details = options.details;
+      if (typeof options.buildTitle === "function") {
+        title = options.buildTitle({ vaccines, given, next }, pet);
+      }
+      if (typeof options.buildDetails === "function") {
+        details = options.buildDetails({ vaccines, given, next }, pet);
+      }
+      const compactNext = String(next || "").replace(/-/g, "");
+      return {
+        title: title || "",
+        details: details || "",
+        nextDue: next,
+        uid: `vaccine-${compactNext}-${vaccineNames.length}`,
+      };
+    }
+
     return {
       upsertPetVaccines,
       validateSave,
       buildSaveEntries,
+      buildVaccineCalendarPayload,
       wasVaccineUpdated,
     };
   }

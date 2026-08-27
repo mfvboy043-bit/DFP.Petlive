@@ -1,0 +1,36 @@
+id: "20260827-calendar-helper"
+title: "Calendar helper building blocks — Google/Apple export + vaccine payload"
+version: 2
+status: candidate_ready
+
+gate_a:
+  status: approved
+  note: "Victor 確認 2026-08-27"
+
+gate_b:
+  status: pending
+
+iteration: 1
+max_iterations: 3
+
+candidate:
+  branch: "proposal/calendar-helper"
+  path: "proposals/20260827-calendar-helper"
+  worktree: ""
+
+reviews:
+  pharmacist: skipped
+  qa: pass
+  ui: skipped
+
+rerun: []
+blocking_issues: []
+non_blocking: []
+builder_scope:
+  - "apps/web/domains/calendar/helpers.js"
+  - "apps/web/domains/vaccines/controller.js"
+  - "apps/web/c/app.js"
+  - "apps/web/c/index.html"
+  - "qa/tests/web-calendar.test.js"
+  - "qa/tests/web-vaccines.test.js"
+halt_reason: ""
