@@ -3308,6 +3308,9 @@ function enhanceGlassScreenHeads() {
   PetLiveWeb.shell.ensureScreenHomeBtns?.(document, {
     onGo: (screen) => go(screen),
   });
+  PetLiveWeb.shell.ensureFeatureHub?.(document, {
+    onGo: (screen) => go(screen),
+  });
   if (typeof applyI18n === "function") applyI18n();
 }
 

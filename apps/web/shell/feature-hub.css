@@ -1,0 +1,26 @@
+/* ---------------------------------------------------------
+   Shell — feature-buttons hub (emergency-card shortcuts page)
+   Reuses .e-quick-nav / .e-docs-nav look from emergency card.
+   --------------------------------------------------------- */
+
+.screen-feature-buttons .feature-hub {
+  display: grid;
+  gap: 12px;
+  margin: 8px 0 24px;
+}
+
+.screen-feature-buttons .feature-hub-quick > .feature-hub-vax {
+  /* Match sibling quick-nav buttons (vaccine is a <div> on emergency). */
+  appearance: none;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.screen-feature-buttons .feature-hub-quick > .feature-hub-vax span {
+  display: block;
+}
+
+.screen-feature-buttons .feature-hub-quick > .feature-hub-vax small {
+  display: block;
+}

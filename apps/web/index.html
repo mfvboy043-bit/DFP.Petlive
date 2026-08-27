@@ -14,6 +14,7 @@
   <link rel="stylesheet" href="./styles.css?v=20260827-alert-btn-border" />
   <link rel="stylesheet" href="./shell/glass-dock.css?v=20260827-dock-bubble-slide2" />
   <link rel="stylesheet" href="./shell/screen-home-btn.css?v=20260827-screen-home-icon" />
+  <link rel="stylesheet" href="./shell/feature-hub.css?v=20260827-feature-hub" />
 </head>
 <body>
   <div class="atmosphere" aria-hidden="true">
@@ -1682,6 +1683,22 @@
         </button>
       </nav>
     </section>
+
+
+
+    <!-- FEATURE BUTTONS HUB -->
+    <section class="screen screen-feature-buttons" data-screen="feature-buttons" data-i18n-aria="featureButtonsTitle" aria-label="功能按鈕" hidden>
+      <header class="screen-head light">
+        <button class="back" type="button" data-go="home" data-i18n-aria="back" aria-label="返回">←</button>
+        <div>
+          <h2 data-i18n="featureButtonsTitle">功能按鈕</h2>
+          <p data-i18n="featureButtonsSub">常用功能捷徑</p>
+        </div>
+      </header>
+
+      <div class="feature-hub" id="feature-hub"></div>
+    </section>
+
   </div>
 
   <div class="proof-lightbox" id="proof-lightbox" hidden>
@@ -1859,6 +1876,12 @@
         <span class="app-nav-item-label" data-i18n="manualTitle">說明書</span>
         <span class="app-nav-item-hint" data-i18n="manualNavHint">操作示範與說明</span>
       </button>
+
+      <button class="app-nav-item" type="button" role="menuitem" data-go="feature-buttons">
+        <span class="app-nav-item-label" data-i18n="featureButtonsTitle">功能按鈕</span>
+        <span class="app-nav-item-hint" data-i18n="featureButtonsHint">常用功能捷徑</span>
+      </button>
+
     </div>
 
     <div
@@ -1971,7 +1994,7 @@
   <script defer src="./auth/google-drive.js?v=20260827-google-session"></script>
   <script type="module" src="./runtime/petlive.js?v=20260824-drug-seed-dedupe"></script>
   <script defer src="./runtime/safe-ui.js?v=20260812-local-first"></script>
-  <script defer src="./i18n.js?v=20260827-screen-home-btn"></script>
+  <script defer src="./i18n.js?v=20260827-feature-hub"></script>
   <script defer src="./breeds-database.js?v=20260825-breed-typeahead-adopt"></script>
   <script defer src="./domains/breed/selectors.js?v=20260827-small-brains"></script>
   <script defer src="./domains/breed/controller.js?v=20260827-tl-br-cover-b"></script>
@@ -1985,6 +2008,7 @@
   <script defer src="./shell/app-nav.js?v=20260827-wire-bundles"></script>
   <script defer src="./shell/glass-dock.js?v=20260827-dock-bubble-slide2"></script>
   <script defer src="./shell/screen-home-btn.js?v=20260827-screen-home-icon"></script>
+  <script defer src="./shell/feature-hub.js?v=20260827-feature-hub"></script>
   <script defer src="./shell/render-coordinator.js?v=20260824-perf-adopt"></script>
   <script defer src="./shell/photo-crop.js?v=20260827-wire-bundles"></script>
   <script defer src="./shell/calendar-chooser.js?v=20260827-abcd"></script>
@@ -2038,6 +2062,6 @@
   <script defer src="./domains/owner/controller.js?v=20260827-ow-st-cover"></script>
   <script defer src="./domains/cloud/selectors.js?v=20260827-cl-cover"></script>
   <script defer src="./domains/cloud/controller.js?v=20260827-modules-w4p1"></script>
-  <script defer src="./app.js?v=20260827-tl-date-sort"></script>
+  <script defer src="./app.js?v=20260827-feature-hub"></script>
 </body>
 </html>
