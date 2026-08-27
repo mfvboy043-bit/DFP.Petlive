@@ -1,38 +1,36 @@
-/**
- * Shell glass-dock — pure screen → tab mapping (no DOM).
- */
-const test = require("node:test");
-const assert = require("node:assert/strict");
-const fs = require("node:fs");
-const path = require("node:path");
-const vm = require("node:vm");
+import { describe, it } from "node:test";
+import assert from "node:assert/strict";
+import { readFileSync } from "node:fs";
+import vm from "node:vm";
 
-const SRC = path.resolve(
-  __dirname,
-  "../../apps/web/shell/glass-dock.js"
-);
+const WEB_ROOT = new URL("../../apps/web/", import.meta.url);
 
-function loadShell() {
-  const code = fs.readFileSync(SRC, "utf8");
-  const sandbox = { console, window: {} };
-  sandbox.window = sandbox;
-  sandbox.globalThis = sandbox;
-  vm.runInNewContext(code, sandbox);
-  return sandbox.PetLiveWeb.shell;
+function loadShell(files) {
+  const context = vm.createContext({ console });
+  context.globalThis = context;
+  context.window = context;
+  for (const file of files) {
+    vm.runInContext(readFileSync(new URL(file, WEB_ROOT), "utf8"), context, {
+      filename: file,
+    });
+  }
+  return context.PetLiveWeb.shell;
 }
 
-test("dockKeyForScreen maps passport tabs and child screens", () => {
-  const shell = loadShell();
-  assert.equal(shell.dockKeyForScreen("timeline"), "timeline");
-  assert.equal(shell.dockKeyForScreen("add-visit"), "timeline");
-  assert.equal(shell.dockKeyForScreen("add-med"), "timeline");
-  assert.equal(shell.dockKeyForScreen("alerts"), "alerts");
-  assert.equal(shell.dockKeyForScreen("home"), "home");
-  assert.equal(shell.dockKeyForScreen("emergency"), "home");
-  assert.equal(shell.dockKeyForScreen("imaging"), "imaging");
-  assert.equal(shell.dockKeyForScreen("imaging-proof"), "imaging");
-  assert.equal(shell.dockKeyForScreen("labs"), "labs");
-  assert.equal(shell.dockKeyForScreen("lab-add"), "labs");
-  assert.equal(shell.dockKeyForScreen("intro"), null);
-  assert.equal(shell.dockKeyForScreen("owner-settings"), null);
+describe("shell glass-dock", () => {
+  it("dockKeyForScreen maps passport tabs and child screens", () => {
+    const shell = loadShell(["shell/glass-dock.js"]);
+    assert.equal(shell.dockKeyForScreen("timeline"), "timeline");
+    assert.equal(shell.dockKeyForScreen("add-visit"), "timeline");
+    assert.equal(shell.dockKeyForScreen("add-med"), "timeline");
+    assert.equal(shell.dockKeyForScreen("alerts"), "alerts");
+    assert.equal(shell.dockKeyForScreen("home"), "home");
+    assert.equal(shell.dockKeyForScreen("emergency"), "home");
+    assert.equal(shell.dockKeyForScreen("imaging"), "imaging");
+    assert.equal(shell.dockKeyForScreen("imaging-proof"), "imaging");
+    assert.equal(shell.dockKeyForScreen("labs"), "labs");
+    assert.equal(shell.dockKeyForScreen("lab-add"), "labs");
+    assert.equal(shell.dockKeyForScreen("intro"), null);
+    assert.equal(shell.dockKeyForScreen("owner-settings"), null);
+  });
 });
