@@ -16,7 +16,8 @@
     if (id === "alerts") return "alerts";
     if (id === "imaging" || id === "imaging-proof") return "imaging";
     if (id === "labs" || id === "lab-add") return "labs";
-    if (id === "home" || id === "emergency") return "home";
+    if (id === "home") return "home";
+    if (id === "emergency") return "passport";
     return null;
   }
 
@@ -26,11 +27,12 @@
   }
 
   /**
-   * Single markup source for C + B (passportGo differs: home vs emergency).
+   * Single markup source for C + B.
+   * Leftmost 主頁 → home; 護照 → passportGo (usually emergency).
    * @param {{ passportGo?: string, startHidden?: boolean }} [opts]
    */
   function glassDockMarkup(opts = {}) {
-    const passportGo = String(opts.passportGo || "home");
+    const passportGo = String(opts.passportGo || "emergency");
     const hiddenAttr = opts.startHidden ? " hidden" : "";
     return `
 <nav
@@ -40,13 +42,15 @@
   aria-label="主選單"${hiddenAttr}
 >
   <span class="glass-dock-thumb" id="glass-dock-thumb" aria-hidden="true"></span>
-  <div class="glass-dock-lens" id="glass-dock-lens" hidden aria-hidden="true">
-    <span class="glass-dock-lens-glow" aria-hidden="true"></span>
-    <span class="glass-dock-lens-face">
-      <span class="glass-dock-lens-ico"></span>
-      <span class="glass-dock-lens-label"></span>
+  <button class="glass-dock-item" type="button" data-go="home" data-dock="home">
+    <span class="glass-dock-ico" aria-hidden="true">
+      <svg viewBox="0 0 24 24" width="22" height="22" focusable="false">
+        <path fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" d="M4 11.5 12 4.5l8 7" />
+        <path fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" d="M7 10.5V19h10v-8.5" />
+      </svg>
     </span>
-  </div>
+    <span class="glass-dock-label" data-i18n="dockHome">主頁</span>
+  </button>
   <button class="glass-dock-item" type="button" data-go="timeline" data-dock="timeline">
     <span class="glass-dock-ico" aria-hidden="true">
       <svg viewBox="0 0 24 24" width="22" height="22" focusable="false">
@@ -64,7 +68,7 @@
     </span>
     <span class="glass-dock-label" data-i18n="dockAlerts">警示</span>
   </button>
-  <button class="glass-dock-item" type="button" data-go="${passportGo}" data-dock="home">
+  <button class="glass-dock-item" type="button" data-go="${passportGo}" data-dock="passport">
     <span class="glass-dock-ico" aria-hidden="true">
       <svg viewBox="0 0 24 24" width="22" height="22" focusable="false">
         <rect x="5" y="4" width="14" height="16" rx="2.5" fill="none" stroke="currentColor" stroke-width="1.8" />
@@ -114,158 +118,13 @@
     return doc.getElementById("glass-dock");
   }
 
-  function wireGlassDockClicks(doc, onGo, state = {}) {
+  function wireGlassDockClicks(doc, onGo) {
     const dock = doc.getElementById("glass-dock");
     if (!dock || dock.dataset.navWired === "1") return;
     dock.dataset.navWired = "1";
-
-    const HOLD_MS = 70;
-    let press = null;
-
-    function lensEl() {
-      return doc.getElementById("glass-dock-lens");
-    }
-
-    function clearPressClasses() {
-      dock.classList.remove("is-pressing");
-      dock.querySelectorAll(".glass-dock-item.is-pressing").forEach((el) => {
-        el.classList.remove("is-pressing");
-      });
-    }
-
-    function hideLens() {
-      const lens = lensEl();
-      if (!lens) return;
-      lens.classList.remove("is-visible");
-      lens.hidden = true;
-      clearPressClasses();
-    }
-
-    function showLensFor(btn) {
-      const lens = lensEl();
-      if (!lens || !btn || !dock.contains(btn)) return;
-      const ico = btn.querySelector(".glass-dock-ico");
-      const label = btn.querySelector(".glass-dock-label");
-      const lensIco = lens.querySelector(".glass-dock-lens-ico");
-      const lensLabel = lens.querySelector(".glass-dock-lens-label");
-      if (lensIco) lensIco.innerHTML = ico ? ico.innerHTML : "";
-      if (lensLabel) {
-        lensLabel.textContent = label ? label.textContent : "";
-      }
-      clearPressClasses();
-      dock.classList.add("is-pressing");
-      btn.classList.add("is-pressing");
-
-      const dockRect = dock.getBoundingClientRect();
-      const btnRect = btn.getBoundingClientRect();
-      const cx = btnRect.left + btnRect.width / 2 - dockRect.left;
-      const cy = btnRect.top + btnRect.height / 2 - dockRect.top - 10;
-      lens.style.left = `${cx}px`;
-      lens.style.top = `${cy}px`;
-      lens.hidden = false;
-      void lens.offsetWidth;
-      lens.classList.add("is-visible");
-    }
-
-    function itemFromPoint(clientX, clientY) {
-      const stack =
-        typeof doc.elementsFromPoint === "function"
-          ? doc.elementsFromPoint(clientX, clientY)
-          : [doc.elementFromPoint(clientX, clientY)];
-      for (const el of stack) {
-        if (!el || typeof el.closest !== "function") continue;
-        const btn = el.closest(".glass-dock-item");
-        if (btn && dock.contains(btn)) return btn;
-      }
-      return null;
-    }
-
-    function endPress(event, commit) {
-      if (!press) return;
-      const { pointerId, btn, timer, lensShown } = press;
-      if (timer) global.clearTimeout(timer);
-      try {
-        if (dock.hasPointerCapture?.(pointerId)) {
-          dock.releasePointerCapture(pointerId);
-        }
-      } catch {
-        /* ignore */
-      }
-      const target =
-        itemFromPoint(event.clientX, event.clientY) ||
-        (lensShown ? btn : null);
-      hideLens();
-      press = null;
-      if (commit && target) {
-        const screen = target.getAttribute("data-go");
-        if (screen && typeof onGo === "function") {
-          state.suppressClickUntil = Date.now() + 450;
-          onGo(screen, target);
-        }
-      }
-    }
-
-    dock.addEventListener("pointerdown", (event) => {
-      if (event.button != null && event.button !== 0) return;
-      const btn = event.target?.closest?.(".glass-dock-item");
-      if (!btn || !dock.contains(btn)) return;
-      event.preventDefault();
-      if (press?.timer) global.clearTimeout(press.timer);
-      press = {
-        btn,
-        pointerId: event.pointerId,
-        lensShown: false,
-        timer: global.setTimeout(() => {
-          if (!press || press.btn !== btn) return;
-          press.lensShown = true;
-          showLensFor(btn);
-        }, HOLD_MS),
-      };
-      try {
-        dock.setPointerCapture(event.pointerId);
-      } catch {
-        /* ignore */
-      }
-    });
-
-    dock.addEventListener("pointermove", (event) => {
-      if (!press || event.pointerId !== press.pointerId) return;
-      const over = itemFromPoint(event.clientX, event.clientY);
-      if (!over) return;
-      if (over !== press.btn) {
-        press.btn = over;
-        if (press.lensShown) showLensFor(over);
-      }
-    });
-
-    dock.addEventListener("pointerup", (event) => {
-      if (!press || event.pointerId !== press.pointerId) return;
-      const held = press.lensShown;
-      const btn = press.btn;
-      endPress(event, held);
-      // Quick tap (lens never shown): navigate without magnifier flash.
-      if (!held && btn && typeof onGo === "function") {
-        const screen = btn.getAttribute("data-go");
-        if (screen) {
-          state.suppressClickUntil = Date.now() + 450;
-          onGo(screen, btn);
-        }
-      }
-    });
-
-    dock.addEventListener("pointercancel", (event) => {
-      if (!press || event.pointerId !== press.pointerId) return;
-      endPress(event, false);
-    });
-
     dock.addEventListener("click", (event) => {
       const btn = event.target?.closest?.("[data-go]");
       if (!btn || !dock.contains(btn)) return;
-      if (state.suppressClickUntil && Date.now() < state.suppressClickUntil) {
-        event.preventDefault();
-        event.stopPropagation();
-        return;
-      }
       const screen = btn.getAttribute("data-go");
       if (!screen) return;
       if (typeof onGo === "function") onGo(screen, btn);
@@ -470,15 +329,10 @@
       onGo,
       onMounted,
     } = hooks;
-    const state = {
-      thumbPrimed: false,
-      lastDockKey: null,
-      thumbAnim: null,
-      suppressClickUntil: 0,
-    };
+    const state = { thumbPrimed: false, lastDockKey: null, thumbAnim: null };
 
     ensureGlassDock(doc, { passportGo, startHidden });
-    wireGlassDockClicks(doc, onGo, state);
+    wireGlassDockClicks(doc, onGo);
     if (typeof onMounted === "function") onMounted(doc.getElementById("glass-dock"));
 
     const paint = (animateJump) =>
