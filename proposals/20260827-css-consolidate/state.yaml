@@ -1,13 +1,12 @@
 id: "20260827-css-consolidate"
 title: "Wave 3 — CSS consolidation (organize tokens / layers / dead rules; C first)"
 version: 2
-status: proposed
+status: reviewing
 # proposed | building | reviewing | revising | candidate_ready | halted | adopted | rejected
 
 gate_a:
-  status: pending
-  # pending | approved | modified | rejected
-  note: "Victor 2026-08-27 —「第3波，請總指揮開始指揮」; parent may flip approved after write. Slice=CSS consolidate (bundler deferred)."
+  status: approved
+  note: "Victor 2026-08-27 — 第3波，請總指揮開始指揮（CSS consolidate; bundler deferred）"
 
 gate_b:
   status: pending
@@ -17,7 +16,7 @@ iteration: 0
 max_iterations: 3
 
 candidate:
-  branch: "cursor/css-consolidate-6f84"
+  branch: "cursor/css-consolidate-6faf"
   path: "proposals/20260827-css-consolidate"
   worktree: ""
 
@@ -37,7 +36,7 @@ builder_scope:
   - "Do not touch apps/web/styles.css or formal B until Gate B"
   - "Do not introduce bundler / npm build / Vite"
 builder_note: >-
-  Gate A pending until Victor 確認. Prefer safer CSS consolidate over bundler.
-  Preserve zero-build + python3 -m http.server LAN preview. No visual redesign;
-  keep Morandi sage/beige/milktea. C styles.css is a separate file from B.
+  Gate A build complete on cursor/css-consolidate-6faf. C styles.css 7963→7777;
+  ?v=20260827-css-consolidate. Evidence in builder-notes.md. Hand off to UI/QA;
+  pharmacist skip. No merge / no B cover until Gate B adopt.
 halt_reason: ""

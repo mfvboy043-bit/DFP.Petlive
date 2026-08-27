@@ -1,7 +1,25 @@
 /* =========================================================
-   PETLIVE · PET HEALTH PASSPORT
-   UI SYSTEM v2
-   Mobile First / Local First
+   PETLIVE · PET HEALTH PASSPORT — Surface C stylesheet
+   UI SYSTEM v2 · Mobile First / Local First · Zero-build
+   Single file (no bundler). Morandi sage / beige / milktea.
+   =========================================================
+   LAYER TOC (reading order)
+   ---------------------------------------------------------
+   Tokens / foundation
+     1 Design tokens · 2 Reset · 3 Atmosphere · 4 App shell · 5 Typography
+   Chrome / screens
+     6 Intro landing · 7 Top bar · 8 Buttons · 9 Special top-bar buttons
+     10 Home hero · 11 Prevention strip · 12 CTA · 13 Forms · 14 Pickers
+     15 Medication · 16 Source/trust · 17 Stamp (legacy removed)
+     18 Alerts · 19 Vaccine/parasite lists · 20 Timeline · 20b Timeline med/compound
+     21 Passport wash · 22–23 Emergency · 24 Vaccine traffic · 25 Archive
+     26 Remove pet · 27–28 Photo · 29 Toast · 30 Language · 31 Completion
+   Responsive / a11y
+     32 Desktop · 33 Large desktop home · 34 Reduced motion · 35 Dark mode
+   Tails (do not restyle lightly)
+     36 JS hook compat — legacy token aliases + app.js class hooks
+     37 Mobile polish — phone overrides on v2 tokens
+     38 C surface leftovers — discussion banner + Drive chrome hide
    ========================================================= */
 
 /* ---------------------------------------------------------
@@ -350,7 +368,7 @@ h4 {
 }
 
 /* ---------------------------------------------------------
-   6b. INTRO LANDING — What'Sub-like top bar (login right)
+   6. INTRO LANDING — What'Sub-like top bar (login right)
    --------------------------------------------------------- */
 
 .screen-intro {
@@ -505,13 +523,6 @@ h4 {
   max-width: 36em;
 }
 
-.intro-cta-row {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 10px;
-  align-items: center;
-}
-
 .intro-status {
   margin: 14px 0 0;
   min-height: 1.2em;
@@ -535,40 +546,6 @@ h4 {
   user-select: none;
 }
 
-.cloud-account-card {
-  margin: 0 0 22px;
-  padding: 14px 16px;
-  border: 1px solid var(--line);
-  border-radius: var(--r-md);
-  background: rgba(255, 255, 255, 0.55);
-}
-
-.cloud-account-title {
-  margin: 0 0 6px;
-  font-size: 14px;
-  font-weight: 700;
-}
-
-.cloud-account-status {
-  margin: 0;
-  font-size: 13px;
-  color: var(--muted);
-}
-
-.cloud-account-email {
-  margin: 6px 0 0;
-  font-size: 13px;
-  color: var(--text);
-  word-break: break-all;
-}
-
-.cloud-account-actions {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-  margin-top: 12px;
-}
-
 @media (max-width: 720px) {
   .intro-hero {
     grid-template-columns: 1fr;
@@ -582,7 +559,7 @@ h4 {
 }
 
 /* ---------------------------------------------------------
-   6. TOP BAR — floating frosted glass (home chrome)
+   7. TOP BAR — floating frosted glass (home chrome)
    Inspired by floating site navs (e.g. What'Sub): translucent
    bar, blur, rim light; brand + actions sit on the glass.
    --------------------------------------------------------- */
@@ -709,17 +686,6 @@ h4 {
 
 .app-nav-word {
   padding: 0 1px;
-}
-
-.app-nav-ico {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  line-height: 0;
-}
-
-.app-nav-ico[hidden] {
-  display: none !important;
 }
 
 /* Portal host must not invent an invisible hit layer over the FAB */
@@ -954,7 +920,7 @@ h4 {
 }
 
 /* ---------------------------------------------------------
-   7. BUTTONS
+   8. BUTTONS
    --------------------------------------------------------- */
 
 button {
@@ -1161,11 +1127,10 @@ button {
 }
 
 /* ---------------------------------------------------------
-   8. SPECIAL TOP BAR BUTTONS
+   9. SPECIAL TOP BAR BUTTONS
    --------------------------------------------------------- */
 
-.settings-btn,
-.rainbow-btn {
+.settings-btn {
   position: relative;
 
   display: grid;
@@ -1182,34 +1147,8 @@ button {
   box-shadow: var(--shadow-xs);
 }
 
-.rainbow-btn::before {
-  content: "";
-
-  width: 15px;
-  height: 10px;
-
-  border-radius: 10px 10px 0 0;
-
-  background:
-    linear-gradient(
-      180deg,
-      #e9b7a8 0 22%,
-      #efd8a7 22% 44%,
-      #afccb6 44% 66%,
-      #a8bfd0 66% 82%,
-      transparent 82%
-    );
-
-  mask:
-    radial-gradient(
-      circle at 50% 100%,
-      transparent 0 4px,
-      #000 4.5px
-    );
-}
-
 /* ---------------------------------------------------------
-   9. HOME HERO
+   10. HOME HERO
    --------------------------------------------------------- */
 
 .hero-home {
@@ -1444,7 +1383,7 @@ html[lang="ko"] .hero-intro .brand-zh {
 }
 
 /* ---------------------------------------------------------
-   10. PREVENTION STATUS STRIP
+   11. PREVENTION STATUS STRIP
    --------------------------------------------------------- */
 
 .parasite-strip {
@@ -1560,30 +1499,14 @@ html[lang="ko"] .hero-intro .brand-zh {
   background: currentColor;
 }
 
-/* Status lamps — expired/overdue is rose (attention layer), NOT critical red */
-.is-safe,
-.status-protected {
-  color: var(--status-mint);
-}
-
-.is-attention,
-.status-approaching {
-  color: var(--status-apricot);
-}
-
-.status-expired {
-  color: color-mix(in srgb, var(--status-rose) 45%, var(--text));
-}
-
 /* ---------------------------------------------------------
-   11. CTA
+   12. CTA
    --------------------------------------------------------- */
 
 .cta-row,
 .form-actions,
 .med-form-actions,
-.parasite-actions,
-.parasite-cal-actions {
+.parasite-actions {
   display: flex;
   gap: 10px;
 }
@@ -1610,7 +1533,7 @@ html[lang="ko"] .hero-intro .brand-zh {
 }
 
 /* ---------------------------------------------------------
-   12. FORMS
+   13. FORMS
    --------------------------------------------------------- */
 
 .form {
@@ -1949,7 +1872,7 @@ input[type="week"] {
 }
 
 /* ---------------------------------------------------------
-   13. RESULT DROPDOWNS (clinic / drug pickers)
+   14. RESULT DROPDOWNS (clinic / drug pickers)
    --------------------------------------------------------- */
 
 .clinic-results,
@@ -2104,7 +2027,7 @@ input[type="week"] {
 }
 
 /* ---------------------------------------------------------
-   14. MEDICATION
+   15. MEDICATION
    --------------------------------------------------------- */
 
 .med-mode-switch {
@@ -2384,7 +2307,7 @@ input[type="week"] {
 }
 
 /* ---------------------------------------------------------
-   15. SOURCE / TRUST
+   16. SOURCE / TRUST
    --------------------------------------------------------- */
 
 .source-options {
@@ -2440,45 +2363,13 @@ input[type="week"] {
 }
 
 /* ---------------------------------------------------------
-   16. STAMP LANGUAGE
+   17. STAMP LANGUAGE
+   Legacy .source-stamp / .owner-stamp / .clinic-stamp removed
+   (unused in C HTML + JS; evidence in proposal notes).
    --------------------------------------------------------- */
 
-.source-stamp,
-.owner-stamp,
-.clinic-stamp {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-
-  min-height: 30px;
-  padding: 4px 10px;
-
-  border: 1.5px solid currentColor;
-  border-radius: 5px;
-
-  font-family: "Noto Serif TC", serif;
-  font-size: 11px;
-  font-weight: 700;
-
-  line-height: 1.25;
-
-  transform: rotate(-2.5deg);
-
-  opacity: 0.82;
-  background: transparent;
-}
-
-.owner-stamp {
-  color: var(--milktea);
-}
-
-.clinic-stamp {
-  color: var(--leaf);
-  transform: rotate(1.7deg);
-}
-
 /* ---------------------------------------------------------
-   17. ALERTS
+   18. ALERTS
    --------------------------------------------------------- */
 
 .alert-disclaimer,
@@ -2609,7 +2500,7 @@ input[type="week"] {
 }
 
 /* ---------------------------------------------------------
-   18. VACCINE / PARASITE LISTS
+   19. VACCINE / PARASITE LISTS
    --------------------------------------------------------- */
 
 .vaccine-list,
@@ -2791,15 +2682,6 @@ input[type="week"] {
   grid-template-columns: 1fr 1fr;
 }
 
-.parasite-cal-actions {
-  margin-bottom: 2px;
-}
-
-.parasite-cal-actions .btn {
-  flex: 1;
-  width: 100%;
-}
-
 .parasite-cal-chooser {
   position: fixed;
   z-index: 980;
@@ -2853,7 +2735,7 @@ input[type="week"] {
 }
 
 /* ---------------------------------------------------------
-   19. TIMELINE
+   20. TIMELINE
    Block language matches .alert-section (padded card + left accent).
    Full rules live with JS hooks below (.tl-item …).
    --------------------------------------------------------- */
@@ -2865,1314 +2747,10 @@ input[type="week"] {
 }
 
 /* ---------------------------------------------------------
-   20. PASSPORT PLATE WASH
-   Opaque paper field (no alpha bleed through body).
-   Same base for emergency / timeline / vaccines / alerts / parasite.
+   20b. TIMELINE MED SUMMARY + COMPOUND VISUALS
+   Restored pre-UI-v2 hooks; lives with timeline (was §30b).
+   Keep selector/values; do not re-override from §36.
    --------------------------------------------------------- */
-
-.screen-emergency,
-.screen[data-screen="timeline"],
-.screen[data-screen="vaccines"],
-.screen[data-screen="alerts"],
-.screen[data-screen="parasite"],
-.screen[data-screen="labs"],
-.screen[data-screen="imaging"],
-.screen[data-screen="lab-add"] {
-  background-color: var(--paper-warm);
-  background-image:
-    radial-gradient(
-      circle at 18% 12%,
-      rgba(223, 234, 227, 0.72),
-      transparent 42%
-    ),
-    radial-gradient(
-      circle at 88% 28%,
-      rgba(242, 232, 216, 0.55),
-      transparent 46%
-    ),
-    linear-gradient(
-      180deg,
-      #f6f3ed 0%,
-      #fcf8f1 260px,
-      #fffdf9 100%
-    );
-  background-repeat: no-repeat;
-}
-
-.e-quick-nav {
-  position: relative;
-  z-index: 12;
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 8px;
-
-  margin: 14px 0 0;
-}
-
-.e-quick-nav > button,
-.e-vax-nav {
-  position: relative;
-
-  min-width: 0;
-  padding: 10px 8px;
-
-  border: 1.5px solid var(--line-strong);
-  border-radius: var(--r-sm);
-
-  color: var(--text);
-  background:
-    linear-gradient(
-      165deg,
-      #ffffff 0%,
-      #f7f5ef 100%
-    );
-
-  text-align: left;
-
-  box-shadow:
-    0 1px 0 rgba(255, 255, 255, 0.98) inset,
-    0 0 0 1px rgba(255, 255, 255, 0.55) inset,
-    0 8px 18px rgba(26, 52, 45, 0.08),
-    0 2px 5px rgba(50, 57, 53, 0.05);
-
-  transition:
-    transform var(--fast),
-    box-shadow var(--fast),
-    border-color var(--fast),
-    background var(--fast);
-}
-
-.e-vax-nav {
-  overflow: visible;
-  z-index: 1;
-}
-
-/* Keep legend above emergency card (card transform creates its own stack) */
-.e-vax-nav:has(.e-vax-help-pop:not([hidden])) {
-  z-index: 20;
-}
-
-.e-quick-nav > button:hover,
-.e-vax-nav:hover {
-  transform: translateY(-1px);
-  box-shadow:
-    0 1px 0 rgba(255, 255, 255, 1) inset,
-    0 0 0 1px rgba(255, 255, 255, 0.6) inset,
-    0 12px 24px rgba(26, 52, 45, 0.11),
-    0 3px 8px rgba(50, 57, 53, 0.06);
-}
-
-.e-quick-nav > button:active,
-.e-vax-nav:active {
-  transform: translateY(0) scale(0.99);
-  box-shadow:
-    0 1px 0 rgba(255, 255, 255, 0.85) inset,
-    0 4px 10px rgba(26, 52, 45, 0.07);
-}
-
-.e-quick-nav > button:first-child {
-  border-color: color-mix(in srgb, var(--leaf) 32%, var(--line-strong));
-  background:
-    linear-gradient(
-      165deg,
-      #ffffff 0%,
-      color-mix(in srgb, var(--leaf-soft) 55%, #f7f5ef) 100%
-    );
-  box-shadow:
-    0 1px 0 rgba(255, 255, 255, 0.98) inset,
-    0 0 0 1px rgba(255, 255, 255, 0.55) inset,
-    0 0 0 1px color-mix(in srgb, var(--leaf) 12%, transparent),
-    0 10px 20px rgba(41, 77, 61, 0.11),
-    0 2px 6px rgba(50, 57, 53, 0.04);
-}
-
-.e-quick-nav span {
-  display: block;
-
-  font-size: 12px;
-  font-weight: 700;
-
-  color: var(--text-strong);
-}
-
-.e-quick-nav small {
-  display: block;
-
-  margin-top: 2px;
-
-  overflow: hidden;
-
-  font-size: 9px;
-  color: var(--text-muted);
-
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-/* ---------------------------------------------------------
-   21. EMERGENCY CARD
-   --------------------------------------------------------- */
-
-.e-card {
-  position: relative;
-  z-index: 1;
-
-  margin-top: 4px;
-  padding: 20px 19px 22px;
-
-  border: 1px solid rgba(200, 190, 175, 0.85);
-  border-radius: 22px;
-
-  background:
-    linear-gradient(
-      165deg,
-      rgba(255, 254, 251, 0.94) 0%,
-      rgba(253, 249, 242, 0.9) 55%,
-      rgba(248, 243, 234, 0.88) 100%
-    );
-
-  /* Floating passport: near rim + mid lift + soft ground shadow */
-  box-shadow:
-    0 1px 0 rgba(255, 255, 255, 0.95) inset,
-    0 0 0 1px rgba(255, 255, 255, 0.45) inset,
-    0 2px 4px rgba(50, 57, 53, 0.04),
-    0 12px 28px rgba(50, 57, 53, 0.1),
-    0 28px 56px rgba(41, 77, 61, 0.12),
-    0 40px 80px rgba(50, 57, 53, 0.06);
-
-  transform: translateY(-2px);
-
-  backdrop-filter: blur(20px) saturate(1.12);
-  -webkit-backdrop-filter: blur(20px) saturate(1.12);
-
-  overflow: hidden;
-}
-
-.e-card::before {
-  content: "";
-
-  position: absolute;
-  inset: 0;
-
-  opacity: 0.028;
-  pointer-events: none;
-
-  background-image:
-    repeating-linear-gradient(
-      0deg,
-      rgba(0,0,0,.18),
-      rgba(0,0,0,.18) 1px,
-      transparent 1px,
-      transparent 5px
-    );
-}
-
-.e-card::after {
-  content: "";
-  position: absolute;
-  inset: 0;
-  pointer-events: none;
-  border-radius: inherit;
-  background:
-    radial-gradient(
-      120% 80% at 12% 0%,
-      rgba(223, 234, 227, 0.35),
-      transparent 55%
-    ),
-    radial-gradient(
-      90% 70% at 100% 100%,
-      rgba(242, 232, 216, 0.28),
-      transparent 50%
-    );
-}
-
-.e-card > * {
-  position: relative;
-  z-index: 1;
-}
-
-.e-card-top {
-  display: grid;
-  grid-template-columns: 1fr auto;
-  gap: 14px;
-
-  padding-bottom: 16px;
-
-  border-bottom: 1px solid #e2ddd4;
-}
-
-.e-brand {
-  margin-bottom: 7px;
-
-  font-family: "Noto Serif TC", serif;
-  font-size: 12px;
-  font-weight: 700;
-
-  color: var(--leaf);
-}
-
-.e-name-row {
-  display: flex;
-  align-items: flex-start;
-  gap: 7px;
-  min-width: 0;
-}
-
-.e-name-row h3 {
-  margin: 0;
-  min-width: 0;
-  flex: 0 1 auto;
-
-  font-family: "Noto Serif TC", serif;
-  font-size: 27px;
-  font-weight: 700;
-  line-height: 1.25;
-  color: var(--text-strong);
-}
-
-.e-name-aside {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-end;
-  gap: 6px;
-  margin-left: auto;
-  flex: 0 1 auto;
-  min-width: 0;
-}
-
-.e-copy-summary {
-  min-height: 34px;
-  padding: 6px 11px;
-  font-size: 0.8rem;
-}
-
-.e-pet-photo-edit {
-  display: grid;
-  place-items: center;
-  flex: 0 0 auto;
-  margin-top: 5px;
-
-  width: 27px;
-  height: 27px;
-  padding: 0;
-  border: 0;
-
-  border-radius: 50%;
-
-  color: var(--text-muted);
-  background: #f0ede5;
-
-  cursor: pointer;
-}
-
-/* Meta line: italic + same tone as weight row so name stays primary */
-.e-sub {
-  margin: 8px 0 0;
-  font-size: 0.9rem;
-  font-weight: 500;
-  font-style: italic;
-  line-height: 1.45;
-  letter-spacing: 0.01em;
-  color: var(--text-muted);
-}
-
-.e-sub + .e-sub {
-  margin-top: 2px;
-}
-
-.e-chip-meta {
-  margin: 0;
-  min-width: 0;
-  padding-bottom: 2px;
-  font-size: 0.78rem;
-  font-weight: 500;
-  font-style: italic;
-  line-height: 1;
-  letter-spacing: 0.01em;
-  text-align: right;
-  color: var(--text-muted);
-}
-
-.e-weight {
-  margin: 5px 0 0;
-  font-size: 0.8rem;
-  font-weight: 500;
-  line-height: 1.4;
-  color: var(--text-muted);
-}
-
-.e-weight strong {
-  font-weight: 800;
-  font-size: 1.12em;
-  letter-spacing: 0.01em;
-  color: var(--text-strong);
-}
-
-.e-weight-date {
-  font-weight: 500;
-  font-size: 0.95em;
-  color: var(--text-muted);
-}
-
-.e-pet-frame {
-  display: block;
-
-  width: 74px;
-  height: 74px;
-
-  padding: 4px;
-
-  border: 1px solid #d8d4cb;
-  border-radius: 50%;
-
-  background: white;
-
-  cursor: pointer;
-}
-
-.e-pet-frame-inner {
-  display: block;
-
-  width: 100%;
-  height: 100%;
-
-  border-radius: 50%;
-
-  background:
-    var(--leaf-pale)
-    center / cover no-repeat;
-}
-
-/* ---------------------------------------------------------
-   22. EMERGENCY BLOCKS
-   --------------------------------------------------------- */
-
-.e-block {
-  padding: 17px 0;
-
-  border-bottom: 1px solid #e8e3db;
-}
-
-.e-block:last-of-type {
-  border-bottom: 0;
-}
-
-.e-block h4 {
-  margin-bottom: 9px;
-
-  font-family: "Noto Serif TC", serif;
-  font-size: 13px;
-}
-
-.e-block ul {
-  display: grid;
-  gap: 7px;
-
-  margin: 0;
-
-  list-style: none;
-}
-
-.e-block li {
-  font-size: 12px;
-  line-height: 1.65;
-}
-
-/* Emergency critical area */
-.e-alerts {
-  margin: 14px 0 0;
-  padding: 14px 14px 15px;
-
-  border: 1px solid var(--alert-border);
-  border-radius: 14px;
-
-  background:
-    linear-gradient(
-      180deg,
-      #fff8f7 0%,
-      var(--alert-soft) 100%
-    );
-
-  box-shadow:
-    0 1px 0 rgba(255, 255, 255, 0.85) inset,
-    0 0 0 1px rgba(255, 255, 255, 0.35) inset,
-    0 10px 22px rgba(194, 59, 59, 0.1),
-    0 2px 6px rgba(50, 57, 53, 0.05);
-}
-
-.e-alerts h4 {
-  color: var(--alert);
-}
-
-.e-alerts li {
-  position: relative;
-
-  padding-left: 14px;
-}
-
-.e-alerts li::before {
-  content: "";
-
-  position: absolute;
-  top: 8px;
-  left: 0;
-
-  width: 6px;
-  height: 6px;
-
-  border-radius: 50%;
-  background: var(--alert);
-}
-
-/* Owner */
-.e-owner {
-  display: grid;
-  gap: 6px;
-
-  font-size: 12px;
-  line-height: 1.55;
-}
-
-.e-owner-row {
-  display: grid;
-  grid-template-columns: auto minmax(0, 1fr);
-  column-gap: 0.55em;
-  align-items: baseline;
-
-  margin: 0;
-}
-
-.e-owner-k {
-  flex-shrink: 0;
-
-  font-weight: 700;
-  color: var(--text-muted, #6b6560);
-}
-
-.e-owner-k::after {
-  content: "：";
-}
-
-html[lang="en"] .e-owner-k::after {
-  content: ":";
-}
-
-.e-owner-v {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: baseline;
-  gap: 0.2em 0.75em;
-
-  min-width: 0;
-  color: var(--text, #1c1917);
-  word-break: break-word;
-}
-
-.e-owner-name {
-  font-weight: 600;
-}
-
-.e-owner-phone {
-  font-variant-numeric: tabular-nums;
-  letter-spacing: 0.02em;
-  color: var(--text, #1c1917);
-}
-
-.e-owner-empty {
-  margin: 0;
-  color: var(--text-faint, #9a948c);
-}
-
-.e-foot {
-  padding-top: 13px;
-}
-
-.e-foot p {
-  margin: 0;
-
-  font-size: 11px;
-  line-height: 1.7;
-  color: var(--alert);
-}
-
-.e-foot-role {
-  margin-bottom: 4px !important;
-  font-size: 12px !important;
-  font-weight: 600;
-  line-height: 1.45 !important;
-  color: var(--alert) !important;
-}
-
-/* Docs shortcuts above quick nav on emergency card */
-.e-docs-nav {
-  position: relative;
-  z-index: 2;
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 8px;
-  margin: 10px 0 0;
-}
-
-.e-docs-btn {
-  position: relative;
-  min-width: 0;
-  min-height: 64px;
-  padding: 10px 8px;
-  border: 1px solid rgba(255, 255, 255, 0.72);
-  border-radius: var(--r-sm);
-  color: var(--text);
-  background:
-    linear-gradient(
-      155deg,
-      rgba(255, 253, 250, 0.42) 0%,
-      rgba(255, 255, 255, 0.22) 48%,
-      rgba(232, 244, 239, 0.28) 100%
-    );
-  backdrop-filter: blur(14px) saturate(1.15);
-  -webkit-backdrop-filter: blur(14px) saturate(1.15);
-  text-align: left;
-  box-shadow:
-    0 1px 0 rgba(255, 255, 255, 0.55) inset,
-    0 0 0 1px rgba(61, 107, 87, 0.16),
-    0 8px 18px rgba(26, 52, 45, 0.08),
-    0 2px 5px rgba(50, 57, 53, 0.05);
-  cursor: default;
-  opacity: 1;
-  isolation: isolate;
-}
-
-.e-docs-btn:not(:disabled) {
-  cursor: pointer;
-}
-
-.e-docs-btn:not(:disabled):hover {
-  border-color: rgba(255, 255, 255, 0.88);
-  box-shadow:
-    0 1px 0 rgba(255, 255, 255, 0.65) inset,
-    0 0 0 1px rgba(61, 107, 87, 0.22),
-    0 10px 22px rgba(26, 52, 45, 0.1),
-    0 3px 8px rgba(50, 57, 53, 0.06);
-}
-
-.e-docs-btn:disabled {
-  opacity: 1;
-  color: var(--text);
-}
-
-.e-docs-btn span {
-  display: block;
-  font-size: 12px;
-  font-weight: 700;
-  color: var(--text-strong);
-}
-
-.e-docs-btn small {
-  display: block;
-  margin-top: 2px;
-  overflow: hidden;
-  font-size: 9px;
-  color: var(--text-muted);
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.lab-disclaimer {
-  margin: 0 0 14px;
-  font-size: 13px;
-  line-height: 1.55;
-  color: var(--text-muted);
-}
-
-.lab-list {
-  list-style: none;
-  margin: 0;
-  padding: 0;
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-}
-
-.lab-item {
-  margin: 0;
-  padding: 12px 12px 10px;
-  border: 1px solid var(--line, #e4ddd2);
-  border-radius: var(--r-sm, 12px);
-  background: #fffdf9;
-  box-shadow: 0 1px 0 rgba(255, 255, 255, 0.9) inset;
-}
-
-.lab-item-head {
-  display: flex;
-  align-items: baseline;
-  justify-content: space-between;
-  gap: 8px;
-}
-
-.lab-item-head time {
-  font-variant-numeric: tabular-nums;
-  font-weight: 700;
-  font-size: 14px;
-  color: var(--text-strong, #1c1917);
-}
-
-.lab-item-clinic,
-.lab-item-types,
-.lab-item-note {
-  margin: 4px 0 0;
-  font-size: 12px;
-  color: var(--text-muted, #6f6a64);
-}
-
-.lab-item-note {
-  color: var(--text, #3d3935);
-}
-
-.lab-item-thumbs {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-  margin-top: 10px;
-}
-
-.lab-item-thumbs button {
-  display: block;
-  padding: 0;
-  border: 1px solid var(--line, #e4ddd2);
-  border-radius: 8px;
-  overflow: hidden;
-  background: #f4efe6;
-  width: 72px;
-  height: 72px;
-  cursor: pointer;
-}
-
-.lab-item-thumbs img {
-  display: block;
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-}
-
-.lab-item-remove {
-  margin-top: 0;
-}
-
-.lab-list-empty {
-  margin: 0;
-  padding: 22px 16px;
-  font-size: 15px;
-  line-height: 1.6;
-  color: var(--text-muted, #6f6a64);
-}
-
-.imaging-list {
-  list-style: none;
-  margin: 0;
-  padding: 0;
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-}
-
-.imaging-item {
-  margin: 0;
-}
-
-.imaging-item-btn {
-  appearance: none;
-  display: grid;
-  gap: 2px;
-  width: 100%;
-  margin: 0;
-  padding: 12px;
-  border: 1px solid var(--line, #e4ddd2);
-  border-radius: var(--r-sm, 12px);
-  background: #fffdf9;
-  text-align: left;
-  font: inherit;
-  color: inherit;
-  cursor: pointer;
-}
-
-.imaging-item-btn:focus-visible {
-  outline: 2px solid var(--leaf, #355f54);
-  outline-offset: 2px;
-}
-
-.imaging-item-btn time {
-  font-variant-numeric: tabular-nums;
-  font-weight: 700;
-  font-size: 14px;
-  color: var(--text-strong, #1c1917);
-}
-
-.imaging-item-clinic,
-.imaging-item-types {
-  margin: 0;
-  font-size: 12px;
-  color: var(--text-muted, #6f6a64);
-}
-
-.imaging-list-empty {
-  margin: 0;
-  padding: 18px 12px;
-  font-size: 14px;
-  line-height: 1.55;
-  color: var(--text-muted, #6f6a64);
-  display: grid;
-  gap: 12px;
-}
-
-.imaging-list-empty .btn {
-  justify-self: start;
-}
-
-.lab-photo-previews {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-  margin: -4px 0 12px;
-}
-
-.lab-photo-previews:empty {
-  display: none;
-}
-
-.lab-photo-fig {
-  position: relative;
-  width: 88px;
-  margin: 0;
-}
-
-.lab-photo-fig img {
-  display: block;
-  width: 88px;
-  height: 88px;
-  object-fit: cover;
-  border-radius: 8px;
-  border: 1px solid var(--line, #e4ddd2);
-}
-
-.lab-photo-fig .proof-clear-btn,
-.lab-photo-fig [data-lab-photo-remove] {
-  margin-top: 4px;
-  width: 100%;
-}
-
-.tl-visit-labs {
-  margin: 8px 0 0;
-}
-
-.tl-visit-labs-btn {
-  display: inline-flex;
-  align-items: center;
-  padding: 0;
-  border: 0;
-  background: none;
-  font: inherit;
-  font-size: 12px;
-  font-weight: 600;
-  color: var(--leaf-deep, #355f54);
-  cursor: pointer;
-  text-decoration: underline;
-  text-underline-offset: 2px;
-}
-
-/* ---------------------------------------------------------
-   23. VACCINE TRAFFIC LIGHT
-   --------------------------------------------------------- */
-
-.e-vaccine-label {
-  display: flex !important;
-  flex-wrap: nowrap;
-  align-items: center;
-  gap: 5px;
-  min-width: 0;
-}
-
-.e-vaccine-label > span:first-child {
-  flex: 0 0 auto;
-  white-space: nowrap;
-}
-
-.e-quick-nav .e-vax-lights,
-.e-vax-lights {
-  display: inline-flex;
-  flex-shrink: 0;
-  flex-wrap: nowrap;
-  align-items: center;
-  gap: 4px;
-  white-space: nowrap;
-}
-
-.e-vax-dot {
-  display: inline-block;
-  flex-shrink: 0;
-
-  width: 8px;
-  height: 8px;
-
-  border-radius: 50%;
-  box-sizing: border-box;
-}
-
-.e-vax-dot.is-green {
-  background: color-mix(in srgb, var(--vax-lamp-ok) 32%, #fff);
-  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--vax-lamp-ok) 35%, transparent);
-}
-
-.e-vax-dot.is-orange {
-  background: color-mix(in srgb, var(--vax-lamp-soon) 34%, #fff);
-  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--vax-lamp-soon) 38%, transparent);
-}
-
-.e-vax-dot.is-red {
-  background: color-mix(in srgb, var(--vax-lamp-due) 36%, #fff);
-  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--vax-lamp-due) 40%, transparent);
-}
-
-.e-vax-dot.is-on {
-  box-shadow:
-    0 0 0 2px #fff,
-    0 0 0 3px rgba(28, 42, 39, 0.08);
-}
-
-.e-vax-dot.is-green.is-on {
-  background: var(--vax-lamp-ok);
-}
-
-.e-vax-dot.is-orange.is-on {
-  background: var(--vax-lamp-soon);
-}
-
-.e-vax-dot.is-red.is-on {
-  background: var(--vax-lamp-due);
-}
-
-.e-vax-help-list .e-vax-dot {
-  width: 8px;
-  height: 8px;
-}
-
-.e-vax-help-list .e-vax-dot.is-green {
-  background: var(--vax-lamp-ok);
-  box-shadow: none;
-}
-
-.e-vax-help-list .e-vax-dot.is-orange {
-  background: var(--vax-lamp-soon);
-  box-shadow: none;
-}
-
-.e-vax-help-list .e-vax-dot.is-red {
-  background: var(--vax-lamp-due);
-  box-shadow: none;
-}
-
-.e-vax-help-list .e-vax-dot.is-on {
-  box-shadow:
-    0 0 0 2px #fff,
-    0 0 0 3px rgba(28, 42, 39, 0.06);
-}
-
-.e-vax-help {
-  display: grid;
-  place-items: center;
-  flex-shrink: 0;
-
-  width: 18px;
-  height: 18px;
-
-  padding: 0;
-
-  border-radius: 50%;
-
-  color: var(--text-muted);
-  background: #eff1ed;
-
-  font-size: 10px;
-  font-weight: 700;
-}
-
-.e-vax-help-pop {
-  position: absolute;
-  z-index: 40;
-
-  top: calc(100% + 8px);
-  right: 0;
-  left: auto;
-
-  width: min(200px, 72vw);
-  padding: 12px;
-
-  border: 1px solid var(--line);
-  border-radius: var(--r-sm);
-
-  background: #fff;
-  box-shadow: var(--shadow-md);
-}
-
-.e-vax-help-title {
-  margin-bottom: 6px;
-
-  font-size: 11px;
-  font-weight: 700;
-}
-
-.e-vax-help-list {
-  display: grid;
-  gap: 7px;
-
-  margin: 0;
-
-  list-style: none;
-}
-
-.e-vax-help-list li {
-  display: flex;
-  align-items: center;
-  gap: 7px;
-
-  font-size: 10px;
-}
-
-/* ---------------------------------------------------------
-   24. ARCHIVE / RAINBOW
-   --------------------------------------------------------- */
-
-.archive-lede {
-  padding: 14px;
-
-  border-radius: var(--r-md);
-
-  color: var(--text-muted);
-  background:
-    linear-gradient(
-      135deg,
-      rgba(237, 224, 216, 0.7),
-      rgba(235, 239, 225, 0.75)
-    );
-
-  font-size: 12px;
-}
-
-.archive-pet-card {
-  padding: 17px;
-
-  border: 1px solid #ded8cd;
-  border-radius: var(--r-md);
-
-  background:
-    linear-gradient(
-      145deg,
-      #fffdfa,
-      #f8f3ea
-    );
-}
-
-.archive-pet-kicker {
-  margin-bottom: 3px;
-
-  font-size: 10px;
-  font-weight: 700;
-  letter-spacing: 0.08em;
-
-  color: var(--milktea);
-}
-
-.archive-pet-card h3 {
-  margin-bottom: 4px;
-
-  font-family: "Noto Serif TC", serif;
-}
-
-.archive-pet-card p:last-child {
-  margin-bottom: 0;
-
-  font-size: 12px;
-  color: var(--text-muted);
-}
-
-/* ---------------------------------------------------------
-   25. REMOVE PET
-   --------------------------------------------------------- */
-
-.remove-panel {
-  display: grid;
-  gap: 18px;
-}
-
-.remove-steps {
-  display: flex;
-  justify-content: center;
-  gap: 12px;
-
-  margin: 0;
-
-  list-style: none;
-}
-
-.remove-step {
-  display: grid;
-  place-items: center;
-
-  width: 30px;
-  height: 30px;
-
-  border-radius: 50%;
-
-  color: var(--text-muted);
-  background: #e9e9e5;
-
-  font-size: 11px;
-  font-weight: 700;
-}
-
-.remove-step.is-active {
-  color: white;
-  background: var(--leaf);
-}
-
-.remove-card {
-  padding: 18px;
-
-  border: 1px solid var(--line);
-  border-radius: var(--r-md);
-
-  background: white;
-}
-
-.remove-list {
-  padding-left: 20px;
-
-  color: var(--text-muted);
-  font-size: 12px;
-}
-
-.remove-note {
-  margin: 7px 0 0;
-
-  font-size: 11px;
-  line-height: 1.7;
-  color: var(--text-muted);
-}
-
-/* ---------------------------------------------------------
-   26. PHOTO / PROOF
-   --------------------------------------------------------- */
-
-.proof-preview {
-  position: relative;
-
-  min-height: 100px;
-
-  border: 1px dashed #b7c5bb;
-  border-radius: var(--r-sm);
-
-  background:
-    var(--leaf-pale)
-    center / cover no-repeat;
-
-  overflow: hidden;
-}
-
-/* ---------------------------------------------------------
-   27. PHOTO CROP
-   --------------------------------------------------------- */
-
-.photo-crop {
-  position: fixed;
-  z-index: 999;
-
-  inset: 0;
-
-  display: grid;
-  align-items: end;
-
-  padding: 16px;
-
-  background: rgba(20, 28, 24, 0.58);
-
-  backdrop-filter: blur(8px);
-}
-
-.photo-crop[hidden] {
-  display: none !important;
-}
-
-.photo-crop-sheet {
-  width: min(100%, 520px);
-  margin: auto;
-  padding: 19px;
-
-  border-radius: 23px;
-
-  background: #fff;
-
-  box-shadow: var(--shadow-md);
-}
-
-.photo-crop-sheet h3 {
-  margin-bottom: 4px;
-
-  font-family: "Noto Serif TC", serif;
-}
-
-.photo-crop-hint {
-  margin-bottom: 15px;
-
-  font-size: 11px;
-  color: var(--text-muted);
-}
-
-.photo-crop-stage {
-  display: grid;
-  place-items: center;
-}
-
-.photo-crop-viewport {
-  position: relative;
-
-  width: min(74vw, 310px);
-  aspect-ratio: 1;
-
-  border-radius: 50%;
-
-  overflow: hidden;
-  background: #ecece8;
-}
-
-.photo-crop-viewport img {
-  position: absolute;
-
-  max-width: none;
-
-  user-select: none;
-  touch-action: none;
-}
-
-.photo-crop-zoom {
-  display: grid;
-  grid-template-columns: auto 1fr;
-  align-items: center;
-  gap: 12px;
-
-  margin-top: 16px;
-
-  font-size: 12px;
-}
-
-/* ---------------------------------------------------------
-   28. TOAST
-   --------------------------------------------------------- */
-
-.toast {
-  position: fixed;
-  z-index: 1000;
-
-  left: 50%;
-  bottom: calc(22px + env(safe-area-inset-bottom));
-
-  width: max-content;
-  max-width: calc(100vw - 34px);
-
-  padding: 11px 15px;
-
-  border-radius: var(--r-pill);
-
-  color: white;
-  background: rgba(30, 42, 36, 0.94);
-
-  font-size: 12px;
-
-  box-shadow: var(--shadow-md);
-
-  transform: translateX(-50%);
-}
-
-.toast[hidden] {
-  display: none !important;
-}
-
-/* ---------------------------------------------------------
-   29. LANGUAGE SWITCHER
-   --------------------------------------------------------- */
-
-.lang-switcher {
-  position: fixed;
-  /* Above toast/photo-crop/lightbox (≤1000) so add-pet never eats the FAB */
-  z-index: 1200;
-  pointer-events: auto;
-  isolation: isolate;
-
-  right: max(16px, env(safe-area-inset-right));
-  bottom: max(18px, calc(18px + env(safe-area-inset-bottom)));
-}
-
-.lang-fab {
-  display: grid;
-  place-items: center;
-  pointer-events: auto;
-
-  width: 45px;
-  height: 45px;
-
-  border: 1px solid #d8d8d3;
-  border-radius: 50%;
-
-  color: var(--leaf-deep);
-  background: rgba(255, 255, 255, 0.94);
-
-  font-weight: 700;
-
-  box-shadow: var(--shadow-md);
-}
-
-.lang-menu {
-  position: absolute;
-
-  right: 0;
-  bottom: 54px;
-
-  width: 115px;
-  padding: 6px;
-
-  border: 1px solid var(--line);
-  border-radius: var(--r-sm);
-
-  background: white;
-  box-shadow: var(--shadow-md);
-}
-
-.lang-menu[hidden] {
-  display: none;
-}
-
-.lang-menu button {
-  display: block;
-
-  width: 100%;
-  padding: 8px 9px;
-
-  border-radius: 8px;
-
-  text-align: left;
-
-  color: var(--text);
-  background: transparent;
-
-  font-size: 12px;
-}
-
-.lang-menu button:hover {
-  background: var(--leaf-pale);
-}
-
-
-/* =========================================================
-   30b. TIMELINE MED SUMMARY + COMPOUND VISUALS (restored)
-   Recovered from pre-UI-v2 styles; keep JS hooks working.
-   ========================================================= */
 
 .med-list > li,
 .med-list > .tl-med-unit {
@@ -4790,6 +3368,1311 @@ button.tl-med-summary.is-open {
 
 
 /* ---------------------------------------------------------
+   21. PASSPORT PLATE WASH
+   Opaque paper field (no alpha bleed through body).
+   Same base for emergency / timeline / vaccines / alerts / parasite.
+   --------------------------------------------------------- */
+
+.screen-emergency,
+.screen[data-screen="timeline"],
+.screen[data-screen="vaccines"],
+.screen[data-screen="alerts"],
+.screen[data-screen="parasite"],
+.screen[data-screen="labs"],
+.screen[data-screen="imaging"],
+.screen[data-screen="lab-add"] {
+  background-color: var(--paper-warm);
+  background-image:
+    radial-gradient(
+      circle at 18% 12%,
+      rgba(223, 234, 227, 0.72),
+      transparent 42%
+    ),
+    radial-gradient(
+      circle at 88% 28%,
+      rgba(242, 232, 216, 0.55),
+      transparent 46%
+    ),
+    linear-gradient(
+      180deg,
+      #f6f3ed 0%,
+      #fcf8f1 260px,
+      #fffdf9 100%
+    );
+  background-repeat: no-repeat;
+}
+
+.e-quick-nav {
+  position: relative;
+  z-index: 12;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+
+  margin: 14px 0 0;
+}
+
+.e-quick-nav > button,
+.e-vax-nav {
+  position: relative;
+
+  min-width: 0;
+  padding: 10px 8px;
+
+  border: 1.5px solid var(--line-strong);
+  border-radius: var(--r-sm);
+
+  color: var(--text);
+  background:
+    linear-gradient(
+      165deg,
+      #ffffff 0%,
+      #f7f5ef 100%
+    );
+
+  text-align: left;
+
+  box-shadow:
+    0 1px 0 rgba(255, 255, 255, 0.98) inset,
+    0 0 0 1px rgba(255, 255, 255, 0.55) inset,
+    0 8px 18px rgba(26, 52, 45, 0.08),
+    0 2px 5px rgba(50, 57, 53, 0.05);
+
+  transition:
+    transform var(--fast),
+    box-shadow var(--fast),
+    border-color var(--fast),
+    background var(--fast);
+}
+
+.e-vax-nav {
+  overflow: visible;
+  z-index: 1;
+}
+
+/* Keep legend above emergency card (card transform creates its own stack) */
+.e-vax-nav:has(.e-vax-help-pop:not([hidden])) {
+  z-index: 20;
+}
+
+.e-quick-nav > button:hover,
+.e-vax-nav:hover {
+  transform: translateY(-1px);
+  box-shadow:
+    0 1px 0 rgba(255, 255, 255, 1) inset,
+    0 0 0 1px rgba(255, 255, 255, 0.6) inset,
+    0 12px 24px rgba(26, 52, 45, 0.11),
+    0 3px 8px rgba(50, 57, 53, 0.06);
+}
+
+.e-quick-nav > button:active,
+.e-vax-nav:active {
+  transform: translateY(0) scale(0.99);
+  box-shadow:
+    0 1px 0 rgba(255, 255, 255, 0.85) inset,
+    0 4px 10px rgba(26, 52, 45, 0.07);
+}
+
+.e-quick-nav > button:first-child {
+  border-color: color-mix(in srgb, var(--leaf) 32%, var(--line-strong));
+  background:
+    linear-gradient(
+      165deg,
+      #ffffff 0%,
+      color-mix(in srgb, var(--leaf-soft) 55%, #f7f5ef) 100%
+    );
+  box-shadow:
+    0 1px 0 rgba(255, 255, 255, 0.98) inset,
+    0 0 0 1px rgba(255, 255, 255, 0.55) inset,
+    0 0 0 1px color-mix(in srgb, var(--leaf) 12%, transparent),
+    0 10px 20px rgba(41, 77, 61, 0.11),
+    0 2px 6px rgba(50, 57, 53, 0.04);
+}
+
+.e-quick-nav span {
+  display: block;
+
+  font-size: 12px;
+  font-weight: 700;
+
+  color: var(--text-strong);
+}
+
+.e-quick-nav small {
+  display: block;
+
+  margin-top: 2px;
+
+  overflow: hidden;
+
+  font-size: 9px;
+  color: var(--text-muted);
+
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* ---------------------------------------------------------
+   22. EMERGENCY CARD
+   --------------------------------------------------------- */
+
+.e-card {
+  position: relative;
+  z-index: 1;
+
+  margin-top: 4px;
+  padding: 20px 19px 22px;
+
+  border: 1px solid rgba(200, 190, 175, 0.85);
+  border-radius: 22px;
+
+  background:
+    linear-gradient(
+      165deg,
+      rgba(255, 254, 251, 0.94) 0%,
+      rgba(253, 249, 242, 0.9) 55%,
+      rgba(248, 243, 234, 0.88) 100%
+    );
+
+  /* Floating passport: near rim + mid lift + soft ground shadow */
+  box-shadow:
+    0 1px 0 rgba(255, 255, 255, 0.95) inset,
+    0 0 0 1px rgba(255, 255, 255, 0.45) inset,
+    0 2px 4px rgba(50, 57, 53, 0.04),
+    0 12px 28px rgba(50, 57, 53, 0.1),
+    0 28px 56px rgba(41, 77, 61, 0.12),
+    0 40px 80px rgba(50, 57, 53, 0.06);
+
+  transform: translateY(-2px);
+
+  backdrop-filter: blur(20px) saturate(1.12);
+  -webkit-backdrop-filter: blur(20px) saturate(1.12);
+
+  overflow: hidden;
+}
+
+.e-card::before {
+  content: "";
+
+  position: absolute;
+  inset: 0;
+
+  opacity: 0.028;
+  pointer-events: none;
+
+  background-image:
+    repeating-linear-gradient(
+      0deg,
+      rgba(0,0,0,.18),
+      rgba(0,0,0,.18) 1px,
+      transparent 1px,
+      transparent 5px
+    );
+}
+
+.e-card::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  border-radius: inherit;
+  background:
+    radial-gradient(
+      120% 80% at 12% 0%,
+      rgba(223, 234, 227, 0.35),
+      transparent 55%
+    ),
+    radial-gradient(
+      90% 70% at 100% 100%,
+      rgba(242, 232, 216, 0.28),
+      transparent 50%
+    );
+}
+
+.e-card > * {
+  position: relative;
+  z-index: 1;
+}
+
+.e-card-top {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 14px;
+
+  padding-bottom: 16px;
+
+  border-bottom: 1px solid #e2ddd4;
+}
+
+.e-brand {
+  margin-bottom: 7px;
+
+  font-family: "Noto Serif TC", serif;
+  font-size: 12px;
+  font-weight: 700;
+
+  color: var(--leaf);
+}
+
+.e-name-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 7px;
+  min-width: 0;
+}
+
+.e-name-row h3 {
+  margin: 0;
+  min-width: 0;
+  flex: 0 1 auto;
+
+  font-family: "Noto Serif TC", serif;
+  font-size: 27px;
+  font-weight: 700;
+  line-height: 1.25;
+  color: var(--text-strong);
+}
+
+.e-name-aside {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 6px;
+  margin-left: auto;
+  flex: 0 1 auto;
+  min-width: 0;
+}
+
+.e-copy-summary {
+  min-height: 34px;
+  padding: 6px 11px;
+  font-size: 0.8rem;
+}
+
+.e-pet-photo-edit {
+  display: grid;
+  place-items: center;
+  flex: 0 0 auto;
+  margin-top: 5px;
+
+  width: 27px;
+  height: 27px;
+  padding: 0;
+  border: 0;
+
+  border-radius: 50%;
+
+  color: var(--text-muted);
+  background: #f0ede5;
+
+  cursor: pointer;
+}
+
+/* Meta line: italic + same tone as weight row so name stays primary */
+.e-sub {
+  margin: 8px 0 0;
+  font-size: 0.9rem;
+  font-weight: 500;
+  font-style: italic;
+  line-height: 1.45;
+  letter-spacing: 0.01em;
+  color: var(--text-muted);
+}
+
+.e-sub + .e-sub {
+  margin-top: 2px;
+}
+
+.e-chip-meta {
+  margin: 0;
+  min-width: 0;
+  padding-bottom: 2px;
+  font-size: 0.78rem;
+  font-weight: 500;
+  font-style: italic;
+  line-height: 1;
+  letter-spacing: 0.01em;
+  text-align: right;
+  color: var(--text-muted);
+}
+
+.e-weight {
+  margin: 5px 0 0;
+  font-size: 0.8rem;
+  font-weight: 500;
+  line-height: 1.4;
+  color: var(--text-muted);
+}
+
+.e-weight strong {
+  font-weight: 800;
+  font-size: 1.12em;
+  letter-spacing: 0.01em;
+  color: var(--text-strong);
+}
+
+.e-weight-date {
+  font-weight: 500;
+  font-size: 0.95em;
+  color: var(--text-muted);
+}
+
+.e-pet-frame {
+  display: block;
+
+  width: 74px;
+  height: 74px;
+
+  padding: 4px;
+
+  border: 1px solid #d8d4cb;
+  border-radius: 50%;
+
+  background: white;
+
+  cursor: pointer;
+}
+
+.e-pet-frame-inner {
+  display: block;
+
+  width: 100%;
+  height: 100%;
+
+  border-radius: 50%;
+
+  background:
+    var(--leaf-pale)
+    center / cover no-repeat;
+}
+
+/* ---------------------------------------------------------
+   23. EMERGENCY BLOCKS
+   --------------------------------------------------------- */
+
+.e-block {
+  padding: 17px 0;
+
+  border-bottom: 1px solid #e8e3db;
+}
+
+.e-block:last-of-type {
+  border-bottom: 0;
+}
+
+.e-block h4 {
+  margin-bottom: 9px;
+
+  font-family: "Noto Serif TC", serif;
+  font-size: 13px;
+}
+
+.e-block ul {
+  display: grid;
+  gap: 7px;
+
+  margin: 0;
+
+  list-style: none;
+}
+
+.e-block li {
+  font-size: 12px;
+  line-height: 1.65;
+}
+
+/* Emergency critical area */
+.e-alerts {
+  margin: 14px 0 0;
+  padding: 14px 14px 15px;
+
+  border: 1px solid var(--alert-border);
+  border-radius: 14px;
+
+  background:
+    linear-gradient(
+      180deg,
+      #fff8f7 0%,
+      var(--alert-soft) 100%
+    );
+
+  box-shadow:
+    0 1px 0 rgba(255, 255, 255, 0.85) inset,
+    0 0 0 1px rgba(255, 255, 255, 0.35) inset,
+    0 10px 22px rgba(194, 59, 59, 0.1),
+    0 2px 6px rgba(50, 57, 53, 0.05);
+}
+
+.e-alerts h4 {
+  color: var(--alert);
+}
+
+.e-alerts li {
+  position: relative;
+
+  padding-left: 14px;
+}
+
+.e-alerts li::before {
+  content: "";
+
+  position: absolute;
+  top: 8px;
+  left: 0;
+
+  width: 6px;
+  height: 6px;
+
+  border-radius: 50%;
+  background: var(--alert);
+}
+
+/* Owner */
+.e-owner {
+  display: grid;
+  gap: 6px;
+
+  font-size: 12px;
+  line-height: 1.55;
+}
+
+.e-owner-row {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  column-gap: 0.55em;
+  align-items: baseline;
+
+  margin: 0;
+}
+
+.e-owner-k {
+  flex-shrink: 0;
+
+  font-weight: 700;
+  color: var(--text-muted, #6b6560);
+}
+
+.e-owner-k::after {
+  content: "：";
+}
+
+html[lang="en"] .e-owner-k::after {
+  content: ":";
+}
+
+.e-owner-v {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0.2em 0.75em;
+
+  min-width: 0;
+  color: var(--text, #1c1917);
+  word-break: break-word;
+}
+
+.e-owner-name {
+  font-weight: 600;
+}
+
+.e-owner-phone {
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.02em;
+  color: var(--text, #1c1917);
+}
+
+.e-owner-empty {
+  margin: 0;
+  color: var(--text-faint, #9a948c);
+}
+
+.e-foot {
+  padding-top: 13px;
+}
+
+.e-foot p {
+  margin: 0;
+
+  font-size: 11px;
+  line-height: 1.7;
+  color: var(--alert);
+}
+
+.e-foot-role {
+  margin-bottom: 4px !important;
+  font-size: 12px !important;
+  font-weight: 600;
+  line-height: 1.45 !important;
+  color: var(--alert) !important;
+}
+
+/* Docs shortcuts above quick nav on emergency card */
+.e-docs-nav {
+  position: relative;
+  z-index: 2;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  margin: 10px 0 0;
+}
+
+.e-docs-btn {
+  position: relative;
+  min-width: 0;
+  min-height: 64px;
+  padding: 10px 8px;
+  border: 1px solid rgba(255, 255, 255, 0.72);
+  border-radius: var(--r-sm);
+  color: var(--text);
+  background:
+    linear-gradient(
+      155deg,
+      rgba(255, 253, 250, 0.42) 0%,
+      rgba(255, 255, 255, 0.22) 48%,
+      rgba(232, 244, 239, 0.28) 100%
+    );
+  backdrop-filter: blur(14px) saturate(1.15);
+  -webkit-backdrop-filter: blur(14px) saturate(1.15);
+  text-align: left;
+  box-shadow:
+    0 1px 0 rgba(255, 255, 255, 0.55) inset,
+    0 0 0 1px rgba(61, 107, 87, 0.16),
+    0 8px 18px rgba(26, 52, 45, 0.08),
+    0 2px 5px rgba(50, 57, 53, 0.05);
+  cursor: default;
+  opacity: 1;
+  isolation: isolate;
+}
+
+.e-docs-btn:not(:disabled) {
+  cursor: pointer;
+}
+
+.e-docs-btn:not(:disabled):hover {
+  border-color: rgba(255, 255, 255, 0.88);
+  box-shadow:
+    0 1px 0 rgba(255, 255, 255, 0.65) inset,
+    0 0 0 1px rgba(61, 107, 87, 0.22),
+    0 10px 22px rgba(26, 52, 45, 0.1),
+    0 3px 8px rgba(50, 57, 53, 0.06);
+}
+
+.e-docs-btn:disabled {
+  opacity: 1;
+  color: var(--text);
+}
+
+.e-docs-btn span {
+  display: block;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--text-strong);
+}
+
+.e-docs-btn small {
+  display: block;
+  margin-top: 2px;
+  overflow: hidden;
+  font-size: 9px;
+  color: var(--text-muted);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.lab-disclaimer {
+  margin: 0 0 14px;
+  font-size: 13px;
+  line-height: 1.55;
+  color: var(--text-muted);
+}
+
+.lab-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.lab-item {
+  margin: 0;
+  padding: 12px 12px 10px;
+  border: 1px solid var(--line, #e4ddd2);
+  border-radius: var(--r-sm, 12px);
+  background: #fffdf9;
+  box-shadow: 0 1px 0 rgba(255, 255, 255, 0.9) inset;
+}
+
+.lab-item-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.lab-item-head time {
+  font-variant-numeric: tabular-nums;
+  font-weight: 700;
+  font-size: 14px;
+  color: var(--text-strong, #1c1917);
+}
+
+.lab-item-clinic,
+.lab-item-types,
+.lab-item-note {
+  margin: 4px 0 0;
+  font-size: 12px;
+  color: var(--text-muted, #6f6a64);
+}
+
+.lab-item-note {
+  color: var(--text, #3d3935);
+}
+
+.lab-item-thumbs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 10px;
+}
+
+.lab-item-thumbs button {
+  display: block;
+  padding: 0;
+  border: 1px solid var(--line, #e4ddd2);
+  border-radius: 8px;
+  overflow: hidden;
+  background: #f4efe6;
+  width: 72px;
+  height: 72px;
+  cursor: pointer;
+}
+
+.lab-item-thumbs img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.lab-item-remove {
+  margin-top: 0;
+}
+
+.lab-list-empty {
+  margin: 0;
+  padding: 22px 16px;
+  font-size: 15px;
+  line-height: 1.6;
+  color: var(--text-muted, #6f6a64);
+}
+
+.imaging-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.imaging-item {
+  margin: 0;
+}
+
+.imaging-item-btn {
+  appearance: none;
+  display: grid;
+  gap: 2px;
+  width: 100%;
+  margin: 0;
+  padding: 12px;
+  border: 1px solid var(--line, #e4ddd2);
+  border-radius: var(--r-sm, 12px);
+  background: #fffdf9;
+  text-align: left;
+  font: inherit;
+  color: inherit;
+  cursor: pointer;
+}
+
+.imaging-item-btn:focus-visible {
+  outline: 2px solid var(--leaf, #355f54);
+  outline-offset: 2px;
+}
+
+.imaging-item-btn time {
+  font-variant-numeric: tabular-nums;
+  font-weight: 700;
+  font-size: 14px;
+  color: var(--text-strong, #1c1917);
+}
+
+.imaging-item-clinic,
+.imaging-item-types {
+  margin: 0;
+  font-size: 12px;
+  color: var(--text-muted, #6f6a64);
+}
+
+.imaging-list-empty {
+  margin: 0;
+  padding: 18px 12px;
+  font-size: 14px;
+  line-height: 1.55;
+  color: var(--text-muted, #6f6a64);
+  display: grid;
+  gap: 12px;
+}
+
+.imaging-list-empty .btn {
+  justify-self: start;
+}
+
+.lab-photo-previews {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: -4px 0 12px;
+}
+
+.lab-photo-previews:empty {
+  display: none;
+}
+
+.lab-photo-fig {
+  position: relative;
+  width: 88px;
+  margin: 0;
+}
+
+.lab-photo-fig img {
+  display: block;
+  width: 88px;
+  height: 88px;
+  object-fit: cover;
+  border-radius: 8px;
+  border: 1px solid var(--line, #e4ddd2);
+}
+
+.lab-photo-fig .proof-clear-btn,
+.lab-photo-fig [data-lab-photo-remove] {
+  margin-top: 4px;
+  width: 100%;
+}
+
+.tl-visit-labs {
+  margin: 8px 0 0;
+}
+
+.tl-visit-labs-btn {
+  display: inline-flex;
+  align-items: center;
+  padding: 0;
+  border: 0;
+  background: none;
+  font: inherit;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--leaf-deep, #355f54);
+  cursor: pointer;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+/* ---------------------------------------------------------
+   24. VACCINE TRAFFIC LIGHT
+   --------------------------------------------------------- */
+
+.e-vaccine-label {
+  display: flex !important;
+  flex-wrap: nowrap;
+  align-items: center;
+  gap: 5px;
+  min-width: 0;
+}
+
+.e-vaccine-label > span:first-child {
+  flex: 0 0 auto;
+  white-space: nowrap;
+}
+
+.e-quick-nav .e-vax-lights,
+.e-vax-lights {
+  display: inline-flex;
+  flex-shrink: 0;
+  flex-wrap: nowrap;
+  align-items: center;
+  gap: 4px;
+  white-space: nowrap;
+}
+
+.e-vax-dot {
+  display: inline-block;
+  flex-shrink: 0;
+
+  width: 8px;
+  height: 8px;
+
+  border-radius: 50%;
+  box-sizing: border-box;
+}
+
+.e-vax-dot.is-green {
+  background: color-mix(in srgb, var(--vax-lamp-ok) 32%, #fff);
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--vax-lamp-ok) 35%, transparent);
+}
+
+.e-vax-dot.is-orange {
+  background: color-mix(in srgb, var(--vax-lamp-soon) 34%, #fff);
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--vax-lamp-soon) 38%, transparent);
+}
+
+.e-vax-dot.is-red {
+  background: color-mix(in srgb, var(--vax-lamp-due) 36%, #fff);
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--vax-lamp-due) 40%, transparent);
+}
+
+.e-vax-dot.is-on {
+  box-shadow:
+    0 0 0 2px #fff,
+    0 0 0 3px rgba(28, 42, 39, 0.08);
+}
+
+.e-vax-dot.is-green.is-on {
+  background: var(--vax-lamp-ok);
+}
+
+.e-vax-dot.is-orange.is-on {
+  background: var(--vax-lamp-soon);
+}
+
+.e-vax-dot.is-red.is-on {
+  background: var(--vax-lamp-due);
+}
+
+.e-vax-help-list .e-vax-dot {
+  width: 8px;
+  height: 8px;
+}
+
+.e-vax-help-list .e-vax-dot.is-green {
+  background: var(--vax-lamp-ok);
+  box-shadow: none;
+}
+
+.e-vax-help-list .e-vax-dot.is-orange {
+  background: var(--vax-lamp-soon);
+  box-shadow: none;
+}
+
+.e-vax-help-list .e-vax-dot.is-red {
+  background: var(--vax-lamp-due);
+  box-shadow: none;
+}
+
+.e-vax-help-list .e-vax-dot.is-on {
+  box-shadow:
+    0 0 0 2px #fff,
+    0 0 0 3px rgba(28, 42, 39, 0.06);
+}
+
+.e-vax-help {
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+
+  width: 18px;
+  height: 18px;
+
+  padding: 0;
+
+  border-radius: 50%;
+
+  color: var(--text-muted);
+  background: #eff1ed;
+
+  font-size: 10px;
+  font-weight: 700;
+}
+
+.e-vax-help-pop {
+  position: absolute;
+  z-index: 40;
+
+  top: calc(100% + 8px);
+  right: 0;
+  left: auto;
+
+  width: min(200px, 72vw);
+  padding: 12px;
+
+  border: 1px solid var(--line);
+  border-radius: var(--r-sm);
+
+  background: #fff;
+  box-shadow: var(--shadow-md);
+}
+
+.e-vax-help-title {
+  margin-bottom: 6px;
+
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.e-vax-help-list {
+  display: grid;
+  gap: 7px;
+
+  margin: 0;
+
+  list-style: none;
+}
+
+.e-vax-help-list li {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+
+  font-size: 10px;
+}
+
+/* ---------------------------------------------------------
+   25. ARCHIVE / RAINBOW
+   --------------------------------------------------------- */
+
+.archive-lede {
+  padding: 14px;
+
+  border-radius: var(--r-md);
+
+  color: var(--text-muted);
+  background:
+    linear-gradient(
+      135deg,
+      rgba(237, 224, 216, 0.7),
+      rgba(235, 239, 225, 0.75)
+    );
+
+  font-size: 12px;
+}
+
+.archive-pet-card {
+  padding: 17px;
+
+  border: 1px solid #ded8cd;
+  border-radius: var(--r-md);
+
+  background:
+    linear-gradient(
+      145deg,
+      #fffdfa,
+      #f8f3ea
+    );
+}
+
+.archive-pet-kicker {
+  margin-bottom: 3px;
+
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+
+  color: var(--milktea);
+}
+
+.archive-pet-card h3 {
+  margin-bottom: 4px;
+
+  font-family: "Noto Serif TC", serif;
+}
+
+.archive-pet-card p:last-child {
+  margin-bottom: 0;
+
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+/* ---------------------------------------------------------
+   26. REMOVE PET
+   --------------------------------------------------------- */
+
+.remove-panel {
+  display: grid;
+  gap: 18px;
+}
+
+.remove-steps {
+  display: flex;
+  justify-content: center;
+  gap: 12px;
+
+  margin: 0;
+
+  list-style: none;
+}
+
+.remove-step {
+  display: grid;
+  place-items: center;
+
+  width: 30px;
+  height: 30px;
+
+  border-radius: 50%;
+
+  color: var(--text-muted);
+  background: #e9e9e5;
+
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.remove-step.is-active {
+  color: white;
+  background: var(--leaf);
+}
+
+.remove-card {
+  padding: 18px;
+
+  border: 1px solid var(--line);
+  border-radius: var(--r-md);
+
+  background: white;
+}
+
+.remove-list {
+  padding-left: 20px;
+
+  color: var(--text-muted);
+  font-size: 12px;
+}
+
+.remove-note {
+  margin: 7px 0 0;
+
+  font-size: 11px;
+  line-height: 1.7;
+  color: var(--text-muted);
+}
+
+/* ---------------------------------------------------------
+   27. PHOTO / PROOF
+   --------------------------------------------------------- */
+
+.proof-preview {
+  position: relative;
+
+  min-height: 100px;
+
+  border: 1px dashed #b7c5bb;
+  border-radius: var(--r-sm);
+
+  background:
+    var(--leaf-pale)
+    center / cover no-repeat;
+
+  overflow: hidden;
+}
+
+/* ---------------------------------------------------------
+   28. PHOTO CROP
+   --------------------------------------------------------- */
+
+.photo-crop {
+  position: fixed;
+  z-index: 999;
+
+  inset: 0;
+
+  display: grid;
+  align-items: end;
+
+  padding: 16px;
+
+  background: rgba(20, 28, 24, 0.58);
+
+  backdrop-filter: blur(8px);
+}
+
+.photo-crop[hidden] {
+  display: none !important;
+}
+
+.photo-crop-sheet {
+  width: min(100%, 520px);
+  margin: auto;
+  padding: 19px;
+
+  border-radius: 23px;
+
+  background: #fff;
+
+  box-shadow: var(--shadow-md);
+}
+
+.photo-crop-sheet h3 {
+  margin-bottom: 4px;
+
+  font-family: "Noto Serif TC", serif;
+}
+
+.photo-crop-hint {
+  margin-bottom: 15px;
+
+  font-size: 11px;
+  color: var(--text-muted);
+}
+
+.photo-crop-stage {
+  display: grid;
+  place-items: center;
+}
+
+.photo-crop-viewport {
+  position: relative;
+
+  width: min(74vw, 310px);
+  aspect-ratio: 1;
+
+  border-radius: 50%;
+
+  overflow: hidden;
+  background: #ecece8;
+}
+
+.photo-crop-viewport img {
+  position: absolute;
+
+  max-width: none;
+
+  user-select: none;
+  touch-action: none;
+}
+
+.photo-crop-zoom {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  align-items: center;
+  gap: 12px;
+
+  margin-top: 16px;
+
+  font-size: 12px;
+}
+
+/* ---------------------------------------------------------
+   29. TOAST
+   --------------------------------------------------------- */
+
+.toast {
+  position: fixed;
+  z-index: 1000;
+
+  left: 50%;
+  bottom: calc(22px + env(safe-area-inset-bottom));
+
+  width: max-content;
+  max-width: calc(100vw - 34px);
+
+  padding: 11px 15px;
+
+  border-radius: var(--r-pill);
+
+  color: white;
+  background: rgba(30, 42, 36, 0.94);
+
+  font-size: 12px;
+
+  box-shadow: var(--shadow-md);
+
+  transform: translateX(-50%);
+}
+
+.toast[hidden] {
+  display: none !important;
+}
+
+/* ---------------------------------------------------------
+   30. LANGUAGE SWITCHER
+   --------------------------------------------------------- */
+
+.lang-switcher {
+  position: fixed;
+  /* Above toast/photo-crop/lightbox (≤1000) so add-pet never eats the FAB */
+  z-index: 1200;
+  pointer-events: auto;
+  isolation: isolate;
+
+  right: max(16px, env(safe-area-inset-right));
+  bottom: max(18px, calc(18px + env(safe-area-inset-bottom)));
+}
+
+.lang-fab {
+  display: grid;
+  place-items: center;
+  pointer-events: auto;
+
+  width: 45px;
+  height: 45px;
+
+  border: 1px solid #d8d8d3;
+  border-radius: 50%;
+
+  color: var(--leaf-deep);
+  background: rgba(255, 255, 255, 0.94);
+
+  font-weight: 700;
+
+  box-shadow: var(--shadow-md);
+}
+
+.lang-menu {
+  position: absolute;
+
+  right: 0;
+  bottom: 54px;
+
+  width: 115px;
+  padding: 6px;
+
+  border: 1px solid var(--line);
+  border-radius: var(--r-sm);
+
+  background: white;
+  box-shadow: var(--shadow-md);
+}
+
+.lang-menu[hidden] {
+  display: none;
+}
+
+.lang-menu button {
+  display: block;
+
+  width: 100%;
+  padding: 8px 9px;
+
+  border-radius: 8px;
+
+  text-align: left;
+
+  color: var(--text);
+  background: transparent;
+
+  font-size: 12px;
+}
+
+.lang-menu button:hover {
+  background: var(--leaf-pale);
+}
+
+
+/* ---------------------------------------------------------
    31. COMPLETION / STATES
    --------------------------------------------------------- */
 
@@ -4804,39 +4687,6 @@ button.tl-med-summary.is-open {
 
   font-size: 12px;
   font-weight: 600;
-}
-
-/* Generic semantic badges */
-.status-badge,
-.badge {
-  display: inline-flex;
-  align-items: center;
-
-  min-height: 25px;
-  padding: 3px 8px;
-
-  border-radius: var(--r-pill);
-
-  font-size: 10px;
-  font-weight: 700;
-}
-
-.status-badge.is-safe,
-.badge-safe {
-  color: #347456;
-  background: var(--safe-soft);
-}
-
-.status-badge.is-attention,
-.badge-attention {
-  color: #985717;
-  background: var(--attention-soft);
-}
-
-.status-badge.is-critical,
-.badge-critical {
-  color: var(--alert);
-  background: var(--alert-soft);
 }
 
 /* ---------------------------------------------------------
@@ -5086,7 +4936,15 @@ button.tl-med-summary.is-open {
 }
 
 /* =========================================================
-   36. JS HOOK COMPAT (keep app.js working without HTML/JS changes)
+   36. JS HOOK COMPAT
+   Purpose: keep C app.js / domain render class hooks working without
+   HTML or JS renames. Prefer fixing ownership in §§6–35 later; until
+   then, treat this tail as the live override layer for:
+     • Legacy :root token aliases (--ink, --foam, --macaron-*, fonts…)
+     • Pet picker / account chrome / parasite-vaccine status rows
+     • Alert plates, emergency nav tones, timeline block language
+   Do not delete rules here without evidence against C HTML + JS.
+   Compound/drug-notes visuals: see §20b (do not re-override).
    ========================================================= */
 
 :root {
@@ -5357,37 +5215,6 @@ html.is-photo-crop-open body {
 }
 
 /* Rainbow / settings (HTML uses glow span + SVG, not only ::before) */
-.rainbow-btn {
-  width: 40px;
-  height: 28px;
-  min-height: 28px;
-  padding: 0;
-  overflow: hidden;
-  border: 1px solid rgba(255, 255, 255, 0.85);
-  border-radius: 999px;
-  background: #fff;
-  box-shadow: var(--shadow-xs);
-}
-
-.rainbow-btn::before {
-  display: none;
-}
-
-.rainbow-btn-glow {
-  width: 100%;
-  height: 100%;
-  border-radius: inherit;
-  background: linear-gradient(
-    90deg,
-    #ff6b6b 0%,
-    #ffd166 22%,
-    #6bdb9b 44%,
-    #4dabf7 66%,
-    #b197fc 88%,
-    #ff6b6b 100%
-  );
-}
-
 .settings-btn-ico {
   display: grid;
   place-items: center;
@@ -5818,9 +5645,7 @@ html.is-photo-crop-open body {
   background: var(--leaf);
 }
 
-.alert-item.severity-critical,
-.alert-item.alert-critical,
-.alert-critical {
+.alert-item.severity-critical {
   border-color: var(--alert-border) !important;
   background:
     linear-gradient(
@@ -5835,9 +5660,7 @@ html.is-photo-crop-open body {
     0 2px 6px rgba(50, 57, 53, 0.05);
 }
 
-.alert-item.severity-critical::before,
-.alert-item.alert-critical::before,
-.alert-critical::before {
+.alert-item.severity-critical::before {
   background: var(--alert) !important;
 }
 
@@ -5845,9 +5668,7 @@ html.is-photo-crop-open body {
   color: var(--alert);
 }
 
-.alert-item.severity-caution,
-.alert-item.alert-caution,
-.alert-caution {
+.alert-item.severity-caution {
   border-color: color-mix(in srgb, var(--milktea) 28%, transparent) !important;
   background:
     linear-gradient(
@@ -5862,9 +5683,7 @@ html.is-photo-crop-open body {
     0 2px 6px rgba(50, 57, 53, 0.04);
 }
 
-.alert-item.severity-caution::before,
-.alert-item.alert-caution::before,
-.alert-caution::before {
+.alert-item.severity-caution::before {
   background: var(--milktea) !important;
 }
 
@@ -6890,7 +6709,7 @@ html.is-proof-lightbox-open body {
   overscroll-behavior: none;
 }
 
-/* drug-notes / compound expand visuals: see section 30b (do not re-override) */
+/* drug-notes / compound expand visuals: see section 20b (do not re-override) */
 
 .e-med {
   display: grid;
@@ -6992,8 +6811,9 @@ html.is-proof-lightbox-open body {
 
 /* =========================================================
    37. MOBILE POLISH
-   Restore original phone clarity on top of UI v2 tokens.
-   Phone = health passport, not a shrunk desktop dashboard.
+   Phone overrides on top of UI v2 tokens (max-width: 759px).
+   Health-passport clarity — not a shrunk desktop dashboard.
+   Values here intentionally override earlier sections on small screens.
    ========================================================= */
 
 @media (max-width: 759px) {
@@ -7312,8 +7132,7 @@ html.is-proof-lightbox-open body {
     white-space: nowrap;
   }
 
-  .settings-btn,
-  .rainbow-btn {
+  .settings-btn {
     width: 40px;
     height: 40px;
     min-height: 40px;
@@ -7330,14 +7149,7 @@ html.is-proof-lightbox-open body {
     font-size: 12.5px;
   }
 
-  .rainbow-btn {
-    width: 42px;
-    height: 28px;
-    min-height: 28px;
-    border-radius: 999px;
-  }
-
-  .screen-head {
+.screen-head {
     position: sticky;
     top: 0;
     z-index: 8;
@@ -7929,11 +7741,13 @@ html.is-proof-lightbox-open body {
 }
 
 /* =========================================================
-   38. UI↔HTML DOCK — folded into component sections above
-   (alerts, parasite-row, pills, e-quick-nav, e-alerts, e-card).
-   Edit those sections; do not re-append duplicate overrides here.
+   38. C SURFACE LEFTOVERS
+   Former UI↔HTML dock rules were folded into §§18–24 / §36.
+   What remains is C-only chrome (not formal B):
+     • .surface-c-banner — discussion-surface pill
+     • #cloud-account-card — hide Drive account chrome on C
+   Do not re-append duplicate component overrides here.
    ========================================================= */
-
 
 /* ---------- C discussion surface chrome ---------- */
 .surface-c-banner {

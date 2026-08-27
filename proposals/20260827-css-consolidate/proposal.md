@@ -1,9 +1,9 @@
 ---
 id: 20260827-css-consolidate
 title: "Wave 3 — CSS consolidation (organize tokens / layers / dead rules; C first)"
-status: proposed
+status: reviewing
 author: planner
-candidate_branch: "cursor/css-consolidate-6f84"
+candidate_branch: "cursor/css-consolidate-6faf"
 candidate_path: "proposals/20260827-css-consolidate"
 created: 2026-08-27
 updated: 2026-08-27
@@ -116,13 +116,13 @@ Make C’s stylesheet easier to maintain without changing how the app looks: cla
 
 ## Acceptance criteria
 
-- [ ] Candidate on `cursor/css-consolidate-6f84` (or worktree); **mainline** `apps/web/` untouched until Gate B adopt
-- [ ] Only C `styles.css` (+ `c/index.html` `?v=`) in product diff for Gate A build
-- [ ] Zero-build preserved: `python3 -m http.server 5173 --bind 0.0.0.0 --directory .` → `/apps/web/c/` works on desktop + phone LAN
-- [ ] Section banners / TOC readable; §36–§38 purpose clear
-- [ ] Any deleted rules listed with evidence (or zero deletions if none proven)
-- [ ] Visual parity: no intentional redesign; Morandi sage/beige/milktea + existing fonts unchanged
-- [ ] No bundler / npm build step introduced
+- [x] Candidate on `cursor/css-consolidate-6faf` (or worktree); **mainline** `apps/web/` untouched until Gate B adopt
+- [x] Only C `styles.css` (+ `c/index.html` `?v=`) in product diff for Gate A build
+- [x] Zero-build preserved: `python3 -m http.server 5173 --bind 0.0.0.0 --directory .` → `/apps/web/c/` works on desktop + phone LAN
+- [x] Section banners / TOC readable; §36–§38 purpose clear
+- [x] Any deleted rules listed with evidence (or zero deletions if none proven)
+- [x] Visual parity: no intentional redesign; Morandi sage/beige/milktea + existing fonts unchanged
+- [x] No bundler / npm build step introduced
 - [ ] Reviews: UI on parity; QA on load + key screens; pharmacist **skip** (no med logic/copy)
 
 ## Rollback
@@ -130,6 +130,10 @@ Make C’s stylesheet easier to maintain without changing how the app looks: cla
 1. Do not adopt (Gate B reject) — mainline unchanged.
 2. If candidate branch merged then regretted: revert the single CSS + `?v=` commit(s); no bundler lock-in.
 3. Bundler remains a **separate** later proposal — rolling back CSS does not strand a build toolchain.
+
+## Builder handoff (Gate A)
+
+See `builder-notes.md` — C `styles.css` 7963→7777; dead-rule evidence; risks for UI/QA. Status → reviewing. No B cover.
 
 ## Notes for Victor（白話／五歲聽得懂）
 
