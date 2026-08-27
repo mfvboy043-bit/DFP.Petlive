@@ -16,7 +16,6 @@
     if (id === "alerts") return "alerts";
     if (id === "imaging" || id === "imaging-proof") return "imaging";
     if (id === "labs" || id === "lab-add") return "labs";
-    if (id === "home") return "home";
     if (id === "emergency") return "passport";
     return null;
   }
@@ -28,7 +27,8 @@
 
   /**
    * Single markup source for C + B.
-   * Leftmost 主頁 → home; 護照 → passportGo (usually emergency).
+   * Home jump lives in screen-head (`shell/screen-home-btn.js`), not the dock.
+   * 護照 → passportGo (usually emergency).
    * @param {{ passportGo?: string, startHidden?: boolean }} [opts]
    */
   function glassDockMarkup(opts = {}) {
@@ -48,15 +48,6 @@
       <span class="glass-dock-lens-label"></span>
     </span>
   </div>
-  <button class="glass-dock-item" type="button" data-go="home" data-dock="home">
-    <span class="glass-dock-ico" aria-hidden="true">
-      <svg viewBox="0 0 24 24" width="22" height="22" focusable="false">
-        <path fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" d="M4 11.5 12 4.5l8 7" />
-        <path fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" d="M7 10.5V19h10v-8.5" />
-      </svg>
-    </span>
-    <span class="glass-dock-label" data-i18n="dockHome">主頁</span>
-  </button>
   <button class="glass-dock-item" type="button" data-go="timeline" data-dock="timeline">
     <span class="glass-dock-ico" aria-hidden="true">
       <svg viewBox="0 0 24 24" width="22" height="22" focusable="false">
