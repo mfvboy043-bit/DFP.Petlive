@@ -1,13 +1,13 @@
 id: 20260827-shell-photo-pet-picker
 title: Shell — pet picker + photo crop render building blocks
 version: 2
-status: candidate_ready
+status: adopted
 
 gate_a:
   status: approved
 
 gate_b:
-  status: pending
+  status: adopted
 
 iteration: 0
 max_iterations: 3

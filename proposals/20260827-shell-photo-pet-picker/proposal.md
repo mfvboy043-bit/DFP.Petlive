@@ -1,7 +1,7 @@
 ---
 id: 20260827-shell-photo-pet-picker
 title: Shell — pet picker + photo crop render building blocks
-status: proposed
+status: adopted
 author: planner
 candidate_branch: "proposal/shell-photo-pet-picker"
 candidate_path: "proposals/20260827-shell-photo-pet-picker"
