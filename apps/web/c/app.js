@@ -1657,28 +1657,17 @@ function renderParasiteStrip(pet) {
     );
 
     const status = getParasiteSlotStatus(pet, kind);
-    // Cats: heartworm is optional — unset = no alarm; set = normal status UI.
-    if (status === "optional") {
-      row.classList.add("is-optional");
-      meta.textContent = t("parasiteHeartwormOptional");
-      statusEl.textContent = t("parasiteOptional");
-      return;
-    }
-
-    row.classList.add(`is-${status}`);
-
-    if (!record?.nextDue) {
-      meta.textContent = t("parasiteNotSet");
-    } else {
-      const product = record.productKey
-        ? t(record.productKey)
-        : record.product || t("parasiteProductFallback");
-      meta.textContent = t("parasiteStripMeta", {
-        product,
-        date: record.nextDue,
-      });
-    }
-    statusEl.textContent = parasiteStatusLabel(status);
+    const productLabel = record?.productKey
+      ? t(record.productKey)
+      : record?.product || t("parasiteProductFallback");
+    const presentation = parasiteRenderer.buildKindStripPresentation({
+      record,
+      status,
+      productLabel,
+    });
+    row.classList.add(presentation.rowClass);
+    meta.textContent = presentation.metaText;
+    statusEl.textContent = presentation.statusText;
   });
   renderVaccineStrip(pet);
 }
@@ -4029,6 +4018,7 @@ const timelineViewHelpers = PetLiveWeb.domains.timeline.createViewHelpers({
 let timelineRenderer;
 let emergencyRenderer;
 let vaccineRenderer;
+let parasiteRenderer;
 
 const VACCINE_PROTECTION_META = PetLiveWeb.domains.vaccines.PROTECTION_META;
 
@@ -5252,6 +5242,11 @@ vaccineRenderer = PetLiveWeb.domains.vaccines.createRenderer({
   getVaccineSuccessor,
   getVaccineProtectionStatus,
   vaccineLabelOf,
+});
+
+parasiteRenderer = PetLiveWeb.domains.parasite.createRenderer({
+  label: (key, params) => t(key, params),
+  parasiteStatusLabel,
 });
 
 function renderTimeline(pet) {
