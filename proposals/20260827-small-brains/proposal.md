@@ -89,11 +89,11 @@ Move leftover **pure presentation / text-builder** helpers out of the C facade i
 
 ## Acceptance criteria
 
-- [ ] A–D pure helpers live under named domains (D may be verified already-done)
-- [ ] C facade only wires `label`/DOM/open/clipboard; no duplicate algorithms
-- [ ] Behavior identical on surface C (calendar text, med labels/badges/tones, breed search face, emergency copy card)
-- [ ] `node --check apps/web/c/app.js`; related qa tests pass
-- [ ] Formal B / `apps/web/app.js` untouched this Gate A cycle
+- [x] A–D pure helpers live under named domains (D verified already-done)
+- [x] C facade only wires `label`/DOM/open/clipboard; no duplicate algorithms
+- [x] Behavior identical on surface C (calendar text, med labels/badges/tones, breed search face, emergency copy card)
+- [x] `node --check apps/web/c/app.js`; related qa tests pass (2 pre-existing vaccines order asserts still fail)
+- [x] Formal B / `apps/web/app.js` untouched this Gate A cycle
 
 ## Notes for Victor（白話／五歲聽得懂）
 
