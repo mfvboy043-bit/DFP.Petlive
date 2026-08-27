@@ -1,7 +1,7 @@
 id: "20260827-css-consolidate"
 title: "Wave 3 — CSS consolidation (organize tokens / layers / dead rules; C first)"
 version: 2
-status: reviewing
+status: candidate_ready
 # proposed | building | reviewing | revising | candidate_ready | halted | adopted | rejected
 
 gate_a:
@@ -12,7 +12,7 @@ gate_b:
   status: pending
   # pending | adopted | rejected
 
-iteration: 0
+iteration: 1
 max_iterations: 3
 
 candidate:
@@ -21,22 +21,19 @@ candidate:
   worktree: ""
 
 reviews:
-  pharmacist: pending
-  qa: pending
-  ui: pending
+  pharmacist: skipped
+  qa: pass
+  ui: pass
   # pending | skipped | pass | conditional | reject
   # Expect pharmacist skip (no med copy/dose); ui on visual parity; qa on load + key screens.
 
 rerun: []
 blocking_issues: []
-non_blocking: []
-builder_scope:
-  - "EDIT apps/web/c/styles.css — section hygiene, compat/polish/dock labels, evidence-gated dead rules only"
-  - "EDIT apps/web/c/index.html — stylesheet ?v= bump only"
-  - "Do not touch apps/web/styles.css or formal B until Gate B"
-  - "Do not introduce bundler / npm build / Vite"
+non_blocking:
+  - "UI-1 [P3] §37 media — .screen-head lost leading indent inside @media (max-width: 759px); brace-nested, no cascade/visual change"
+  - "UI-2 [P3] §20b move — content-identical winners; optional phone glance on timeline med expand / compound chips before adopt"
+builder_scope: []
 builder_note: >-
-  Gate A build complete on cursor/css-consolidate-6faf. C styles.css 7963→7777;
-  ?v=20260827-css-consolidate. Evidence in builder-notes.md. Hand off to UI/QA;
-  pharmacist skip. No merge / no B cover until Gate B adopt.
+  Arbiter iteration 1: candidate_ready. Pharmacist skipped; QA/UI pass.
+  UI P3 notes non-blocking only. No Builder revision. Gate B pending Victor adopt.
 halt_reason: ""
