@@ -1066,32 +1066,6 @@ function findDrugByMedName(name) {
 /** Med payload keyed by panel id; cleared on each timeline/emergency re-render. */
 const drugNotesMedByPanelId = new Map();
 
-function buildDrugNotesBodyHtml(model) {
-  if (model.status === "pending") {
-    return `<p class="tl-drug-notes-empty">${t("timelineDrugPendingNotes")}</p>`;
-  }
-  if (model.status === "unavailable") {
-    return `<p class="tl-drug-notes-empty">${t("drugInfoUnavailable")}</p>`;
-  }
-  const sides = (model.sideEffects || [])
-    .map((item) => `<li>${item}</li>`)
-    .join("");
-  const precautions = (model.precautions || [])
-    .map((item) => `<li>${item}</li>`)
-    .join("");
-  return `
-        <p class="tl-drug-purpose"><span>${t("timelineDrugPurpose")}</span>${model.purposeText}</p>
-        <div class="tl-drug-block">
-          <h4>${t("drugSideEffects")}</h4>
-          <ul>${sides || `<li>${t("drugInfoUnavailable")}</li>`}</ul>
-        </div>
-        <div class="tl-drug-block">
-          <h4>${t("drugPrecautions")}</h4>
-          <ul>${precautions || `<li>${t("drugInfoUnavailable")}</li>`}</ul>
-        </div>
-        <p class="tl-drug-disclaimer">${t("timelineDrugSource")}</p>`;
-}
-
 function hydrateDrugNotesPanel(panel) {
   if (!panel || panel.dataset.drugNotesHydrated === "true") return;
   const med = drugNotesMedByPanelId.get(panel.id);
@@ -1099,16 +1073,14 @@ function hydrateDrugNotesPanel(panel) {
   const model = timelineViewHelpers.hydrateDrugNoteModel(med);
   const slot = document.createElement("div");
   slot.className = "tl-drug-notes-body";
-  slot.innerHTML = buildDrugNotesBodyHtml(model);
+  slot.innerHTML = timelineRenderer.buildDrugNotesBodyHtml(model);
   panel.appendChild(slot);
   panel.dataset.drugNotesHydrated = "true";
 }
 
 function renderTimelineDrugNotes(med, notesId) {
   drugNotesMedByPanelId.set(notesId, med);
-  return `<div class="tl-drug-notes" id="${notesId}" hidden data-drug-notes-shell>
-    <p class="tl-drug-notes-title">${t("timelineDrugNotes")}</p>
-  </div>`;
+  return timelineRenderer.buildDrugNotesShellHtml(notesId);
 }
 
 function collectVisitProofPhotos(visit) {
@@ -1117,40 +1089,6 @@ function collectVisitProofPhotos(visit) {
 
 function visitHasAnyProof(visit) {
   return visitsController.visitHasAnyProof(visit);
-}
-
-function renderVisitProofThumbs(slots, visitIndex) {
-  const parts = [];
-  const fig = (slot, url, labelKey) => `
-    <figure class="tl-visit-rx-fig">
-      <button
-        type="button"
-        class="tl-visit-rx-zoom"
-        data-proof-lightbox
-        data-proof-caption="${labelKey}"
-        aria-label="${t("proofLightboxOpen")}"
-      >
-        <img src="${url}" alt="" />
-      </button>
-      <figcaption>${t(labelKey)}</figcaption>
-      <button
-        type="button"
-        class="tl-visit-rx-remove"
-        data-visit-proof-clear-slot="${slot}"
-        data-visit-index="${visitIndex}"
-      >${t("proofPhotoClear")}</button>
-    </figure>`;
-
-  slots.bag.forEach((url) => {
-    parts.push(fig("bag", url, "medBagPhoto"));
-  });
-  slots.rx.forEach((url) => {
-    parts.push(fig("rx", url, "medRxPhoto"));
-  });
-  slots.drug.forEach((url) => {
-    parts.push(fig("drug", url, "medDrugPhoto"));
-  });
-  return parts.join("");
 }
 
 function clearVisitProofSlot(visit, slot) {
@@ -1182,38 +1120,6 @@ function formatImagingTypes(visit) {
 
 function getImagingVisitEntries(pet) {
   return imagingController.getImagingVisitEntries(pet);
-}
-
-function renderVisitImagingThumbs(imaging, visitIndex) {
-  const parts = [];
-  const fig = (slot, url, index, labelKey) => `
-    <figure class="tl-visit-rx-fig">
-      <button
-        type="button"
-        class="tl-visit-rx-zoom"
-        data-proof-lightbox
-        data-proof-caption="${labelKey}"
-        aria-label="${t("proofLightboxOpen")}"
-      >
-        <img src="${url}" alt="" />
-      </button>
-      <figcaption>${t(labelKey)}</figcaption>
-      <button
-        type="button"
-        class="tl-visit-rx-remove"
-        data-visit-imaging-clear-slot="${slot}"
-        data-visit-imaging-clear-index="${index}"
-        data-visit-index="${visitIndex}"
-      >${t("proofPhotoClear")}</button>
-    </figure>`;
-
-  (imaging.xrayPhotos || []).forEach((url, index) => {
-    parts.push(fig("xray", url, index, "imagingXrayCaption"));
-  });
-  (imaging.usPhotos || []).forEach((url, index) => {
-    parts.push(fig("us", url, index, "imagingUsCaption"));
-  });
-  return parts.join("");
 }
 
 function clearVisitImagingPhoto(visit, slot, index) {
@@ -1276,232 +1182,6 @@ function buildPreviousVisitByIndex(visits) {
 
 function formatWeightDeltaKg(delta) {
   return visitsController.formatWeightDeltaKg(delta);
-}
-
-function renderVisitWeightVsPrevious(visit, previousVisit) {
-  if (!previousVisit) return "";
-  const days = calendarDaysBetween(previousVisit.date, visit.date);
-  const parts = [];
-  if (days != null && days >= 0) {
-    parts.push(
-      `<span class="tl-weight-days">${t("visitWeightDaysSince", {
-        days,
-      })}</span>`
-    );
-  }
-  const cur = visitWeightKg(visit);
-  const prev = visitWeightKg(previousVisit);
-  if (cur != null && prev != null) {
-    const delta = Math.round((cur - prev) * 10) / 10;
-    if (delta === 0) {
-      parts.push(
-        `<span class="tl-weight-delta is-same"><span class="tl-weight-delta-mark" aria-hidden="true">=</span> ${t(
-          "visitWeightSame"
-        )}</span>`
-      );
-    } else if (delta > 0) {
-      parts.push(
-        `<span class="tl-weight-delta is-up"><span class="tl-weight-delta-mark" aria-hidden="true">↑</span> ${t(
-          "visitWeightIncreased",
-          { kg: formatWeightDeltaKg(delta) }
-        )}</span>`
-      );
-    } else {
-      parts.push(
-        `<span class="tl-weight-delta is-down"><span class="tl-weight-delta-mark" aria-hidden="true">↓</span> ${t(
-          "visitWeightDecreased",
-          { kg: formatWeightDeltaKg(delta) }
-        )}</span>`
-      );
-    }
-  }
-  if (!parts.length) return "";
-  return `<span class="tl-weight-vs">${parts.join("")}</span>`;
-}
-
-function renderVisitWeightParts(visit, visitIndex, previousVisit = null) {
-  const weightPanelId = `visit-weight-${visitIndex}`;
-  const weightNum = visitWeightKg(visit);
-  const weightVs = renderVisitWeightVsPrevious(visit, previousVisit);
-  const weightHtml =
-    weightNum != null
-      ? `<span class="tl-weight">${weightVs}<span class="tl-weight-label">${t(
-          "visitWeightLabel"
-        )}</span> <button
-          type="button"
-          class="tl-weight-value"
-          data-visit-weight-toggle
-          aria-expanded="false"
-          aria-controls="${weightPanelId}"
-          aria-label="${t("visitWeightEditAria", { weight: weightNum })}"
-        >${weightNum} kg</button></span>`
-      : `<span class="tl-weight">${weightVs}<button
-          type="button"
-          class="tl-weight-pending"
-          data-visit-weight-toggle
-          aria-expanded="false"
-          aria-controls="${weightPanelId}"
-        >${t("visitWeightPending")}</button></span>`;
-  const weightPrefill =
-    weightNum != null ? ` value="${weightNum}"` : "";
-  const weightEdit = `<form class="tl-weight-edit" id="${weightPanelId}" hidden data-visit-weight-form="${visitIndex}">
-          <label class="tl-weight-edit-field">
-            <span data-i18n="visitWeightFillLabel">${t("visitWeightFillLabel")}</span>
-            <input
-              type="number"
-              id="visit-weight-input-${visitIndex}"
-              name="weightAtVisit"
-              step="0.1"
-              min="0.1"
-              inputmode="decimal"
-              placeholder="6.8"
-              required${weightPrefill}
-            />
-          </label>
-          <button class="btn btn-primary tl-weight-save" type="submit">${t(
-            "visitWeightSave"
-          )}</button>
-        </form>`;
-  return { weightHtml, weightEdit };
-}
-
-function renderVisitRxBlock(
-  visit,
-  visitIndex,
-  previousVisit = null,
-  year = "",
-  medsHtml = ""
-) {
-  const panelId = `visit-rx-${visitIndex}`;
-  const imagingPanelId = `visit-imaging-${visitIndex}`;
-  const slots = collectVisitProofPhotos(visit);
-  const hasProof = visitHasAnyProof(visit);
-  const imaging = getVisitImaging(visit);
-  const hasImaging = visitHasImaging(visit);
-  const { weightEdit } = renderVisitWeightParts(
-    visit,
-    visitIndex,
-    previousVisit
-  );
-  const medsBlock = medsHtml
-    ? `<p class="tl-visit-rx-kicker">${t("timelineVisitRxMedsTitle")}</p>${medsHtml}`
-    : "";
-  const body = hasProof
-    ? `<div class="tl-visit-rx-thumbs">${renderVisitProofThumbs(
-         slots,
-         visitIndex
-       )}</div>
-       <button type="button" class="med-proof-btn" data-visit-proof-upload="${visitIndex}">${t(
-         "timelineVisitRxUpdate"
-       )}</button>`
-    : `<p class="tl-visit-rx-empty">${t("timelineVisitRxEmpty")}</p>
-       <button type="button" class="med-proof-btn" data-visit-proof-upload="${visitIndex}">${t(
-         "timelineVisitRxUpload"
-       )}</button>`;
-  const imagingBody = hasImaging
-    ? `<div class="tl-visit-rx-thumbs">${renderVisitImagingThumbs(
-         imaging,
-         visitIndex
-       )}</div>
-       <button type="button" class="med-proof-btn" data-visit-imaging-upload="${visitIndex}">${t(
-         "timelineVisitImagingUpdate"
-       )}</button>`
-    : `<p class="tl-visit-rx-empty">${t("timelineVisitImagingEmpty")}</p>
-       <button type="button" class="med-proof-btn" data-visit-imaging-upload="${visitIndex}">${t(
-         "timelineVisitImagingUpload"
-       )}</button>`;
-  const yearHtml = year
-    ? `<span class="tl-item-year">${year}</span>`
-    : "";
-
-  return `
-    <div class="tl-clinic-row">
-      <p class="tl-clinic">${visitClinicLabel(visit)}</p>
-      <div class="tl-visit-actions">
-        <button
-          type="button"
-          class="tl-drug-notes-btn tl-visit-rx-btn"
-          data-visit-rx-toggle
-          aria-expanded="false"
-          aria-controls="${panelId}"
-        >${t("timelineVisitRxBtn")}</button>
-        <button
-          type="button"
-          class="tl-drug-notes-btn tl-visit-imaging-btn"
-          data-visit-imaging-toggle
-          aria-expanded="false"
-          aria-controls="${imagingPanelId}"
-        >${t("timelineVisitImagingBtn")}</button>
-      </div>
-      ${yearHtml}
-    </div>
-    ${weightEdit}
-    ${renderVisitLabsLine(visit)}
-    <div class="tl-visit-rx" id="${panelId}" hidden>
-      ${medsBlock}
-      <p class="tl-visit-rx-kicker">${t("timelineVisitRxTitle")}</p>
-      ${body}
-    </div>
-    <div class="tl-visit-imaging" id="${imagingPanelId}" hidden>
-      <p class="tl-visit-rx-kicker">${t("timelineVisitImagingTitle")}</p>
-      ${imagingBody}
-      <button type="button" class="med-proof-btn" disabled aria-disabled="true">${t(
-        "imagingVideoBtn"
-      )}</button>
-      <p class="tl-visit-imaging-soon">${t("imagingVideoSoon")}</p>
-    </div>`;
-}
-
-function renderTimeline(pet) {
-  drugNotesMedByPanelId.clear();
-  if (!pet.visits?.length) {
-    timelineList.innerHTML = `<li class="tl-item tl-item-empty"><div class="tl-body"><p class="tl-note">${t(
-      "noVisits"
-    )}</p></div></li>`;
-    return;
-  }
-
-  const sourceTags = getSourceTags();
-  const entries = timelineSelectors.buildTimelineEntries(pet);
-  timelineList.innerHTML = entries
-    .map((entry) => {
-      const { visit, visitIndex, previousVisit, year } = entry;
-      const tags = visit.tags
-        .map((tag) => `<span class="tl-tag">${visitTagLabel(tag)}</span>`)
-        .join("");
-      const noteText = locField(visit.note);
-      const note = noteText ? `<p class="tl-note">${noteText}</p>` : "";
-      const meds =
-        entry.hasRx
-          ? `<ul class="med-list">${visit.medications
-              .map((med, medIndex) =>
-                renderTimelineMedItem(med, pet, visitIndex, medIndex, sourceTags)
-              )
-              .join("")}</ul>`
-          : "";
-      const { weightHtml } = renderVisitWeightParts(
-        visit,
-        visitIndex,
-        previousVisit
-      );
-
-      return `
-        <li class="tl-item" style="--i:${visitIndex}">
-          <header class="tl-item-head">
-            <time datetime="${visit.date}">${formatShortDate(visit.date)}</time>
-            ${weightHtml}
-          </header>
-          <div class="tl-body">
-            ${renderVisitRxBlock(visit, visitIndex, previousVisit, year, meds)}
-            <p class="tl-tags">${tags}</p>
-            ${note}
-          </div>
-        </li>`;
-    })
-    .join("");
-  const imagingPending = pendingVisitImagingIndex;
-  applyPendingVisitImagingExpand();
-  if (imagingPending == null) expandLatestVisitRx();
 }
 
 const ALERT_TYPE_ORDER = PetLiveWeb.domains.alerts.ALERT_TYPE_ORDER;
@@ -2838,20 +2518,6 @@ function renderImagingList(pet) {
       </li>`;
     })
     .join("");
-}
-
-function renderVisitLabsLine(visit) {
-  const pet = getCurrentPet();
-  if (!pet || !visit) return "";
-  const linked = getLabReportsForPet(pet.id).some((report) =>
-    reportMatchesVisit(report, visit)
-  );
-  if (!linked) return "";
-  return `<p class="tl-visit-labs">
-      <button type="button" class="tl-visit-labs-btn" data-open-labs>
-        ${t("timelineVisitLabs")}
-      </button>
-    </p>`;
 }
 
 function renderLabList(pet) {
@@ -5969,6 +5635,44 @@ function compoundChipToneClass(form) {
 function compoundIconKind(form) {
   return medicationsSelectors.compoundIconKind(form);
 }
+function hasLinkedLabsForVisit(visit) {
+  const pet = getCurrentPet();
+  if (!pet || !visit) return false;
+  return getLabReportsForPet(pet.id).some((report) =>
+    reportMatchesVisit(report, visit)
+  );
+}
+
+timelineRenderer = PetLiveWeb.domains.timeline.createRenderer({
+  label: (key, params) => t(key, params),
+  locField,
+  formatShortDate,
+  visitClinicLabel,
+  visitTagLabel,
+  getSourceTags,
+  expandFrequencyInText,
+  compoundFormClass,
+  compoundChipToneClass,
+  compoundFormBadge,
+  compoundIconKind,
+  timelineSelectors,
+  timelineViewHelpers,
+  visits: visitsController,
+  imaging: imagingController,
+  hasLinkedLabs: hasLinkedLabsForVisit,
+});
+
+function renderTimeline(pet) {
+  drugNotesMedByPanelId.clear();
+  const { html, drugNotePanels } = timelineRenderer.buildTimelineListHtml(pet);
+  drugNotePanels.forEach(({ notesId, med }) => {
+    drugNotesMedByPanelId.set(notesId, med);
+  });
+  timelineList.innerHTML = html;
+  const imagingPending = pendingVisitImagingIndex;
+  applyPendingVisitImagingExpand();
+  if (imagingPending == null) expandLatestVisitRx();
+}
 
 const COMPOUND_FORM_OPTIONS = [
   ["liquid_a", "compoundLiquidA"],
@@ -6087,137 +5791,6 @@ function buildVisitMedicationsFromPending(petId) {
     pendingMeds,
     petId
   );
-}
-
-function renderTimelineMedItem(med, pet, visitIndex, medIndex, sourceTags) {
-  if (!med.id) med.id = `m-${pet.id}-${visitIndex}-${medIndex}`;
-  const hasProof = Boolean(med.bagPhoto || med.rxPhoto || med.drugPhoto);
-  if (hasProof && med.source === "owner") {
-    med.source = "owner_proof";
-  }
-  const sourceKey = med.source || "owner";
-  const source = sourceTags[sourceKey] || sourceTags.owner;
-  const isPhotoBundle = med.kind === "photo_bundle";
-  const isCompound = med.kind === "compound_bundle";
-  const completeBtn = isPhotoBundle
-    ? `<button type="button" class="med-proof-btn" data-complete-visit="${visitIndex}">${t(
-        "medCompleteDrugs"
-      )}</button>`
-    : "";
-  const detailId = `med-detail-${pet.id}-${visitIndex}-${medIndex}`;
-
-  if (isCompound) {
-    const ingredientNames = (med.ingredients || [])
-      .map((ing) => ing.name)
-      .filter(Boolean);
-    const namesLine = ingredientNames.length
-      ? ingredientNames.join("、")
-      : med.name;
-    const ingredients = (med.ingredients || [])
-      .map((ing, ingIndex) => {
-        const notesId = timelineViewHelpers.notesIdForMed({
-          petId: pet.id,
-          visitIndex,
-          medIndex,
-          ingredientIndex: ingIndex,
-        });
-        return `<li class="tl-ingredient">
-          <div class="tl-med-name-row">
-            <strong>${ing.name}</strong>
-            <button
-              type="button"
-              class="tl-drug-notes-btn"
-              data-drug-notes-toggle
-              aria-expanded="false"
-              aria-controls="${notesId}"
-            >${t("timelineDrugNotesBtn")}</button>
-          </div>
-          <span class="dose">${expandFrequencyInText(ing.dose)}</span>
-          ${renderTimelineDrugNotes(ing, notesId)}
-        </li>`;
-      })
-      .join("");
-
-    return `
-      <li class="tl-med-unit tl-compound ${compoundFormClass(med.compoundForm)}">
-        <button
-          type="button"
-          class="tl-med-summary"
-          data-med-detail-toggle
-          aria-expanded="false"
-          aria-controls="${detailId}"
-        >
-          <span class="tl-compound-badge ${compoundChipToneClass(
-            med.compoundForm
-          )}"${
-            med.compoundColor
-              ? ` style="background:${med.compoundColor}"`
-              : ""
-          }>
-            <i class="compound-ico compound-ico-${compoundIconKind(
-              med.compoundForm
-            )}" aria-hidden="true"></i>
-            ${compoundFormBadge(med.compoundForm)}
-          </span>
-          <span class="tl-med-summary-body">
-            <span class="tl-med-summary-names">${namesLine}</span>
-            <span class="dose">${expandFrequencyInText(med.dose)}</span>
-          </span>
-          <span class="tl-med-summary-action">${t("timelineMedExpand")}</span>
-        </button>
-        <div class="tl-med-detail" id="${detailId}" hidden>
-          <span class="tag ${source.className}">${source.label}</span>
-          <ul class="tl-ingredients">${ingredients}</ul>
-          ${
-            completeBtn
-              ? `<div class="med-list-actions">${completeBtn}</div>`
-              : ""
-          }
-        </div>
-      </li>`;
-  }
-
-  const notesId = timelineViewHelpers.notesIdForMed({
-    petId: pet.id,
-    visitIndex,
-    medIndex,
-  });
-  if (isPhotoBundle) {
-    return `
-    <li class="tl-med-unit">
-      <div class="tl-med-summary is-static">
-        <span class="tl-med-summary-body">
-          <strong class="tl-med-summary-names">${med.name}</strong>
-          <span class="dose">${expandFrequencyInText(med.dose)}</span>
-        </span>
-        <span class="tag ${source.className}">${source.label}</span>
-      </div>
-      ${
-        completeBtn ? `<div class="med-list-actions">${completeBtn}</div>` : ""
-      }
-    </li>`;
-  }
-
-  return `
-    <li class="tl-med-unit">
-      <div class="tl-med-summary is-static">
-        <span class="tl-med-summary-body">
-          <span class="tl-med-name-row">
-            <strong class="tl-med-summary-names">${med.name}</strong>
-            <button
-              type="button"
-              class="tl-drug-notes-btn"
-              data-drug-notes-toggle
-              aria-expanded="false"
-              aria-controls="${notesId}"
-            >${t("timelineDrugNotesBtn")}</button>
-          </span>
-          <span class="dose">${expandFrequencyInText(med.dose)}</span>
-        </span>
-        <span class="tag ${source.className}">${source.label}</span>
-      </div>
-      ${renderTimelineDrugNotes(med, notesId)}
-    </li>`;
 }
 
 function tryAddCurrentMedToList({ toastOnSuccess = true } = {}) {
