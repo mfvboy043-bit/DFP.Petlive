@@ -1,7 +1,7 @@
 ---
 id: 20260827-leftover-cleanup-c
 title: Leftover cleanup on C — catalogs, seed, crop export, timeline keyed plan
-status: building
+status: adopted
 author: planner
 candidate_branch: "cursor/leftover-cleanup-c-7855"
 candidate_path: "proposals/20260827-leftover-cleanup-c"
@@ -17,7 +17,7 @@ Companion: `state.yaml`.
 
 ## Goal
 
-Finish the remaining building-block leftovers on **surface C only**: clinic catalog, vaccine presets, demo seed graph, photo-crop canvas export brain, and PERF-03 step-2 keyed rebuild *plan* (replace only changed visit rows when safe). Behavior-preserving. Formal B untouched until Victor 採用後覆蓋.
+Finish the remaining building-block leftovers on **surface C only**: clinic catalog, vaccine presets, demo seed graph, photo-crop canvas export brain, and PERF-03 step-2 keyed rebuild *plan* (replace only changed visit rows when safe). Behavior-preserving. Formal B covered after Victor 採用並覆蓋.
 
 ## In scope
 
