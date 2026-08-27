@@ -1,0 +1,41 @@
+id: "20260827-wire-thin-forms"
+title: "Wave 2 — thin form-save + screen-paint orchestration wires (C)"
+version: 2
+status: proposed
+# proposed | building | reviewing | revising | candidate_ready | halted | adopted | rejected
+
+gate_a:
+  status: pending
+  # pending | approved | modified | rejected
+  note: "Victor 2026-08-27 —「第2波，請總指揮開始指揮」; Planner draft ready; Parent may flip to approved after write"
+
+gate_b:
+  status: pending
+  # pending | adopted | rejected
+
+iteration: 0
+max_iterations: 3
+
+candidate:
+  branch: "cursor/wire-thin-forms-6f84"
+  path: "proposals/20260827-wire-thin-forms"
+  worktree: ""
+
+reviews:
+  pharmacist: pending
+  qa: pending
+  ui: pending
+  # Expect pharmacist skip (no med copy/dose change); ui skip (no visual redesign);
+  # qa on wire behavior parity for A–D.
+
+rerun: []
+blocking_issues: []
+non_blocking: []
+builder_scope:
+  - "A — shell/alert-form.js: extract saveAlertFromForm orchestration (optional deleteAlertById sibling if cheap); inject alertsController + toast/reset/applySelectedPet"
+  - "B — shell/parasite-form.js: extract saveParasiteKind orchestration incl. dosedToday DOM write-back + dual toast; no new persist/applySelectedPet"
+  - "C — shell/breed-form.js: extract syncBreedFields chip/select orchestration; do not redo Wave 1 resolveBreedSearchFaceValue"
+  - "D — shell/emergency-paint.js: extract renderEmergencyCard generate→degraded→DOM assign sequence; inject renderer + list/photo callbacks"
+  - "E — Wire A–D in apps/web/c/app.js only; add script tags + ?v= in c/index.html before c/app.js; node --check; optional shell qa"
+  - "Forbidden: apps/web/app.js / formal B; timeline morph; Google Drive; modules write-truth; medical algorithms; wholesale other save* handlers; openVisitImaging / confirmArchivePet"
+halt_reason: ""
