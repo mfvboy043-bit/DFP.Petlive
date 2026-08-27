@@ -1508,25 +1508,14 @@ function syncParasiteNextFromLast(kind) {
   syncDateProxies(document.getElementById(`parasite-form-${kind}`) || document);
 }
 
-function parasiteProductChipMarkup(kind, item) {
-  return `<button type="button" class="chip${
-    selectedParasiteProduct[kind] === item.key ? " is-on" : ""
-  }" data-parasite-product="${item.key}" data-interval="${item.intervalDays}">${parasiteProductChipLabel(
-    item
-  )}</button>`;
-}
-
 function renderParasiteProductChips(kind) {
   const el = document.getElementById(`parasite-chips-${kind}`);
-  if (!el) return;
-  const list = PARASITE_PRODUCTS[kind] || [];
-  const exclusive = list.filter((item) => !isParasiteDualProduct(item.key));
-  const dual = list.filter((item) => isParasiteDualProduct(item.key));
-  el.innerHTML = `<div class="parasite-chip-row">${exclusive
-    .map((item) => parasiteProductChipMarkup(kind, item))
-    .join("")}</div><div class="parasite-chip-row">${dual
-    .map((item) => parasiteProductChipMarkup(kind, item))
-    .join("")}</div>`;
+  if (!el || !parasiteRenderer) return;
+  el.innerHTML = parasiteRenderer.buildProductChipsHtml({
+    kind,
+    products: PARASITE_PRODUCTS[kind] || [],
+    selectedKey: selectedParasiteProduct[kind] || "",
+  });
 }
 
 function fillParasiteKindForm(pet, kind) {
@@ -2167,18 +2156,8 @@ function renderLabList(pet) {
 
 function renderLabPhotoPreviews() {
   const root = document.getElementById("lab-photo-previews");
-  if (!root) return;
-  root.innerHTML = pendingLabPhotos
-    .map(
-      (url, index) => `
-      <figure class="lab-photo-fig">
-        <img src="${url}" alt="" />
-        <button type="button" class="proof-clear-btn" data-lab-photo-remove="${index}">
-          ${t("proofPhotoClear")}
-        </button>
-      </figure>`
-    )
-    .join("");
+  if (!root || !labsRenderer) return;
+  root.innerHTML = labsRenderer.buildPhotoPreviewsHtml(pendingLabPhotos);
 }
 
 function setSelectedLabClinic(clinic) {
@@ -2211,28 +2190,10 @@ function setSelectedLabClinic(clinic) {
 
 function renderLabClinicResults(list) {
   const results = document.getElementById("lab-clinic-results");
-  if (!results) return;
-  if (!list.length) {
-    results.hidden = true;
-    results.innerHTML = "";
-    return;
-  }
-  results.hidden = false;
-  results.innerHTML = list
-    .map(
-      (clinic) => `
-      <li>
-        <button
-          type="button"
-          data-lab-clinic-id="${clinic.id}"
-          class="${clinic.anonymous ? "is-anonymous" : ""}"
-        >
-          <strong>${clinic.name}</strong>
-          <small>${clinic.note}</small>
-        </button>
-      </li>`
-    )
-    .join("");
+  if (!results || !labsRenderer) return;
+  const built = labsRenderer.buildClinicResultsHtml(list);
+  results.hidden = built.hidden;
+  results.innerHTML = built.html;
 }
 
 function syncLabTypeChips() {
@@ -3430,46 +3391,14 @@ function updateBreedSearchFace(value) {
 
 function renderBreedResults(list, query) {
   const breedResults = document.getElementById("breed-results");
-  if (!breedResults) return;
-  const q = String(query || "").trim();
-  if (!q) {
+  if (!breedResults || !breedRenderer) return;
+  const built = breedRenderer.buildBreedResultsHtml(list, query);
+  if (built.hidden) {
     hideBreedResults();
     return;
   }
-
-  if (!list.length) {
-    breedResults.hidden = false;
-    breedResults.innerHTML = `
-      <li>
-        <p class="breed-results-empty">${
-          typeof t === "function" ? t("breedSearchEmpty") : ""
-        }</p>
-      </li>`;
-    return;
-  }
-
   breedResults.hidden = false;
-  breedResults.innerHTML = list
-    .map(
-      (breed) => `
-      <li>
-        <button type="button" data-breed-suggest="${breed.value}">
-          <strong>${breedOptionLabel(breed)}</strong>
-        </button>
-      </li>`
-    )
-    .join("");
-}
-
-function breedChipButtonHtml(breed) {
-  return `
-      <button
-        type="button"
-        class="chip"
-        role="option"
-        data-breed="${breed.value}"
-        aria-selected="false"
-      >${breedOptionLabel(breed)}</button>`;
+  breedResults.innerHTML = built.html;
 }
 
 function updateBreedExpandToggle() {
@@ -3490,28 +3419,11 @@ function updateBreedExpandToggle() {
 }
 
 function renderCollapsedBreedChips(species, selectedValue) {
-  return breedSelectors
-    .collapsedChipValues(species, selectedValue)
-    .map((value) => breedSelectors.findByValue(species, value))
-    .filter(Boolean)
-    .map(breedChipButtonHtml)
-    .join("");
+  return breedRenderer.buildCollapsedChipsHtml(species, selectedValue);
 }
 
 function renderExpandedBreedChips(species) {
-  return breedSelectors
-    .expandedGroups(species)
-    .map((group) => {
-      const label =
-        typeof t === "function" ? t(group.i18nKey) : group.id;
-      const chips = group.breeds.map(breedChipButtonHtml).join("");
-      return `
-      <div class="breed-group" data-breed-group="${group.id}">
-        <div class="breed-group-label">${label}</div>
-        <div class="breed-group-chips">${chips}</div>
-      </div>`;
-    })
-    .join("");
+  return breedRenderer.buildExpandedGroupsHtml(species);
 }
 
 function setSelectedBreed(value) {
@@ -3584,7 +3496,7 @@ function syncBreedFields({ keepSelection = true, resetExpanded = false } = {}) {
     breedChips.classList.add("is-collapsed");
     breedChips.classList.remove("is-expanded");
   } else {
-    breedChips.innerHTML = list.map(breedChipButtonHtml).join("");
+    breedChips.innerHTML = list.map((breed) => breedRenderer.buildBreedChipHtml(breed)).join("");
     breedChips.classList.remove("is-expanded", "is-collapsed");
   }
 
@@ -3789,6 +3701,9 @@ let imagingRenderer;
 let alertsRenderer;
 let petsRenderer;
 let photoCropShell;
+let breedRenderer;
+let medicationsRenderer;
+let proofPreviewShell;
 
 const VACCINE_PROTECTION_META = PetLiveWeb.domains.vaccines.PROTECTION_META;
 
@@ -4339,28 +4254,10 @@ function searchClinics(query) {
 }
 
 function renderClinicResults(list) {
-  if (!list.length) {
-    clinicResults.hidden = true;
-    clinicResults.innerHTML = "";
-    return;
-  }
-
-  clinicResults.hidden = false;
-  clinicResults.innerHTML = list
-    .map(
-      (clinic) => `
-      <li>
-        <button
-          type="button"
-          data-clinic-id="${clinic.id}"
-          class="${clinic.anonymous ? "is-anonymous" : ""}"
-        >
-          <strong>${clinic.name}</strong>
-          <small>${clinic.note}</small>
-        </button>
-      </li>`
-    )
-    .join("");
+  if (!medicationsRenderer) return;
+  const built = medicationsRenderer.buildClinicResultsHtml(list);
+  clinicResults.hidden = built.hidden;
+  clinicResults.innerHTML = built.html;
 }
 
 function setSelectedClinic(clinic) {
@@ -4418,9 +4315,10 @@ function resolveEnrichedDrug(drugOrId) {
 }
 
 function renderDrugInfoCard(drug) {
-  if (!drugInfoCard) return;
+  if (!drugInfoCard || !medicationsRenderer) return;
   const full = drug ? resolveEnrichedDrug(drug) : null;
-  if (!full) {
+  const built = medicationsRenderer.buildDrugInfoListsHtml(full);
+  if (!built.visible) {
     drugInfoCard.hidden = true;
     if (drugInfoPurpose) drugInfoPurpose.textContent = "";
     if (drugInfoSideEffects) drugInfoSideEffects.innerHTML = "";
@@ -4428,15 +4326,9 @@ function renderDrugInfoCard(drug) {
     return;
   }
 
-  const sides = full.commonSideEffects || [];
-  const precautions = full.precautions || [];
-  drugInfoPurpose.textContent = `${full.drugClass}｜${full.purpose || ""}`;
-  drugInfoSideEffects.innerHTML = sides.length
-    ? sides.map((item) => `<li>${item}</li>`).join("")
-    : `<li>${t("drugInfoUnavailable")}</li>`;
-  drugInfoPrecautions.innerHTML = precautions.length
-    ? precautions.map((item) => `<li>${item}</li>`).join("")
-    : `<li>${t("drugInfoUnavailable")}</li>`;
+  drugInfoPurpose.textContent = built.purposeText;
+  drugInfoSideEffects.innerHTML = built.sideEffectsHtml;
+  drugInfoPrecautions.innerHTML = built.precautionsHtml;
   drugInfoCard.hidden = false;
   drugInfoCard.removeAttribute("hidden");
   drugInfoCard.classList.add("is-visible");
@@ -4446,24 +4338,10 @@ function renderDrugInfoCard(drug) {
 }
 
 function renderDrugResults(list) {
-  if (!list.length) {
-    drugResults.hidden = true;
-    drugResults.innerHTML = "";
-    return;
-  }
-
-  drugResults.hidden = false;
-  drugResults.innerHTML = list
-    .map(
-      (drug) => `
-      <li>
-        <button type="button" data-drug-id="${drug.id}">
-          <strong>${drug.genericName}${drug.brandNameZh ? `（${drug.brandNameZh}）` : ""}</strong>
-          <small>${drug.drugClass} · ${drug.purpose || ""}</small>
-        </button>
-      </li>`
-    )
-    .join("");
+  if (!medicationsRenderer) return;
+  const built = medicationsRenderer.buildDrugResultsHtml(list);
+  drugResults.hidden = built.hidden;
+  drugResults.innerHTML = built.html;
 }
 
 let suppressDrugSearchInput = false;
@@ -4778,29 +4656,22 @@ function renderCompoundColorSwatches(group) {
   const field = document.getElementById("compound-color-field");
   const wrap = document.getElementById("compound-color-swatches");
   const colorInput = document.getElementById("compound-color");
-  if (!field || !wrap || !colorInput) return;
+  if (!field || !wrap || !colorInput || !medicationsRenderer) return;
 
-  if (!group) {
+  const built = medicationsRenderer.buildCompoundColorSwatchesHtml(
+    group,
+    group ? resolveCompoundColor(group) : ""
+  );
+  if (built.hidden) {
     field.hidden = true;
     wrap.innerHTML = "";
     colorInput.value = "";
     return;
   }
 
-  const current = resolveCompoundColor(group);
-  colorInput.value = current;
+  colorInput.value = built.colorValue;
   field.hidden = false;
-  wrap.innerHTML = COMPOUND_COLOR_SWATCHES.map((swatch) => {
-    const on = swatch.hex.toLowerCase() === current.toLowerCase();
-    return `<button
-      type="button"
-      class="compound-color-swatch${on ? " is-on" : ""}"
-      data-compound-color="${swatch.hex}"
-      style="--swatch:${swatch.hex}"
-      aria-label="${t(swatch.labelKey)}"
-      title="${t(swatch.labelKey)}"
-    ></button>`;
-  }).join("");
+  wrap.innerHTML = built.html;
 }
 
 function setMedCompoundColor(hex, { persistGroup = true } = {}) {
@@ -5017,6 +4888,8 @@ vaccineRenderer = PetLiveWeb.domains.vaccines.createRenderer({
 parasiteRenderer = PetLiveWeb.domains.parasite.createRenderer({
   label: (key, params) => t(key, params),
   parasiteStatusLabel,
+  productChipLabel: parasiteProductChipLabel,
+  isDualProduct: isParasiteDualProduct,
 });
 
 labsRenderer = PetLiveWeb.domains.labs.createRenderer({
@@ -5048,6 +4921,14 @@ petsRenderer = PetLiveWeb.domains.pets.createRenderer({
 
 photoCropShell = PetLiveWeb.shell.createPhotoCrop();
 
+breedRenderer = PetLiveWeb.domains.breed.createRenderer({
+  label: (key, params) => t(key, params),
+  breedOptionLabel,
+  breedSelectors,
+});
+
+proofPreviewShell = PetLiveWeb.shell.createProofPreview();
+
 function renderTimeline(pet) {
   drugNotesMedByPanelId.clear();
   const { html, drugNotePanels } = timelineRenderer.buildTimelineListHtml(pet);
@@ -5069,65 +4950,31 @@ const COMPOUND_FORM_OPTIONS = [
   ["capsule_c", "compoundCapsuleC"],
 ];
 
+medicationsRenderer = PetLiveWeb.domains.medications.createRenderer({
+  label: (key, params) => t(key, params),
+  compoundFormOptions: COMPOUND_FORM_OPTIONS,
+  compoundColorSwatches: COMPOUND_COLOR_SWATCHES,
+  compoundChipToneClass,
+  compoundIconKind,
+  resolveCompoundColor,
+});
+
 function pendingMedHasCompoundTag(med) {
   return Boolean(med.compoundGroup);
-}
-
-function renderPendingCompoundOptions(med) {
-  const group = med.compoundGroup || "";
-  const show =
-    pendingMeds.length >= 2 ||
-    pendingMedHasCompoundTag(med) ||
-    pendingMeds.some((item) => pendingMedHasCompoundTag(item));
-  if (!show) return "";
-
-  return `<div class="pending-compound" role="group" aria-label="${t("compoundGroupLabel")}">
-    <span class="pending-compound-label">${t("compoundGroupLabel")}</span>
-    <div class="pending-compound-options">
-      ${COMPOUND_FORM_OPTIONS.map(([value, key]) => {
-        const tone = compoundChipToneClass(value);
-        const icon = compoundIconKind(value);
-        const color = resolveCompoundColor(value, med.compoundColor);
-        const colorStyle =
-          group === value ? ` style="--compound-chip-color:${color}"` : "";
-        return `
-        <label class="pending-compound-opt compound-chip ${tone}${
-          group === value ? " is-on" : ""
-        }"${colorStyle}>
-          <input
-            type="radio"
-            name="compound-${med.localId}"
-            value="${value}"
-            data-compound-for="${med.localId}"
-            ${group === value ? "checked" : ""}
-          />
-          <span>
-            <i class="compound-ico compound-ico-${icon}" aria-hidden="true"></i>
-            ${t(key)}
-          </span>
-        </label>`;
-      }).join("")}
-      ${
-        group
-          ? `<button type="button" class="pending-compound-clear" data-compound-clear="${med.localId}">${t(
-              "compoundClear"
-            )}</button>`
-          : ""
-      }
-    </div>
-  </div>`;
 }
 
 function renderPendingMeds() {
   const list = document.getElementById("pending-med-list");
   const countEl = document.getElementById("pending-meds-count");
   const hintEl = document.getElementById("pending-compound-hint");
-  if (!list || !countEl) return;
+  if (!list || !countEl || !medicationsRenderer) return;
+
+  const built = medicationsRenderer.buildPendingMedsListHtml(pendingMeds);
 
   if (!pendingMeds.length) {
-    list.innerHTML = "";
-    countEl.textContent = t("pendingMedsEmpty");
-    countEl.setAttribute("data-i18n", "pendingMedsEmpty");
+    list.innerHTML = built.listHtml;
+    countEl.textContent = built.countText;
+    countEl.setAttribute("data-i18n", built.countI18nKey);
     countEl.removeAttribute("data-i18n-vars");
     if (hintEl) hintEl.hidden = true;
     return;
@@ -5135,35 +4982,14 @@ function renderPendingMeds() {
 
   countEl.removeAttribute("data-i18n");
   countEl.removeAttribute("data-i18n-vars");
-  countEl.textContent = t("pendingMedsCount", { n: pendingMeds.length });
+  countEl.textContent = built.countText;
 
-  const showCompoundHint =
-    pendingMeds.length >= 2 || pendingMeds.some((med) => pendingMedHasCompoundTag(med));
   if (hintEl) {
-    hintEl.hidden = !showCompoundHint;
-    if (showCompoundHint) hintEl.textContent = t("compoundHint");
+    hintEl.hidden = !built.showCompoundHint;
+    if (built.showCompoundHint) hintEl.textContent = t("compoundHint");
   }
 
-  list.innerHTML = pendingMeds
-    .map((med) => {
-      const dosePending = !med.dose || med.dose === t("medDetailsPending");
-      return `
-      <li class="pending-med-item" data-pending-id="${med.localId}">
-        <div class="pending-med-main">
-          <div>
-            <strong>${med.name}</strong>
-            <small class="${dosePending ? "is-pending" : ""}">${med.dose}</small>
-          </div>
-          <button
-            class="pending-med-remove"
-            type="button"
-            data-remove-pending="${med.localId}"
-          >${t("pendingMedRemove")}</button>
-        </div>
-        ${renderPendingCompoundOptions(med)}
-      </li>`;
-    })
-    .join("");
+  list.innerHTML = built.listHtml;
 }
 
 function pushPendingMed(draft) {
@@ -5513,19 +5339,13 @@ async function readAndCompressImage(file, maxEdge = PROOF_PHOTO_MAX_EDGE) {
 }
 
 function renderProofPreview(container, dataUrl, clearKey = "") {
-  if (!container) return;
-  if (!dataUrl) {
-    container.hidden = true;
-    container.innerHTML = "";
-    return;
-  }
-  container.hidden = false;
-  const clearBtn = clearKey
-    ? `<button type="button" class="proof-clear-btn" data-proof-clear="${clearKey}">${t(
-        "proofPhotoClear"
-      )}</button>`
-    : "";
-  container.innerHTML = `<img src="${dataUrl}" alt="" />${clearBtn}`;
+  if (!container || !proofPreviewShell) return;
+  const built = proofPreviewShell.buildProofPreviewHtml(dataUrl, {
+    label: (key, params) => t(key, params),
+    clearKey,
+  });
+  container.hidden = built.hidden;
+  container.innerHTML = built.html;
 }
 
 function openVisitProof(visitIndex) {
@@ -5640,19 +5460,9 @@ function renderImagingSlotPreviews(slot) {
   const root = document.getElementById(
     slot === "us" ? "imaging-us-previews" : "imaging-xray-previews"
   );
-  if (!root) return;
+  if (!root || !imagingRenderer) return;
   const photos = slot === "us" ? pendingUsPhotos : pendingXrayPhotos;
-  root.innerHTML = photos
-    .map(
-      (url, index) => `
-      <figure class="lab-photo-fig">
-        <img src="${url}" alt="" />
-        <button type="button" class="proof-clear-btn" data-imaging-photo-remove="${slot}:${index}">
-          ${t("proofPhotoClear")}
-        </button>
-      </figure>`
-    )
-    .join("");
+  root.innerHTML = imagingRenderer.buildSlotPreviewsHtml(photos, slot);
 }
 
 function syncImagingProofSubmitEnabled() {

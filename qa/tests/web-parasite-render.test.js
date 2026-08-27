@@ -30,6 +30,8 @@ function loadParasiteRenderer() {
   const renderer = context.PetLiveWeb.domains.parasite.createRenderer({
     label: stubLabel,
     parasiteStatusLabel: stubStatusLabel,
+    productChipLabel: (item) => item.key,
+    isDualProduct: (key) => key === "dual",
   });
 
   return { renderer };
@@ -78,6 +80,22 @@ describe("PA-05 parasite render builders", () => {
     });
     assert.equal(row.rowClass, "is-approaching");
     assert.equal(row.statusText, "status:approaching");
+  });
+
+  it("buildProductChipsHtml splits dual row", () => {
+    const { renderer } = loadParasiteRenderer();
+    const html = renderer.buildProductChipsHtml({
+      kind: "external",
+      selectedKey: "a",
+      products: [
+        { key: "a", intervalDays: 30 },
+        { key: "dual", intervalDays: 30 },
+      ],
+    });
+    assert.match(html, /parasite-chip-row/);
+    assert.match(html, /data-parasite-product="a"/);
+    assert.match(html, /is-on/);
+    assert.match(html, /data-parasite-product="dual"/);
   });
 
   it("buildEmptyStripRowPresentation external vs vaccine meta keys", () => {

@@ -72,10 +72,25 @@
       };
     }
 
+    function buildSlotPreviewsHtml(urls, slot) {
+      return (urls || [])
+        .map(
+          (url, index) => `
+      <figure class="lab-photo-fig">
+        <img src="${url}" alt="" />
+        <button type="button" class="proof-clear-btn" data-imaging-photo-remove="${slot}:${index}">
+          ${label("proofPhotoClear")}
+        </button>
+      </figure>`
+        )
+        .join("");
+    }
+
     return {
       buildEmptyListHtml,
       buildImagingListHtml,
       buildEmergencyNavPresentation,
+      buildSlotPreviewsHtml,
     };
   }
 

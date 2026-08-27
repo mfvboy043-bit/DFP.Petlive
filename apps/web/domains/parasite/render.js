@@ -6,13 +6,38 @@
   root.domains.parasite = root.domains.parasite || {};
 
   function createRenderer(deps = {}) {
-    const { label, parasiteStatusLabel } = deps;
+    const { label, parasiteStatusLabel, productChipLabel, isDualProduct } = deps;
 
     if (typeof label !== "function") {
       throw new TypeError("createRenderer requires label(key, params?)");
     }
     if (typeof parasiteStatusLabel !== "function") {
       throw new TypeError("createRenderer requires parasiteStatusLabel(status)");
+    }
+    if (typeof productChipLabel !== "function") {
+      throw new TypeError("createRenderer requires productChipLabel(item)");
+    }
+    if (typeof isDualProduct !== "function") {
+      throw new TypeError("createRenderer requires isDualProduct(productKey)");
+    }
+
+    function buildProductChipHtml(kind, item, selectedKey) {
+      return `<button type="button" class="chip${
+        selectedKey === item.key ? " is-on" : ""
+      }" data-parasite-product="${item.key}" data-interval="${item.intervalDays}">${productChipLabel(
+        item
+      )}</button>`;
+    }
+
+    function buildProductChipsHtml({ kind, products, selectedKey }) {
+      const list = Array.isArray(products) ? products : [];
+      const exclusive = list.filter((item) => !isDualProduct(item.key));
+      const dual = list.filter((item) => isDualProduct(item.key));
+      return `<div class="parasite-chip-row">${exclusive
+        .map((item) => buildProductChipHtml(kind, item, selectedKey))
+        .join("")}</div><div class="parasite-chip-row">${dual
+        .map((item) => buildProductChipHtml(kind, item, selectedKey))
+        .join("")}</div>`;
     }
 
     function buildKindStripPresentation({ record, status, productLabel }) {
@@ -49,6 +74,7 @@
     }
 
     return {
+      buildProductChipsHtml,
       buildKindStripPresentation,
       buildEmptyStripRowPresentation,
     };

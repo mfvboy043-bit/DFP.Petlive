@@ -1,0 +1,40 @@
+id: 20260827-form-ui-render
+title: Form UI render — extract填表畫面 HTML from app.js
+version: 2
+status: proposed
+
+gate_a:
+  status: pending
+
+gate_b:
+  status: pending
+
+iteration: 0
+max_iterations: 3
+
+candidate:
+  branch: proposal/form-ui-render
+  path: proposals/20260827-form-ui-render
+  worktree: ""
+
+reviews:
+  pharmacist: pending
+  qa: pending
+  ui: pending
+
+rerun: []
+blocking_issues: []
+non_blocking: []
+builder_scope:
+  - domains/breed/render.js
+  - domains/medications/render.js
+  - domains/labs/render.js
+  - domains/imaging/render.js
+  - domains/parasite/render.js
+  - shell/proof-preview.js
+  - apps/web/c/app.js
+  - apps/web/c/index.html
+  - qa/tests/web-breed-render.test.js
+  - qa/tests/web-medications-render.test.js
+  - qa/tests/web-shell-proof-preview.test.js
+halt_reason: ""

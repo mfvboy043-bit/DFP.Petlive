@@ -73,6 +73,16 @@ describe("LB-05 labs render builders", () => {
     assert.match(latest.subText, /eLabSubLatest/);
   });
 
+  it("buildPhotoPreviewsHtml and buildClinicResultsHtml", () => {
+    const { renderer } = loadLabsRenderer();
+    const previews = renderer.buildPhotoPreviewsHtml(["data:image/png,x"]);
+    assert.match(previews, /data-lab-photo-remove="0"/);
+    const clinic = renderer.buildClinicResultsHtml([
+      { id: "c1", name: "Lab", note: "n", anonymous: false },
+    ]);
+    assert.match(clinic.html, /data-lab-clinic-id="c1"/);
+  });
+
   it("render.js has no document, innerHTML, localStorage, or literal t(", () => {
     const src = readFileSync(new URL("domains/labs/render.js", WEB_ROOT), "utf8");
     assert.equal(/\bdocument\b/.test(src), false);

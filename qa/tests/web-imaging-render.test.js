@@ -70,6 +70,12 @@ describe("IM-05 imaging render builders", () => {
     assert.match(latest.subText, /eXraySubLatest/);
   });
 
+  it("buildSlotPreviewsHtml encodes slot in remove attr", () => {
+    const { renderer } = loadImagingRenderer();
+    const html = renderer.buildSlotPreviewsHtml(["data:image/png,x"], "us");
+    assert.match(html, /data-imaging-photo-remove="us:0"/);
+  });
+
   it("render.js has no document, innerHTML, localStorage, or literal t(", () => {
     const src = readFileSync(
       new URL("domains/imaging/render.js", WEB_ROOT),

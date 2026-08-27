@@ -83,10 +83,48 @@
       };
     }
 
+    function buildPhotoPreviewsHtml(urls) {
+      return (urls || [])
+        .map(
+          (url, index) => `
+      <figure class="lab-photo-fig">
+        <img src="${url}" alt="" />
+        <button type="button" class="proof-clear-btn" data-lab-photo-remove="${index}">
+          ${label("proofPhotoClear")}
+        </button>
+      </figure>`
+        )
+        .join("");
+    }
+
+    function buildClinicResultsHtml(list) {
+      if (!list.length) return { hidden: true, html: "" };
+      return {
+        hidden: false,
+        html: list
+          .map(
+            (clinic) => `
+      <li>
+        <button
+          type="button"
+          data-lab-clinic-id="${clinic.id}"
+          class="${clinic.anonymous ? "is-anonymous" : ""}"
+        >
+          <strong>${clinic.name}</strong>
+          <small>${clinic.note}</small>
+        </button>
+      </li>`
+          )
+          .join(""),
+      };
+    }
+
     return {
       buildEmptyListHtml,
       buildLabListHtml,
       buildEmergencyNavPresentation,
+      buildPhotoPreviewsHtml,
+      buildClinicResultsHtml,
     };
   }
 
