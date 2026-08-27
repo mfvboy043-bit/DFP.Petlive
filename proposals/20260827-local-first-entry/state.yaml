@@ -12,7 +12,7 @@ gate_a:
 gate_b:
   status: adopted
   # pending | adopted | rejected
-  note: "Victor 採用 2026-08-27（若正確則採用）— surgical land on main: A Google door + go() lock + hide gear; C gear/dead enter cleanup"
+  note: "Victor 採用 2026-08-27 — code on main @ 0f9488c; docs marked adopted"
 
 iteration: 2
 max_iterations: 3
