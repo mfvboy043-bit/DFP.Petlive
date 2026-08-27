@@ -19,12 +19,12 @@
 
 ## Files to adopt
 
-- `apps/web/domains/labs/*` (if not already on main)
-- `apps/web/c/app.js`, `apps/web/c/index.html`
-- `qa/tests/web-labs.test.js`
-- `proposals/20260827-labs-controller/*`
+- [x] `apps/web/domains/labs/*`
+- [x] `apps/web/c/app.js`, `apps/web/c/index.html`
+- [x] `qa/tests/web-labs.test.js`
+- [x] `proposals/20260827-labs-controller/*`
 
 ## Exclude
 
 - Owner / storage / imaging WIP
-- Re-cover B unless Victor asks
+- Re-cover B (already present on main)
