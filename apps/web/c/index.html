@@ -75,7 +75,7 @@
               <span class="account-chip-name"></span>
             </button>
           </div>
-          <!-- Replaced by account chip after Google sign-in; kept for unsigned fallback -->
+          <!-- Discarded gear; owner settings via signed-in account popover only -->
           <button
             class="settings-btn"
             type="button"
@@ -1748,6 +1748,6 @@
   <script defer src="../domains/cloud/controller.js?v=20260827-cl-adopt"></script>
   <!-- IDB opt-in (C only): data-petlive-storage-backend="idb"|"auto" on <html> and
        storage-boot.js before app.js. Default local = no change; markBootComplete at app end. -->
-  <script defer src="./app.js?v=20260827-ow-st-adopt"></script>
+  <script defer src="./app.js?v=20260827-google-gate"></script>
 </body>
 </html>

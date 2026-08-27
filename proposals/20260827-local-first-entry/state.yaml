@@ -1,0 +1,37 @@
+id: "20260827-local-first-entry"
+title: "Google gate restored — A login enters B; no unsigned B"
+version: 2
+status: candidate_ready
+# proposed | building | reviewing | revising | candidate_ready | halted | adopted | rejected
+
+gate_a:
+  status: modified
+  # pending | approved | modified | rejected
+  note: "Victor 確認 local-first 2026-08-27；Gate B 修改 2026-08-27 → 恢復 Google 大門"
+
+gate_b:
+  status: pending
+  # pending | adopted | rejected
+
+iteration: 2
+max_iterations: 3
+
+candidate:
+  branch: "proposal/local-first-entry"
+  path: "proposals/20260827-local-first-entry"
+  worktree: ".worktrees/local-first-entry"
+
+reviews:
+  pharmacist: skipped
+  qa: conditional
+  ui: pass
+  # pending | skipped | pass | conditional | reject
+
+rerun: []
+blocking_issues: []
+non_blocking:
+  - QA-001
+  - UI-002
+  - UI-003
+builder_scope: []
+halt_reason: ""

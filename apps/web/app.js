@@ -4956,7 +4956,27 @@ const shellNavigation = PetLiveWeb.shell.createNavigation({
   },
 });
 
+function isDebugAppHatch() {
+  try {
+    const params = new URLSearchParams(window.location.search || "");
+    return params.get("app") === "1" || params.get("screen") === "home";
+  } catch {
+    return false;
+  }
+}
+
 function go(screen, options = {}) {
+  // Google gate: unsigned users stay on A (intro), except demo / debug hatch.
+  if (
+    !DEMO_MODE &&
+    !isDebugAppHatch() &&
+    screen !== "intro" &&
+    !liveGoogleSignedIn()
+  ) {
+    if (shellNavigation.getActiveScreen?.() === "intro") return false;
+    screen = "intro";
+    options = { ...options, replace: true };
+  }
   const needsPet = [
     "emergency",
     "add-visit",
@@ -7867,7 +7887,8 @@ function paintAccountMenu(session) {
   const planValue = document.getElementById("account-popover-plan-value");
 
   const signedIn = Boolean(session?.signedIn);
-  if (ownerBtn) ownerBtn.hidden = signedIn;
+  // Discarded gear — always hidden; owner settings via account popover only.
+  if (ownerBtn) ownerBtn.hidden = true;
   if (homeMenu) homeMenu.hidden = !signedIn;
   document.querySelectorAll(".screen-head-actions .account-menu").forEach((el) => {
     el.hidden = !signedIn;
@@ -7887,10 +7908,16 @@ function paintAccountMenu(session) {
   const initial = initialSource.charAt(0).toUpperCase() || "?";
 
   chips.forEach((chip) => {
+    chip.setAttribute("aria-haspopup", "true");
+    chip.setAttribute("aria-controls", "account-popover");
+    chip.setAttribute("data-i18n-aria", "accountChipAria");
     const chipAvatar = chip.querySelector(".account-chip-avatar");
     const chipFallback = chip.querySelector(".account-chip-fallback");
     const chipName = chip.querySelector(".account-chip-name");
-    if (chipName) chipName.textContent = displayName;
+    if (chipName) {
+      chipName.removeAttribute("data-i18n");
+      chipName.textContent = displayName;
+    }
     chip.setAttribute("aria-label", t("accountChipAria"));
     chip.title = displayName;
     setAccountAvatar(chipAvatar, chipFallback, picture, initial);
@@ -8156,9 +8183,9 @@ function initIntroAndCloud() {
     setIntroStatus("");
     paintCloudChrome();
     showToast(t("logout"));
+    // Google gate: unsigned users must not stay on B.
     const introEl = app.querySelector('[data-screen="intro"]');
     if (introEl) go("intro", { replace: true });
-    else go("home", { replace: true });
   }
 
   function openOwnerSettingsFromAccount() {
@@ -8262,8 +8289,8 @@ function initIntroAndCloud() {
   paintCloudChrome();
 
   // Boot: A (intro) by default → Google login enters B.
-  // Already signed in → B. Escape hatch: ?app=1 skips A for local debug.
-  // ?demo=1 → B in read-only demo mode (no cloud pull).
+  // Already signed in → B. Escape hatch: ?app=1 / screen=home / ?demo=1.
+  // Do NOT skip A for INTRO_SEEN or hasRealLocalData alone.
   try {
     const params = new URLSearchParams(window.location.search || "");
     const forceApp =

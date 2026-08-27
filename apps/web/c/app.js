@@ -7619,7 +7619,8 @@ function paintAccountMenu(session) {
   const planValue = document.getElementById("account-popover-plan-value");
 
   const signedIn = Boolean(session?.signedIn);
-  if (ownerBtn) ownerBtn.hidden = signedIn;
+  // Discarded gear — always hidden; owner settings via account popover only.
+  if (ownerBtn) ownerBtn.hidden = true;
   if (homeMenu) homeMenu.hidden = !signedIn;
   document.querySelectorAll(".screen-head-actions .account-menu").forEach((el) => {
     el.hidden = !signedIn;
@@ -7871,7 +7872,6 @@ function enterAppFromIntro() {
 
 function initIntroAndCloud() {
   const loginBtn = document.getElementById("intro-login-btn");
-  const enterAppBtn = document.getElementById("intro-enter-app-btn");
   const logoutBtn = document.getElementById("intro-logout-btn");
   const accountPopover = document.getElementById("account-popover");
   const accountPopoverSettings = document.getElementById(
@@ -7929,9 +7929,6 @@ function initIntroAndCloud() {
   }
 
   loginBtn?.addEventListener("click", startWithGoogleOrEnter);
-  enterAppBtn?.addEventListener("click", () => {
-    enterAppFromIntro();
-  });
   logoutBtn?.addEventListener("click", doSignOut);
 
   document.addEventListener("click", (event) => {
