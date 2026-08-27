@@ -50,4 +50,4 @@
 - [x] Victor said 採用 (2026-08-27)
 - [x] Land CL files on main carefully (surgical if histories diverge)
 - [x] Set proposal `status: adopted`
-- [ ] Ask separately for C → B cover (swap B inline → domain; keep GIS)
+- [x] C → B cover (2026-08-27): B facades → `domains/cloud`; keep `auth/google-drive.js` + formal `petlive-sync-meta` / DEMO_MODE / reconcile shell

@@ -12,7 +12,7 @@ gate_a:
 gate_b:
   status: adopted
   # pending | adopted | rejected
-  note: "Victor 採用 2026-08-27 — surgical land on main (domains/cloud + C wire; B/auth untouched)"
+  note: "Victor 採用 2026-08-27 — surgical land on main (domains/cloud + C wire); C→B cover 2026-08-27 (B facades + GIS kept)"
 
 iteration: 2
 max_iterations: 3

@@ -724,6 +724,42 @@ function hasStoredPetsGraph() {
   }
 }
 
+function hasStoredSyncMeta() {
+  try {
+    return localStorage.getItem(SYNC_META_KEY) != null;
+  } catch {
+    return false;
+  }
+}
+
+const syncMetaSlot = PetLiveWeb.storage.createJsonSlot({
+  key: SYNC_META_KEY,
+  fallback: () => ({
+    localRevision: 0,
+    lastSyncedRevision: 0,
+    lastCloudUpdatedAt: null,
+  }),
+  validate: (value) =>
+    Boolean(value && typeof value === "object" && !Array.isArray(value)),
+});
+
+const cloudSelectors = PetLiveWeb.domains.cloud.createSelectors({
+  getSeedPetIds: () => SEED_PETS.map((pet) => pet.id),
+  hasStoredPetsGraph,
+  readPetsGraphSnapshot: () => petsGraphSlot.read(),
+  readSyncMeta: () => syncMetaSlot.read(),
+});
+
+let cloudController = null;
+
+function isSeedOnlyPets(petList) {
+  return cloudSelectors.isSeedOnlyPets(petList);
+}
+
+function isSeedOnlyCloudPayload(payload) {
+  return cloudSelectors.isSeedOnlyCloudPayload(payload);
+}
+
 function hydratePetsGraphFromStorage() {
   if (DEMO_MODE) {
     pets.length = 0;
@@ -787,7 +823,15 @@ function schedulePetsGraphPersist() {
     archivedPets,
     currentPetId: id || null,
   });
-  bumpLocalDataRevision();
+  if (
+    typeof cloudController !== "undefined" &&
+    cloudController &&
+    typeof cloudController.bumpLocalDataRevision === "function"
+  ) {
+    cloudController.bumpLocalDataRevision();
+  } else if (typeof scheduleCloudBackup === "function") {
+    scheduleCloudBackup();
+  }
 }
 
 hydratePetsGraphFromStorage();
@@ -7768,58 +7812,119 @@ let cloudReconcilePhase = "";
 let cloudSyncConflict = false;
 let cloudReconcileTimeout = null;
 
-function isSeedOnlyPets(petList) {
-  if (!petList?.length) return true;
-  if (petList.length !== SEED_PETS.length) return false;
-  for (let i = 0; i < SEED_PETS.length; i += 1) {
-    if (petList[i]?.id !== SEED_PETS[i]?.id) return false;
-  }
-  return true;
+cloudController = PetLiveWeb.domains.cloud.createController({
+  selectors: cloudSelectors,
+  getPets: () => pets,
+  getArchivedPets: () => archivedPets,
+  getCurrentPetId: () => appState.getCurrentPetId(),
+  setCurrentPetId: (id) => {
+    currentPetId = id;
+    appState.setCurrentPetId(id);
+  },
+  petsGraphSlot,
+  ownerProfileSlot,
+  ownerAlertsSlot,
+  suppressedAlertsSlot,
+  petPhotosSlot,
+  labReportsSlot,
+  syncMetaSlot,
+  isDemoMode: () => DEMO_MODE,
+  getSuppressSyncMetaBump: () => suppressSyncMetaBump,
+  setSuppressSyncMetaBump: (value) => {
+    suppressSyncMetaBump = Boolean(value);
+  },
+  hasStoredSyncMeta,
+  hasStoredPetsGraph,
+  readPetsGraphSnapshot: () => petsGraphSlot.read(),
+  onAfterApply: () => {
+    hydratePetPhotos();
+    applySelectedPet();
+  },
+  scheduleCloudBackup: () => {
+    if (typeof scheduleCloudBackup === "function") scheduleCloudBackup();
+  },
+});
+
+function stripHeavyMedia(value) {
+  return cloudController.stripHeavyMedia(value);
 }
 
-function isSeedOnlyCloudPayload(payload) {
-  return isSeedOnlyPets(payload?.pets);
+function buildCloudPayload() {
+  return cloudController.buildCloudPayload();
+}
+
+function applyCloudPayload(payload) {
+  return cloudController.applyCloudPayload(payload);
+}
+
+function bumpLocalDataRevision() {
+  if (!cloudController) return;
+  return cloudController.bumpLocalDataRevision();
+}
+
+function markCloudSynced(cloudUpdatedAt) {
+  return cloudController.markCloudSynced(cloudUpdatedAt);
+}
+
+function clearSeedPetsFromMemory() {
+  return cloudController.clearSeedPetsFromMemory();
 }
 
 function isFreshDevice() {
-  if (hasStoredPetsGraph()) return false;
-  const meta = readSyncMeta();
-  return meta.localRevision === 0 && meta.lastSyncedRevision === 0;
+  return cloudSelectors.isFreshDevice({
+    meta: cloudController.readSyncMeta(),
+    hasStoredGraph: hasStoredPetsGraph(),
+  });
 }
 
 function hasRealLocalData() {
-  const meta = readSyncMeta();
-  if (meta.localRevision > 0) return true;
-  if (hasStoredPetsGraph()) {
-    try {
-      const graph = JSON.parse(localStorage.getItem(PETS_GRAPH_KEY) || "{}");
-      if (graph?.pets?.length && !isSeedOnlyPets(graph.pets)) return true;
-    } catch {
-      /* ignore */
-    }
-  }
-  if (pets.length && !isSeedOnlyPets(pets)) return true;
-  return false;
+  return cloudSelectors.hasRealLocalData({
+    meta: cloudController.readSyncMeta(),
+    memoryPets: pets,
+  });
 }
 
 function localCloudGraphFingerprint(petList) {
-  const first = petList?.[0];
-  return `${petList?.length || 0}:${first?.id || ""}`;
+  return cloudSelectors.localCloudGraphFingerprint(petList);
 }
 
 function cloudPayloadGraphFingerprint(payload) {
-  const petList = payload?.pets || [];
-  const first = petList[0];
-  return `${petList.length}:${first?.id || ""}`;
+  return cloudSelectors.cloudPayloadGraphFingerprint(payload);
 }
 
 function hasCloudGraphConflict(payload) {
-  if (!payload?.pets?.length) return false;
-  if (isFreshDevice() || isSeedOnlyPets(pets)) return false;
-  if (!hasRealLocalData()) return false;
-  return (
-    localCloudGraphFingerprint(pets) !== cloudPayloadGraphFingerprint(payload)
-  );
+  return cloudSelectors.hasCloudGraphConflict({
+    localPets: pets,
+    payload,
+    meta: cloudController.readSyncMeta(),
+    hasStoredGraph: hasStoredPetsGraph(),
+    memoryPets: pets,
+  });
+}
+
+function isLocalDirty() {
+  return cloudSelectors.isLocalDirty(cloudController.readSyncMeta());
+}
+
+function readSyncMeta() {
+  return cloudController.readSyncMeta();
+}
+
+function writeSyncMeta(meta) {
+  return cloudController.writeSyncMeta(meta);
+}
+
+function accountSyncStatusText() {
+  const key = cloudSelectors.accountSyncStatusKey({
+    signedIn: liveGoogleSignedIn(),
+    reconcileState: cloudReconcileState,
+    reconcilePhase: cloudReconcilePhase,
+    conflict: cloudSyncConflict,
+    meta: cloudController.readSyncMeta(),
+    lastBackupAt: lastCloudBackupAt,
+    hasRealLocal: hasRealLocalData(),
+  });
+  return t(key);
 }
 
 function isCloudReconcileBusy() {
@@ -7863,108 +7968,6 @@ function paintReconcileUi() {
   } else if (cloudReconcileState === "error") {
     bar.textContent = t("accountSyncError");
   }
-}
-
-function clearSeedPetsFromMemory() {
-  if (!pets.length) return;
-  if (!isSeedOnlyPets(pets)) return;
-  pets.length = 0;
-  archivedPets.length = 0;
-  currentPetId = null;
-  appState.setCurrentPetId(null);
-  try {
-    petsGraphSlot.write({
-      version: 1,
-      pets: [],
-      archivedPets: [],
-      currentPetId: null,
-    });
-  } catch {
-    /* ignore */
-  }
-  applySelectedPet();
-}
-
-function emptySyncMeta() {
-  return { localRevision: 0, lastSyncedRevision: 0, lastCloudUpdatedAt: null };
-}
-
-function readSyncMeta() {
-  try {
-    const raw = localStorage.getItem(SYNC_META_KEY);
-    if (!raw) {
-      try {
-        const graphRaw = localStorage.getItem(PETS_GRAPH_KEY);
-        if (graphRaw) {
-          const graph = JSON.parse(graphRaw);
-          if (graph?.pets?.length) {
-            return {
-              localRevision: 1,
-              lastSyncedRevision: 0,
-              lastCloudUpdatedAt: null,
-            };
-          }
-        }
-      } catch {
-        /* ignore */
-      }
-      return emptySyncMeta();
-    }
-    const parsed = JSON.parse(raw);
-    return {
-      localRevision: Number(parsed.localRevision) || 0,
-      lastSyncedRevision: Number(parsed.lastSyncedRevision) || 0,
-      lastCloudUpdatedAt: parsed.lastCloudUpdatedAt || null,
-    };
-  } catch {
-    return emptySyncMeta();
-  }
-}
-
-function writeSyncMeta(meta) {
-  try {
-    localStorage.setItem(SYNC_META_KEY, JSON.stringify(meta));
-    return true;
-  } catch {
-    return false;
-  }
-}
-
-function isLocalDirty() {
-  const meta = readSyncMeta();
-  return meta.localRevision !== meta.lastSyncedRevision;
-}
-
-function bumpLocalDataRevision() {
-  if (DEMO_MODE || suppressSyncMetaBump) return;
-  const meta = readSyncMeta();
-  meta.localRevision += 1;
-  writeSyncMeta(meta);
-  if (typeof scheduleCloudBackup === "function") scheduleCloudBackup();
-}
-
-function markCloudSynced(cloudUpdatedAt) {
-  const meta = readSyncMeta();
-  meta.lastSyncedRevision = meta.localRevision;
-  if (cloudUpdatedAt) meta.lastCloudUpdatedAt = cloudUpdatedAt;
-  writeSyncMeta(meta);
-}
-
-function accountSyncStatusText() {
-  if (!liveGoogleSignedIn()) return t("accountPlanLocal");
-  if (cloudReconcileState === "running") {
-    return cloudReconcilePhase === "restoring"
-      ? t("accountSyncRestoring")
-      : t("accountSyncChecking");
-  }
-  if (cloudReconcileState === "error") return t("accountSyncError");
-  if (cloudSyncConflict) return t("accountSyncConflict");
-  if (isLocalDirty()) return t("accountSyncDirty");
-  if (readSyncMeta().lastCloudUpdatedAt || lastCloudBackupAt) {
-    return t("accountSyncOk");
-  }
-  if (!hasRealLocalData()) return t("accountSyncFirstBackup");
-  return t("accountSyncPending");
 }
 
 async function reconcileCloudOnBoot({ silent, skipAutoPull } = {}) {
@@ -8025,11 +8028,13 @@ async function reconcileCloudOnBoot({ silent, skipAutoPull } = {}) {
       paintCloudChrome();
       suppressSyncMetaBump = true;
       try {
-        applyCloudPayload(payload);
-        markCloudSynced(cloudAt);
-        lastCloudBackupAt = Date.now();
-        didPull = true;
-        if (!silent) showToast(t("cloudRestoreOk"));
+        const applied = applyCloudPayload(payload);
+        if (applied) {
+          markCloudSynced(cloudAt);
+          lastCloudBackupAt = Date.now();
+          didPull = true;
+          if (!silent) showToast(t("cloudRestoreOk"));
+        }
       } finally {
         suppressSyncMetaBump = false;
       }
@@ -8048,77 +8053,6 @@ async function reconcileCloudOnBoot({ silent, skipAutoPull } = {}) {
     }
     paintCloudChrome();
   }
-}
-
-function stripHeavyMedia(value) {
-  if (Array.isArray(value)) return value.map(stripHeavyMedia);
-  if (!value || typeof value !== "object") return value;
-  const out = {};
-  for (const [key, val] of Object.entries(value)) {
-    if (
-      key === "bagPhoto" ||
-      key === "rxPhoto" ||
-      key === "drugPhoto" ||
-      key === "xrayPhotos" ||
-      key === "usPhotos" ||
-      key === "imaging" ||
-      key === "attachmentUrl"
-    ) {
-      continue;
-    }
-    if (typeof val === "string" && val.startsWith("data:image") && val.length > 8000) {
-      continue;
-    }
-    out[key] = stripHeavyMedia(val);
-  }
-  return out;
-}
-
-function buildCloudPayload() {
-  return {
-    version: 1,
-    updatedAt: new Date().toISOString(),
-    pets: stripHeavyMedia(pets),
-    archivedPets: stripHeavyMedia(archivedPets),
-    currentPetId: appState.getCurrentPetId(),
-    ownerProfile: ownerProfileSlot.read(),
-    petAlerts: ownerAlertsSlot.read(),
-    suppressedAlerts: suppressedAlertsSlot.read(),
-    petPhotos: petPhotosSlot.read(),
-    labReports: stripHeavyMedia(labReportsSlot.read()),
-  };
-}
-
-function applyCloudPayload(payload) {
-  if (DEMO_MODE) return false;
-  if (!payload || !Array.isArray(payload.pets)) return false;
-  if (isSeedOnlyCloudPayload(payload)) return false;
-  pets.length = 0;
-  archivedPets.length = 0;
-  for (const pet of payload.pets) pets.push(pet);
-  for (const pet of payload.archivedPets || []) archivedPets.push(pet);
-  if (payload.ownerProfile) ownerProfileSlot.write(payload.ownerProfile);
-  if (payload.petAlerts) ownerAlertsSlot.write(payload.petAlerts);
-  if (payload.suppressedAlerts) suppressedAlertsSlot.write(payload.suppressedAlerts);
-  if (payload.petPhotos) petPhotosSlot.write(payload.petPhotos);
-  if (payload.labReports) labReportsSlot.write(payload.labReports);
-  const nextId =
-    payload.currentPetId && pets.some((p) => p.id === payload.currentPetId)
-      ? payload.currentPetId
-      : pets[0]?.id || null;
-  if (nextId) {
-    currentPetId = nextId;
-    appState.setCurrentPetId(nextId);
-  }
-  petsGraphSlot.write({
-    version: 1,
-    pets,
-    archivedPets,
-    currentPetId: nextId,
-  });
-  hydratePetPhotos();
-  applySelectedPet();
-  return true;
 }
 
 function setIntroStatus(message) {
@@ -8350,11 +8284,16 @@ async function pullCloudBackup({ silent } = {}) {
     const payload = await googleDriveAuth.downloadJson();
     if (!payload) return false;
     suppressSyncMetaBump = true;
+    let applied = false;
     try {
-      applyCloudPayload(payload);
-      markCloudSynced(payload.updatedAt);
+      applied = applyCloudPayload(payload);
+      if (applied) markCloudSynced(payload.updatedAt);
     } finally {
       suppressSyncMetaBump = false;
+    }
+    if (!applied) {
+      paintCloudChrome();
+      return false;
     }
     lastCloudBackupAt = Date.now();
     cloudSyncConflict = false;
