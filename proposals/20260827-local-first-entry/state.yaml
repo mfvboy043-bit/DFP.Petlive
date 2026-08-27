@@ -1,7 +1,7 @@
 id: "20260827-local-first-entry"
 title: "Google gate restored — A login enters B; no unsigned B"
 version: 2
-status: candidate_ready
+status: adopted
 # proposed | building | reviewing | revising | candidate_ready | halted | adopted | rejected
 
 gate_a:
@@ -10,16 +10,18 @@ gate_a:
   note: "Victor 確認 local-first 2026-08-27；Gate B 修改 2026-08-27 → 恢復 Google 大門"
 
 gate_b:
-  status: pending
+  status: adopted
   # pending | adopted | rejected
+  note: "Victor 採用 2026-08-27（若正確則採用）— surgical land on main: A Google door + go() lock + hide gear; C gear/dead enter cleanup"
 
 iteration: 2
 max_iterations: 3
 
 candidate:
-  branch: "proposal/local-first-entry"
+  branch: "cursor/google-gate-adopt-f35c"
   path: "proposals/20260827-local-first-entry"
   worktree: ".worktrees/local-first-entry"
+  note: "Adopted surgically from origin/main; worktree was behind main so not blind-merged"
 
 reviews:
   pharmacist: skipped

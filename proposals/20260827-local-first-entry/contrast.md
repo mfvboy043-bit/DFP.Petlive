@@ -1,24 +1,21 @@
-# Contrast: Google gate restored (iteration 2)
+# Contrast: Google gate restored (iteration 2) — adopted
 
-## Mainline（正式版現況）
+## Mainline before adopt
 
-- A 是 Google 大門：未登入停在介紹頁；登入 → B
-- 登出回 A；本機資料不刪
-- 登入後帳號 chip；齒輪在 signed-out 時曾作為飼主設定入口（Victor 已捨棄）
+- A 開機大門大致已在；未登入停介紹頁
+- 未登入時齒輪仍可能出現（signed-out fallback）
+- A 按鈕文案是「登入」而非「用 Google 登入」
+- `go()` 未鎖未登入導向，理論上可晃進 B
 
-## Iteration 1 candidate（已否決的本機先進）
+## After adopt (this land)
 
-- A 有「進入護照」不經 OAuth
-- 未登入可在 B；登出留在 B；齒輪又出現；頂欄「用 Google 登入」接備份
+- A **只留**「用 Google 登入」→ 進 B
+- 未登入：`go()` 強制回 A；登出回 A；齒輪一律 hidden
+- 示範 `?demo=1` / 除錯 `?app=1` / `screen=home` 仍可進 B
+- C：去掉死的「進入護照」listener；齒輪 hidden；C 仍無 A 大門（討論面）
 
-## Iteration 2 candidate（Gate B 修改後）
+## Files touched
 
-- A **只留**「用 Google 登入」→ 進 B；**無**「進入護照」
-- 未登入不能在 B 晃；登出回 A
-- `#owner-settings-btn` 一律 hidden；飼主設定走登入後 popover
-- 無 unsigned connect chip；C 討論預覽維持 signed-in stub
-
-## Files touched (candidate worktree)
-
-- `apps/web/index.html`, `app.js`, `i18n.js`, `styles.css`
-- `apps/web/c/index.html`, `c/app.js`, `c/styles.css`（stub 還原）
+- `apps/web/index.html`, `app.js`, `styles.css`
+- `apps/web/c/index.html`, `c/app.js`
+- `proposals/20260827-local-first-entry/*`

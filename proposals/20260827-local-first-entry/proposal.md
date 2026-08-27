@@ -1,9 +1,9 @@
 ---
 id: 20260827-local-first-entry
 title: Google gate restored — A login enters B; no unsigned B
-status: revising
+status: adopted
 author: planner
-candidate_branch: "proposal/local-first-entry"
+candidate_branch: "cursor/google-gate-adopt-f35c"
 candidate_path: "proposals/20260827-local-first-entry"
 created: 2026-08-27
 updated: 2026-08-27
