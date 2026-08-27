@@ -21,7 +21,7 @@ candidate:
   branch: "proposal/cloud-controller"
   path: "proposals/20260827-cloud-controller"
   worktree: ""
-  note: "Adopted surgically onto main from bf25753 (not blind-merge); C only + domains/cloud"
+  note: "Adopted surgically onto main from bf25753; C only + domains/cloud; C→B cover 2026-08-27 (Victor 覆蓋)"
 
 reviews:
   pharmacist: skipped
