@@ -1,0 +1,34 @@
+id: "20260827-alerts-view-render"
+title: "Alerts view render — extract HTML builders from app.js"
+version: 2
+status: candidate_ready
+
+gate_a:
+  status: approved
+  note: "Victor 確認 2026-08-27"
+
+gate_b:
+  status: pending
+
+iteration: 1
+max_iterations: 3
+
+candidate:
+  branch: "proposal/alerts-view-render"
+  path: "proposals/20260827-alerts-view-render"
+  worktree: ""
+
+reviews:
+  pharmacist: pass
+  qa: pass
+  ui: skipped
+
+rerun: []
+blocking_issues: []
+non_blocking: []
+builder_scope:
+  - "apps/web/domains/alerts/render.js"
+  - "apps/web/c/app.js"
+  - "apps/web/c/index.html"
+  - "qa/tests/web-alerts-render.test.js"
+halt_reason: ""

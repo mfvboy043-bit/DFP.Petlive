@@ -1328,48 +1328,6 @@ function beginEditAlert(alert) {
   alertDescriptionInput?.focus({ preventScroll: true });
 }
 
-function renderAlertItem(alert) {
-  const severity = alert.severity === "critical" ? "critical" : "caution";
-  const noteText = locField(alert.note);
-  const note = noteText
-    ? `<p class="alert-note">${escapeAlertHtml(noteText)}</p>`
-    : "";
-  const sinceText = chronicSinceLine(alert);
-  const since = sinceText
-    ? `<p class="alert-since">${escapeAlertHtml(sinceText)}</p>`
-    : "";
-  const sourceLabel =
-    alert.source === "owner" ? t("alertSourceOwner") : t("alertSourceLinked");
-  const sourceClass = alert.source === "owner" ? "is-owner" : "is-linked";
-  const severityLabel =
-    severity === "critical" ? t("alertSeverityCritical") : t("alertSeverityCaution");
-  const actions = `<div class="alert-item-actions">
-          <button type="button" class="text-btn" data-alert-edit="${escapeAlertHtml(
-            alert.id
-          )}">${t("editAlert")}</button>
-          <button type="button" class="text-btn alert-delete" data-alert-delete="${escapeAlertHtml(
-            alert.id
-          )}">${t("deleteAlert")}</button>
-        </div>`;
-
-  return `
-    <li class="alert-item severity-${severity}" data-alert-id="${escapeAlertHtml(
-      alert.id
-    )}">
-      <div class="alert-item-top">
-        <p class="alert-type">${escapeAlertHtml(alertTypeLabel(alert.alertType))}</p>
-        <div class="alert-item-meta">
-          <span class="alert-severity-badge is-${severity}">${escapeAlertHtml(severityLabel)}</span>
-          <span class="alert-source ${sourceClass}">${escapeAlertHtml(sourceLabel)}</span>
-        </div>
-      </div>
-      <p class="alert-desc">${escapeAlertHtml(alertLineText(alert))}</p>
-      ${since}
-      ${note}
-      ${actions}
-    </li>`;
-}
-
 function renderAlerts(pet) {
   const alertsTitle = document.getElementById("alerts-title");
   const alertsSub = document.getElementById("alerts-sub");
@@ -1379,44 +1337,15 @@ function renderAlerts(pet) {
   const alerts = getAlertsForPet(pet);
   if (!alertSections) {
     if (!alertList) return;
-    if (!alerts.length) {
-      alertList.innerHTML = `<li class="alert-item"><p class="alert-desc">${t(
-        "noAlertItems"
-      )}</p></li>`;
-      return;
-    }
-    alertList.innerHTML = alerts.map(renderAlertItem).join("");
+    alertList.innerHTML = alertsRenderer.buildFlatListHtml(alerts);
     return;
   }
 
-  alertSections.innerHTML = ALERT_SECTION_DEFS.map((section) => {
-    const items = alerts.filter((alert) => section.types.includes(alert.alertType));
-    const addType = section.types[0];
-    const editing = editingAlertSectionIds.has(section.id);
-    const body = items.length
-      ? `<ul class="alert-list">${items.map(renderAlertItem).join("")}</ul>`
-      : `<p class="alert-section-empty">${t(section.emptyKey)}</p>`;
-    return `
-      <section class="alert-section${editing ? " is-editing" : ""}" data-alert-section="${section.id}">
-        <div class="alert-section-head">
-          <h3>${t(section.titleKey)}</h3>
-          <div class="alert-section-actions">
-            <button
-              type="button"
-              class="text-btn alert-section-edit"
-              data-alert-section-edit="${escapeAlertHtml(section.id)}"
-              aria-pressed="${editing ? "true" : "false"}"
-            >${t(editing ? "alertSectionEditDone" : "alertSectionEdit")}</button>
-            <button
-              type="button"
-              class="text-btn alert-section-add"
-              data-alert-add-type="${escapeAlertHtml(addType)}"
-            >${t("alertAddItem")}</button>
-          </div>
-        </div>
-        ${body}
-      </section>`;
-  }).join("");
+  alertSections.innerHTML = alertsRenderer.buildSectionsHtml({
+    alerts,
+    sections: ALERT_SECTION_DEFS,
+    editingSectionIds: editingAlertSectionIds,
+  });
 }
 
 function saveAlertFromForm() {
@@ -3462,9 +3391,7 @@ renderCoordinator.register(
     if (alertSections) {
       alertSections.innerHTML = `<p class="alert-section-empty">${t("noAlertItems")}</p>`;
     } else if (alertList) {
-      alertList.innerHTML = `<li class="alert-item"><p class="alert-desc">${t(
-        "noAlertItems"
-      )}</p></li>`;
+      alertList.innerHTML = alertsRenderer.buildFlatEmptyListHtml();
     }
   }
 );
@@ -3943,6 +3870,7 @@ let vaccineRenderer;
 let parasiteRenderer;
 let labsRenderer;
 let imagingRenderer;
+let alertsRenderer;
 
 const VACCINE_PROTECTION_META = PetLiveWeb.domains.vaccines.PROTECTION_META;
 
@@ -5184,6 +5112,15 @@ imagingRenderer = PetLiveWeb.domains.imaging.createRenderer({
   escapeHtml: escapeAlertHtml,
   visitClinicLabel,
   formatImagingTypes,
+});
+
+alertsRenderer = PetLiveWeb.domains.alerts.createRenderer({
+  label: (key, params) => t(key, params),
+  escapeHtml: escapeAlertHtml,
+  alertTypeLabel,
+  alertLineText,
+  locField,
+  chronicSinceLine,
 });
 
 function renderTimeline(pet) {
