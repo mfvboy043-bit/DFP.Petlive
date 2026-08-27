@@ -3250,78 +3250,28 @@ function clearNavigationHistory() {
   shellNavigation.clearHistory();
 }
 
-/** Bottom glass dock — sliding thumb + icon jump (covered from C). */
-let glassDockThumbPrimed = false;
+/** Bottom glass dock — shell brain; facade only wires active screen + intro hide. */
+let glassDockApi = null;
 
 function paintGlassDock({ animateJump } = {}) {
-  const dock = document.getElementById("glass-dock");
-  if (!dock) return;
-  const thumb = document.getElementById("glass-dock-thumb");
-  const screen =
-    app.querySelector(".screen.is-active")?.dataset.screen || "home";
-
-  // Intro A is the Google gate — hide dock until inside the passport.
-  const hideDock = screen === "intro";
-  dock.hidden = hideDock;
-  if (hideDock) return;
-
-  const dockKey = (() => {
-    if (screen === "timeline" || screen === "add-visit" || screen === "add-med") {
-      return "timeline";
-    }
-    if (screen === "alerts") return "alerts";
-    if (screen === "imaging" || screen === "imaging-proof") return "imaging";
-    if (screen === "labs" || screen === "lab-add") return "labs";
-    if (screen === "home" || screen === "emergency") return "home";
-    return null;
-  })();
-
-  let activeBtn = null;
-  dock.querySelectorAll(".glass-dock-item").forEach((btn) => {
-    const on = dockKey != null && btn.getAttribute("data-dock") === dockKey;
-    const wasOn = btn.classList.contains("is-active");
-    btn.classList.toggle("is-active", on);
-    if (on) {
-      activeBtn = btn;
-      btn.setAttribute("aria-current", "page");
-      if (animateJump && !wasOn) {
-        btn.classList.remove("is-jumping");
-        void btn.offsetWidth;
-        btn.classList.add("is-jumping");
-        const clearJump = () => btn.classList.remove("is-jumping");
-        btn.addEventListener("animationend", clearJump, { once: true });
-      }
-    } else {
-      btn.removeAttribute("aria-current");
-      btn.classList.remove("is-jumping");
-    }
-  });
-
-  if (thumb && activeBtn) {
-    const left = activeBtn.offsetLeft;
-    const width = activeBtn.offsetWidth;
-    if (!glassDockThumbPrimed) {
-      thumb.style.transition = "none";
-      thumb.style.width = `${width}px`;
-      thumb.style.transform = `translateX(${left}px)`;
-      thumb.classList.add("is-ready");
-      void thumb.offsetWidth;
-      thumb.style.transition = "";
-      glassDockThumbPrimed = true;
-    } else {
-      thumb.style.width = `${width}px`;
-      thumb.style.transform = `translateX(${left}px)`;
-      thumb.classList.add("is-ready");
-    }
-  } else if (thumb) {
-    thumb.classList.remove("is-ready");
+  if (glassDockApi?.paint) {
+    glassDockApi.paint(Boolean(animateJump));
+    return;
   }
+  PetLiveWeb.shell.paintGlassDock?.(document, {
+    getActiveScreen: () =>
+      app.querySelector(".screen.is-active")?.dataset.screen || "home",
+    animateJump: Boolean(animateJump),
+    hideOnScreens: ["intro"],
+  });
 }
 
 function initGlassDock() {
-  paintGlassDock({ animateJump: false });
-  window.addEventListener("resize", () => {
-    paintGlassDock({ animateJump: false });
+  glassDockApi = PetLiveWeb.shell.initGlassDock(document, {
+    win: window,
+    getActiveScreen: () =>
+      app.querySelector(".screen.is-active")?.dataset.screen || "home",
+    hideOnScreens: ["intro"],
   });
 }
 
