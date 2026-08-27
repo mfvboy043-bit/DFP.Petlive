@@ -1,14 +1,15 @@
 id: "20260827-leftover-cleanup-c"
 title: "Leftover cleanup on C — catalogs, seed, crop export, timeline keyed plan"
 version: 2
-status: candidate_ready
+status: adopted
 
 gate_a:
   status: approved
   note: "Victor 2026-08-27 — 請開始整理；全部整理好在網頁C頁面，做完審核再覆蓋B"
 
 gate_b:
-  status: pending
+  status: adopted
+  note: "Victor 2026-08-27 — 採用並覆蓋"
 
 iteration: 1
 max_iterations: 3
