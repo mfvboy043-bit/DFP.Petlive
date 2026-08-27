@@ -299,4 +299,47 @@ describe("TL-05 timeline render builders", () => {
     assert.equal(renderer.planKeyedListReconcile(sigs, shorter).mode, "full");
     assert.equal(renderer.planKeyedListReconcile([], []).mode, "full");
   });
+
+  it("planKeyedListReconcile morph when only clinic/note surface changes", () => {
+    const { renderer } = loadRenderer();
+    const prevVisits = [
+      { date: "2026-08-01", clinic: "A", note: "old", medications: [] },
+      { date: "2026-08-02", clinic: "B", medications: [] },
+    ];
+    const nextVisits = [
+      { date: "2026-08-01", clinic: "A-renamed", note: "new note", medications: [] },
+      { date: "2026-08-02", clinic: "B", medications: [] },
+    ];
+    const petPrev = { id: "p1", visits: prevVisits };
+    const petNext = { id: "p1", visits: nextVisits };
+    const prevSigs = renderer.buildItemSignatures(petPrev, { lang: "zh-Hant" });
+    const nextSigs = renderer.buildItemSignatures(petNext, { lang: "zh-Hant" });
+    const plan = renderer.planKeyedListReconcile(prevSigs, nextSigs, {
+      previousVisits: prevVisits,
+      nextVisits,
+    });
+    assert.equal(plan.mode, "morph");
+    assert.equal(plan.indices.length, 1);
+    assert.equal(plan.indices[0], 0);
+    assert.equal(plan.patches.length, 1);
+    assert.equal(plan.patches[0].clinicText, "A-renamed");
+    assert.equal(plan.patches[0].hasNote, true);
+    assert.match(plan.patches[0].noteText, /new note/);
+
+    // Weight change is structural → partial/full, not morph
+    const weightNext = [
+      { date: "2026-08-01", clinic: "A", note: "old", medications: [], weightAtVisit: 7 },
+      prevVisits[1],
+    ];
+    const weightSigs = renderer.buildItemSignatures(
+      { id: "p1", visits: weightNext },
+      { lang: "zh-Hant" }
+    );
+    const weightPlan = renderer.planKeyedListReconcile(prevSigs, weightSigs, {
+      previousVisits: prevVisits,
+      nextVisits: weightNext,
+      visitDates: weightNext.map((v) => v.date),
+    });
+    assert.notEqual(weightPlan.mode, "morph");
+  });
 });

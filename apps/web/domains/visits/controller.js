@@ -178,8 +178,40 @@
       findVisitByDateClinic,
       saveVisitWeight,
       clearVisitProofSlot,
+      validateClinicGate,
+      validateSymptomGate,
     };
   }
 
+  /** Pure clinic pick gate for visit → med flow. Toast mapping stays in facade. */
+  function validateClinicGate({
+    selectedClinic,
+    clinicName,
+    clinicSearch,
+  } = {}) {
+    const name = String(clinicName || "").trim();
+    const search = String(clinicSearch || "").trim();
+    if (!selectedClinic && !name) {
+      return { ok: false, reason: "pick_clinic" };
+    }
+    if (!selectedClinic && search) {
+      return { ok: false, reason: "pick_clinic_list" };
+    }
+    return { ok: true };
+  }
+
+  function validateSymptomGate(selectedTags) {
+    const size =
+      selectedTags && typeof selectedTags.size === "number"
+        ? selectedTags.size
+        : Array.isArray(selectedTags)
+          ? selectedTags.length
+          : 0;
+    if (!size) return { ok: false, reason: "need_symptom" };
+    return { ok: true };
+  }
+
   root.domains.visits.createController = createController;
+  root.domains.visits.validateClinicGate = validateClinicGate;
+  root.domains.visits.validateSymptomGate = validateSymptomGate;
 })(typeof window !== "undefined" ? window : globalThis);

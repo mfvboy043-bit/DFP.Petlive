@@ -51,6 +51,53 @@
   }
 
   /**
+   * Resize a data-URL image to fit maxEdge (JPEG quality 0.82).
+   * Browser-only (needs Image + canvas). Injectable for tests.
+   * @param {string} dataUrl
+   * @param {number} [maxEdge=480]
+   * @param {{ createImage?: Function, createCanvas?: Function }} [options]
+   * @returns {Promise<string>}
+   */
+  function resizeImageDataUrl(dataUrl, maxEdge = 480, options = {}) {
+    return new Promise((resolve) => {
+      const createImage =
+        options.createImage ||
+        (typeof Image !== "undefined" ? () => new Image() : null);
+      const createCanvas =
+        options.createCanvas ||
+        (typeof document !== "undefined"
+          ? () => document.createElement("canvas")
+          : null);
+      if (!createImage) {
+        resolve(dataUrl);
+        return;
+      }
+      const img = createImage();
+      img.onload = () => {
+        const scale = Math.min(1, maxEdge / Math.max(img.width, img.height));
+        const w = Math.max(1, Math.round(img.width * scale));
+        const h = Math.max(1, Math.round(img.height * scale));
+        if (!createCanvas) {
+          resolve(dataUrl);
+          return;
+        }
+        const canvas = createCanvas();
+        canvas.width = w;
+        canvas.height = h;
+        const ctx = canvas.getContext("2d");
+        if (!ctx || typeof canvas.toDataURL !== "function") {
+          resolve(dataUrl);
+          return;
+        }
+        ctx.drawImage(img, 0, 0, w, h);
+        resolve(canvas.toDataURL("image/jpeg", 0.82));
+      };
+      img.onerror = () => resolve(dataUrl);
+      img.src = dataUrl;
+    });
+  }
+
+  /**
    * Draw cropped JPEG from an image + metrics. Browser-only (needs canvas).
    * @param {CanvasImageSource} image
    * @param {object} metrics from computeCropMetrics / exportCropSourceRect inputs
@@ -150,6 +197,7 @@
       clampCropOffset,
       exportCropSourceRect,
       exportCroppedJpegDataUrl,
+      resizeImageDataUrl,
     };
   }
 
@@ -157,5 +205,6 @@
   root.domains.pets.clampCropOffset = clampCropOffset;
   root.domains.pets.exportCropSourceRect = exportCropSourceRect;
   root.domains.pets.exportCroppedJpegDataUrl = exportCroppedJpegDataUrl;
+  root.domains.pets.resizeImageDataUrl = resizeImageDataUrl;
   root.domains.pets.createMedia = createMedia;
 })(typeof window !== "undefined" ? window : globalThis);

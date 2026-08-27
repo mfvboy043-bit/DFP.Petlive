@@ -543,15 +543,19 @@
       };
     }
 
-    function visitFingerprint(visit, index) {
+    function visitStructuralFingerprint(visit, index) {
       const proofs = visit?.proofPhotos || {};
-      const imaging = visit?.imaging || {};
+      const imagingData = visit?.imaging || {};
       const meds = Array.isArray(visit?.medications) ? visit.medications : [];
       const bag = Array.isArray(proofs.bag) ? proofs.bag.length : 0;
       const rx = Array.isArray(proofs.rx) ? proofs.rx.length : 0;
       const drug = Array.isArray(proofs.drug) ? proofs.drug.length : 0;
-      const xray = Array.isArray(imaging.xrayPhotos) ? imaging.xrayPhotos.length : 0;
-      const us = Array.isArray(imaging.usPhotos) ? imaging.usPhotos.length : 0;
+      const xray = Array.isArray(imagingData.xrayPhotos)
+        ? imagingData.xrayPhotos.length
+        : 0;
+      const us = Array.isArray(imagingData.usPhotos)
+        ? imagingData.usPhotos.length
+        : 0;
       const medKey = meds
         .map((med) =>
           [med?.name || "", med?.dose || "", med?.kind || "", med?.compoundGroup || ""].join(
@@ -559,11 +563,10 @@
           )
         )
         .join("|");
+      const tagsKey = Array.isArray(visit?.tags) ? visit.tags.join(",") : "";
       return [
         index,
         visit?.date || "",
-        visit?.clinic || "",
-        visit?.note || "",
         visit?.weightAtVisit ?? visit?.weight ?? "",
         medKey,
         bag,
@@ -571,7 +574,41 @@
         drug,
         xray,
         us,
+        tagsKey,
       ].join("\u001f");
+    }
+
+    function visitSurfaceFingerprint(visit) {
+      return [visit?.clinic || "", visit?.clinicId || "", visit?.note || ""].join(
+        "\u001f"
+      );
+    }
+
+    function visitFingerprint(visit, index) {
+      return [
+        visitStructuralFingerprint(visit, index),
+        visitSurfaceFingerprint(visit),
+      ].join("\u001e");
+    }
+
+    function buildVisitMorphPatch(visit, index) {
+      const noteRaw = visit?.note;
+      const noteText =
+        typeof locField === "function"
+          ? locField(noteRaw)
+          : typeof noteRaw === "string"
+            ? noteRaw
+            : noteRaw?.zh || "";
+      const clinicText =
+        typeof visitClinicLabel === "function"
+          ? visitClinicLabel(visit)
+          : visit?.clinic || "";
+      return {
+        index,
+        clinicText,
+        noteText: noteText || "",
+        hasNote: Boolean(noteText),
+      };
     }
 
     function buildListSignature(pet, { lang } = {}) {
@@ -597,7 +634,7 @@
     function planKeyedListReconcile(
       previousSignatures,
       nextSignatures,
-      { visitDates } = {}
+      { visitDates, previousVisits, nextVisits } = {}
     ) {
       const prev = Array.isArray(previousSignatures) ? previousSignatures : [];
       const next = Array.isArray(nextSignatures) ? nextSignatures : [];
@@ -619,6 +656,31 @@
       for (let i = 0; i < next.length; i += 1) {
         if (prev[i] !== next[i]) indices.push(i);
       }
+
+      const prevList = Array.isArray(previousVisits) ? previousVisits : null;
+      const nextList = Array.isArray(nextVisits) ? nextVisits : null;
+      if (
+        prevList &&
+        nextList &&
+        prevList.length === next.length &&
+        nextList.length === next.length &&
+        indices.length
+      ) {
+        const surfaceOnly = indices.every((i) => {
+          return (
+            visitStructuralFingerprint(prevList[i], i) ===
+            visitStructuralFingerprint(nextList[i], i)
+          );
+        });
+        if (surfaceOnly) {
+          return {
+            mode: "morph",
+            indices: [...indices],
+            patches: indices.map((i) => buildVisitMorphPatch(nextList[i], i)),
+          };
+        }
+      }
+
       const withNeighbors = new Set(indices);
       const dates = Array.isArray(visitDates) ? visitDates : null;
       for (const i of indices) {
@@ -669,6 +731,7 @@
       buildDrugNotesHydrateSlot,
       buildListSignature,
       buildItemSignatures,
+      buildVisitMorphPatch,
       planKeyedListReconcile,
       shouldSkipListRebuild,
     };

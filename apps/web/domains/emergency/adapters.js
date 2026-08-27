@@ -6,6 +6,8 @@
   root.domains.emergency = root.domains.emergency || {};
 
   function addDays(isoDate, days) {
+    const shared = root.core?.dates?.addDays;
+    if (typeof shared === "function") return shared(isoDate, days);
     const date = new Date(`${isoDate}T00:00:00`);
     date.setDate(date.getDate() + days);
     const yyyy = date.getFullYear();

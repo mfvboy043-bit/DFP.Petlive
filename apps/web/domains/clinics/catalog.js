@@ -70,12 +70,29 @@
       return [anonymous, ...presets, ...extra];
     }
 
+    /** Filter directory; anonymous stays pinned first while searching. */
+    function searchClinics(query, pets) {
+      const q = String(query || "")
+        .trim()
+        .toLowerCase();
+      const directory = getClinicDirectory(pets);
+      const anonymous = getAnonymousClinic();
+      const rest = directory.filter((clinic) => clinic.id !== "anonymous");
+      if (!q) return [anonymous, ...rest];
+      const matched = rest.filter((clinic) => {
+        const hay = `${clinic.name} ${clinic.note}`.toLowerCase();
+        return hay.includes(q);
+      });
+      return [anonymous, ...matched];
+    }
+
     return {
       CLINIC_PRESETS,
       clinicNameOf,
       getAnonymousClinic,
       visitClinicLabel,
       getClinicDirectory,
+      searchClinics,
     };
   }
 

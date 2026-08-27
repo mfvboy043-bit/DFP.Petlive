@@ -160,4 +160,45 @@ describe("SH-05 shell photo crop styles", () => {
     assert.ok(calls.some((c) => c[0] === "fillRect"));
     assert.ok(calls.some((c) => c[0] === "drawImage"));
   });
+
+  it("resizeImageDataUrl uses JPEG 0.82 and maxEdge default 480", async () => {
+    const { petsMedia } = loadPhotoCropShell();
+    const calls = [];
+    const fakeCanvas = {
+      width: 0,
+      height: 0,
+      getContext() {
+        return {
+          drawImage(...args) {
+            calls.push(["drawImage", ...args]);
+          },
+        };
+      },
+      toDataURL(type, quality) {
+        return `data:${type};q=${quality};${this.width}x${this.height}`;
+      },
+    };
+    const out = await petsMedia.resizeImageDataUrl(
+      "data:image/png;base64,xx",
+      undefined,
+      {
+        createImage: () => {
+          const img = {
+            width: 960,
+            height: 480,
+            onload: null,
+            onerror: null,
+            set src(_v) {
+              queueMicrotask(() => img.onload && img.onload());
+            },
+          };
+          return img;
+        },
+        createCanvas: () => fakeCanvas,
+      }
+    );
+    assert.equal(out, "data:image/jpeg;q=0.82;480x240");
+    assert.equal(fakeCanvas.width, 480);
+    assert.equal(fakeCanvas.height, 240);
+  });
 });

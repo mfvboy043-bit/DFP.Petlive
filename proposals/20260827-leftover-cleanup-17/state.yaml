@@ -1,17 +1,15 @@
 id: "20260827-leftover-cleanup-17"
 title: "Leftover cleanup 1–7 on C — facade thin, PERF-03 morph, dates, brains, forms, pets-graph door"
 version: 2
-status: proposed
+status: reviewing
 # proposed | building | reviewing | revising | candidate_ready | halted | adopted | rejected
 
 gate_a:
-  status: pending
-  # pending | approved | modified | rejected
-  # Victor 2026-08-27 signaled「1～7開始整理，好了讓我審核」; parent flips to approved after this write
+  status: approved
+  note: "Victor 2026-08-27 — 1～7開始整理，好了讓我審核（C only；審核後再談蓋 B）"
 
 gate_b:
   status: pending
-  # pending | adopted | rejected
   # C-only until Victor 審核; formal B / Pages later
 
 iteration: 0
@@ -34,6 +32,9 @@ rerun: []
 blocking_issues: []
 non_blocking: []
 
+builder_notes: >
+  2026-08-27 Builder: FULL A–G on candidate branch. c/app.js ~6282→6197.
+  Formal B / apps/web/app.js untouched. Ready for Pharmacist/QA/UI reviews.
 builder_scope:
   # A — shared dates
   - "CREATE apps/web/core/dates.js (addDays, daysUntil, todayIsoLocal)"

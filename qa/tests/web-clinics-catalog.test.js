@@ -38,4 +38,20 @@ describe("clinics catalog building blocks", () => {
     assert.equal(catalog.visitClinicLabel({ clinicId: "c1" }), "幸福動物醫院");
     assert.ok(dir.some((c) => c.name === "自訂診所"));
   });
+
+  it("searchClinics keeps anonymous pinned while filtering", () => {
+    const clinics = loadClinicsCatalog();
+    const catalog = clinics.createCatalog({
+      label: (key) => key,
+      locField: (value) => value || "",
+    });
+    const empty = catalog.searchClinics("", []);
+    assert.equal(empty[0].id, "anonymous");
+    const hit = catalog.searchClinics("幸福", []);
+    assert.equal(hit[0].id, "anonymous");
+    assert.ok(hit.some((c) => c.name === "幸福動物醫院"));
+    const miss = catalog.searchClinics("zzz-no-match", []);
+    assert.equal(miss.length, 1);
+    assert.equal(miss[0].id, "anonymous");
+  });
 });

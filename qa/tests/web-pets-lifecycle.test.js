@@ -63,6 +63,8 @@ function loadPetsDomain(storage = new FakeStorage()) {
     "domains/pets/controller.js",
     "domains/pets/lifecycle.js",
     "domains/pets/media.js",
+    "domains/pets/labels.js",
+    "domains/pets/form.js",
   ].forEach((path) => {
     vm.runInContext(readFileSync(new URL(path, WEB_ROOT), "utf8"), context, {
       filename: path,
@@ -348,5 +350,81 @@ describe("PL pets domain boundaries", () => {
     assert.equal(typeof api.domains.pets.createController, "function");
     assert.equal(typeof api.domains.pets.createLifecycle, "function");
     assert.equal(typeof api.domains.pets.createMedia, "function");
+  });
+
+  it("validatePetIdentityFields and buildPetIdentity stay pure", () => {
+    const { api } = loadPetsDomain();
+    assert.equal(
+      api.domains.pets.validatePetIdentityFields({
+        name: "",
+        breed: "x",
+        weight: 5,
+        birthDate: "2020-01-01",
+        weightDate: "2026-01-01",
+        todayISO: "2026-08-27",
+      }).reason,
+      "need_name"
+    );
+    assert.equal(
+      api.domains.pets.validatePetIdentityFields({
+        name: "Mochi",
+        breed: "Shiba",
+        weight: 5,
+        birthDate: "2030-01-01",
+        weightDate: "2026-01-01",
+        todayISO: "2026-08-27",
+      }).reason,
+      "birth_future"
+    );
+    assert.equal(
+      api.domains.pets.validatePetIdentityFields({
+        name: "Mochi",
+        breed: "Shiba",
+        weight: 5,
+        birthDate: "2020-01-01",
+        weightDate: "2026-01-01",
+        todayISO: "2026-08-27",
+      }).ok,
+      true
+    );
+    const identity = api.domains.pets.buildPetIdentity(
+      {
+        name: " Mochi ",
+        species: "dog",
+        breedKey: "shiba",
+        breed: "Shiba",
+        gender: "female",
+        isNeutered: "yes",
+        birthDate: "2020-01-01",
+        weight: "6.5",
+        weightDate: "2026-01-01",
+        chipNumber: "  ",
+      },
+      { label: (key) => (key === "dog" ? "Dog" : key) }
+    );
+    assert.equal(identity.name, "Mochi");
+    assert.equal(identity.speciesLabel, "Dog");
+    assert.equal(identity.chipNumber, undefined);
+    assert.equal(identity.weight, 6.5);
+  });
+
+  it("formatAgeLabel uses injected label keys", () => {
+    const { api } = loadPetsDomain();
+    const labels = api.domains.pets.createLabels({
+      label: (key, params) => {
+        if (key === "ageYearsMonths") return `${params.y}y${params.m}m`;
+        if (key === "ageYears") return `${params.n}y`;
+        if (key === "ageMonths") return `${params.n}mo`;
+        if (key === "ageUnderMonth") return "under";
+        return key;
+      },
+    });
+    // Fixed relative: birth ~2y6m before a stable "today" is hard in unit tests;
+    // assert under-month path with tomorrow birth → ageUnknown via negative years.
+    assert.equal(
+      api.domains.pets.formatAgeLabel("2099-01-01", (k) => k),
+      "ageUnknown"
+    );
+    assert.equal(typeof labels.formatAgeLabel("2020-01-01"), "string");
   });
 });
