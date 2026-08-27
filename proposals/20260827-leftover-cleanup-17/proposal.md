@@ -1,12 +1,14 @@
 ---
 id: 20260827-leftover-cleanup-17
 title: Leftover cleanup 1–7 on C — facade thin, PERF-03 morph, dates, brains, forms, pets-graph door
-status: building
+status: adopted
 author: planner
 candidate_branch: "cursor/leftover-cleanup-17-6f84"
 candidate_path: "proposals/20260827-leftover-cleanup-17"
 created: 2026-08-27
 updated: 2026-08-27
+gate_b: adopted
+adopt_note: "Victor 2026-08-27 —「可以，都覆蓋B 推上去吧」"
 ---
 
 # Proposal: Leftover cleanup 1–7 on C

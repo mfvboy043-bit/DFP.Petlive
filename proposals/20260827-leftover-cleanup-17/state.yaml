@@ -1,18 +1,17 @@
 id: "20260827-leftover-cleanup-17"
 title: "Leftover cleanup 1–7 on C — facade thin, PERF-03 morph, dates, brains, forms, pets-graph door"
 version: 2
-status: reviewing
-# proposed | building | reviewing | revising | candidate_ready | halted | adopted | rejected
+status: adopted
 
 gate_a:
   status: approved
   note: "Victor 2026-08-27 — 1～7開始整理，好了讓我審核（C only；審核後再談蓋 B）"
 
 gate_b:
-  status: pending
-  # C-only until Victor 審核; formal B / Pages later
+  status: adopted
+  note: "Victor 2026-08-27 — 可以，都覆蓋B 推上去 / 覆蓋"
 
-iteration: 0
+iteration: 1
 max_iterations: 3
 
 candidate:
@@ -21,62 +20,13 @@ candidate:
   worktree: ""
 
 reviews:
-  pharmacist: pending
-  qa: pending
-  ui: pending
-  # pharmacist: expect skip/pass — no dose/med-copy changes if scope held
-  # ui: expect skip or light chrome-markup only — no CSS redesign
-  # pending | skipped | pass | conditional | reject
+  pharmacist: pass
+  qa: pass
+  ui: pass
+  # QA-1 fixed (c8a4672) then B cover; morph uses signature structural compare
 
 rerun: []
 blocking_issues: []
 non_blocking: []
-
-builder_notes: >
-  2026-08-27 Builder: FULL A–G on candidate branch. c/app.js ~6282→6197.
-  Formal B / apps/web/app.js untouched. Ready for Pharmacist/QA/UI reviews.
-builder_scope:
-  # A — shared dates
-  - "CREATE apps/web/core/dates.js (addDays, daysUntil, todayIsoLocal)"
-  - "EDIT apps/web/c/app.js — delete local date helpers; inject PetLiveWeb.core.dates into vaccines/parasite"
-  - "EDIT apps/web/c/index.html — script defer core/dates.js?v= before dependents / app.js"
-  - "OPTIONAL EDIT apps/web/domains/emergency/adapters.js — only if bit-identical consolidate"
-  - "CREATE or EXTEND qa/tests/web-dates.test.js (or equivalent)"
-
-  # B — PERF-03 step 3
-  - "EDIT apps/web/domains/timeline/render.js — keyed attribute morph/patch plan API"
-  - "EDIT apps/web/c/app.js — renderTimeline applies morph → partial → full"
-  - "EDIT qa/tests/web-timeline-render.test.js — morph/patch plan cases"
-  - "BUMP c/index.html timeline/render.js?v="
-
-  # C — small brains
-  - "EDIT apps/web/domains/clinics/catalog.js — add searchClinics (anonymous pinned)"
-  - "EDIT apps/web/domains/pets/media.js — add resizeImageDataUrl"
-  - "CREATE or EDIT apps/web/domains/pets/labels.js (or extend render/selectors) — formatAgeLabel with injected label"
-  - "EDIT apps/web/c/app.js — wire C/D helpers; keep calendar open thin over domains/calendar/helpers.js"
-  - "EXTEND qa/tests/web-clinics-catalog.test.js, web-pets-* / media tests as needed"
-  - "BUMP related ?v= in c/index.html"
-
-  # D — account chrome
-  - "CREATE apps/web/shell/account-chrome.js (glassChromeNavAccountMarkup + pure paint helpers)"
-  - "EDIT apps/web/c/app.js — facade DOM wiring only for account/nav chrome"
-  - "EDIT apps/web/c/index.html — script defer shell/account-chrome.js?v="
-
-  # E — form pure helpers
-  - "EDIT apps/web/domains/pets/controller.js and/or lifecycle companion — pet form validate + create/apply payload"
-  - "EDIT apps/web/domains/visits/ and/or medications/ only if leftover pure read/validate bits remain"
-  - "EDIT apps/web/c/app.js — submit handlers keep toast/focus/go; call domain helpers"
-  - "EXTEND qa/tests/web-pets-lifecycle.test.js / medications tests as needed"
-
-  # F — pets-graph write door
-  - "CREATE apps/web/core/pets-graph.js — single write door for active/archived graph (pets[] backed; schedule persist)"
-  - "EDIT apps/web/c/app.js — route hydrate/persist/push/update/archive through door; no modules/* dual-write"
-  - "EDIT apps/web/c/index.html — script defer core/pets-graph.js?v= after storage/state"
-  - "CREATE or EXTEND qa/tests/web-pets-graph.test.js (or lifecycle) — door API smoke"
-
-  # G — facade thin umbrella / verify
-  - "EDIT apps/web/c/app.js — composition only; no new domain algorithms"
-  - "VERIFY node --check apps/web/c/app.js + related qa tests"
-  - "DO NOT EDIT apps/web/app.js / formal B / Pages in this slice"
-
+builder_scope: []
 halt_reason: ""

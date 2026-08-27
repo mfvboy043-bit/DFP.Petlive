@@ -212,6 +212,29 @@ function isSeedOnlyCloudPayload(payload) {
   return cloudSelectors.isSeedOnlyCloudPayload(payload);
 }
 
+const petsGraph = PetLiveWeb.core.createPetsGraph({
+  pets,
+  archivedPets,
+  slot: petsGraphSlot,
+  // B never auto-seeds via the door (empty stored graph stays empty).
+  cloneSeedPets: () => [],
+  getCurrentPetId: () =>
+    typeof appState !== "undefined" && appState?.getCurrentPetId
+      ? appState.getCurrentPetId()
+      : currentPetId,
+  onAfterScheduleWrite: () => {
+    if (
+      typeof cloudController !== "undefined" &&
+      cloudController &&
+      typeof cloudController.bumpLocalDataRevision === "function"
+    ) {
+      cloudController.bumpLocalDataRevision();
+    } else if (typeof scheduleCloudBackup === "function") {
+      scheduleCloudBackup();
+    }
+  },
+});
+
 function hydratePetsGraphFromStorage() {
   if (DEMO_MODE) {
     pets.length = 0;
@@ -224,14 +247,7 @@ function hydratePetsGraphFromStorage() {
     archivedPets.length = 0;
     return null;
   }
-  const data = petsGraphSlot.read();
-  // Never rehydrate prototype seed when the stored graph is empty.
-  const nextPets = Array.isArray(data.pets) ? data.pets : [];
-  const nextArchived = Array.isArray(data.archivedPets) ? data.archivedPets : [];
-  pets.length = 0;
-  archivedPets.length = 0;
-  for (const pet of nextPets) pets.push(pet);
-  for (const pet of nextArchived) archivedPets.push(pet);
+  const currentId = petsGraph.hydrate();
   // Drop leftover prototype seed graphs left from unsigned browsing.
   if (isSeedOnlyPets(pets) && !DEMO_MODE) {
     pets.length = 0;
@@ -248,7 +264,7 @@ function hydratePetsGraphFromStorage() {
     }
     return null;
   }
-  return data.currentPetId || pets[0]?.id || null;
+  return currentId;
 }
 
 function loadSeedPetsIntoMemory() {
@@ -265,25 +281,7 @@ function loadSeedPetsIntoMemory() {
 
 function schedulePetsGraphPersist() {
   if (DEMO_MODE) return;
-  const id =
-    typeof appState !== "undefined" && appState?.getCurrentPetId
-      ? appState.getCurrentPetId()
-      : currentPetId;
-  petsGraphSlot.scheduleWrite({
-    version: 1,
-    pets,
-    archivedPets,
-    currentPetId: id || null,
-  });
-  if (
-    typeof cloudController !== "undefined" &&
-    cloudController &&
-    typeof cloudController.bumpLocalDataRevision === "function"
-  ) {
-    cloudController.bumpLocalDataRevision();
-  } else if (typeof scheduleCloudBackup === "function") {
-    scheduleCloudBackup();
-  }
+  petsGraph.schedulePersist();
 }
 
 hydratePetsGraphFromStorage();
@@ -411,25 +409,10 @@ function formatShortDate(isoDate) {
   return `${month}/${day}`;
 }
 
-function addDays(isoDate, days) {
-  const date = new Date(`${isoDate}T00:00:00`);
-  date.setDate(date.getDate() + days);
-  const yyyy = date.getFullYear();
-  const mm = String(date.getMonth() + 1).padStart(2, "0");
-  const dd = String(date.getDate()).padStart(2, "0");
-  return `${yyyy}-${mm}-${dd}`;
-}
+const { addDays, daysUntil, todayIsoLocal } = PetLiveWeb.core.dates;
 
 function getMedEndDate(med) {
   return addDays(med.startDate, med.durationDays - 1);
-}
-
-function todayIsoLocal() {
-  const date = new Date();
-  const yyyy = date.getFullYear();
-  const mm = String(date.getMonth() + 1).padStart(2, "0");
-  const dd = String(date.getDate()).padStart(2, "0");
-  return `${yyyy}-${mm}-${dd}`;
 }
 
 function formatFrequencyLabel(frequency) {
@@ -1001,25 +984,14 @@ function deleteAlertById(alertId) {
   applySelectedPet();
 }
 
-function daysUntil(isoDate) {
-  const today = new Date();
-  today.setHours(0, 0, 0, 0);
-  const target = new Date(`${isoDate}T00:00:00`);
-  return Math.ceil((target - today) / (1000 * 60 * 60 * 24));
-}
-
 function parasiteTodayISODate() {
-  const date = new Date();
-  const yyyy = date.getFullYear();
-  const mm = String(date.getMonth() + 1).padStart(2, "0");
-  const dd = String(date.getDate()).padStart(2, "0");
-  return `${yyyy}-${mm}-${dd}`;
+  return todayIsoLocal();
 }
 
 const parasiteController = PetLiveWeb.domains.parasite.createController({
   daysUntil,
   addDays,
-  todayISODate: parasiteTodayISODate,
+  todayISODate: todayIsoLocal,
   labelOf: (key) => t(key),
 });
 const parasiteSelectors = PetLiveWeb.domains.parasite.createSelectors({
@@ -1878,26 +1850,7 @@ function hydratePetPhotos() {
 const PROOF_PHOTO_MAX_EDGE = 1280;
 
 function resizeImageDataUrl(dataUrl, maxEdge = 480) {
-  return new Promise((resolve) => {
-    const img = new Image();
-    img.onload = () => {
-      const scale = Math.min(1, maxEdge / Math.max(img.width, img.height));
-      const w = Math.max(1, Math.round(img.width * scale));
-      const h = Math.max(1, Math.round(img.height * scale));
-      const canvas = document.createElement("canvas");
-      canvas.width = w;
-      canvas.height = h;
-      const ctx = canvas.getContext("2d");
-      if (!ctx) {
-        resolve(dataUrl);
-        return;
-      }
-      ctx.drawImage(img, 0, 0, w, h);
-      resolve(canvas.toDataURL("image/jpeg", 0.82));
-    };
-    img.onerror = () => resolve(dataUrl);
-    img.src = dataUrl;
-  });
+  return PetLiveWeb.domains.pets.resizeImageDataUrl(dataUrl, maxEdge);
 }
 
 function renderEmergencyPetPhoto(pet) {
@@ -2795,30 +2748,16 @@ const petsLifecycle = PetLiveWeb.domains.pets.createLifecycle({
   tones: PET_TONES,
 });
 
+const petsLabels = PetLiveWeb.domains.pets.createLabels({
+  label: (key, params) => t(key, params),
+});
+
 function formatAgeLabel(birthDate) {
-  const birth = new Date(`${birthDate}T00:00:00`);
-  const today = new Date();
-  today.setHours(0, 0, 0, 0);
-  let years = today.getFullYear() - birth.getFullYear();
-  let months = today.getMonth() - birth.getMonth();
-  if (today.getDate() < birth.getDate()) months -= 1;
-  if (months < 0) {
-    years -= 1;
-    months += 12;
-  }
-  if (years < 0) return t("ageUnknown");
-  if (years === 0) {
-    return months <= 0 ? t("ageUnderMonth") : t("ageMonths", { n: months });
-  }
-  if (months === 0) return t("ageYears", { n: years });
-  return t("ageYearsMonths", { y: years, m: months });
+  return petsLabels.formatAgeLabel(birthDate);
 }
 
 function formatGenderLabel(gender, isNeutered) {
-  const genderText = t(gender) || t("unknown");
-  if (isNeutered === "yes") return t("genderNeutered", { g: genderText });
-  if (isNeutered === "no") return t("genderNotNeutered", { g: genderText });
-  return t("genderNeuterUnknown", { g: genderText });
+  return petsLabels.formatGenderLabel(gender, isNeutered);
 }
 
 const breedSelectors = PetLiveWeb.domains.breed.createSelectors({
@@ -3013,29 +2952,32 @@ function resolveBreedKeyFromForm(form) {
 }
 
 function readPetIdentityFromForm(form) {
-  const name = form.petName.value.trim();
-  const species = form.species.value;
-  const breedKey = resolveBreedKeyFromForm(form);
-  const breed = resolveBreedFromForm(form);
-  const gender = form.gender.value;
-  const isNeutered = form.isNeutered.value;
-  const birthDate = form.birthDate.value;
-  const weight = Number(form.weight.value);
-  const weightDate = form.weightDate.value;
-  const chipNumber = form.chipNumber.value.trim();
-  return {
-    name,
-    species,
-    speciesLabel: t(species) || t("other"),
-    breedKey,
-    breed,
-    gender,
-    isNeutered,
-    birthDate,
-    weight,
-    weightDate,
-    chipNumber: chipNumber || undefined,
-  };
+  return PetLiveWeb.domains.pets.buildPetIdentity(
+    {
+      name: form.petName.value.trim(),
+      species: form.species.value,
+      breedKey: resolveBreedKeyFromForm(form),
+      breed: resolveBreedFromForm(form),
+      gender: form.gender.value,
+      isNeutered: form.isNeutered.value,
+      birthDate: form.birthDate.value,
+      weight: form.weight.value,
+      weightDate: form.weightDate.value,
+      chipNumber: form.chipNumber.value.trim(),
+    },
+    { label: (key) => t(key) }
+  );
+}
+
+function validatePetFormFields(form) {
+  return PetLiveWeb.domains.pets.validatePetIdentityFields({
+    name: form.petName.value.trim(),
+    breed: resolveBreedFromForm(form),
+    weight: Number(form.weight.value),
+    birthDate: form.birthDate.value,
+    weightDate: form.weightDate.value,
+    todayISO: todayISODate(),
+  });
 }
 
 /** Keep visible date faces in sync; native type=date stays for iOS picker + form values. */
@@ -3472,49 +3414,11 @@ function clearNavigationHistory() {
 }
 
 function glassChromeNavAccountMarkup() {
-  return `
-      <div class="app-nav-menu">
-        <button
-          class="app-nav-btn js-app-nav-btn"
-          type="button"
-          aria-expanded="false"
-          aria-haspopup="true"
-          aria-controls="app-nav-panel"
-          data-i18n-aria="navMenuAria"
-          aria-label="頁面選單"
-        >
-          <span class="app-nav-label app-nav-label-closed" aria-hidden="true">
-            <span class="app-nav-flank">＝</span><span class="app-nav-word" data-i18n="navMenuLabel">選單</span><span class="app-nav-flank">＝</span>
-          </span>
-          <span class="app-nav-label app-nav-label-open" aria-hidden="true" hidden>
-            <span class="app-nav-flank">×</span><span class="app-nav-word" data-i18n="navMenuLabel">選單</span><span class="app-nav-flank">×</span>
-          </span>
-        </button>
-      </div>
-      <div class="account-menu">
-        <button
-          class="account-chip js-account-chip"
-          type="button"
-          aria-expanded="false"
-          aria-haspopup="true"
-          aria-controls="account-popover"
-          data-i18n-aria="accountChipAria"
-          aria-label="帳號選單"
-        >
-          <img class="account-chip-avatar" alt="" width="28" height="28" hidden />
-          <span class="account-chip-fallback" aria-hidden="true">?</span>
-          <span class="account-chip-name"></span>
-        </button>
-      </div>
-  `;
+  return PetLiveWeb.shell.glassChromeNavAccountMarkup();
 }
 
 function glassChromeActionsMarkup() {
-  return `
-    <div class="screen-head-actions" data-glass-chrome>
-      ${glassChromeNavAccountMarkup()}
-    </div>
-  `;
+  return PetLiveWeb.shell.glassChromeActionsMarkup();
 }
 
 function enhanceGlassScreenHeads() {
@@ -3833,17 +3737,7 @@ const clinicNameInput = document.getElementById("clinic-name");
 const clinicAnonymousInput = document.getElementById("clinic-anonymous");
 
 function searchClinics(query) {
-  const q = query.trim().toLowerCase();
-  const directory = getClinicDirectory();
-  const anonymous = getAnonymousClinic();
-  const rest = directory.filter((clinic) => clinic.id !== "anonymous");
-  if (!q) return [anonymous, ...rest];
-  const matched = rest.filter((clinic) => {
-    const hay = `${clinic.name} ${clinic.note}`.toLowerCase();
-    return hay.includes(q);
-  });
-  // Keep anonymous pinned while searching so the opt-out path stays visible.
-  return [anonymous, ...matched];
+  return clinicsCatalog.searchClinics(query, pets);
 }
 
 function renderClinicResults(list) {
@@ -3973,18 +3867,24 @@ drugResults.addEventListener("click", (event) => {
 
 document.getElementById("visit-form").addEventListener("submit", (event) => {
   event.preventDefault();
-  if (!selectedClinic && !clinicNameInput.value.trim()) {
-    showToast(t("toastPickClinic"));
-    renderClinicResults(searchClinics(clinicSearch.value));
-    clinicSearch.focus();
+  const clinicGate = PetLiveWeb.domains.visits.validateClinicGate({
+    selectedClinic,
+    clinicName: clinicNameInput.value,
+    clinicSearch: clinicSearch.value,
+  });
+  if (!clinicGate.ok) {
+    if (clinicGate.reason === "pick_clinic") {
+      showToast(t("toastPickClinic"));
+      renderClinicResults(searchClinics(clinicSearch.value));
+      clinicSearch.focus();
+    } else if (clinicGate.reason === "pick_clinic_list") {
+      showToast(t("toastPickClinicList"));
+      renderClinicResults(searchClinics(clinicSearch.value));
+    }
     return;
   }
-  if (!selectedClinic && clinicSearch.value.trim()) {
-    showToast(t("toastPickClinicList"));
-    renderClinicResults(searchClinics(clinicSearch.value));
-    return;
-  }
-  if (selectedTags.size === 0) {
+  const symptomGate = PetLiveWeb.domains.visits.validateSymptomGate(selectedTags);
+  if (!symptomGate.ok) {
     showToast(t("toastNeedSymptom"));
     return;
   }
@@ -4110,32 +4010,17 @@ document.getElementById("breed-expand-toggle")?.addEventListener("click", () => 
 document.getElementById("pet-form").addEventListener("submit", (event) => {
   event.preventDefault();
   const form = event.currentTarget;
-  const name = form.petName.value.trim();
-  const breed = resolveBreedFromForm(form);
-  const weight = Number(form.weight.value);
-
-  if (!name) {
-    showToast(t("toastNeedPetName"));
-    return;
-  }
-  if (!breed) {
-    showToast(t("toastNeedBreed"));
-    return;
-  }
-  if (!(weight > 0)) {
-    showToast(t("toastWeight"));
-    return;
-  }
-  if (!form.birthDate.value) {
-    showToast(t("toastNeedBirth"));
-    return;
-  }
-  if (form.birthDate.value > todayISODate()) {
-    showToast(t("toastBirthFuture"));
-    return;
-  }
-  if (!form.weightDate.value) {
-    showToast(t("toastNeedWeightDate"));
+  const validation = validatePetFormFields(form);
+  if (!validation.ok) {
+    const toastByReason = {
+      need_name: "toastNeedPetName",
+      need_breed: "toastNeedBreed",
+      weight: "toastWeight",
+      need_birth: "toastNeedBirth",
+      birth_future: "toastBirthFuture",
+      need_weight_date: "toastNeedWeightDate",
+    };
+    showToast(t(toastByReason[validation.reason] || "toastNeedPetName"));
     return;
   }
 
@@ -4157,7 +4042,7 @@ document.getElementById("pet-form").addEventListener("submit", (event) => {
     return;
   }
 
-  pets.push(pet);
+  petsGraph.pushPet(pet);
   selectPetForced(pet.id);
   showToast(t("toastPetAdded", { name: pet.name }));
   clearNavigationHistory();
@@ -4299,32 +4184,23 @@ function setMedCompoundChip(group) {
 applyCompoundChipColors();
 
 function readMedDraftFromForm(form) {
-  const amountRaw = form.dosageAmount.value.trim();
-  const daysRaw = form.durationDays.value.trim();
-  const amount = amountRaw === "" ? null : Number(amountRaw);
-  const days = daysRaw === "" ? null : Number(daysRaw);
-  const unit = normalizeMedUnitForStore(form.dosageUnit.value);
-  const frequency = normalizeMedFreqForStore(form.frequency.value);
   const compoundGroup = (form.compoundGroup?.value || "").trim();
   const compoundColor = compoundGroup
     ? resolveCompoundColor(compoundGroup, (form.compoundColor?.value || "").trim())
     : "";
-  const sourcePreset =
-    form.sourcePreset.value === "clinic_ref" ? "clinic_ref" : "owner";
   const drugName = selectedDrug
     ? selectedDrug.genericName
     : drugSearch.value.trim();
-
-  return {
-    amount: amount != null && amount > 0 ? amount : null,
-    days: Number.isInteger(days) && days > 0 ? days : null,
-    unit,
-    frequency,
+  return medicationsController.draftFromFields({
+    dosageAmount: form.dosageAmount.value.trim(),
+    durationDays: form.durationDays.value.trim(),
+    dosageUnit: form.dosageUnit.value,
+    frequency: form.frequency.value,
     compoundGroup,
     compoundColor,
-    sourcePreset,
+    sourcePreset: form.sourcePreset.value,
     drugName,
-  };
+  });
 }
 
 function hasAnyMedDraftInput(form) {
@@ -4525,6 +4401,7 @@ breedRenderer = PetLiveWeb.domains.breed.createRenderer({
 proofPreviewShell = PetLiveWeb.shell.createProofPreview();
 
 let lastTimelineItemSignatures = [];
+let lastTimelineVisitsSnapshot = [];
 
 function applyTimelineDrugNotePanels(drugNotePanels) {
   drugNotesMedByPanelId.clear();
@@ -4546,17 +4423,62 @@ function applyPartialTimelineRows(html, indices) {
   return true;
 }
 
+function applyMorphTimelinePatches(patches) {
+  if (!timelineList || typeof document === "undefined") return false;
+  if (!Array.isArray(patches) || !patches.length) return false;
+  for (const patch of patches) {
+    const li = timelineList.querySelector(
+      `li[data-visit-index="${patch.index}"]`
+    );
+    if (!li) return false;
+    const clinic = li.querySelector(".tl-clinic");
+    if (clinic) clinic.textContent = patch.clinicText || "";
+    let note = li.querySelector(".tl-note");
+    if (patch.hasNote) {
+      if (!note) {
+        const body = li.querySelector(".tl-body");
+        if (!body) return false;
+        note = document.createElement("p");
+        note.className = "tl-note";
+        body.appendChild(note);
+      }
+      note.textContent = patch.noteText || "";
+    } else if (note) {
+      note.remove();
+    }
+  }
+  return true;
+}
+
 function renderTimeline(pet) {
   const lang =
     (typeof getCurrentLang === "function" && getCurrentLang()) || "zh-Hant";
+  const nextVisits = pet?.visits || [];
   const nextItemSignatures = timelineRenderer.buildItemSignatures(pet, { lang });
-  const visitDates = (pet?.visits || []).map((visit) => visit?.date || "");
+  const visitDates = nextVisits.map((visit) => visit?.date || "");
   const plan = timelineRenderer.planKeyedListReconcile(
     lastTimelineItemSignatures,
     nextItemSignatures,
-    { visitDates }
+    {
+      visitDates,
+      previousVisits: lastTimelineVisitsSnapshot,
+      nextVisits,
+    }
   );
   if (plan.mode === "skip") {
+    const imagingPending = pendingVisitImagingIndex;
+    applyPendingVisitImagingExpand();
+    if (imagingPending == null) expandLatestVisitRx();
+    return;
+  }
+
+  if (
+    plan.mode === "morph" &&
+    plan.patches?.length &&
+    applyMorphTimelinePatches(plan.patches)
+  ) {
+    lastTimelineItemSignatures = nextItemSignatures;
+    lastTimelineVisitsSnapshot = nextVisits.slice();
     const imagingPending = pendingVisitImagingIndex;
     applyPendingVisitImagingExpand();
     if (imagingPending == null) expandLatestVisitRx();
@@ -4576,6 +4498,7 @@ function renderTimeline(pet) {
     timelineList.innerHTML = html;
     lastTimelineItemSignatures = nextItemSignatures;
   }
+  lastTimelineVisitsSnapshot = nextVisits.slice();
 
   const imagingPending = pendingVisitImagingIndex;
   applyPendingVisitImagingExpand();
@@ -6246,26 +6169,23 @@ function paintAccountMenu(session) {
   const popFallback = document.getElementById("account-popover-fallback");
   const planValue = document.getElementById("account-popover-plan-value");
 
-  const signedIn = Boolean(session?.signedIn);
-  // Discarded gear — always hidden; owner settings via account popover only.
-  if (ownerBtn) ownerBtn.hidden = true;
-  if (homeMenu) homeMenu.hidden = !signedIn;
-  document.querySelectorAll(".screen-head-actions .account-menu").forEach((el) => {
-    el.hidden = !signedIn;
+  const view = PetLiveWeb.shell.buildAccountChromePresentation(session, {
+    fallbackLabel: t("accountFallback"),
   });
 
-  if (!signedIn) {
+  // Discarded gear — always hidden; owner settings via account popover only.
+  if (ownerBtn) ownerBtn.hidden = view.hideOwnerGear;
+  if (homeMenu) homeMenu.hidden = view.hideAccountMenus;
+  document.querySelectorAll(".screen-head-actions .account-menu").forEach((el) => {
+    el.hidden = view.hideAccountMenus;
+  });
+
+  if (!view.signedIn) {
     closeAccountMenu();
     return;
   }
 
-  const profile = session.profile || {};
-  const email = String(profile.email || "").trim();
-  const name = String(profile.name || "").trim();
-  const picture = String(profile.picture || "").trim();
-  const displayName = name || email || t("accountFallback");
-  const initialSource = name || email || t("accountFallback");
-  const initial = initialSource.charAt(0).toUpperCase() || "?";
+  const { email, picture, displayName, initial } = view;
 
   chips.forEach((chip) => {
     chip.setAttribute("aria-haspopup", "true");
@@ -6297,14 +6217,15 @@ function paintAccountMenu(session) {
   const conflictHint = document.getElementById("account-popover-conflict-hint");
   const busy = isCloudReconcileBusy();
   if (popSyncBtn) {
-    popSyncBtn.hidden = !signedIn;
+    popSyncBtn.hidden = !view.showSyncActions;
     popSyncBtn.disabled = busy;
   }
   if (popRestoreBtn) {
-    popRestoreBtn.hidden = !signedIn;
+    popRestoreBtn.hidden = !view.showSyncActions;
     popRestoreBtn.disabled = busy;
   }
   if (conflictHint) {
+    // B keeps live conflict hint (shell presentation defaults hideConflictHint).
     conflictHint.hidden = !cloudSyncConflict || busy;
     conflictHint.textContent = cloudSyncConflict ? t("accountSyncConflictHint") : "";
   }
