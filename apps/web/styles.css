@@ -494,6 +494,12 @@ h4 {
   transform: translateY(1px);
 }
 
+.intro-login-btn:disabled {
+  opacity: 0.55;
+  cursor: wait;
+  pointer-events: none;
+}
+
 .intro-login-btn:focus-visible {
   outline: 2px solid rgba(127, 175, 160, 0.9);
   outline-offset: 2px;

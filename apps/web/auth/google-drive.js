@@ -6,10 +6,12 @@
   const DRIVE_API = "https://www.googleapis.com/drive/v3";
   const TOKEN_KEY = "petlive-google-token";
   const PROFILE_KEY = "petlive-google-profile";
+  const REMEMBER_KEY = "petlive-google-remember";
 
   let driveTokenClient = null;
   let gisReady = null;
   let listeners = new Set();
+  let authInFlight = false;
 
   function cfg() {
     return global.PETLIVE_CONFIG || {};
@@ -34,6 +36,14 @@
     );
   }
 
+  function localStore() {
+    return global.localStorage;
+  }
+
+  function sessionStore() {
+    return global.sessionStorage;
+  }
+
   function notify() {
     const snap = getSession();
     listeners.forEach((fn) => {
@@ -45,9 +55,43 @@
     });
   }
 
+  function isAuthBusy() {
+    return Boolean(authInFlight);
+  }
+
+  function beginAuth() {
+    if (authInFlight) return false;
+    authInFlight = true;
+    notify();
+    return true;
+  }
+
+  function endAuth() {
+    if (!authInFlight) return;
+    authInFlight = false;
+    notify();
+  }
+
+  function readRemember() {
+    try {
+      return localStore().getItem(REMEMBER_KEY) === "1";
+    } catch {
+      return false;
+    }
+  }
+
+  function writeRemember(on) {
+    try {
+      if (on) localStore().setItem(REMEMBER_KEY, "1");
+      else localStore().removeItem(REMEMBER_KEY);
+    } catch {
+      /* ignore */
+    }
+  }
+
   function readStoredToken() {
     try {
-      const raw = global.sessionStorage.getItem(TOKEN_KEY);
+      const raw = localStore().getItem(TOKEN_KEY);
       if (!raw) return null;
       const parsed = JSON.parse(raw);
       if (!parsed?.access_token) return null;
@@ -63,10 +107,11 @@
   function writeStoredToken(token) {
     try {
       if (!token) {
-        global.sessionStorage.removeItem(TOKEN_KEY);
+        localStore().removeItem(TOKEN_KEY);
         return;
       }
-      global.sessionStorage.setItem(TOKEN_KEY, JSON.stringify(token));
+      localStore().setItem(TOKEN_KEY, JSON.stringify(token));
+      writeRemember(true);
     } catch {
       /* quota / private mode */
     }
@@ -74,7 +119,7 @@
 
   function readProfile() {
     try {
-      const raw = global.sessionStorage.getItem(PROFILE_KEY);
+      const raw = localStore().getItem(PROFILE_KEY);
       return raw ? JSON.parse(raw) : null;
     } catch {
       return null;
@@ -83,21 +128,54 @@
 
   function writeProfile(profile) {
     try {
-      if (!profile) global.sessionStorage.removeItem(PROFILE_KEY);
-      else global.sessionStorage.setItem(PROFILE_KEY, JSON.stringify(profile));
+      if (!profile) localStore().removeItem(PROFILE_KEY);
+      else {
+        localStore().setItem(PROFILE_KEY, JSON.stringify(profile));
+        writeRemember(true);
+      }
     } catch {
       /* ignore */
     }
   }
 
+  /**
+   * One-shot: move legacy sessionStorage token/profile into localStorage, then clear.
+   * XSS trade-off of token-in-localStorage is accepted for tab-close durability.
+   */
+  function migrateSessionStorageOnce() {
+    try {
+      const ss = sessionStore();
+      const ls = localStore();
+      if (!ss || !ls) return;
+      const tok = ss.getItem(TOKEN_KEY);
+      if (tok) {
+        if (!ls.getItem(TOKEN_KEY)) ls.setItem(TOKEN_KEY, tok);
+        ss.removeItem(TOKEN_KEY);
+      }
+      const prof = ss.getItem(PROFILE_KEY);
+      if (prof) {
+        if (!ls.getItem(PROFILE_KEY)) ls.setItem(PROFILE_KEY, prof);
+        ss.removeItem(PROFILE_KEY);
+      }
+      if (tok || prof) writeRemember(true);
+    } catch {
+      /* ignore */
+    }
+  }
+
+  migrateSessionStorageOnce();
+
   function getSession() {
     const token = readStoredToken();
     const profile = readProfile();
+    const remembered = readRemember();
     return {
       configured: Boolean(clientId()),
       signedIn: Boolean(token?.access_token),
       accessToken: token?.access_token || null,
       profile,
+      remembered: Boolean(remembered),
+      authBusy: isAuthBusy(),
     };
   }
 
@@ -210,24 +288,64 @@
    * Do not chain a second requestAccessToken after this — that causes extra popups on mobile.
    */
   async function signIn() {
-    const token = await requestTokenFrom(
-      ensureDriveClient(),
-      "select_account"
-    );
+    if (!beginAuth()) throw new Error("auth_busy");
     try {
-      await fetchProfile(token.access_token);
-    } catch {
-      /* ignore — avatar/email can stay empty */
+      const token = await requestTokenFrom(
+        ensureDriveClient(),
+        "select_account"
+      );
+      try {
+        await fetchProfile(token.access_token);
+      } catch {
+        /* ignore — avatar/email can stay empty */
+      }
+      writeRemember(true);
+      notify();
+      return getSession();
+    } finally {
+      endAuth();
     }
-    notify();
-    return getSession();
   }
 
   /** Explicit Drive re-auth (owner-settings Sync). Avoid calling from silent backup. */
   async function ensureDriveAccess() {
-    await requestTokenFrom(ensureDriveClient(), "");
-    notify();
-    return getSession();
+    if (!beginAuth()) throw new Error("auth_busy");
+    try {
+      await requestTokenFrom(ensureDriveClient(), "");
+      notify();
+      return getSession();
+    } finally {
+      endAuth();
+    }
+  }
+
+  /**
+   * Boot / resume: reuse live token, or silent GIS prompt:"" when remembered.
+   * Never auto-opens select_account on failure.
+   */
+  async function trySilentRestore() {
+    const live = readStoredToken();
+    if (live?.access_token) return getSession();
+    if (!readRemember()) return getSession();
+    if (!beginAuth()) throw new Error("auth_busy");
+    try {
+      const token = await requestTokenFrom(ensureDriveClient(), "");
+      if (!readProfile()) {
+        try {
+          await fetchProfile(token.access_token);
+        } catch {
+          /* ignore */
+        }
+      }
+      writeRemember(true);
+      notify();
+      return getSession();
+    } catch (err) {
+      notify();
+      throw err;
+    } finally {
+      endAuth();
+    }
   }
 
   function signOut() {
@@ -241,6 +359,13 @@
     }
     writeStoredToken(null);
     writeProfile(null);
+    writeRemember(false);
+    try {
+      sessionStore().removeItem(TOKEN_KEY);
+      sessionStore().removeItem(PROFILE_KEY);
+    } catch {
+      /* ignore */
+    }
     notify();
   }
 
@@ -253,16 +378,21 @@
     const token = readStoredToken();
     if (token?.access_token) return token.access_token;
     if (!interactive) throw new Error("not_signed_in");
-    const next = await requestTokenFrom(ensureDriveClient(), "select_account");
-    if (!readProfile()) {
-      try {
-        await fetchProfile(next.access_token);
-      } catch {
-        /* ignore */
+    if (!beginAuth()) throw new Error("auth_busy");
+    try {
+      const next = await requestTokenFrom(ensureDriveClient(), "select_account");
+      if (!readProfile()) {
+        try {
+          await fetchProfile(next.access_token);
+        } catch {
+          /* ignore */
+        }
       }
+      notify();
+      return next.access_token;
+    } finally {
+      endAuth();
     }
-    notify();
-    return next.access_token;
   }
 
   async function driveFetch(path, options = {}) {
@@ -390,6 +520,8 @@
       signIn,
       signOut,
       ensureDriveAccess,
+      trySilentRestore,
+      isAuthBusy,
       uploadJson,
       downloadJson,
       onSessionChange,

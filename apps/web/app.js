@@ -5926,6 +5926,9 @@ function liveGoogleSignedIn() {
 function paintCloudChrome() {
   const session = getAccountSessionForChrome();
   const origin = window.location.origin || "";
+  const busy = Boolean(
+    session.authBusy || googleDriveAuth?.isAuthBusy?.()
+  );
 
   paintAccountMenu(session);
   paintReconcileUi();
@@ -5938,6 +5941,22 @@ function paintCloudChrome() {
     },
     session
   );
+
+  PetLiveWeb.shell.applyAuthBusyState?.(document, busy);
+
+  const loginLabel = document.querySelector("#intro-login-btn .intro-login-label");
+  if (loginLabel && !session.signedIn) {
+    const key = session.remembered
+      ? "loginContinueWithGoogle"
+      : "loginWithGoogle";
+    loginLabel.setAttribute("data-i18n", key);
+    loginLabel.textContent = t(key);
+    const loginBtn = document.getElementById("intro-login-btn");
+    if (loginBtn) {
+      loginBtn.setAttribute("data-i18n-aria", key);
+      loginBtn.setAttribute("aria-label", t(key));
+    }
+  }
 
   const originHint = document.getElementById("intro-origin-hint");
   if (originHint) {
@@ -6050,6 +6069,9 @@ async function handleGoogleSignIn({ enterApp } = {}) {
     setIntroStatus(t("cloudBackupNeedConfig"));
     return;
   }
+  if (googleDriveAuth.isAuthBusy?.()) {
+    return;
+  }
   if (!googleDriveAuth.getSession().configured) {
     setIntroStatus(t("cloudBackupNeedConfig"));
     showToast(t("cloudBackupNeedConfig"));
@@ -6058,6 +6080,7 @@ async function handleGoogleSignIn({ enterApp } = {}) {
   }
   try {
     setIntroStatus("…");
+    paintCloudChrome();
     await googleDriveAuth.signIn();
     const session = googleDriveAuth.getSession();
     setIntroStatus(
@@ -6088,6 +6111,10 @@ async function handleGoogleSignIn({ enterApp } = {}) {
     }, 400);
   } catch (err) {
     const msg = String(err?.message || err);
+    if (msg === "auth_busy") {
+      paintCloudChrome();
+      return;
+    }
     if (msg === "missing_client_id") {
       setIntroStatus(t("cloudBackupNeedConfig"));
     } else if (
@@ -6138,11 +6165,30 @@ function initIntroAndCloud() {
   }
 
   function startWithGoogleOrEnter() {
+    if (googleDriveAuth?.isAuthBusy?.()) return;
     if (googleDriveAuth?.getSession?.().signedIn) {
       enterAppFromIntro();
       return;
     }
     handleGoogleSignIn({ enterApp: true });
+  }
+
+  function showSurface(enterB) {
+    const intro = app.querySelector('[data-screen="intro"]');
+    const home = app.querySelector('[data-screen="home"]');
+    if (!intro || !home) return;
+    if (enterB) {
+      intro.classList.remove("is-active");
+      intro.hidden = true;
+      home.hidden = false;
+      home.classList.add("is-active");
+      markIntroSeen();
+    } else {
+      home.classList.remove("is-active");
+      home.hidden = true;
+      intro.hidden = false;
+      intro.classList.add("is-active");
+    }
   }
 
   PetLiveWeb.shell.bindIntroCloudListeners(document, window, {
@@ -6151,10 +6197,12 @@ function initIntroAndCloud() {
     onOpenOwnerSettings: openOwnerSettingsFromAccount,
     onSync: async () => {
       if (isCloudReconcileBusy()) return;
+      if (googleDriveAuth?.isAuthBusy?.()) return;
       closeAccountMenu();
       try {
         await googleDriveAuth?.ensureDriveAccess?.();
-      } catch {
+      } catch (err) {
+        if (String(err?.message || err) === "auth_busy") return;
         showToast(t("cloudBackupFail"));
         return;
       }
@@ -6162,11 +6210,13 @@ function initIntroAndCloud() {
     },
     onRestore: async () => {
       if (isCloudReconcileBusy()) return;
+      if (googleDriveAuth?.isAuthBusy?.()) return;
       if (!window.confirm(t("accountRestoreConfirm"))) return;
       closeAccountMenu();
       try {
         await googleDriveAuth?.ensureDriveAccess?.();
-      } catch {
+      } catch (err) {
+        if (String(err?.message || err) === "auth_busy") return;
         showToast(t("cloudBackupFail"));
         return;
       }
@@ -6174,6 +6224,7 @@ function initIntroAndCloud() {
     },
     onGoHome: () => go("home"),
     onSwitchPreview: () => {
+      if (googleDriveAuth?.isAuthBusy?.()) return;
       if (googleDriveAuth) {
         handleGoogleSignIn({ enterApp: false });
       } else {
@@ -6192,39 +6243,65 @@ function initIntroAndCloud() {
   });
 
   // Boot: A (intro) by default → Google login enters B.
-  // Already signed in → B. Escape hatch: ?app=1 / screen=home / ?demo=1.
-  // Do NOT skip A for INTRO_SEEN or hasRealLocalData alone.
+  // Live token → B. Remembered intent → await silent restore; success → B; fail → A + CTA.
+  // Escape hatch: ?app=1 / screen=home / ?demo=1.
+  // Do NOT skip A for INTRO_SEEN, remembered profile alone, or hasRealLocalData.
   // Do NOT use C bootSurfaceToHome — preserves B Google-gate / local-first.
-  try {
-    const params = new URLSearchParams(window.location.search || "");
-    const forceApp =
-      DEMO_MODE ||
-      params.get("app") === "1" ||
-      params.get("screen") === "home";
-    const intro = app.querySelector('[data-screen="intro"]');
-    const home = app.querySelector('[data-screen="home"]');
-    const signedIn = Boolean(googleDriveAuth?.getSession?.().signedIn);
-    if (intro && home) {
-      if (signedIn || forceApp) {
-        intro.classList.remove("is-active");
-        intro.hidden = true;
-        home.hidden = false;
-        home.classList.add("is-active");
-        markIntroSeen();
-      } else {
-        home.classList.remove("is-active");
-        home.hidden = true;
-        intro.hidden = false;
-        intro.classList.add("is-active");
-      }
-    }
-  } catch {
-    /* ignore */
-  }
+  void (async () => {
+    try {
+      const params = new URLSearchParams(window.location.search || "");
+      const forceApp =
+        DEMO_MODE ||
+        params.get("app") === "1" ||
+        params.get("screen") === "home";
 
-  if (!DEMO_MODE && googleDriveAuth?.getSession?.().signedIn) {
-    reconcileCloudOnBoot({ silent: true, skipAutoPull: FRESH_BOOT });
-  }
+      if (forceApp) {
+        showSurface(true);
+        paintCloudChrome();
+        return;
+      }
+
+      let session = googleDriveAuth?.getSession?.() || {
+        signedIn: false,
+        remembered: false,
+      };
+
+      // Hold on A while silent restore runs — never flash B then kick back.
+      if (!session.signedIn && session.remembered && googleDriveAuth?.trySilentRestore) {
+        setIntroStatus(t("cloudRestoringSession"));
+        showSurface(false);
+        paintCloudChrome();
+        try {
+          await googleDriveAuth.trySilentRestore();
+        } catch {
+          /* stay unsigned; interactive CTA below */
+        }
+        session = googleDriveAuth.getSession();
+      }
+
+      if (session.signedIn) {
+        showSurface(true);
+        paintCloudChrome();
+        if (!DEMO_MODE) {
+          reconcileCloudOnBoot({ silent: true, skipAutoPull: FRESH_BOOT });
+        }
+        return;
+      }
+
+      showSurface(false);
+      if (session.remembered) {
+        setIntroStatus(
+          t("cloudRememberedNeedGoogle", {
+            email: session.profile?.email || "",
+          })
+        );
+      }
+      paintCloudChrome();
+    } catch {
+      showSurface(false);
+      paintCloudChrome();
+    }
+  })();
   // Formal B: never inject prototype seed pets except ?demo=1.
 }
 

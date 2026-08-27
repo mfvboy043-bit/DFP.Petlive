@@ -160,6 +160,19 @@
   }
 
   /**
+   * Disable intro login + account-switch while GIS requestAccessToken is in flight.
+   * Auth module owns busy flag; facade passes Boolean(busy).
+   */
+  function applyAuthBusyState(doc, busy) {
+    if (!doc || typeof doc.getElementById !== "function") return;
+    const on = Boolean(busy);
+    const loginBtn = doc.getElementById("intro-login-btn");
+    if (loginBtn) loginBtn.disabled = on;
+    const switchBtn = doc.getElementById("account-popover-switch");
+    if (switchBtn) switchBtn.disabled = on;
+  }
+
+  /**
    * C discussion surface: hide intro, show home, mark intro seen.
    * Injectable markIntroSeen keeps localStorage out of shell if desired;
    * default no-op when omitted.
@@ -187,5 +200,6 @@
 
   root.shell.toggleAccountMenuFromChip = toggleAccountMenuFromChip;
   root.shell.bindIntroCloudListeners = bindIntroCloudListeners;
+  root.shell.applyAuthBusyState = applyAuthBusyState;
   root.shell.bootSurfaceToHome = bootSurfaceToHome;
 })(typeof window !== "undefined" ? window : globalThis);

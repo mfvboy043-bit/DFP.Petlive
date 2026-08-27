@@ -1,0 +1,41 @@
+id: "20260827-google-session-durable"
+title: "Google session durability — remember who you are; silent re-auth; Google gate stays"
+version: 2
+status: adopted
+# proposed | building | reviewing | revising | candidate_ready | halted | adopted | rejected
+
+gate_a:
+  status: approved
+  # pending | approved | modified | rejected
+  note: "Victor 確認 2026-08-27"
+
+gate_b:
+  status: adopted
+  # pending | adopted | rejected
+  note: "Victor 採用 2026-08-27 — surgical land on main; auto-publish Pages"
+
+iteration: 1
+max_iterations: 3
+
+candidate:
+  branch: "proposal/google-session-durable"
+  path: "proposals/20260827-google-session-durable"
+  worktree: ".worktrees/google-session-durable"
+
+reviews:
+  pharmacist: skipped
+  qa: conditional
+  ui: conditional
+  # pending | skipped | pass | conditional | reject
+  note: "Pharmacist skip. QA+UI conditional; Arbiter candidate_ready (non-blocking QA-001…UI-003)."
+
+rerun: []
+blocking_issues: []
+non_blocking:
+  - QA-001
+  - QA-002
+  - UI-001
+  - UI-002
+  - UI-003
+builder_scope: []
+halt_reason: ""
