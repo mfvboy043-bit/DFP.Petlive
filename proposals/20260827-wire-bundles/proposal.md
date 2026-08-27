@@ -1,7 +1,7 @@
 ---
 id: 20260827-wire-bundles
 title: "C — bundle facade wires into shell (photo-crop, nav, account/cloud, intro)"
-status: reviewing
+status: adopted
 author: planner
 candidate_branch: "cursor/wire-bundles-6f84"
 candidate_path: "proposals/20260827-wire-bundles"
@@ -14,6 +14,8 @@ updated: 2026-08-27
 Companion: `state.yaml` (v2 source of truth for gates / iteration).
 
 **Gate A signal:** Victor 2026-08-27 —「1. 可以整理電線？」then「確認」. Parent intent: bundle facade **wires** (boot/login, photo-crop listeners, nav menu, account/cloud paint orchestration) into `shell/` with labels — not extracting more domain brains; behavior-preserving. C only until Gate B.
+
+**Gate B signal:** Victor 2026-08-27 —「採用，覆蓋」. Covered onto formal B (`apps/web/app.js` + `apps/web/index.html`); B keeps Google Drive reconcile busy/conflict + Google-gate intro boot.
 
 **Builds on (do not redo):** `20260827-leftover-cleanup-17` (account chrome presentation + markup already in `shell/account-chrome.js`), `20260827-leftover-abcd` / photo-crop session math in `shell/photo-crop.js`, existing `shell/navigation.js` (screen `go`/`back` only).
 
@@ -99,16 +101,16 @@ Thin the C facade (`apps/web/c/app.js`) by moving **pure DOM-wiring / open-close
 
 ## Acceptance criteria
 
-- [ ] A–D wire clusters live under `PetLiveWeb.shell.*`; C facade only composes + injects callbacks
-- [ ] Behavior-preserving: photo-crop drag/zoom/save/cancel; nav open/close/Escape/manual; account chip popover; intro boot-to-home; cloud chrome paint visibility
-- [ ] No Google Drive transport / `pushCloudBackup` / form submit handlers moved into shell
-- [ ] Formal B / `apps/web/app.js` untouched
-- [ ] `c/index.html` loads changed shell scripts before `c/app.js` with bumped `?v=`
-- [ ] `node --check` on touched shell + `c/app.js`; relevant qa passes if added
+- [x] A–D wire clusters live under `PetLiveWeb.shell.*`; C facade only composes + injects callbacks
+- [x] Behavior-preserving: photo-crop drag/zoom/save/cancel; nav open/close/Escape/manual; account chip popover; intro boot-to-home; cloud chrome paint visibility
+- [x] No Google Drive transport / `pushCloudBackup` / form submit handlers moved into shell
+- [x] Formal B covered after Gate B「採用，覆蓋」(`apps/web/app.js` + `index.html`)
+- [x] `c/index.html` / `index.html` load changed shell scripts before facade with bumped `?v=`
+- [x] `node --check` on touched shell + facades; relevant qa passes if added
 
 ## Notes for Victor（白話／五歲聽得懂）
 
-電線亂在大房間（`c/app.js`）裡：誰聽按鈕、誰開關選單、誰畫帳號頭像。這盒只把四捆電線搬進標好的殼子（`shell/`），插頭還是原來那些——不會改藥、不會改存檔、不會動正式 B。
+電線亂在大房間（`c/app.js`）裡：誰聽按鈕、誰開關選單、誰畫帳號頭像。這盒只把四捆電線搬進標好的殼子（`shell/`），插頭還是原來那些——不會改藥、不會改存檔。Gate B 已「採用，覆蓋」到正式 B。
 
 | 你說的「整理電線」 | 這盒切片 |
 |---|---|
@@ -116,5 +118,3 @@ Thin the C facade (`apps/web/c/app.js`) by moving **pure DOM-wiring / open-close
 | 玻璃選單開／關 | **B** |
 | 帳號／雲端外殼怎麼畫 | **C** |
 | 進門／登入聽線（不含真正傳雲端） | **D** |
-
-Gate A 你已回「確認」；寫完提案後由 parent 翻 `gate_a` → approved 再叫 Builder。做完再問你要不要採用（Gate B）。

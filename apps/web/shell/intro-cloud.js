@@ -35,6 +35,8 @@
       onLogin,
       onLogout,
       onOpenOwnerSettings,
+      onSync,
+      onRestore,
       onSyncPreview,
       onSwitchPreview,
       onGoHome,
@@ -91,11 +93,21 @@
     accountPopoverSettings?.addEventListener("click", () => {
       if (typeof onOpenOwnerSettings === "function") onOpenOwnerSettings();
     });
+    // onSync / onRestore: B owns busy-check + close + Drive work.
+    // onSyncPreview: C stub fallback (shell closes menu first).
     accountPopoverSync?.addEventListener("click", () => {
+      if (typeof onSync === "function") {
+        onSync();
+        return;
+      }
       if (typeof closeAccountMenu === "function") closeAccountMenu();
       if (typeof onSyncPreview === "function") onSyncPreview();
     });
     accountPopoverRestore?.addEventListener("click", () => {
+      if (typeof onRestore === "function") {
+        onRestore();
+        return;
+      }
       if (typeof closeAccountMenu === "function") closeAccountMenu();
       if (typeof onSyncPreview === "function") onSyncPreview();
     });

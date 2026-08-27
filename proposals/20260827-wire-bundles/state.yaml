@@ -1,14 +1,15 @@
 id: "20260827-wire-bundles"
 title: "C — bundle facade wires into shell (photo-crop, nav, account/cloud, intro)"
 version: 2
-status: candidate_ready
+status: adopted
 
 gate_a:
   status: approved
   note: "Victor 2026-08-27 — 可以整理電線？→ 確認"
 
 gate_b:
-  status: pending
+  status: adopted
+  note: "Victor 2026-08-27 —「採用，覆蓋」; B cover onto apps/web/app.js + index.html"
 
 iteration: 1
 max_iterations: 3

@@ -1983,86 +1983,34 @@ function exportPetPhotoCrop(outputSize = 480) {
 }
 
 function bindPetPhotoCropUi() {
-  if (!photoCropEls.viewport || !photoCropEls.zoom) return;
-
-  photoCropEls.zoom.addEventListener("input", () => {
-    if (!photoCropShell?.setZoom(photoCropState, photoCropEls.zoom.value)) return;
-    renderPhotoCropTransform();
-  });
-
-  photoCropEls.viewport.addEventListener("pointerdown", (event) => {
-    if (event.button != null && event.button !== 0) return;
-    if (
-      !photoCropShell?.beginDrag(photoCropState, {
-        pointerId: event.pointerId,
-        clientX: event.clientX,
-        clientY: event.clientY,
-      })
-    ) {
-      return;
-    }
-    photoCropEls.viewport.classList.add("is-dragging");
-    photoCropEls.viewport.setPointerCapture?.(event.pointerId);
-  });
-
-  photoCropEls.viewport.addEventListener("pointermove", (event) => {
-    if (
-      !photoCropShell?.moveDrag(photoCropState, {
-        pointerId: event.pointerId,
-        clientX: event.clientX,
-        clientY: event.clientY,
-      })
-    ) {
-      return;
-    }
-    renderPhotoCropTransform();
-  });
-
-  const endDrag = (event) => {
-    if (!photoCropShell?.endDrag(photoCropState, { pointerId: event?.pointerId })) {
-      return;
-    }
-    photoCropEls.viewport.classList.remove("is-dragging");
-  };
-
-  photoCropEls.viewport.addEventListener("pointerup", endDrag);
-  photoCropEls.viewport.addEventListener("pointercancel", endDrag);
-
-  photoCropEls.cancel?.addEventListener("click", () => {
-    closePetPhotoCrop();
-  });
-
-  photoCropEls.save?.addEventListener("click", () => {
-    const pet = pets.find((p) => p.id === photoCropState.petId) || getCurrentPet();
-    if (!pet) {
+  if (!photoCropEls.viewport || !photoCropEls.zoom || !photoCropShell) return;
+  photoCropShell.bindPhotoCropUi(photoCropEls, photoCropState, {
+    win: window,
+    onRender: renderPhotoCropTransform,
+    onCancel: closePetPhotoCrop,
+    onSave: () => {
+      const pet =
+        pets.find((p) => p.id === photoCropState.petId) || getCurrentPet();
+      if (!pet) {
+        closePetPhotoCrop();
+        return;
+      }
+      const dataUrl = exportPetPhotoCrop(480);
+      if (!dataUrl) {
+        showToast(t("toastPetPhotoFail"));
+        return;
+      }
+      if (!setPetPhoto(pet.id, dataUrl)) {
+        showPersistenceFailure();
+        return;
+      }
+      renderEmergencyPetPhoto(pet);
+      renderPetPicker();
       closePetPhotoCrop();
-      return;
-    }
-    const dataUrl = exportPetPhotoCrop(480);
-    if (!dataUrl) {
-      showToast(t("toastPetPhotoFail"));
-      return;
-    }
-    if (!setPetPhoto(pet.id, dataUrl)) {
-      showPersistenceFailure();
-      return;
-    }
-    renderEmergencyPetPhoto(pet);
-    renderPetPicker();
-    closePetPhotoCrop();
-    showToast(t("toastPetPhotoSaved", { name: pet.name }));
-  });
-
-  photoCropEls.root?.addEventListener("click", (event) => {
-    if (event.target === photoCropEls.root) closePetPhotoCrop();
-  });
-
-  window.addEventListener("resize", () => {
-    if (photoCropState.open) renderPhotoCropTransform();
+      showToast(t("toastPetPhotoSaved", { name: pet.name }));
+    },
   });
 }
-
-bindPetPhotoCropUi();
 
 function renderPetPicker() {
   if (!petPicker || !petsRenderer) return;
@@ -3437,33 +3385,15 @@ function enhanceGlassScreenHeads() {
 }
 
 function syncAppNavBtnIcons(open) {
-  document.querySelectorAll(".js-app-nav-btn").forEach((btn) => {
-    btn.setAttribute("aria-expanded", open ? "true" : "false");
-    const closed = btn.querySelector(".app-nav-label-closed");
-    const opened = btn.querySelector(".app-nav-label-open");
-    if (closed) closed.hidden = !!open;
-    if (opened) opened.hidden = !open;
-  });
+  PetLiveWeb.shell.syncAppNavBtnIcons(document, open);
 }
 
 function closeAppNavMenu() {
-  const panel = document.getElementById("app-nav-panel");
-  if (panel) panel.hidden = true;
-  syncAppNavBtnIcons(false);
+  PetLiveWeb.shell.closeAppNavMenu(document);
 }
 
 function setAppNavMenuOpen(open, anchorBtn) {
-  const panel = document.getElementById("app-nav-panel");
-  if (!panel) return;
-  panel.hidden = !open;
-  syncAppNavBtnIcons(open);
-  if (open && anchorBtn) {
-    const rect = anchorBtn.getBoundingClientRect();
-    panel.style.top = `${Math.max(rect.bottom + 10, 12)}px`;
-    panel.style.right = `${Math.max(12, window.innerWidth - rect.right)}px`;
-    panel.style.left = "auto";
-    panel.style.marginRight = "0";
-  }
+  PetLiveWeb.shell.setAppNavMenuOpen(document, window, open, anchorBtn);
 }
 
 function paintManualScreen() {
@@ -3484,27 +3414,10 @@ function paintManualScreen() {
 }
 
 function initAppNavMenu() {
-  const panel = document.getElementById("app-nav-panel");
-  if (!panel) return;
-
-  document.addEventListener("click", (event) => {
-    const btn = event.target.closest?.(".js-app-nav-btn");
-    if (btn) {
-      event.stopPropagation();
-      const willOpen = panel.hidden;
-      if (willOpen) closeAccountMenu();
-      setAppNavMenuOpen(willOpen, btn);
-      return;
-    }
-    if (panel.hidden) return;
-    if (event.target.closest("#app-nav-panel")) return;
-    closeAppNavMenu();
-  });
-
-  document.addEventListener("keydown", (event) => {
-    if (event.key !== "Escape") return;
-    if (panel.hidden) return;
-    closeAppNavMenu();
+  // #nav-manual-btn already has data-go="manual"; shell closes panel on click.
+  PetLiveWeb.shell.initAppNavMenu(document, {
+    win: window,
+    closeAccountMenu,
   });
 }
 
@@ -4390,6 +4303,7 @@ petsRenderer = PetLiveWeb.domains.pets.createRenderer({
 });
 
 photoCropShell = PetLiveWeb.shell.createPhotoCrop();
+bindPetPhotoCropUi();
 calendarChooserShell = PetLiveWeb.shell.createCalendarChooser();
 
 breedRenderer = PetLiveWeb.domains.breed.createRenderer({
@@ -6114,11 +6028,7 @@ function setIntroStatus(message) {
 }
 
 function closeAccountMenu() {
-  const popover = document.getElementById("account-popover");
-  if (popover) popover.hidden = true;
-  document.querySelectorAll(".js-account-chip").forEach((chip) => {
-    chip.setAttribute("aria-expanded", "false");
-  });
+  PetLiveWeb.shell.closeAccountMenu(document);
 }
 
 function getAccountSessionForChrome() {
@@ -6132,105 +6042,36 @@ function getAccountSessionForChrome() {
 }
 
 function setAccountAvatar(imgEl, fallbackEl, picture, initial) {
-  if (imgEl) {
-    if (picture) {
-      imgEl.src = picture;
-      imgEl.hidden = false;
-    } else {
-      imgEl.removeAttribute("src");
-      imgEl.hidden = true;
-    }
-  }
-  if (fallbackEl) {
-    fallbackEl.textContent = initial || "?";
-    fallbackEl.hidden = Boolean(picture);
-  }
+  PetLiveWeb.shell.setAccountAvatar(imgEl, fallbackEl, picture, initial);
 }
 
 function positionAccountPopover(anchorChip) {
-  const popover = document.getElementById("account-popover");
-  if (!popover || !anchorChip) return;
-  const rect = anchorChip.getBoundingClientRect();
-  const width = Math.min(300, window.innerWidth - 28);
-  let left = rect.right - width;
-  left = Math.min(Math.max(14, left), window.innerWidth - width - 14);
-  popover.style.top = `${Math.max(rect.bottom + 10, 12)}px`;
-  popover.style.left = `${left}px`;
-  popover.style.right = "auto";
+  PetLiveWeb.shell.positionAccountPopover(document, window, anchorChip);
 }
 
 function paintAccountMenu(session) {
-  const ownerBtn = document.getElementById("owner-settings-btn");
-  const homeMenu = document.getElementById("account-menu");
-  const chips = document.querySelectorAll(".js-account-chip");
-  const popName = document.getElementById("account-popover-name");
-  const popEmail = document.getElementById("account-popover-email");
-  const popAvatar = document.getElementById("account-popover-avatar");
-  const popFallback = document.getElementById("account-popover-fallback");
-  const planValue = document.getElementById("account-popover-plan-value");
-
   const view = PetLiveWeb.shell.buildAccountChromePresentation(session, {
     fallbackLabel: t("accountFallback"),
   });
-
-  // Discarded gear — always hidden; owner settings via account popover only.
-  if (ownerBtn) ownerBtn.hidden = view.hideOwnerGear;
-  if (homeMenu) homeMenu.hidden = view.hideAccountMenus;
-  document.querySelectorAll(".screen-head-actions .account-menu").forEach((el) => {
-    el.hidden = view.hideAccountMenus;
+  PetLiveWeb.shell.applyAccountMenuPaint(document, view, {
+    syncStatusText: view.signedIn ? accountSyncStatusText() : "",
+    chipAriaLabel: t("accountChipAria"),
   });
+  if (!view.signedIn) return;
 
-  if (!view.signedIn) {
-    closeAccountMenu();
-    return;
-  }
-
-  const { email, picture, displayName, initial } = view;
-
-  chips.forEach((chip) => {
-    chip.setAttribute("aria-haspopup", "true");
-    chip.setAttribute("aria-controls", "account-popover");
-    chip.setAttribute("data-i18n-aria", "accountChipAria");
-    const chipAvatar = chip.querySelector(".account-chip-avatar");
-    const chipFallback = chip.querySelector(".account-chip-fallback");
-    const chipName = chip.querySelector(".account-chip-name");
-    if (chipName) {
-      chipName.removeAttribute("data-i18n");
-      chipName.textContent = displayName;
-    }
-    chip.setAttribute("aria-label", t("accountChipAria"));
-    chip.title = displayName;
-    setAccountAvatar(chipAvatar, chipFallback, picture, initial);
-  });
-
-  if (popName) popName.textContent = displayName;
-  if (popEmail) {
-    popEmail.textContent = email;
-    popEmail.hidden = !email;
-  }
-  if (planValue) {
-    planValue.textContent = accountSyncStatusText();
-  }
-
+  // B: keep live reconcile busy/conflict chrome (shell defaults clear these).
+  const busy = isCloudReconcileBusy();
   const popSyncBtn = document.getElementById("account-popover-edit");
   const popRestoreBtn = document.getElementById("account-popover-restore");
   const conflictHint = document.getElementById("account-popover-conflict-hint");
-  const busy = isCloudReconcileBusy();
-  if (popSyncBtn) {
-    popSyncBtn.hidden = !view.showSyncActions;
-    popSyncBtn.disabled = busy;
-  }
-  if (popRestoreBtn) {
-    popRestoreBtn.hidden = !view.showSyncActions;
-    popRestoreBtn.disabled = busy;
-  }
+  if (popSyncBtn) popSyncBtn.disabled = busy;
+  if (popRestoreBtn) popRestoreBtn.disabled = busy;
   if (conflictHint) {
-    // B keeps live conflict hint (shell presentation defaults hideConflictHint).
     conflictHint.hidden = !cloudSyncConflict || busy;
-    conflictHint.textContent = cloudSyncConflict ? t("accountSyncConflictHint") : "";
+    conflictHint.textContent = cloudSyncConflict
+      ? t("accountSyncConflictHint")
+      : "";
   }
-
-  setAccountAvatar(popAvatar, popFallback, picture, initial);
 }
 
 function liveGoogleSignedIn() {
@@ -6239,39 +6080,34 @@ function liveGoogleSignedIn() {
 
 function paintCloudChrome() {
   const session = getAccountSessionForChrome();
-  const loginBtn = document.getElementById("intro-login-btn");
-  const account = document.getElementById("intro-account");
-  const avatar = document.getElementById("intro-avatar");
-  const originHint = document.getElementById("intro-origin-hint");
+  const origin = window.location.origin || "";
 
   paintAccountMenu(session);
   paintReconcileUi();
 
-  if (loginBtn) loginBtn.hidden = Boolean(session.signedIn);
-  if (account) account.hidden = !session.signedIn;
-  if (avatar) {
-    if (session.profile?.picture) {
-      avatar.src = session.profile.picture;
-      avatar.hidden = false;
-    } else {
-      avatar.removeAttribute("src");
-      avatar.hidden = true;
-    }
-  }
+  PetLiveWeb.shell.applyIntroCloudVisibility(
+    {
+      loginBtn: document.getElementById("intro-login-btn"),
+      account: document.getElementById("intro-account"),
+      avatar: document.getElementById("intro-avatar"),
+    },
+    session
+  );
 
+  const originHint = document.getElementById("intro-origin-hint");
   if (originHint) {
-    const origin = window.location.origin || "";
-    const isLanHttp =
-      /^http:\/\/(\d{1,3}\.){3}\d{1,3}(:\d+)?$/i.test(origin) ||
-      /^http:\/\/[^.]+\.local(:\d+)?$/i.test(origin);
-    const isLocalhost =
-      /^https?:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/i.test(origin);
-    if (!session.configured) {
+    const hint = PetLiveWeb.shell.resolveOriginHint(
+      { configured: session.configured, origin },
+      {
+        needConfig: t("cloudBackupNeedConfig"),
+        lanBlocked: t("oauthLanBlocked", { origin }),
+        originHint: "",
+      }
+    );
+    // B: hide generic OAuth origin reminder on Pages/localhost; show config/LAN only.
+    if (!session.configured || hint.text) {
       originHint.hidden = false;
-      originHint.textContent = t("cloudBackupNeedConfig");
-    } else if (isLanHttp && !isLocalhost) {
-      originHint.hidden = false;
-      originHint.textContent = t("oauthLanBlocked", { origin });
+      originHint.textContent = hint.text;
     } else {
       originHint.hidden = true;
       originHint.textContent = "";
@@ -6439,24 +6275,6 @@ function enterAppFromIntro() {
 }
 
 function initIntroAndCloud() {
-  const loginBtn = document.getElementById("intro-login-btn");
-  const logoutBtn = document.getElementById("intro-logout-btn");
-  const accountPopover = document.getElementById("account-popover");
-  const accountPopoverSettings = document.getElementById(
-    "account-popover-settings"
-  );
-  const accountPopoverSync = document.getElementById("account-popover-edit");
-  const accountPopoverRestore = document.getElementById(
-    "account-popover-restore"
-  );
-  const accountPopoverHome = document.getElementById("account-popover-home");
-  const accountPopoverSwitch = document.getElementById(
-    "account-popover-switch"
-  );
-  const accountPopoverLogout = document.getElementById(
-    "account-popover-logout"
-  );
-
   function doSignOut() {
     closeAccountMenu();
     googleDriveAuth?.signOut?.();
@@ -6482,96 +6300,56 @@ function initIntroAndCloud() {
     handleGoogleSignIn({ enterApp: true });
   }
 
-  function toggleAccountMenuFromChip(chip) {
-    if (!accountPopover || !chip) return;
-    closeAppNavMenu();
-    const willOpen = accountPopover.hidden;
-    document.querySelectorAll(".js-account-chip").forEach((el) => {
-      el.setAttribute("aria-expanded", "false");
-    });
-    if (willOpen) {
-      positionAccountPopover(chip);
-      accountPopover.hidden = false;
-      chip.setAttribute("aria-expanded", "true");
-    } else {
-      accountPopover.hidden = true;
-    }
-  }
-
-  loginBtn?.addEventListener("click", startWithGoogleOrEnter);
-  logoutBtn?.addEventListener("click", doSignOut);
-
-  document.addEventListener("click", (event) => {
-    const chip = event.target.closest?.(".js-account-chip");
-    if (chip) {
-      event.stopPropagation();
-      toggleAccountMenuFromChip(chip);
-      return;
-    }
-    if (!accountPopover || accountPopover.hidden) return;
-    if (event.target.closest("#account-popover")) return;
-    closeAccountMenu();
+  PetLiveWeb.shell.bindIntroCloudListeners(document, window, {
+    onLogin: startWithGoogleOrEnter,
+    onLogout: doSignOut,
+    onOpenOwnerSettings: openOwnerSettingsFromAccount,
+    onSync: async () => {
+      if (isCloudReconcileBusy()) return;
+      closeAccountMenu();
+      try {
+        await googleDriveAuth?.ensureDriveAccess?.();
+      } catch {
+        showToast(t("cloudBackupFail"));
+        return;
+      }
+      await pushCloudBackup({ silent: false });
+    },
+    onRestore: async () => {
+      if (isCloudReconcileBusy()) return;
+      if (!window.confirm(t("accountRestoreConfirm"))) return;
+      closeAccountMenu();
+      try {
+        await googleDriveAuth?.ensureDriveAccess?.();
+      } catch {
+        showToast(t("cloudBackupFail"));
+        return;
+      }
+      await pullCloudBackup({ silent: false });
+    },
+    onGoHome: () => go("home"),
+    onSwitchPreview: () => {
+      if (googleDriveAuth) {
+        handleGoogleSignIn({ enterApp: false });
+      } else {
+        showToast(t("accountSwitchPreview"));
+      }
+    },
+    onPaint: paintCloudChrome,
+    closeAccountMenu,
+    closeAppNavMenu,
+    positionAccountPopover: (doc, win, chip) => {
+      PetLiveWeb.shell.positionAccountPopover(doc, win, chip);
+    },
+    registerSessionChange: (paintFn) => {
+      googleDriveAuth?.onSessionChange?.(paintFn);
+    },
   });
-
-  accountPopoverSettings?.addEventListener("click", openOwnerSettingsFromAccount);
-  accountPopoverSync?.addEventListener("click", async () => {
-    if (isCloudReconcileBusy()) return;
-    closeAccountMenu();
-    try {
-      await googleDriveAuth?.ensureDriveAccess?.();
-    } catch {
-      showToast(t("cloudBackupFail"));
-      return;
-    }
-    await pushCloudBackup({ silent: false });
-  });
-  accountPopoverRestore?.addEventListener("click", async () => {
-    if (isCloudReconcileBusy()) return;
-    if (!window.confirm(t("accountRestoreConfirm"))) return;
-    closeAccountMenu();
-    try {
-      await googleDriveAuth?.ensureDriveAccess?.();
-    } catch {
-      showToast(t("cloudBackupFail"));
-      return;
-    }
-    await pullCloudBackup({ silent: false });
-  });
-  accountPopoverHome?.addEventListener("click", () => {
-    closeAccountMenu();
-    go("home");
-  });
-  accountPopoverSwitch?.addEventListener("click", () => {
-    closeAccountMenu();
-    if (googleDriveAuth) {
-      handleGoogleSignIn({ enterApp: false });
-    } else {
-      showToast(t("accountSwitchPreview"));
-    }
-  });
-  accountPopoverLogout?.addEventListener("click", doSignOut);
-
-  document.addEventListener("keydown", (event) => {
-    if (event.key !== "Escape") return;
-    if (!accountPopover || accountPopover.hidden) return;
-    closeAccountMenu();
-  });
-
-  window.addEventListener("resize", () => {
-    if (accountPopover && !accountPopover.hidden) {
-      const openChip = document.querySelector(
-        '.js-account-chip[aria-expanded="true"]'
-      );
-      if (openChip) positionAccountPopover(openChip);
-    }
-  });
-
-  googleDriveAuth?.onSessionChange?.(paintCloudChrome);
-  paintCloudChrome();
 
   // Boot: A (intro) by default → Google login enters B.
   // Already signed in → B. Escape hatch: ?app=1 / screen=home / ?demo=1.
   // Do NOT skip A for INTRO_SEEN or hasRealLocalData alone.
+  // Do NOT use C bootSurfaceToHome — preserves B Google-gate / local-first.
   try {
     const params = new URLSearchParams(window.location.search || "");
     const forceApp =
