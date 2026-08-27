@@ -1,7 +1,7 @@
 ---
 id: 20260827-leftover-abcd
 title: Leftover ABCD — crop session, drug-note hydrate, copy card, timeline skip-noop
-status: candidate_ready
+status: adopted
 author: planner
 candidate_branch: "cursor/leftover-abcd-8ec1"
 candidate_path: "proposals/20260827-leftover-abcd"
@@ -13,7 +13,8 @@ updated: 2026-08-27
 
 Companion: `state.yaml`.
 
-**Gate A:** Victor 2026-08-27 —「ABCD都處理，處理完問我是否採用」. C only; stop at Gate B.
+**Gate A:** Victor 2026-08-27 —「ABCD都處理，處理完問我是否採用」. C only; stop at Gate B.  
+**Gate B:** Victor 採用並覆蓋 B 2026-08-27.
 
 ## Goal
 
@@ -39,14 +40,13 @@ Session helpers: initial/open/close state, pointer drag offsets, overlay flags (
 
 ## Out of scope
 
-- Formal B cover (ask at Gate B)
 - Canvas crop export, IndexedDB
 - Full keyed `.tl-item` patch reconcile (PERF-03 steps 2–3)
 - CSS / medical copy changes
 
 ## Likely files
 
-`apps/web/shell/photo-crop.js`, `domains/timeline/render.js`, `domains/emergency/render.js`, `apps/web/c/app.js`, `c/index.html` `?v=`, tests.
+`apps/web/shell/photo-crop.js`, `domains/timeline/render.js`, `domains/emergency/render.js`, `apps/web/c/app.js`, `c/index.html` `?v=`, `apps/web/app.js`, `index.html` (B cover), tests.
 
 ## Risks
 
@@ -57,5 +57,5 @@ Session helpers: initial/open/close state, pointer drag offsets, overlay flags (
 ## Acceptance criteria
 
 - [x] A–D builders exist; C facades thin
-- [x] Tests pass; `node --check apps/web/c/app.js`
-- [x] No silent B cover
+- [x] Tests pass; `node --check apps/web/c/app.js apps/web/app.js`
+- [x] Formal B covered after Victor 採用並覆蓋
