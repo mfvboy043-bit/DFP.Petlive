@@ -54,9 +54,11 @@
 
     if (shouldHideDock(screen, hideOnScreens)) {
       dock.hidden = true;
+      doc.documentElement?.classList?.remove("has-glass-dock");
       return;
     }
     dock.hidden = false;
+    doc.documentElement?.classList?.add("has-glass-dock");
 
     const dockKey = dockKeyForScreen(screen);
     let activeBtn = null;

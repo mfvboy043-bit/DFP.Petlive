@@ -4764,6 +4764,10 @@ html[lang="en"] .e-owner-k::after {
   isolation: isolate;
 
   right: max(16px, env(safe-area-inset-right));
+  bottom: max(18px, calc(18px + env(safe-area-inset-bottom)));
+}
+
+html.has-glass-dock .lang-switcher {
   bottom: calc(
     var(--glass-dock-offset, 78px) + env(safe-area-inset-bottom, 0px)
   );
@@ -7914,6 +7918,10 @@ html.is-proof-lightbox-open body {
 
   .lang-switcher {
     right: max(14px, env(safe-area-inset-right));
+    bottom: max(14px, calc(14px + env(safe-area-inset-bottom)));
+  }
+
+  html.has-glass-dock .lang-switcher {
     bottom: calc(
       var(--glass-dock-offset, 78px) + env(safe-area-inset-bottom, 0px)
     );
@@ -8493,14 +8501,14 @@ body.demo-tour-active .demo-tour-target {
   }
 }
 
-/* Keep scroll content clear of the fixed dock */
-.app {
+/* Keep scroll content clear of the fixed dock (only while dock visible) */
+html.has-glass-dock .app {
   padding-bottom: calc(
     var(--glass-dock-offset) + env(safe-area-inset-bottom, 0px) + 12px
   );
 }
 
-.toast {
+html.has-glass-dock .toast {
   bottom: calc(
     var(--glass-dock-offset) + env(safe-area-inset-bottom, 0px) + 12px
   );

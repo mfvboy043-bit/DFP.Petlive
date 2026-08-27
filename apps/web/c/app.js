@@ -2995,7 +2995,7 @@ function paintGlassDock({ animateJump } = {}) {
     getActiveScreen: () =>
       app.querySelector(".screen.is-active")?.dataset.screen || "home",
     animateJump: Boolean(animateJump),
-    hideOnScreens: [],
+    hideOnScreens: ["home"],
   });
 }
 
@@ -3004,7 +3004,7 @@ function initGlassDock() {
     win: window,
     getActiveScreen: () =>
       app.querySelector(".screen.is-active")?.dataset.screen || "home",
-    hideOnScreens: [],
+    hideOnScreens: ["home"],
   });
 }
 
