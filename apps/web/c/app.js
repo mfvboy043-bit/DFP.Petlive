@@ -2199,119 +2199,41 @@ function writeLabReportsForPet(petId, reports) {
 function renderEmergencyLabNav(pet) {
   const sub = document.getElementById("e-lab-sub");
   if (!sub) return;
-  const reports = getLabReportsForPet(pet?.id);
-  if (!reports.length) {
-    sub.setAttribute("data-i18n", "eLabSubEmpty");
-    sub.textContent = t("eLabSubEmpty");
-    return;
+  const presentation = labsRenderer.buildEmergencyNavPresentation(
+    getLabReportsForPet(pet?.id)
+  );
+  if (presentation.i18nMode === "empty") {
+    sub.setAttribute("data-i18n", presentation.i18nKey);
+  } else {
+    sub.removeAttribute("data-i18n");
   }
-  const latest = reports[0];
-  sub.removeAttribute("data-i18n");
-  sub.textContent = t("eLabSubLatest", {
-    date: latest.date,
-    types: formatLabTypes(latest.types),
-  });
+  sub.textContent = presentation.subText;
 }
 
 function renderEmergencyImagingNav(pet) {
   const sub = document.getElementById("e-xray-sub");
   if (!sub) return;
-  const entries = getImagingVisitEntries(pet);
-  if (!entries.length) {
-    sub.setAttribute("data-i18n", "eXraySubEmpty");
-    sub.textContent = t("eXraySubEmpty");
-    return;
+  const presentation = imagingRenderer.buildEmergencyNavPresentation(
+    getImagingVisitEntries(pet)
+  );
+  if (presentation.i18nMode === "empty") {
+    sub.setAttribute("data-i18n", presentation.i18nKey);
+  } else {
+    sub.removeAttribute("data-i18n");
   }
-  const latest = entries[0].visit;
-  sub.removeAttribute("data-i18n");
-  sub.textContent = t("eXraySubLatest", {
-    date: latest.date,
-    types: formatImagingTypes(latest),
-  });
+  sub.textContent = presentation.subText;
 }
 
 function renderImagingList(pet) {
   const list = document.getElementById("imaging-list");
   if (!list) return;
-  const entries = getImagingVisitEntries(pet);
-  if (!entries.length) {
-    list.innerHTML = `<li class="imaging-list-empty">
-      <p>${t("imagingEmpty")}</p>
-      <button type="button" class="btn btn-ghost" data-go-timeline-from-imaging>${t(
-        "imagingEmptyGoTimeline"
-      )}</button>
-    </li>`;
-    return;
-  }
-  list.innerHTML = entries
-    .map(({ visit, index }) => {
-      const clinic = escapeAlertHtml(visitClinicLabel(visit));
-      return `<li class="imaging-item">
-        <button
-          type="button"
-          class="imaging-item-btn"
-          data-open-visit-imaging="${index}"
-        >
-          <time datetime="${escapeAlertHtml(visit.date)}">${escapeAlertHtml(
-            visit.date
-          )}</time>
-          <span class="imaging-item-clinic">${clinic}</span>
-          <span class="imaging-item-types">${escapeAlertHtml(
-            formatImagingTypes(visit)
-          )}</span>
-        </button>
-      </li>`;
-    })
-    .join("");
+  list.innerHTML = imagingRenderer.buildImagingListHtml(getImagingVisitEntries(pet));
 }
 
 function renderLabList(pet) {
   const list = document.getElementById("lab-list");
   if (!list) return;
-  const reports = getLabReportsForPet(pet?.id);
-  if (!reports.length) {
-    list.innerHTML = `<li class="lab-list-empty">${t("labEmpty")}</li>`;
-    return;
-  }
-  list.innerHTML = reports
-    .map((report) => {
-      const clinic = report.clinic
-        ? escapeAlertHtml(report.clinic)
-        : t("labNoClinic");
-      const note = report.note
-        ? `<p class="lab-item-note">${escapeAlertHtml(report.note)}</p>`
-        : "";
-      const thumbs = (report.photos || [])
-        .map(
-          (url) => `
-        <button
-          type="button"
-          data-proof-lightbox
-          data-proof-caption="labPhotoCaption"
-          aria-label="${t("proofLightboxOpen")}"
-        >
-          <img src="${url}" alt="" />
-        </button>`
-        )
-        .join("");
-      return `<li class="lab-item" data-lab-id="${escapeAlertHtml(report.id)}">
-        <div class="lab-item-head">
-          <time datetime="${escapeAlertHtml(report.date)}">${escapeAlertHtml(
-            report.date
-          )}</time>
-          <button
-            type="button"
-            class="btn btn-ghost lab-item-remove"
-            data-lab-remove="${escapeAlertHtml(report.id)}"
-          >${t("labRemove")}</button>
-        </div>
-        <p class="lab-item-clinic">${clinic}</p>
-        <p class="lab-item-types">${escapeAlertHtml(formatLabTypes(report.types))}</p>
-        ${note}
-        <div class="lab-item-thumbs">${thumbs}</div>
-      </li>`;
-    })
-    .join("");
+  list.innerHTML = labsRenderer.buildLabListHtml(getLabReportsForPet(pet?.id));
 }
 
 function renderLabPhotoPreviews() {
@@ -4019,6 +3941,8 @@ let timelineRenderer;
 let emergencyRenderer;
 let vaccineRenderer;
 let parasiteRenderer;
+let labsRenderer;
+let imagingRenderer;
 
 const VACCINE_PROTECTION_META = PetLiveWeb.domains.vaccines.PROTECTION_META;
 
@@ -5247,6 +5171,19 @@ vaccineRenderer = PetLiveWeb.domains.vaccines.createRenderer({
 parasiteRenderer = PetLiveWeb.domains.parasite.createRenderer({
   label: (key, params) => t(key, params),
   parasiteStatusLabel,
+});
+
+labsRenderer = PetLiveWeb.domains.labs.createRenderer({
+  label: (key, params) => t(key, params),
+  escapeHtml: escapeAlertHtml,
+  formatLabTypes,
+});
+
+imagingRenderer = PetLiveWeb.domains.imaging.createRenderer({
+  label: (key, params) => t(key, params),
+  escapeHtml: escapeAlertHtml,
+  visitClinicLabel,
+  formatImagingTypes,
 });
 
 function renderTimeline(pet) {

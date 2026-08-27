@@ -1,0 +1,36 @@
+id: "20260827-labs-imaging-view-render"
+title: "Labs + imaging view render — extract HTML/presentation from app.js"
+version: 2
+status: candidate_ready
+
+gate_a:
+  status: approved
+  note: "Victor 確認 2026-08-27"
+
+gate_b:
+  status: pending
+
+iteration: 1
+max_iterations: 3
+
+candidate:
+  branch: "proposal/labs-imaging-view-render"
+  path: "proposals/20260827-labs-imaging-view-render"
+  worktree: ""
+
+reviews:
+  pharmacist: skipped
+  qa: pass
+  ui: skipped
+
+rerun: []
+blocking_issues: []
+non_blocking: []
+builder_scope:
+  - "apps/web/domains/labs/render.js"
+  - "apps/web/domains/imaging/render.js"
+  - "apps/web/c/app.js"
+  - "apps/web/c/index.html"
+  - "qa/tests/web-labs-render.test.js"
+  - "qa/tests/web-imaging-render.test.js"
+halt_reason: ""
