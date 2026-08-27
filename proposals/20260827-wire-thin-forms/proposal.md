@@ -1,7 +1,7 @@
 ---
 id: 20260827-wire-thin-forms
 title: "Wave 2 — thin form-save + screen-paint orchestration wires (C)"
-status: reviewing
+status: adopted
 author: planner
 candidate_branch: "cursor/wire-thin-forms-6f84"
 candidate_path: "proposals/20260827-wire-thin-forms"
@@ -13,7 +13,9 @@ updated: 2026-08-27
 
 Companion: `state.yaml` (v2 source of truth for gates / iteration).
 
-**Gate A signal:** Victor 2026-08-27 —「第2波，請總指揮開始指揮」→ Orchestrator Wave 2. Parent may flip Gate A after this draft; file keeps `gate_a.status: pending` until that flip.
+**Gate A signal:** Victor 2026-08-27 —「第2波，請總指揮開始指揮」→ Orchestrator Wave 2.
+
+**Gate B signal:** Victor 2026-08-27 —「採用，覆蓋」. Covered onto formal B (`apps/web/app.js` + `apps/web/index.html`); B keeps `demoBlocksWrite`, `bumpLocalDataRevision` on alert writes, and Google/reconcile chrome.
 
 **Builds on (do not redo):**
 `20260827-wire-bundles` (shell wire bundles: photo-crop / app-nav / account-chrome / intro-cloud),

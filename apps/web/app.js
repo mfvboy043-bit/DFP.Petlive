@@ -902,61 +902,53 @@ function saveAlertFromForm() {
     severity: selectedAlertSeverity,
     sinceDate,
   };
-  const validation = alertsController.validateOwnerDraft(draft);
-  if (!validation.ok) {
-    showToast(t("toastNeedAlertDescription"));
-    return;
-  }
-
-  const editId = alertEditIdInput?.value || "";
-  let result;
-  if (editId) {
-    const ownerAlerts = getOwnerAlerts(pet.id);
-    const index = ownerAlerts.findIndex((alert) => alert.id === editId);
-    const base =
-      index >= 0
-        ? ownerAlerts[index]
-        : getAlertsForPet(pet).find((alert) => alert.id === editId) || {};
-    result = alertsController.updateOwnerAlert(pet.id, editId, {
-      ...draft,
-      createdAt: base.createdAt || new Date().toISOString(),
-    });
-    if (result.ok) {
-      bumpLocalDataRevision();
-      showToast(t("toastAlertUpdated"));
-    }
-  } else {
-    result = alertsController.createOwnerAlert(pet.id, draft);
-    if (result.ok) {
-      bumpLocalDataRevision();
-      showToast(t("toastAlertSaved"));
-    }
-  }
-
-  if (!result.ok) {
-    showPersistenceFailure();
-    return;
-  }
-
-  const keepType = selectedAlertType;
-  resetAlertForm({ keepType });
-  applySelectedPet();
+  PetLiveWeb.shell.saveAlertFromForm({
+    pet,
+    draft,
+    editId: alertEditIdInput?.value || "",
+    selectedAlertType,
+    validateOwnerDraft: (d) => alertsController.validateOwnerDraft(d),
+    updateOwnerAlert: (petId, id, payload) => {
+      const result = alertsController.updateOwnerAlert(petId, id, payload);
+      if (result.ok) bumpLocalDataRevision();
+      return result;
+    },
+    createOwnerAlert: (petId, d) => {
+      const result = alertsController.createOwnerAlert(petId, d);
+      if (result.ok) bumpLocalDataRevision();
+      return result;
+    },
+    findBaseAlert: (editId) => {
+      const ownerAlerts = getOwnerAlerts(pet.id);
+      const index = ownerAlerts.findIndex((alert) => alert.id === editId);
+      if (index >= 0) return ownerAlerts[index];
+      return getAlertsForPet(pet).find((alert) => alert.id === editId) || {};
+    },
+    showToast,
+    t,
+    showPersistenceFailure,
+    resetAlertForm,
+    applySelectedPet,
+  });
 }
 
 function deleteAlertById(alertId) {
   if (demoBlocksWrite()) return;
-  const pet = getCurrentPet();
-  if (!pet || !alertId) return;
-  const result = alertsController.deleteOrSuppressAlert(pet, alertId);
-  if (!result.ok) {
-    showPersistenceFailure();
-    return;
-  }
-  if (result.kind !== "none") bumpLocalDataRevision();
-
-  if (alertEditIdInput?.value === alertId) resetAlertForm();
-  showToast(t("toastAlertDeleted"));
-  applySelectedPet();
+  PetLiveWeb.shell.deleteAlertById({
+    pet: getCurrentPet(),
+    alertId,
+    deleteOrSuppressAlert: (pet, id) => {
+      const result = alertsController.deleteOrSuppressAlert(pet, id);
+      if (result.ok && result.kind !== "none") bumpLocalDataRevision();
+      return result;
+    },
+    isEditingAlertId: alertEditIdInput?.value === alertId,
+    showPersistenceFailure,
+    resetAlertForm,
+    showToast,
+    t,
+    applySelectedPet,
+  });
 }
 
 function parasiteTodayISODate() {
@@ -1187,61 +1179,30 @@ function readParasiteForm(kind) {
 }
 
 function saveParasiteKind(kind, { dosedToday = false, quiet = false } = {}) {
-  if (demoBlocksWrite()) return;
-  const pet = getCurrentPet();
-  if (!pet) return false;
-  let draft = readParasiteForm(kind);
-
-  if (dosedToday) {
-    const lastEl = document.getElementById(`parasite-last-${kind}`);
-    const intervalEl = document.getElementById(`parasite-interval-${kind}`);
-    const nextEl = document.getElementById(`parasite-next-${kind}`);
-    const typedDays = Number(intervalEl?.value);
-    const intervalDays =
-      Number.isFinite(typedDays) && typedDays >= 1 ? typedDays : draft.intervalDays || 30;
-
-    draft = parasiteController.applyDosedToday(
-      { ...draft, intervalDays },
-      { today: parasiteTodayISODate() }
-    );
-
-    if (lastEl) lastEl.value = draft.lastGiven;
-    if (intervalEl) intervalEl.value = String(intervalDays);
-    if (nextEl) nextEl.value = draft.nextDue;
-  }
-
-  const result = parasiteController.saveParasiteKind(pet, kind, draft);
-  if (!result.ok) {
-    if (result.reason === "needProduct") showToast(t("toastParasiteNeedProduct"));
-    else if (result.reason === "needDates") showToast(t("toastParasiteNeedDates"));
-    else if (result.reason === "order") showToast(t("toastParasiteOrder"));
-    return false;
-  }
-
-  // Dual-cover products (e.g. 寵愛 / 全能狗Ｓ) keep both strips in sync.
-  if (result.syncedOtherKind) {
-    fillParasiteKindForm(pet, result.syncedOtherKind);
-  }
-
-  fillParasiteKindForm(pet, kind);
-  renderParasiteStrip(pet);
-  // Preserve pre-extract persist pattern: no applySelectedPet / schedulePetsGraphPersist here.
-  if (!quiet) {
-    const saved = result.draft || draft;
-    showToast(
-      t(
-        saved.productKey && isParasiteDualProduct(saved.productKey)
-          ? "toastParasiteSavedDual"
-          : "toastParasiteSaved",
-        {
-          name: pet.name,
-          kind: parasiteKindTitle(kind),
-          product: saved.product,
-        }
-      )
-    );
-  }
-  return true;
+  if (demoBlocksWrite()) return false;
+  return PetLiveWeb.shell.saveParasiteKind({
+    pet: getCurrentPet(),
+    kind,
+    dosedToday,
+    quiet,
+    readParasiteForm,
+    applyDosedToday: (draft, opts) =>
+      parasiteController.applyDosedToday(draft, opts),
+    getDosedTodayEls: (k) => ({
+      lastEl: document.getElementById(`parasite-last-${k}`),
+      intervalEl: document.getElementById(`parasite-interval-${k}`),
+      nextEl: document.getElementById(`parasite-next-${k}`),
+    }),
+    saveParasiteKind: (pet, k, draft) =>
+      parasiteController.saveParasiteKind(pet, k, draft),
+    fillParasiteKindForm,
+    renderParasiteStrip,
+    showToast,
+    t,
+    isParasiteDualProduct,
+    parasiteKindTitle,
+    parasiteTodayISODate,
+  });
 }
 
 /** Recompute next due from last given + interval (does not mark dosed today). */
@@ -2422,19 +2383,21 @@ function paintEmergencyCardDegradedShell() {
 
 /** Local fallback when PetLive / emergency module is unavailable. */
 function renderEmergencyCardLocal(pet) {
-  paintEmergencyIdentity(pet);
-  eWeight.innerHTML = emergencyRenderer.buildWeightHtml({
-    weight: pet.weight,
-    date: pet.weightDate,
+  PetLiveWeb.shell.renderEmergencyCardLocal({
+    pet,
+    paintEmergencyIdentity,
+    buildWeightHtml: (opts) => emergencyRenderer.buildWeightHtml(opts),
+    getAlertsForPet,
+    syncAlertNavTone,
+    getAlertsBlock: () => eAlerts?.closest(".e-alerts"),
+    renderEmergencyAlertsList,
+    renderEmergencyMeds,
+    renderEmergencyOwner,
+    renderEmergencyPetPhoto,
+    setWeightHtml: (html) => {
+      eWeight.innerHTML = html;
+    },
   });
-  const alerts = getAlertsForPet(pet);
-  syncAlertNavTone(alerts);
-  const alertsBlock = eAlerts?.closest(".e-alerts");
-  alertsBlock?.classList.remove("is-degraded");
-  renderEmergencyAlertsList(alerts);
-  renderEmergencyMeds(pet);
-  renderEmergencyOwner();
-  renderEmergencyPetPhoto(pet);
 }
 
 /**
@@ -2442,83 +2405,45 @@ function renderEmergencyCardLocal(pet) {
  * Snapshot keeps prototype pets[] as source of truth; injectFail demos degrade.
  */
 function renderEmergencyCard(pet) {
-  const generate = window.PetLive?.emergency?.generateEmergencyCard;
-  if (typeof generate !== "function") {
-    renderEmergencyCardLocal(pet);
-    return;
-  }
-
-  const profile = loadOwnerProfile();
-  const snapshot = buildEmergencySnapshot(pet);
-  const injectFail =
-    typeof window.PetLive.readInjectFail === "function"
-      ? window.PetLive.readInjectFail()
-      : {};
-
-  const result = window.PetLive.call(
-    () =>
-      generate(
-        pet.id,
-        {
-          name: profile.name || "",
-          phone: profile.phone || "",
-        },
-        undefined,
-        { snapshot, injectFail }
-      ),
-    null
-  );
-
-  if (!result) {
-    renderEmergencyCardLocal(pet);
-    return;
-  }
-
-  const cardPet = result.pet || pet;
-  paintEmergencyIdentity(pet);
-  if (cardPet.name) eName.textContent = cardPet.name || pet.name;
-
-  const degraded = emergencySelectors.degradedSections(result);
-  const alertsBlock = eAlerts?.closest(".e-alerts");
-
-  if (degraded.weight) {
-    eWeight.textContent = t("emergencyDegradedWeight");
-  } else if (result.latestWeight && result.latestWeight.weight != null) {
-    eWeight.innerHTML = emergencyRenderer.buildWeightHtml({
-      weight: result.latestWeight.weight,
-      date: result.latestWeight.recordedDate || pet.weightDate || "—",
-    });
-  } else {
-    eWeight.innerHTML = emergencyRenderer.buildWeightHtml({
-      weight: pet.weight,
-      date: pet.weightDate,
-    });
-  }
-
-  // Nav tone from local truth; section chrome clears severity when alerts degraded.
-  syncAlertNavTone(getAlertsForPet(pet));
-
-  if (degraded.alerts) {
-    alertsBlock?.classList.remove("is-critical", "is-caution");
-    alertsBlock?.classList.add("is-degraded");
-    eAlerts.innerHTML = emergencyRenderer.buildDegradedListHtml(
-      t("emergencyDegradedAlerts")
-    );
-  } else {
-    alertsBlock?.classList.remove("is-degraded");
-    renderEmergencyAlertsList(result.alerts || []);
-  }
-
-  if (degraded.medications) {
-    eMeds.innerHTML = emergencyRenderer.buildDegradedListHtml(
-      t("emergencyDegradedMeds")
-    );
-  } else {
-    renderEmergencyMedsFromList(result.currentMedications || []);
-  }
-
-  renderEmergencyOwner();
-  renderEmergencyPetPhoto(pet);
+  PetLiveWeb.shell.renderEmergencyCard({
+    pet,
+    generateEmergencyCard: window.PetLive?.emergency?.generateEmergencyCard,
+    loadOwnerProfile,
+    buildEmergencySnapshot,
+    readInjectFail: () =>
+      typeof window.PetLive.readInjectFail === "function"
+        ? window.PetLive.readInjectFail()
+        : {},
+    callModule: (fn, fallback) => window.PetLive.call(fn, fallback),
+    paintEmergencyIdentity,
+    setNameText: (text) => {
+      eName.textContent = text;
+    },
+    degradedSections: (result) => emergencySelectors.degradedSections(result),
+    getAlertsForPet,
+    syncAlertNavTone,
+    getAlertsBlock: () => eAlerts?.closest(".e-alerts"),
+    setWeightText: (text) => {
+      eWeight.textContent = text;
+    },
+    setWeightHtml: (html) => {
+      eWeight.innerHTML = html;
+    },
+    buildWeightHtml: (opts) => emergencyRenderer.buildWeightHtml(opts),
+    setAlertsHtml: (html) => {
+      eAlerts.innerHTML = html;
+    },
+    buildDegradedListHtml: (msg) => emergencyRenderer.buildDegradedListHtml(msg),
+    renderEmergencyAlertsList,
+    setMedsHtml: (html) => {
+      eMeds.innerHTML = html;
+    },
+    renderEmergencyMedsFromList,
+    renderEmergencyMeds,
+    renderEmergencyOwner,
+    renderEmergencyPetPhoto,
+    t,
+  });
 }
 
 function applySelectedPet() {
@@ -2800,52 +2725,28 @@ function setSelectedBreed(value) {
 }
 
 function syncBreedFields({ keepSelection = true, resetExpanded = false } = {}) {
-  const speciesEl = document.getElementById("pet-species");
-  const breedSelect = document.getElementById("breed-select");
-  const breedSearch = document.getElementById("breed-search");
-  const breedChips = document.getElementById("breed-chips");
-  if (!speciesEl || !breedSelect || !breedSearch || !breedChips) return;
-
-  if (typeof getBreedListForSpecies !== "function") {
-    breedChips.innerHTML =
-      "<p class='field-hint'>品種清單載入失敗，請重新整理頁面</p>";
-    return;
-  }
-
-  if (resetExpanded) breedController.reset();
-
-  const species = speciesEl.value;
-  const list = getBreedListForSpecies(species);
-  const previous = keepSelection ? breedSelect.value : "";
-
-  if (species === "other") {
-    breedChips.innerHTML = "";
-    breedChips.classList.remove("is-expanded", "is-collapsed");
-    breedSelect.value = BREED_CUSTOM_VALUE;
-    hideBreedResults();
-    updateBreedExpandToggle();
-    toggleBreedCustomField();
-    return;
-  }
-
-  const stillValid = breedSelectors.isValidSelection(species, previous);
-  const selectedValue = stillValid ? previous : "";
-
-  if (breedController.isExpanded() && typeof getBreedGroupsForSpecies === "function") {
-    breedChips.innerHTML = renderExpandedBreedChips(species);
-    breedChips.classList.add("is-expanded");
-    breedChips.classList.remove("is-collapsed");
-  } else if (typeof getBreedGroupsForSpecies === "function") {
-    breedChips.innerHTML = renderCollapsedBreedChips(species, selectedValue);
-    breedChips.classList.add("is-collapsed");
-    breedChips.classList.remove("is-expanded");
-  } else {
-    breedChips.innerHTML = list.map((breed) => breedRenderer.buildBreedChipHtml(breed)).join("");
-    breedChips.classList.remove("is-expanded", "is-collapsed");
-  }
-
-  setSelectedBreed(selectedValue);
-  updateBreedExpandToggle();
+  PetLiveWeb.shell.syncBreedFields({
+    speciesEl: document.getElementById("pet-species"),
+    breedSelect: document.getElementById("breed-select"),
+    breedSearch: document.getElementById("breed-search"),
+    breedChips: document.getElementById("breed-chips"),
+    keepSelection,
+    resetExpanded,
+    resetExpandState: () => breedController.reset(),
+    getBreedListForSpecies,
+    getBreedGroupsForSpecies,
+    isExpanded: () => breedController.isExpanded(),
+    isValidSelection: (species, previous) =>
+      breedSelectors.isValidSelection(species, previous),
+    customValue: BREED_CUSTOM_VALUE,
+    renderExpandedBreedChips,
+    renderCollapsedBreedChips,
+    buildBreedChipHtml: (breed) => breedRenderer.buildBreedChipHtml(breed),
+    setSelectedBreed,
+    hideBreedResults,
+    updateBreedExpandToggle,
+    toggleBreedCustomField,
+  });
 }
 
 function resolveBreedFromForm(form) {

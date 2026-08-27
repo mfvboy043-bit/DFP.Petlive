@@ -1,14 +1,15 @@
 id: "20260827-wire-thin-forms"
 title: "Wave 2 — thin form-save + screen-paint orchestration wires (C)"
 version: 2
-status: candidate_ready
+status: adopted
 
 gate_a:
   status: approved
   note: "Victor 2026-08-27 — 第2波，請總指揮開始指揮"
 
 gate_b:
-  status: pending
+  status: adopted
+  note: "Victor 2026-08-27 —「採用，覆蓋」; B cover onto apps/web/app.js + index.html"
 
 iteration: 1
 max_iterations: 3
@@ -30,4 +31,8 @@ rerun: []
 blocking_issues: []
 non_blocking: []
 builder_scope: []
+builder_note: >-
+  Gate B: cover Wave 2 shell wires onto formal B (app.js + index.html script tags).
+  Keep B demoBlocksWrite + bumpLocalDataRevision wrappers; Google/reconcile chrome
+  unchanged. Shell modules already shared from C build.
 halt_reason: ""
