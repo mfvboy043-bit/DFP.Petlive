@@ -4803,35 +4803,32 @@ async function appendImagingFiles(files, slot) {
 }
 
 function openVisitImaging(visitIndex) {
-  const pet = getCurrentPet();
-  const visit = pet?.visits?.[visitIndex];
-  if (!visit) return;
-
-  pendingImagingVisitIndex = visitIndex;
-  const imaging = getVisitImaging(visit);
-  pendingXrayPhotos = [...imaging.xrayPhotos];
-  pendingUsPhotos = [...imaging.usPhotos];
-
-  document.getElementById("imaging-proof-name").textContent =
-    visitClinicLabel(visit);
-  document.getElementById("imaging-proof-meta").textContent = visit.date;
-  document.getElementById("imaging-proof-sub").textContent = t(
-    "timelineVisitImagingProofSub"
-  );
-  const targetKicker = document.querySelector(
-    "#imaging-proof-form .archive-pet-kicker"
-  );
-  if (targetKicker) {
-    targetKicker.setAttribute("data-i18n", "timelineVisitImagingTarget");
-    targetKicker.textContent = t("timelineVisitImagingTarget");
-  }
-  const xrayInput = document.getElementById("imaging-xray-photo");
-  const usInput = document.getElementById("imaging-us-photo");
-  if (xrayInput) xrayInput.value = "";
-  if (usInput) usInput.value = "";
-  renderImagingSlotPreviews("xray");
-  renderImagingSlotPreviews("us");
-  go("imaging-proof");
+  PetLiveWeb.shell.openImagingProofScreen({
+    visitIndex,
+    getCurrentPet,
+    getVisitImaging,
+    visitClinicLabel,
+    setPendingImagingVisitIndex: (i) => {
+      pendingImagingVisitIndex = i;
+    },
+    setPendingXrayPhotos: (photos) => {
+      pendingXrayPhotos = photos;
+    },
+    setPendingUsPhotos: (photos) => {
+      pendingUsPhotos = photos;
+    },
+    nameEl: document.getElementById("imaging-proof-name"),
+    metaEl: document.getElementById("imaging-proof-meta"),
+    subEl: document.getElementById("imaging-proof-sub"),
+    kickerEl: document.querySelector(
+      "#imaging-proof-form .archive-pet-kicker"
+    ),
+    xrayInput: document.getElementById("imaging-xray-photo"),
+    usInput: document.getElementById("imaging-us-photo"),
+    renderImagingSlotPreviews,
+    go,
+    t,
+  });
 }
 
 function openCompleteDrugs(visitIndex) {
@@ -4921,97 +4918,24 @@ function saveVisitWeightAtIndex(visitIndex) {
   return true;
 }
 
-timelineList.addEventListener("click", (event) => {
-  const notesToggle = event.target.closest("[data-drug-notes-toggle]");
-  if (notesToggle) {
-    toggleDrugNotesButton(notesToggle);
-    return;
-  }
-  const medDetailToggle = event.target.closest("[data-med-detail-toggle]");
-  if (medDetailToggle) {
-    toggleMedDetailButton(medDetailToggle);
-    return;
-  }
-  const visitWeightToggle = event.target.closest("[data-visit-weight-toggle]");
-  if (visitWeightToggle) {
-    toggleVisitWeightButton(visitWeightToggle);
-    return;
-  }
-  const visitLabsBtn = event.target.closest("[data-open-labs]");
-  if (visitLabsBtn) {
-    go("labs");
-    return;
-  }
-  const visitRxToggle = event.target.closest("[data-visit-rx-toggle]");
-  if (visitRxToggle) {
-    toggleVisitRxButton(visitRxToggle);
-    return;
-  }
-  const visitImagingToggle = event.target.closest("[data-visit-imaging-toggle]");
-  if (visitImagingToggle) {
-    toggleVisitImagingButton(visitImagingToggle);
-    return;
-  }
-  const proofLightboxBtn = event.target.closest("[data-proof-lightbox]");
-  if (proofLightboxBtn) {
-    const img = proofLightboxBtn.querySelector("img");
-    openProofLightbox(img?.currentSrc || img?.src, proofLightboxBtn.dataset.proofCaption);
-    return;
-  }
-  const clearSlotBtn = event.target.closest("[data-visit-proof-clear-slot]");
-  if (clearSlotBtn) {
-    const pet = getCurrentPet();
-    const visitIndex = Number(clearSlotBtn.dataset.visitIndex);
-    const visit = pet.visits[visitIndex];
-    const slot = clearSlotBtn.dataset.visitProofClearSlot;
-    if (!visit || !slot) return;
-    clearVisitProofSlot(visit, slot);
-    showToast(t("toastProofCleared"));
-    applySelectedPet();
-    const toggle = document.querySelector(
-      `[data-visit-rx-toggle][aria-controls="visit-rx-${visitIndex}"]`
-    );
-    if (toggle) toggleVisitRxButton(toggle);
-    return;
-  }
-  const clearImagingBtn = event.target.closest("[data-visit-imaging-clear-slot]");
-  if (clearImagingBtn) {
-    const pet = getCurrentPet();
-    const visitIndex = Number(clearImagingBtn.dataset.visitIndex);
-    const visit = pet?.visits?.[visitIndex];
-    const slot = clearImagingBtn.dataset.visitImagingClearSlot;
-    const photoIndex = Number(clearImagingBtn.dataset.visitImagingClearIndex);
-    if (!visit || !slot) return;
-    clearVisitImagingPhoto(visit, slot, photoIndex);
-    showToast(t("toastImagingCleared"));
-    applySelectedPet();
-    const toggle = document.querySelector(
-      `[data-visit-imaging-toggle][aria-controls="visit-imaging-${visitIndex}"]`
-    );
-    if (toggle) toggleVisitImagingButton(toggle);
-    return;
-  }
-  const visitUpload = event.target.closest("[data-visit-proof-upload]");
-  if (visitUpload) {
-    openVisitProof(Number(visitUpload.dataset.visitProofUpload));
-    return;
-  }
-  const imagingUpload = event.target.closest("[data-visit-imaging-upload]");
-  if (imagingUpload) {
-    openVisitImaging(Number(imagingUpload.dataset.visitImagingUpload));
-    return;
-  }
-  const completeBtn = event.target.closest("[data-complete-visit]");
-  if (completeBtn) {
-    openCompleteDrugs(Number(completeBtn.dataset.completeVisit));
-  }
-});
-
-timelineList.addEventListener("submit", (event) => {
-  const form = event.target.closest("[data-visit-weight-form]");
-  if (!form) return;
-  event.preventDefault();
-  saveVisitWeightAtIndex(Number(form.dataset.visitWeightForm));
+PetLiveWeb.shell.bindTimelineList(timelineList, {
+  toggleDrugNotesButton,
+  toggleMedDetailButton,
+  toggleVisitWeightButton,
+  toggleVisitRxButton,
+  toggleVisitImagingButton,
+  go,
+  openProofLightbox,
+  getCurrentPet,
+  clearVisitProofSlot,
+  clearVisitImagingPhoto,
+  showToast,
+  t,
+  applySelectedPet,
+  openVisitProof,
+  openVisitImaging,
+  openCompleteDrugs,
+  saveVisitWeightAtIndex,
 });
 
 if (eMeds) {
@@ -5597,32 +5521,16 @@ document.getElementById("e-pet-photo-input")?.addEventListener("change", async (
 const langFab = document.getElementById("lang-fab");
 const langMenu = document.getElementById("lang-menu");
 
+const langMenuApi = PetLiveWeb.shell.initLangMenu(
+  { langFab, langMenu, doc: document },
+  {
+    onPickLang: (lang) => setLanguage(lang),
+    onToast: () => showToast(t("langChanged")),
+  }
+);
+
 function closeLangMenu() {
-  if (!langMenu || !langFab) return;
-  langMenu.hidden = true;
-  langFab.setAttribute("aria-expanded", "false");
-}
-
-if (langFab && langMenu) {
-  langFab.addEventListener("click", (event) => {
-    event.stopPropagation();
-    const open = langMenu.hidden;
-    langMenu.hidden = !open;
-    langFab.setAttribute("aria-expanded", open ? "true" : "false");
-  });
-
-  langMenu.addEventListener("click", (event) => {
-    const btn = event.target.closest("[data-lang]");
-    if (!btn) return;
-    setLanguage(btn.dataset.lang);
-    closeLangMenu();
-    showToast(t("langChanged"));
-  });
-
-  document.addEventListener("click", (event) => {
-    if (event.target.closest("#lang-switcher")) return;
-    closeLangMenu();
-  });
+  langMenuApi.closeLangMenu();
 }
 
 let dynamicLanguageRefreshes = 0;

@@ -1,0 +1,37 @@
+id: 20260828-facade-wire-tidy
+title: "C — tidy facade wire clusters into shell (timeline / lang / vax-help / drug-search / imaging+archive)"
+version: 2
+status: adopted
+# proposed | building | reviewing | revising | candidate_ready | halted | adopted | rejected
+
+gate_a:
+  status: approved
+  note: "Victor 2026-08-28 —「確認」"
+  # pending | approved | modified | rejected
+
+gate_b:
+  status: adopted
+  note: "Victor 2026-08-28 —「採用、覆蓋」; adopted onto mainline worktree main-adopt (C+B shell wire)"
+  # pending | adopted | rejected
+
+iteration: 1
+max_iterations: 3
+
+candidate:
+  branch: "proposal/facade-wire-tidy"
+  path: "proposals/20260828-facade-wire-tidy"
+  worktree: ".worktrees/facade-wire-tidy"
+
+reviews:
+  pharmacist: skipped
+  qa: pass
+  ui: pass
+  # pending | skipped | pass | conditional | reject
+
+rerun: []
+blocking_issues: []
+non_blocking: []
+builder_scope: []
+builder_note: >-
+  Gate B adopt: shell A–E modules + C/B facade wire on main-adopt; Feature Hub fh-* vax-help preserved.
+halt_reason: ""
