@@ -1027,35 +1027,17 @@ function renderEmergencyMeds(pet) {
   drugNotesMedByPanelId.clear();
   const active = deriveActiveEmergencyMeds(pet);
   if (!active.length) {
-    eMeds.innerHTML = `<li>${t("noMeds")}</li>`;
+    eMeds.innerHTML = emergencyRenderer.buildEmptyMedListHtml();
     return;
   }
-
-  eMeds.innerHTML = active
-    .map((med, medIndex) => {
-      const notesId = timelineViewHelpers.notesIdForMed({
-        emergencyPrefix: pet.id,
-        medIndex,
-      });
-      return `
-      <li class="e-med">
-        <div class="tl-med-name-row">
-          <strong>${med.name}</strong>
-          <button
-            type="button"
-            class="tl-drug-notes-btn"
-            data-drug-notes-toggle
-            aria-expanded="false"
-            aria-controls="${notesId}"
-          >${t("timelineDrugNotesBtn")}</button>
-        </div>
-        <span class="e-med-dose">${formatMedDose(med)}</span>
-        <span class="e-med-course">${formatMedCourse(med)}</span>
-        ${renderTimelineDrugNotes(med, notesId)}
-        <p class="e-med-detail-hint">${t("emergencyMedDetailHint")}</p>
-      </li>`;
-    })
-    .join("");
+  const { html, drugNotePanels } = emergencyRenderer.buildActiveMedListHtml(
+    active,
+    pet.id
+  );
+  drugNotePanels.forEach(({ notesId, med }) => {
+    drugNotesMedByPanelId.set(notesId, med);
+  });
+  eMeds.innerHTML = html;
 }
 
 function findDrugByMedName(name) {
@@ -3526,116 +3508,27 @@ function readOwnerSettingsForm() {
 function renderEmergencyOwner() {
   const el = document.getElementById("e-owner");
   if (!el) return;
-  const profile = loadOwnerProfile();
-  if (!ownerProfileHasAny(profile)) {
-    el.innerHTML = `<p class="e-owner-empty">${t("ownerContactEmpty")}</p>`;
-    return;
-  }
-  const row = (label, valueHtml) =>
-    `<p class="e-owner-row"><span class="e-owner-k">${label}</span><span class="e-owner-v">${valueHtml}</span></p>`;
-  const rows = [];
-  if (profile.name || profile.phone) {
-    const parts = [];
-    if (profile.name) {
-      parts.push(`<span class="e-owner-name">${profile.name}</span>`);
-    }
-    if (profile.phone) {
-      parts.push(`<span class="e-owner-phone">${profile.phone}</span>`);
-    }
-    rows.push(row(t("ownerName"), parts.join("")));
-  }
-  // Card only shows filled fields — label omits「選填」.
-  if (profile.email) {
-    rows.push(row(t("ownerEmailShort"), profile.email));
-  }
-  if (profile.emergencyName || profile.emergencyPhone) {
-    const parts = [];
-    if (profile.emergencyName) {
-      parts.push(`<span class="e-owner-name">${profile.emergencyName}</span>`);
-    }
-    if (profile.emergencyPhone) {
-      parts.push(`<span class="e-owner-phone">${profile.emergencyPhone}</span>`);
-    }
-    rows.push(row(t("ownerEmergencyLabel"), parts.join("")));
-  }
-  if (profile.address) {
-    rows.push(row(t("ownerAddressShort"), profile.address));
-  }
-  el.innerHTML = rows.join("");
+  el.innerHTML = emergencyRenderer.buildOwnerBlockHtml(loadOwnerProfile());
 }
 
 function renderEmergencyAlertsList(alerts) {
-  if (!alerts.length) {
-    eAlerts.innerHTML = `<li>${t("noAlertItem")}</li>`;
-    return;
-  }
-  eAlerts.innerHTML = alerts
-    .map((alert) => {
-      const severity = alert.severity === "critical" ? "critical" : "caution";
-      const line =
-        alertLineText(alert) ||
-        locField(alert.description) ||
-        alert.description ||
-        "";
-      const typeLabel = alert.alertType
-        ? alertTypeLabel(alert.alertType)
-        : alert.type || "";
-      return `<li class="is-${severity}"><strong>${escapeAlertHtml(
-        typeLabel
-      )}</strong> ${escapeAlertHtml(line)}${
-        alert.source === "owner"
-          ? ` <span class="e-alert-source">(${escapeAlertHtml(
-              t("alertSourceOwnerShort")
-            )})</span>`
-          : ""
-      }</li>`;
-    })
-    .join("");
+  eAlerts.innerHTML = emergencyRenderer.buildAlertsListHtml(alerts);
 }
 
 function renderEmergencyMedsFromList(meds) {
   drugNotesMedByPanelId.clear();
   if (!meds.length) {
-    eMeds.innerHTML = `<li>${t("noMeds")}</li>`;
+    eMeds.innerHTML = emergencyRenderer.buildEmptyMedListHtml();
     return;
   }
-  eMeds.innerHTML = meds
-    .map((med, medIndex) => {
-      const name =
-        med.name ||
-        med.unrecognizedDrugName ||
-        med.drugId ||
-        t("emergencyMedNameUnknown");
-      const view = { ...med, name };
-      const notesId = timelineViewHelpers.notesIdForMed({
-        emergencyPrefix: view.id || medIndex,
-        medIndex,
-      });
-      const course =
-        view.startDate != null && view.durationDays != null
-          ? formatMedCourse(view)
-          : view.dose
-            ? escapeAlertHtml(expandFrequencyInText(view.dose))
-            : "";
-      return `
-      <li class="e-med">
-        <div class="tl-med-name-row">
-          <strong>${escapeAlertHtml(name)}</strong>
-          <button
-            type="button"
-            class="tl-drug-notes-btn"
-            data-drug-notes-toggle
-            aria-expanded="false"
-            aria-controls="${notesId}"
-          >${t("timelineDrugNotesBtn")}</button>
-        </div>
-        <span class="e-med-dose">${formatMedDose(view)}</span>
-        <span class="e-med-course">${course}</span>
-        ${renderTimelineDrugNotes(view, notesId)}
-        <p class="e-med-detail-hint">${t("emergencyMedDetailHint")}</p>
-      </li>`;
-    })
-    .join("");
+  const { html, drugNotePanels } = emergencyRenderer.buildMedListHtml(meds, {
+    emergencyPrefix: "",
+    variant: "module",
+  });
+  drugNotePanels.forEach(({ notesId, med }) => {
+    drugNotesMedByPanelId.set(notesId, med);
+  });
+  eMeds.innerHTML = html;
 }
 
 function paintEmergencyIdentity(pet) {
@@ -3676,10 +3569,14 @@ function paintEmergencyCardDegradedShell() {
   alertsBlock?.classList.remove("is-critical", "is-caution");
   alertsBlock?.classList.add("is-degraded");
   if (eAlerts) {
-    eAlerts.innerHTML = `<li class="is-degraded">${t("emergencyDegradedAlerts")}</li>`;
+    eAlerts.innerHTML = emergencyRenderer.buildDegradedListHtml(
+      t("emergencyDegradedAlerts")
+    );
   }
   if (eMeds) {
-    eMeds.innerHTML = `<li class="is-degraded">${t("emergencyDegradedMeds")}</li>`;
+    eMeds.innerHTML = emergencyRenderer.buildDegradedListHtml(
+      t("emergencyDegradedMeds")
+    );
   }
   if (eWeight) {
     eWeight.textContent = t("emergencyDegradedWeight");
@@ -3689,7 +3586,7 @@ function paintEmergencyCardDegradedShell() {
 /** Local fallback when PetLive / emergency module is unavailable. */
 function renderEmergencyCardLocal(pet) {
   paintEmergencyIdentity(pet);
-  eWeight.innerHTML = t("eWeight", {
+  eWeight.innerHTML = emergencyRenderer.buildWeightHtml({
     weight: pet.weight,
     date: pet.weightDate,
   });
@@ -3750,12 +3647,12 @@ function renderEmergencyCard(pet) {
   if (degraded.weight) {
     eWeight.textContent = t("emergencyDegradedWeight");
   } else if (result.latestWeight && result.latestWeight.weight != null) {
-    eWeight.innerHTML = t("eWeight", {
+    eWeight.innerHTML = emergencyRenderer.buildWeightHtml({
       weight: result.latestWeight.weight,
       date: result.latestWeight.recordedDate || pet.weightDate || "—",
     });
   } else {
-    eWeight.innerHTML = t("eWeight", {
+    eWeight.innerHTML = emergencyRenderer.buildWeightHtml({
       weight: pet.weight,
       date: pet.weightDate,
     });
@@ -3767,14 +3664,18 @@ function renderEmergencyCard(pet) {
   if (degraded.alerts) {
     alertsBlock?.classList.remove("is-critical", "is-caution");
     alertsBlock?.classList.add("is-degraded");
-    eAlerts.innerHTML = `<li class="is-degraded">${t("emergencyDegradedAlerts")}</li>`;
+    eAlerts.innerHTML = emergencyRenderer.buildDegradedListHtml(
+      t("emergencyDegradedAlerts")
+    );
   } else {
     alertsBlock?.classList.remove("is-degraded");
     renderEmergencyAlertsList(result.alerts || []);
   }
 
   if (degraded.medications) {
-    eMeds.innerHTML = `<li class="is-degraded">${t("emergencyDegradedMeds")}</li>`;
+    eMeds.innerHTML = emergencyRenderer.buildDegradedListHtml(
+      t("emergencyDegradedMeds")
+    );
   } else {
     renderEmergencyMedsFromList(result.currentMedications || []);
   }
@@ -5643,6 +5544,8 @@ function hasLinkedLabsForVisit(visit) {
   );
 }
 
+let emergencyRenderer;
+
 timelineRenderer = PetLiveWeb.domains.timeline.createRenderer({
   label: (key, params) => t(key, params),
   locField,
@@ -5660,6 +5563,21 @@ timelineRenderer = PetLiveWeb.domains.timeline.createRenderer({
   visits: visitsController,
   imaging: imagingController,
   hasLinkedLabs: hasLinkedLabsForVisit,
+});
+
+emergencyRenderer = PetLiveWeb.domains.emergency.createRenderer({
+  label: (key, params) => t(key, params),
+  escapeHtml: escapeAlertHtml,
+  alertTypeLabel,
+  alertLineText,
+  locField,
+  formatMedDose,
+  formatMedCourse,
+  expandFrequencyInText,
+  notesIdForMed: (args) => timelineViewHelpers.notesIdForMed(args),
+  buildDrugNotesShellHtml: (notesId) =>
+    timelineRenderer.buildDrugNotesShellHtml(notesId),
+  ownerProfileHasAny,
 });
 
 function renderTimeline(pet) {
