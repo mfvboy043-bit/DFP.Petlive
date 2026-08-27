@@ -5348,6 +5348,7 @@ const cloudController = PetLiveWeb.domains.cloud.createController({
     currentPetId = id;
     appState.setCurrentPetId(id);
   },
+  petsGraph,
   petsGraphSlot,
   ownerProfileSlot,
   ownerAlertsSlot,

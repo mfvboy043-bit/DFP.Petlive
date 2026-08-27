@@ -7,6 +7,9 @@
   /**
    * Single write door for active/archived pets graph (still pets[] backed).
    * Does not dual-write modules/* — slot + in-memory arrays only.
+   *
+   * Structural mutates allowed here: replaceGraph / clearGraph / pushPet / hydrate.
+   * Nested content mutates stay in domain controllers + schedulePersist.
    */
   function createPetsGraph({
     pets,
@@ -27,15 +30,30 @@
       throw new TypeError("createPetsGraph requires slot with read/scheduleWrite");
     }
 
+    function replaceGraph({
+      pets: nextPets = [],
+      archivedPets: nextArchived = [],
+    } = {}) {
+      pets.length = 0;
+      archivedPets.length = 0;
+      for (const pet of nextPets || []) pets.push(pet);
+      for (const pet of nextArchived || []) archivedPets.push(pet);
+      return { pets, archivedPets };
+    }
+
+    function clearGraph() {
+      return replaceGraph({ pets: [], archivedPets: [] });
+    }
+
     function hydrate() {
       const data = slot.read();
       const seed =
         typeof cloneSeedPets === "function" ? cloneSeedPets() : [];
       const nextPets = data.pets?.length ? data.pets : seed;
-      pets.length = 0;
-      archivedPets.length = 0;
-      for (const pet of nextPets) pets.push(pet);
-      for (const pet of data.archivedPets || []) archivedPets.push(pet);
+      replaceGraph({
+        pets: nextPets,
+        archivedPets: data.archivedPets || [],
+      });
       return data.currentPetId || pets[0]?.id || null;
     }
 
@@ -66,6 +84,8 @@
       hydrate,
       schedulePersist,
       pushPet,
+      replaceGraph,
+      clearGraph,
       findActive,
       getPets: () => pets,
       getArchivedPets: () => archivedPets,

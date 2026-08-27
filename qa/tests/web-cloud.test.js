@@ -50,6 +50,8 @@ function loadCloud({ seedIds = ["p1", "p2", "p3"], demo = false } = {}) {
   let syncMetaPresent = false;
   let afterApplyCount = 0;
   let scheduleCount = 0;
+  let replaceViaDoorCount = 0;
+  let clearViaDoorCount = 0;
 
   function slot(key) {
     return {
@@ -62,6 +64,21 @@ function loadCloud({ seedIds = ["p1", "p2", "p3"], demo = false } = {}) {
     };
   }
 
+  const petsGraphDoor = {
+    replaceGraph({ pets: nextPets = [], archivedPets: nextArchived = [] } = {}) {
+      replaceViaDoorCount += 1;
+      pets.length = 0;
+      archivedPets.length = 0;
+      for (const pet of nextPets) pets.push(pet);
+      for (const pet of nextArchived) archivedPets.push(pet);
+    },
+    clearGraph() {
+      clearViaDoorCount += 1;
+      pets.length = 0;
+      archivedPets.length = 0;
+    },
+  };
+
   const controller = cloud.createController({
     selectors,
     getPets: () => pets,
@@ -70,6 +87,7 @@ function loadCloud({ seedIds = ["p1", "p2", "p3"], demo = false } = {}) {
     setCurrentPetId: (id) => {
       currentPetId = id;
     },
+    petsGraph: petsGraphDoor,
     petsGraphSlot: slot("petsGraph"),
     ownerProfileSlot: slot("ownerProfile"),
     ownerAlertsSlot: slot("petAlerts"),
@@ -113,6 +131,12 @@ function loadCloud({ seedIds = ["p1", "p2", "p3"], demo = false } = {}) {
     },
     get scheduleCount() {
       return scheduleCount;
+    },
+    get replaceViaDoorCount() {
+      return replaceViaDoorCount;
+    },
+    get clearViaDoorCount() {
+      return clearViaDoorCount;
     },
     setSyncMetaPresent: (v) => {
       syncMetaPresent = v;
@@ -296,6 +320,7 @@ describe("CL-04 cloud selectors + controller", () => {
     assert.equal(env.getCurrentPetId(), "cloud-1");
     assert.equal(env.store.ownerProfile.name, "FromCloud");
     assert.equal(env.afterApplyCount, 1);
+    assert.ok(env.replaceViaDoorCount >= 1);
     assert.deepEqual(plain(env.store.petsGraph.pets), [{ id: "cloud-1", name: "Cloud" }]);
   });
 
@@ -405,6 +430,7 @@ describe("CL-04 cloud selectors + controller", () => {
     env.controller.clearSeedPetsFromMemory();
     assert.equal(env.pets.length, 0);
     assert.equal(env.getCurrentPetId(), null);
+    assert.ok(env.clearViaDoorCount >= 1);
 
     env.pets.push({ id: "real-1" });
     env.controller.clearSeedPetsFromMemory();

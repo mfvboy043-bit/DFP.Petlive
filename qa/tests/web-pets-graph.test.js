@@ -52,36 +52,41 @@ function loadPetsGraph(storage = new FakeStorage()) {
   return { api: context.PetLiveWeb, timers };
 }
 
+function makeGraph(api, pets, archivedPets, timers, bumpedRef) {
+  const slot = api.storage.createJsonSlot({
+    key: "test-pets-graph",
+    fallback: () => ({
+      version: 1,
+      pets: [{ id: "p1", name: "Seed" }],
+      archivedPets: [],
+      currentPetId: "p1",
+    }),
+    validate: (value) =>
+      value &&
+      Array.isArray(value.pets) &&
+      Array.isArray(value.archivedPets),
+    coalesceMs: 0,
+  });
+  const graph = api.core.createPetsGraph({
+    pets,
+    archivedPets,
+    slot,
+    getCurrentPetId: () => pets[0]?.id || null,
+    cloneSeedPets: () => [{ id: "seed", name: "Seed" }],
+    onAfterScheduleWrite: () => {
+      bumpedRef.n += 1;
+    },
+  });
+  return { graph, slot, timers };
+}
+
 describe("core/pets-graph write door", () => {
   it("hydrates, pushPet, and schedulePersist via slot", () => {
     const { api, timers } = loadPetsGraph();
     const pets = [];
     const archivedPets = [];
-    let bumped = 0;
-    const slot = api.storage.createJsonSlot({
-      key: "test-pets-graph",
-      fallback: () => ({
-        version: 1,
-        pets: [{ id: "p1", name: "Seed" }],
-        archivedPets: [],
-        currentPetId: "p1",
-      }),
-      validate: (value) =>
-        value &&
-        Array.isArray(value.pets) &&
-        Array.isArray(value.archivedPets),
-      coalesceMs: 0,
-    });
-    const graph = api.core.createPetsGraph({
-      pets,
-      archivedPets,
-      slot,
-      getCurrentPetId: () => pets[0]?.id || null,
-      cloneSeedPets: () => [{ id: "seed", name: "Seed" }],
-      onAfterScheduleWrite: () => {
-        bumped += 1;
-      },
-    });
+    const bumpedRef = { n: 0 };
+    const { graph, slot } = makeGraph(api, pets, archivedPets, timers, bumpedRef);
 
     const id = graph.hydrate();
     assert.equal(id, "p1");
@@ -91,11 +96,70 @@ describe("core/pets-graph write door", () => {
     graph.pushPet({ id: "p2", name: "Mochi" });
     assert.equal(pets.length, 2);
     graph.schedulePersist();
-    assert.ok(bumped >= 1);
-    // Flush coalesce timer if any
+    assert.ok(bumpedRef.n >= 1);
     timers.forEach((t) => t.fn());
     const stored = slot.read();
     assert.equal(stored.pets.length, 2);
     assert.equal(stored.pets[1].name, "Mochi");
+  });
+
+  it("replaceGraph and clearGraph rewrite arrays in place", () => {
+    const { api, timers } = loadPetsGraph();
+    const pets = [];
+    const archivedPets = [];
+    const bumpedRef = { n: 0 };
+    const { graph } = makeGraph(api, pets, archivedPets, timers, bumpedRef);
+    graph.hydrate();
+
+    graph.replaceGraph({
+      pets: [{ id: "a", name: "A" }, { id: "b", name: "B" }],
+      archivedPets: [{ id: "z", name: "Z" }],
+    });
+    assert.equal(pets.length, 2);
+    assert.equal(pets[0].id, "a");
+    assert.equal(archivedPets.length, 1);
+    assert.equal(archivedPets[0].id, "z");
+
+    graph.clearGraph();
+    assert.equal(pets.length, 0);
+    assert.equal(archivedPets.length, 0);
+  });
+
+  it("fails if C facade has raw structural pets mutates", () => {
+    const source = readFileSync(new URL("c/app.js", WEB_ROOT), "utf8");
+    const stripped = source
+      .replace(/\/\*[\s\S]*?\*\//g, "")
+      .replace(/(^|[^:])\/\/.*$/gm, "$1");
+
+    assert.equal(
+      /pets\.push\s*\(/.test(stripped),
+      false,
+      "c/app.js must not raw pets.push (use petsGraph.pushPet)"
+    );
+    assert.equal(
+      /pets\.splice\s*\(/.test(stripped),
+      false,
+      "c/app.js must not raw pets.splice"
+    );
+    assert.equal(
+      /pets\.length\s*=\s*0/.test(stripped),
+      false,
+      "c/app.js must not raw pets.length = 0"
+    );
+    assert.equal(
+      /archivedPets\.push\s*\(/.test(stripped),
+      false,
+      "c/app.js must not raw archivedPets.push"
+    );
+    assert.equal(
+      /archivedPets\.length\s*=\s*0/.test(stripped),
+      false,
+      "c/app.js must not raw archivedPets.length = 0"
+    );
+    assert.match(
+      stripped,
+      /petsGraph\s*,/,
+      "c/app.js cloud controller must receive petsGraph door"
+    );
   });
 });

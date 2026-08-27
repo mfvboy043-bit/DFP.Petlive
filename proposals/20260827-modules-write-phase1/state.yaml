@@ -1,13 +1,12 @@
 id: "20260827-modules-write-phase1"
 title: "Wave 4 Phase 1 — pets[] write-path inventory + single-door enforcement (no modules flip)"
 version: 2
-status: proposed
+status: reviewing
 # proposed | building | reviewing | revising | candidate_ready | halted | adopted | rejected
 
 gate_a:
-  status: pending
-  # pending | approved | modified | rejected
-  note: "Victor 2026-08-27 — 第4波，請總指揮開始指揮（Phase 1 only: inventory + single-door; pets[] remains write truth）"
+  status: approved
+  note: "Victor 2026-08-27 — 第4波，請總指揮開始指揮（Phase 1: 寫入走同一扇門；pets[] 仍是帳本）"
 
 gate_b:
   status: pending

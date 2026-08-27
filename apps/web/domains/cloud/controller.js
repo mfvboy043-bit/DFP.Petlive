@@ -21,6 +21,7 @@
     getArchivedPets,
     getCurrentPetId,
     setCurrentPetId,
+    petsGraph,
     petsGraphSlot,
     ownerProfileSlot,
     ownerAlertsSlot,
@@ -139,17 +140,46 @@
       };
     }
 
+    function replaceActiveGraph(nextPets, nextArchived) {
+      if (
+        petsGraph &&
+        typeof petsGraph.replaceGraph === "function"
+      ) {
+        petsGraph.replaceGraph({
+          pets: nextPets,
+          archivedPets: nextArchived || [],
+        });
+        return;
+      }
+      // Legacy fallback for formal B until Gate B wires petsGraph (Phase 1 C-only).
+      const pets = getPets();
+      const archivedPets = getArchivedPets();
+      pets.length = 0;
+      archivedPets.length = 0;
+      for (const pet of nextPets || []) pets.push(pet);
+      for (const pet of nextArchived || []) archivedPets.push(pet);
+    }
+
+    function clearActiveGraph() {
+      if (petsGraph && typeof petsGraph.clearGraph === "function") {
+        petsGraph.clearGraph();
+        return;
+      }
+      // Legacy fallback for formal B until Gate B wires petsGraph (Phase 1 C-only).
+      const pets = getPets();
+      const archivedPets = getArchivedPets();
+      pets.length = 0;
+      archivedPets.length = 0;
+    }
+
     function applyCloudPayload(payload) {
       if (demo()) return false;
       if (!payload || !Array.isArray(payload.pets)) return false;
       if (selectors.isSeedOnlyCloudPayload(payload)) return false;
 
+      replaceActiveGraph(payload.pets, payload.archivedPets || []);
       const pets = getPets();
       const archivedPets = getArchivedPets();
-      pets.length = 0;
-      archivedPets.length = 0;
-      for (const pet of payload.pets) pets.push(pet);
-      for (const pet of payload.archivedPets || []) archivedPets.push(pet);
 
       if (payload.ownerProfile && ownerProfileSlot?.write) {
         ownerProfileSlot.write(payload.ownerProfile);
@@ -200,11 +230,9 @@
 
     function clearSeedPetsFromMemory() {
       const pets = getPets();
-      const archivedPets = getArchivedPets();
       if (!pets.length) return;
       if (!selectors.isSeedOnlyPets(pets)) return;
-      pets.length = 0;
-      archivedPets.length = 0;
+      clearActiveGraph();
       if (typeof setCurrentPetId === "function") setCurrentPetId(null);
       try {
         if (petsGraphSlot?.write) {

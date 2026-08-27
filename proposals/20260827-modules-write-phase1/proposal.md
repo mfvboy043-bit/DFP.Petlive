@@ -1,7 +1,7 @@
 ---
 id: 20260827-modules-write-phase1
 title: "Wave 4 Phase 1 — pets[] write-path inventory + single-door enforcement (no modules flip)"
-status: proposed
+status: reviewing
 author: planner
 candidate_branch: "cursor/modules-write-phase1-6f84"
 candidate_path: "proposals/20260827-modules-write-phase1"
@@ -138,13 +138,13 @@ Do **not** stack Phase 2+ into this candidate.
 
 ## Acceptance criteria
 
-- [ ] Candidate on `cursor/modules-write-phase1-6f84` (or worktree); **mainline** product code untouched until Gate B adopt
-- [ ] Written inventory of C structural (+ listed content) write paths; states **pets[] remains write truth**
-- [ ] All C structural graph mutates go through `core/pets-graph.js` and/or documented domain controllers (lifecycle / cloud via door)
-- [ ] No dual-write to `modules/*`; no flip of modules Maps as app DB
-- [ ] Tests fail if C facade reintroduces raw `pets.push` / structural array clear outside the door
-- [ ] Behavior-preserving: add / edit / archive / remove pet, cloud apply/clear seed, nested visit/med save + persist still work
-- [ ] C `index.html` `?v=` bumped for changed scripts; zero-build preview unchanged
+- [x] Candidate on `cursor/modules-write-phase1-6f84` (or worktree); **mainline** product code untouched until Gate B adopt
+- [x] Written inventory of C structural (+ listed content) write paths; states **pets[] remains write truth**
+- [x] All C structural graph mutates go through `core/pets-graph.js` and/or documented domain controllers (lifecycle / cloud via door)
+- [x] No dual-write to `modules/*`; no flip of modules Maps as app DB
+- [x] Tests fail if C facade reintroduces raw `pets.push` / structural array clear outside the door
+- [x] Behavior-preserving: add / edit / archive / remove pet, cloud apply/clear seed, nested visit/med save + persist still work
+- [x] C `index.html` `?v=` bumped for changed scripts; zero-build preview unchanged
 - [ ] Reviews: QA on write paths + persist; UI **skip** or light (no visual redesign); pharmacist **skip** (no med copy/dose)
 - [ ] Gate B: cover B facade seed-reset discipline — **after** Victor adopt of C
 
