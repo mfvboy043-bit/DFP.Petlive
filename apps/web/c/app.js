@@ -969,23 +969,32 @@ function findDrugByMedName(name) {
   );
 }
 
-function renderTimelineDrugNotes(med, notesId) {
-  let body;
-  if (med.kind === "photo_bundle" || med.structuredPending) {
+function drugNotesMedPayload(med) {
+  return encodeURIComponent(
+    JSON.stringify({
+      name: med?.name || "",
+      kind: med?.kind || "",
+      structuredPending: Boolean(med?.structuredPending),
+    })
+  );
+}
+
+function paintDrugNoteBody(panel, med) {
+  const bodySlot = panel.querySelector(".tl-drug-notes-body");
+  if (!bodySlot) return;
+  const model = timelineViewHelpers.resolveDrugNoteModel(med);
+  let body = "";
+  if (model.status === "pending") {
     body = `<p class="tl-drug-notes-empty">${t("timelineDrugPendingNotes")}</p>`;
+  } else if (model.status === "unavailable") {
+    body = `<p class="tl-drug-notes-empty">${t("drugInfoUnavailable")}</p>`;
   } else {
-    const drug = findDrugByMedName(med.name);
-    if (!drug) {
-      body = `<p class="tl-drug-notes-empty">${t("drugInfoUnavailable")}</p>`;
-    } else {
-      const sides = (drug.commonSideEffects || [])
-        .map((item) => `<li>${item}</li>`)
-        .join("");
-      const precautions = (drug.precautions || [])
-        .map((item) => `<li>${item}</li>`)
-        .join("");
-      body = `
-        <p class="tl-drug-purpose"><span>${t("timelineDrugPurpose")}</span>${drug.purpose || drug.drugClass}</p>
+    const sides = model.sideEffects.map((item) => `<li>${item}</li>`).join("");
+    const precautions = model.precautions
+      .map((item) => `<li>${item}</li>`)
+      .join("");
+    body = `
+        <p class="tl-drug-purpose"><span>${t("timelineDrugPurpose")}</span>${model.purposeText}</p>
         <div class="tl-drug-block">
           <h4>${t("drugSideEffects")}</h4>
           <ul>${sides || `<li>${t("drugInfoUnavailable")}</li>`}</ul>
@@ -995,12 +1004,20 @@ function renderTimelineDrugNotes(med, notesId) {
           <ul>${precautions || `<li>${t("drugInfoUnavailable")}</li>`}</ul>
         </div>
         <p class="tl-drug-disclaimer">${t("timelineDrugSource")}</p>`;
-    }
   }
+  bodySlot.innerHTML = body;
+  panel.dataset.drugNotesHydrated = "true";
+}
 
-  return `<div class="tl-drug-notes" id="${notesId}" hidden>
+function hydrateDrugNotesPanel(panel, med) {
+  if (!panel || !timelineViewHelpers.needsHydrate(panel)) return;
+  paintDrugNoteBody(panel, med);
+}
+
+function renderTimelineDrugNotes(med, notesId) {
+  return `<div class="tl-drug-notes" id="${notesId}" hidden data-drug-notes-shell data-drug-notes-med="${drugNotesMedPayload(med)}">
     <p class="tl-drug-notes-title">${t("timelineDrugNotes")}</p>
-    ${body}
+    <div class="tl-drug-notes-body"></div>
   </div>`;
 }
 
@@ -4170,6 +4187,17 @@ function formatGenderLabel(gender, isNeutered) {
   return t("genderNeuterUnknown", { g: genderText });
 }
 
+const breedSelectors = PetLiveWeb.domains.breed.createSelectors({
+  CUSTOM_VALUE: BREED_CUSTOM_VALUE,
+  getListForSpecies: getBreedListForSpecies,
+  getGroupsForSpecies: getBreedGroupsForSpecies,
+  getCommonGroupId: getCommonBreedGroupId,
+  findByValue: findBreedByValue,
+  search: searchBreeds,
+  labelOf: breedOptionLabel,
+});
+const breedController = PetLiveWeb.domains.breed.createController();
+
 function toggleBreedCustomField() {
   const speciesEl = document.getElementById("pet-species");
   const breedSelectField = document.getElementById("breed-select-field");
@@ -4195,8 +4223,6 @@ function toggleBreedCustomField() {
   if (breedExpandToggle) breedExpandToggle.hidden = false;
 }
 
-/** Default collapsed; reset on species change. */
-let breedChipsExpanded = false;
 let suppressBreedSearchInput = false;
 let breedResultsBlurTimer = 0;
 
@@ -4273,54 +4299,32 @@ function updateBreedExpandToggle() {
   const species = speciesEl ? speciesEl.value : "";
   const show = species === "dog" || species === "cat";
   toggle.hidden = !show;
-  toggle.setAttribute("aria-expanded", breedChipsExpanded ? "true" : "false");
+  toggle.setAttribute(
+    "aria-expanded",
+    breedController.isExpanded() ? "true" : "false"
+  );
   const label = toggle.querySelector("[data-i18n]") || toggle;
-  const key = breedChipsExpanded ? "breedCollapse" : "breedExpandAll";
+  const key = breedController.isExpanded() ? "breedCollapse" : "breedExpandAll";
   label.setAttribute("data-i18n", key);
   label.textContent = typeof t === "function" ? t(key) : label.textContent;
 }
 
 function renderCollapsedBreedChips(species, selectedValue) {
-  const groups = getBreedGroupsForSpecies(species);
-  const commonId = getCommonBreedGroupId(species);
-  const commonGroup = groups.find((g) => g.id === commonId);
-  const seen = new Set();
-  const chips = [];
-
-  const pushValue = (value) => {
-    if (!value || seen.has(value)) return;
-    const breed = findBreedByValue(species, value);
-    if (!breed) return;
-    seen.add(value);
-    chips.push(breedChipButtonHtml(breed));
-  };
-
-  if (commonGroup) {
-    commonGroup.members.forEach(pushValue);
-  }
-  if (
-    selectedValue &&
-    selectedValue !== BREED_CUSTOM_VALUE &&
-    !(commonGroup && commonGroup.members.includes(selectedValue))
-  ) {
-    pushValue(selectedValue);
-  }
-  pushValue(BREED_CUSTOM_VALUE);
-
-  return chips.join("");
+  return breedSelectors
+    .collapsedChipValues(species, selectedValue)
+    .map((value) => breedSelectors.findByValue(species, value))
+    .filter(Boolean)
+    .map(breedChipButtonHtml)
+    .join("");
 }
 
 function renderExpandedBreedChips(species) {
-  const groups = getBreedGroupsForSpecies(species);
-  return groups
+  return breedSelectors
+    .expandedGroups(species)
     .map((group) => {
       const label =
         typeof t === "function" ? t(group.i18nKey) : group.id;
-      const chips = group.members
-        .map((value) => findBreedByValue(species, value))
-        .filter(Boolean)
-        .map(breedChipButtonHtml)
-        .join("");
+      const chips = group.breeds.map(breedChipButtonHtml).join("");
       return `
       <div class="breed-group" data-breed-group="${group.id}">
         <div class="breed-group-label">${label}</div>
@@ -4340,7 +4344,7 @@ function setSelectedBreed(value) {
   // Collapsed preview = common ∪ current selected ∪ __custom__ (deduped).
   // Rebuild on every selection change so a previously pinned non-common chip
   // is dropped when the user picks another visible chip (QA-001).
-  if (!breedChipsExpanded && typeof getBreedGroupsForSpecies === "function") {
+  if (!breedController.isExpanded() && typeof getBreedGroupsForSpecies === "function") {
     const speciesEl = document.getElementById("pet-species");
     const species = speciesEl ? speciesEl.value : "";
     if (species && species !== "other") {
@@ -4372,7 +4376,7 @@ function syncBreedFields({ keepSelection = true, resetExpanded = false } = {}) {
     return;
   }
 
-  if (resetExpanded) breedChipsExpanded = false;
+  if (resetExpanded) breedController.reset();
 
   const species = speciesEl.value;
   const list = getBreedListForSpecies(species);
@@ -4388,10 +4392,10 @@ function syncBreedFields({ keepSelection = true, resetExpanded = false } = {}) {
     return;
   }
 
-  const stillValid = list.some((breed) => breed.value === previous);
+  const stillValid = breedSelectors.isValidSelection(species, previous);
   const selectedValue = stillValid ? previous : "";
 
-  if (breedChipsExpanded && typeof getBreedGroupsForSpecies === "function") {
+  if (breedController.isExpanded() && typeof getBreedGroupsForSpecies === "function") {
     breedChips.innerHTML = renderExpandedBreedChips(species);
     breedChips.classList.add("is-expanded");
     breedChips.classList.remove("is-collapsed");
@@ -4409,20 +4413,18 @@ function syncBreedFields({ keepSelection = true, resetExpanded = false } = {}) {
 }
 
 function resolveBreedFromForm(form) {
-  const species = form.species.value;
-  const selectedValue = form.breedSelect.value;
-  if (species === "other" || selectedValue === BREED_CUSTOM_VALUE) {
-    return form.breedCustom.value.trim();
-  }
-  const list = getBreedListForSpecies(species);
-  const selected = list.find((breed) => breed.value === selectedValue);
-  return selected ? breedOptionLabel(selected) : "";
+  return breedSelectors.resolveDisplayName({
+    species: form.species.value,
+    breedSelectValue: form.breedSelect.value,
+    customText: form.breedCustom.value,
+  });
 }
 
 function resolveBreedKeyFromForm(form) {
-  const species = form.species.value;
-  if (species === "other") return BREED_CUSTOM_VALUE;
-  return form.breedSelect.value || BREED_CUSTOM_VALUE;
+  return breedSelectors.resolveKey({
+    species: form.species.value,
+    breedSelectValue: form.breedSelect.value,
+  });
 }
 
 function readPetIdentityFromForm(form) {
@@ -4587,6 +4589,9 @@ const visitsController = PetLiveWeb.domains.visits.createController({
 });
 const timelineSelectors = PetLiveWeb.domains.timeline.createSelectors({
   visits: visitsController,
+});
+const timelineViewHelpers = PetLiveWeb.domains.timeline.createViewHelpers({
+  findDrugByName: (name) => findDrugByMedName(name),
 });
 
 const VACCINE_PROTECTION_META = PetLiveWeb.domains.vaccines.PROTECTION_META;
@@ -5391,7 +5396,7 @@ document.getElementById("breed-chips").addEventListener("click", (event) => {
 });
 
 document.getElementById("breed-expand-toggle")?.addEventListener("click", () => {
-  breedChipsExpanded = !breedChipsExpanded;
+  breedController.toggle();
   syncBreedFields({ keepSelection: true });
 });
 
@@ -5406,11 +5411,11 @@ document.getElementById("breed-expand-toggle")?.addEventListener("click", () => 
     const species = speciesEl ? speciesEl.value : "";
     // Free text without clicking a suggestion → custom path (no silent coerce).
     setSelectedBreed(BREED_CUSTOM_VALUE);
-    if (species === "other" || typeof searchBreeds !== "function") {
+    if (species === "other") {
       hideBreedResults();
       return;
     }
-    renderBreedResults(searchBreeds(breedSearch.value, species), breedSearch.value);
+    renderBreedResults(breedSelectors.search(breedSearch.value, species), breedSearch.value);
   });
 
   breedSearch.addEventListener("keydown", (event) => {
@@ -5431,13 +5436,13 @@ document.getElementById("breed-expand-toggle")?.addEventListener("click", () => 
     window.clearTimeout(breedResultsBlurTimer);
     const speciesEl = document.getElementById("pet-species");
     const species = speciesEl ? speciesEl.value : "";
-    if (species === "other" || typeof searchBreeds !== "function") return;
+    if (species === "other") return;
     const q = breedSearch.value.trim();
     if (!q) return;
     const breedSelect = document.getElementById("breed-select");
     // Only reopen suggestions while on the free-text / custom path.
     if (breedSelect && breedSelect.value === BREED_CUSTOM_VALUE) {
-      renderBreedResults(searchBreeds(q, species), q);
+      renderBreedResults(breedSelectors.search(q, species), q);
     }
   });
 
@@ -6613,6 +6618,16 @@ function toggleDrugNotesButton(notesToggle) {
   if (!panel) return;
   const open = panel.hasAttribute("hidden");
   if (open) {
+    if (timelineViewHelpers.needsHydrate(panel)) {
+      const raw = panel.getAttribute("data-drug-notes-med");
+      if (raw) {
+        try {
+          hydrateDrugNotesPanel(panel, JSON.parse(decodeURIComponent(raw)));
+        } catch {
+          /* ignore */
+        }
+      }
+    }
     panel.removeAttribute("hidden");
     notesToggle.setAttribute("aria-expanded", "true");
     notesToggle.textContent = t("timelineDrugNotesHide");
