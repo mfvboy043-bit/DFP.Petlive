@@ -9,16 +9,16 @@ gate_a:
 
 gate_b:
   status: adopted
-  note: "Victor 採用 2026-08-26；C + domains/parasite on main; formal B cover separate"
+  note: "Victor 採用 2026-08-26；C + domains/parasite on main; C→B cover 2026-08-27 (Victor 覆蓋 alerts/parasite/emergency)"
 
 iteration: 1
 max_iterations: 3
 
 candidate:
-  branch: "proposal/parasite-controller"
+  branch: "cover/alerts-parasite-emergency"
   path: "proposals/20260826-parasite-controller"
   worktree: ""
-  note: "Cherry-pick de6c13d onto main; index conflicts kept main UI WIP"
+  note: "C→B cover on cover/alerts-parasite-emergency; domains already on main"
 
 reviews:
   pharmacist: pass
