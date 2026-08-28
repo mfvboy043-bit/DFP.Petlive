@@ -156,9 +156,35 @@
   );
 }
 
+.intro-story-card:nth-child(4)::before,
+.intro-story-card--founder::before {
+  background: linear-gradient(
+    180deg,
+    rgba(185, 143, 94, 0.62) 0%,
+    rgba(90, 125, 108, 0.48) 100%
+  );
+}
+
+.intro-story-card--founder {
+  background:
+    linear-gradient(
+      155deg,
+      rgba(252, 248, 241, 0.96) 0%,
+      rgba(255, 255, 255, 0.86) 52%,
+      rgba(244, 248, 245, 0.92) 100%
+    );
+}
+
 .intro-story-body strong {
   font-weight: 700;
   color: var(--leaf-deep, #3f5c4e);
+}
+
+.intro-story-body p:last-child strong {
+  display: inline-block;
+  margin-top: 2px;
+  font-size: 15px;
+  line-height: 1.55;
 }
 
 .intro-story-index {
