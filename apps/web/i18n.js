@@ -17,7 +17,7 @@ const I18N = {
     introTitle: "介紹",
     introEyebrow: "飼主持有的寵物健康護照",
     introLede:
-      "紀錄先寫在你這邊（本機）。用 Google 登入進入你的護照；需要時，可把備份存進你的 Google 雲端硬碟。<br />僅供參考，不取代獸醫診斷。",
+      "紀錄先寫在你這邊（你的手機）。<br />用 Google 登入進入你的護照；<br />需要時，可把備份存進你的 Google 雲端硬碟。<br /><span class=\"intro-lede-note\">此醫療記事本，僅供參考，不取代獸醫診斷。</span>",
     introStoriesEyebrow: "四則故事",
     introStoriesTitle: "換院、急診時，紀錄有跟著走嗎？",
     introStory1Title: "半夜急診那張空白紙",
@@ -801,7 +801,7 @@ const I18N = {
     introTitle: "Intro",
     introEyebrow: "An owner-held pet health passport",
     introLede:
-      "Records are saved on this device first. Sign in with Google to enter your passport; when you need a backup, you can save it to your Google Drive.<br />Reference only—not a veterinary diagnosis.",
+      "Records stay on your phone first.<br />Sign in with Google to enter your passport;<br />back up to Google Drive when you need to.<br /><span class=\"intro-lede-note\">This medical notebook is for reference only—not a veterinary diagnosis.</span>",
     introStoriesEyebrow: "Four stories",
     introStoriesTitle: "When you switch clinics, does the record travel with you?",
     introStory1Title: "The blank chart at midnight ER",
@@ -1586,7 +1586,7 @@ const I18N = {
     introTitle: "紹介",
     introEyebrow: "飼い主が持つペット健康パスポート",
     introLede:
-      "記録はまずあなたの端末に残します。Googleでログインしてパスポートへ。必要なときは、あなたのGoogleドライブへバックアップできます。<br />参考用であり、診断の代わりではありません。",
+      "記録はまずあなたのスマホに残します。<br />Googleでログインしてパスポートへ；<br />必要なときはGoogleドライブへバックアップできます。<br /><span class=\"intro-lede-note\">この医療ノートは参考用であり、診断の代わりではありません。</span>",
     introStoriesEyebrow: "4つのストーリー",
     introStoriesTitle: "病院を替えるとき、記録は一緒に行きますか？",
     introStory1Title: "真夜中の救急、その空白の紙",
@@ -2376,7 +2376,7 @@ const I18N = {
     introTitle: "소개",
     introEyebrow: "보호자가 보유하는 반려동물 건강 여권",
     introLede:
-      "기록은 먼저 이 기기에 저장됩니다. Google로 로그인하면 여권으로 들어갑니다. 필요할 때 내 Google 드라이브에 백업할 수 있습니다.<br />참고용이며 수의사 진단을 대체하지 않습니다.",
+      "기록은 먼저 당신의 휴대폰에 남습니다.<br />Google로 로그인해 여권으로 들어갑니다;<br />필요할 때 Google 드라이브에 백업할 수 있습니다.<br /><span class=\"intro-lede-note\">이 의료 수첩은 참고용이며, 수의사 진단을 대체하지 않습니다.</span>",
     introStoriesEyebrow: "네 가지 이야기",
     introStoriesTitle: "병원을 바꿀 때, 기록도 함께 가나요?",
     introStory1Title: "한밤중 응급실, 그 빈 종이",

@@ -1,11 +1,39 @@
 /* Intro A — owner story cards (readability-first) */
 
+.screen-intro .intro-hero {
+  position: relative;
+  display: block;
+  margin-bottom: 2px;
+  padding-right: min(104px, 28vw);
+  min-width: 0;
+}
+
+.screen-intro .intro-mascot {
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: min(92px, 25vw);
+  height: auto;
+  margin: 0;
+  align-self: auto;
+}
+
 .screen-intro .intro-lede {
-  margin-bottom: 18px;
+  margin: 10px 0 0;
+  max-width: none;
+  line-height: 1.72;
+}
+
+.screen-intro .intro-lede-note {
+  display: block;
+  margin-top: 10px;
+  font-size: 13px;
+  line-height: 1.6;
+  color: var(--text-muted, #718078);
 }
 
 .intro-stories {
-  margin: 2px 0 22px;
+  margin: 12px 0 22px;
   max-width: 42em;
   min-width: 0;
   width: 100%;
@@ -255,17 +283,20 @@ html[lang="ko"] .intro-story-body {
 /* Phone — match §37 mobile polish (max-width: 759px) */
 @media (max-width: 759px) {
   .screen-intro .intro-hero {
-    margin-bottom: 10px;
+    margin-bottom: 0;
+    padding-right: min(96px, 26vw);
   }
 
   .screen-intro .intro-mascot {
-    margin-top: 0;
-    margin-bottom: 4px;
-    width: min(96px, 26vw);
+    width: min(84px, 23vw);
+  }
+
+  .screen-intro .intro-lede {
+    line-height: 1.78;
   }
 
   .intro-stories {
-    margin: 14px 0 24px;
+    margin: 12px 0 22px;
     max-width: none;
   }
 
