@@ -174,28 +174,6 @@
   opacity: 0.18;
 }
 
-.glass-dock-item.is-jumping .glass-dock-ico {
-  animation: glass-dock-ico-jump 480ms cubic-bezier(0.2, 0.85, 0.2, 1);
-}
-
-@keyframes glass-dock-ico-jump {
-  0% {
-    transform: scale(0.92);
-  }
-  32% {
-    transform: scale(1.55);
-  }
-  58% {
-    transform: scale(1.12);
-  }
-  78% {
-    transform: scale(1.28);
-  }
-  100% {
-    transform: scale(1.22);
-  }
-}
-
 .glass-dock-ico svg {
   display: block;
   width: 18px;
@@ -350,8 +328,7 @@
     transition: none;
   }
 
-  .glass-dock-ico,
-  .glass-dock-item.is-jumping .glass-dock-ico {
+  .glass-dock-ico {
     animation: none;
     transition: none;
   }

@@ -346,9 +346,9 @@
   }
 
   /**
-   * Paint bottom glass dock: active tab, amplify-then-leap thumb, icon jump.
-   * Motion: highlight pops bigger on the old tab, then leaps to the new one
-   * (LINE-like), while the destination icon scales up.
+   * Paint bottom glass dock: active tab + sliding highlight.
+   * One slide only — no amplify-on-old-tab or destination-icon jump (those stacked
+   * into an extra bounce at the end of each tab change).
    */
   function prefersReducedMotion(doc) {
     try {
@@ -382,8 +382,8 @@
     cancelThumbAnim(state);
     thumb.classList.add("is-animating");
 
-    const midLeft = from.left + (to.left - from.left) * 0.52;
-    const midWidth = Math.max(from.width, to.width) * 1.08;
+    const midLeft = from.left + (to.left - from.left) * 0.5;
+    const midWidth = Math.max(from.width, to.width);
 
     const anim = thumb.animate(
       [
@@ -393,21 +393,9 @@
           transform: `translateX(${from.left}px) scale(1)`,
         },
         {
-          /* Amplify highlight on the current tab first */
-          offset: 0.22,
-          width: `${from.width * 1.12}px`,
-          transform: `translateX(${from.left - from.width * 0.06}px) scale(1.28)`,
-        },
-        {
-          /* Leap / stretch toward the next tab */
-          offset: 0.55,
+          offset: 0.5,
           width: `${midWidth}px`,
-          transform: `translateX(${midLeft}px) scale(1.18)`,
-        },
-        {
-          offset: 0.82,
-          width: `${to.width * 1.06}px`,
-          transform: `translateX(${to.left - to.width * 0.03}px) scale(1.12)`,
+          transform: `translateX(${midLeft}px) scale(1)`,
         },
         {
           offset: 1,
@@ -416,8 +404,8 @@
         },
       ],
       {
-        duration: 520,
-        easing: "cubic-bezier(0.22, 1, 0.36, 1)",
+        duration: 340,
+        easing: "cubic-bezier(0.32, 0.72, 0.24, 1)",
         fill: "forwards",
       }
     );
@@ -425,18 +413,24 @@
 
     const settle = () => {
       if (state.thumbAnim !== anim) return;
+      try {
+        if (typeof anim.commitStyles === "function") anim.commitStyles();
+      } catch {
+        /* ignore */
+      }
       setThumbPose(thumb, to.left, to.width, 1);
-      thumb.classList.remove("is-animating");
       try {
         anim.cancel();
       } catch {
         /* ignore */
       }
+      thumb.classList.remove("is-animating");
       state.thumbAnim = null;
     };
 
     anim.addEventListener("finish", settle, { once: true });
     anim.addEventListener("cancel", () => {
+      if (state.thumbAnim === anim) state.thumbAnim = null;
       thumb.classList.remove("is-animating");
     }, { once: true });
   }
@@ -476,21 +470,13 @@
 
     dock.querySelectorAll(".glass-dock-item").forEach((btn) => {
       const on = dockKey != null && btn.getAttribute("data-dock") === dockKey;
-      const wasOn = btn.classList.contains("is-active");
       btn.classList.toggle("is-active", on);
+      btn.classList.remove("is-jumping");
       if (on) {
         activeBtn = btn;
         btn.setAttribute("aria-current", "page");
-        if (animateJump && !wasOn) {
-          btn.classList.remove("is-jumping");
-          void btn.offsetWidth;
-          btn.classList.add("is-jumping");
-          const clearJump = () => btn.classList.remove("is-jumping");
-          btn.addEventListener("animationend", clearJump, { once: true });
-        }
       } else {
         btn.removeAttribute("aria-current");
-        btn.classList.remove("is-jumping");
       }
     });
 
@@ -500,6 +486,9 @@
       const reduce = prefersReducedMotion(doc);
 
       if (!state.thumbPrimed || reduce || !animateJump || !prevBtn || prevBtn === activeBtn) {
+        if (state.thumbAnim && prevBtn === activeBtn) {
+          return;
+        }
         cancelThumbAnim(state);
         thumb.classList.remove("is-animating");
         if (!state.thumbPrimed) {
