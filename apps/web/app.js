@@ -1443,45 +1443,38 @@ function renderVaccineList(pet) {
   vaccineList.innerHTML = vaccineRenderer.buildVaccineListHtml(pet, pet.vaccines);
 }
 
-function syncVaccineNavLights(status, lightsEl) {
+function syncVaccineNavLights(status) {
+  const lights = document.getElementById("e-vax-lights");
+  if (!lights) return;
   const titleByStatus = {
     protected: t("vaxLightGreen"),
     approaching: t("vaxLightOrange"),
     expired: t("vaxLightRed"),
   };
-  const targets = lightsEl
-    ? [lightsEl]
-    : Array.from(document.querySelectorAll(".e-vax-lights"));
-  targets.forEach((lights) => {
-    if (!lights) return;
-    lights.querySelectorAll(".e-vax-dot").forEach((dot) => {
-      const key = dot.dataset.status;
-      const on = status && key === status;
-      dot.classList.toggle("is-on", Boolean(on));
-      if (titleByStatus[key]) dot.title = titleByStatus[key];
-    });
-    lights.setAttribute(
-      "aria-label",
-      status ? titleByStatus[status] : t("noVaccineNext")
-    );
+  lights.querySelectorAll(".e-vax-dot").forEach((dot) => {
+    const key = dot.dataset.status;
+    const on = status && key === status;
+    dot.classList.toggle("is-on", Boolean(on));
+    if (titleByStatus[key]) dot.title = titleByStatus[key];
   });
+  lights.setAttribute(
+    "aria-label",
+    status ? titleByStatus[status] : t("noVaccineNext")
+  );
 }
 
 function renderEmergencyVaccineNav(pet) {
+  const nextEl = document.getElementById("e-vaccine-next");
+  const vaccineBtn = document.getElementById("e-vaccine-btn");
+  if (!nextEl || !vaccineBtn) return;
+
+  vaccineBtn.classList.remove("is-protected", "is-approaching", "is-expired");
+
   const presentation = vaccineRenderer.buildEmergencyNavPresentation(getNextVaccine(pet));
-  document.querySelectorAll('.e-vax-nav[data-go="vaccines"]').forEach((vaccineBtn) => {
-    vaccineBtn.classList.remove("is-protected", "is-approaching", "is-expired");
-    const nextEl = vaccineBtn.querySelector("#e-vaccine-next, #fh-vaccine-next");
-    if (nextEl) {
-      const keepId = nextEl.id;
-      nextEl.textContent = presentation.nextText;
-      nextEl.className = presentation.nextClassName || "";
-      if (keepId) nextEl.id = keepId;
-    }
-    vaccineBtn.classList.add(presentation.btnClass);
-    const lights = vaccineBtn.querySelector(".e-vax-lights");
-    if (lights) syncVaccineNavLights(presentation.lightStatus, lights);
-  });
+  nextEl.textContent = presentation.nextText;
+  nextEl.className = presentation.nextClassName;
+  vaccineBtn.classList.add(presentation.btnClass);
+  syncVaccineNavLights(presentation.lightStatus);
 }
 
 function renderVaccines(pet) {
@@ -2153,8 +2146,8 @@ function renderPetHeader(pet) {
 
 function syncAlertNavTone(alerts) {
   const highest = highestAlertSeverity(alerts);
-  const navs = document.querySelectorAll(".e-nav-alerts");
-  [alertCountBtn, ...navs].forEach((el) => {
+  const nav = document.querySelector(".e-nav-alerts");
+  [alertCountBtn, nav].forEach((el) => {
     if (!el) return;
     el.classList.toggle("is-critical", highest === "critical");
     el.classList.toggle("is-caution", highest === "caution");
@@ -2500,13 +2493,6 @@ renderCoordinator.register("emergency", "emergencyLabNav", (pet) => {
 });
 renderCoordinator.register("emergency", "emergencyImagingNav", (pet) => {
   if (pet) renderEmergencyImagingNav(pet);
-});
-renderCoordinator.register("feature-buttons", "featureHubNav", (pet) => {
-  if (!pet) return;
-  renderEmergencyVaccineNav(pet);
-  renderAlertBadge(pet);
-  renderEmergencyLabNav(pet);
-  renderEmergencyImagingNav(pet);
 });
 renderCoordinator.register(
   "labs",
@@ -3216,7 +3202,6 @@ function go(screen, options = {}) {
   }
   const needsPet = [
     "emergency",
-    "feature-buttons",
     "add-visit",
     "timeline",
     "alerts",
@@ -3236,14 +3221,10 @@ function go(screen, options = {}) {
   closeAppNavMenu();
   closeAccountMenu();
   const changed = shellNavigation.go(screen, options);
-  if (!changed) {
-    paintGlassDock({ animateJump: false });
-    return false;
-  }
+  if (!changed) return false;
   // Instant jump — smooth scroll made every screen change feel delayed on phone.
   resetPageScroll();
   resetViewportZoom();
-  paintGlassDock({ animateJump: true });
   return true;
 }
 
@@ -3258,43 +3239,11 @@ function goBack() {
     resetPageScroll();
     resetViewportZoom();
   }
-  paintGlassDock({ animateJump: Boolean(changed) });
   return changed;
 }
 
 function clearNavigationHistory() {
   shellNavigation.clearHistory();
-}
-
-/** Bottom glass dock — shell brain; facade only wires active screen. */
-let glassDockApi = null;
-
-function paintGlassDock({ animateJump } = {}) {
-  if (glassDockApi?.paint) {
-    glassDockApi.paint(Boolean(animateJump));
-    return;
-  }
-  PetLiveWeb.shell.paintGlassDock?.(document, {
-    getActiveScreen: () =>
-      app.querySelector(".screen.is-active")?.dataset.screen || "home",
-    animateJump: Boolean(animateJump),
-    hideOnScreens: ["home", "intro"],
-  });
-}
-
-function initGlassDock() {
-  glassDockApi = PetLiveWeb.shell.initGlassDock(document, {
-    win: window,
-    getActiveScreen: () =>
-      app.querySelector(".screen.is-active")?.dataset.screen || "home",
-    hideOnScreens: ["home", "intro"],
-    passportGo: "emergency",
-    startHidden: false,
-    onGo: (screen) => go(screen),
-    onMounted: () => {
-      if (typeof applyI18n === "function") applyI18n();
-    },
-  });
 }
 
 function glassChromeNavAccountMarkup() {
@@ -3318,23 +3267,6 @@ function enhanceGlassScreenHeads() {
       }
       head.insertAdjacentHTML("beforeend", glassChromeActionsMarkup());
     });
-  PetLiveWeb.shell.ensureScreenHomeBtns?.(document, {
-    onGo: (screen) => go(screen),
-  });
-  PetLiveWeb.shell.ensureFeatureHub?.(document, {
-    onGo: (screen) => go(screen),
-    onMounted: () => {
-      wireFeatureHubVaxHelp();
-      const pet = getCurrentPet();
-      if (pet) {
-        renderEmergencyVaccineNav(pet);
-        renderAlertBadge(pet);
-        renderEmergencyLabNav(pet);
-        renderEmergencyImagingNav(pet);
-      }
-    },
-  });
-  if (typeof applyI18n === "function") applyI18n();
 }
 
 function syncAppNavBtnIcons(open) {
@@ -3392,60 +3324,35 @@ document.querySelectorAll("[data-go]").forEach((btn) => {
   }
 });
 
-
-function wireFeatureHubVaxHelp() {
-  const helpBtn = document.getElementById("fh-vax-help");
-  const pop = document.getElementById("fh-vax-help-pop");
-  if (!helpBtn || !pop || helpBtn.getAttribute("data-vax-help-wired") === "1") return;
-  helpBtn.setAttribute("data-vax-help-wired", "1");
-  helpBtn.addEventListener("click", (event) => {
-    event.preventDefault();
-    event.stopPropagation();
-    const willOpen = Boolean(pop.hidden);
-    pop.hidden = !willOpen;
-    helpBtn.setAttribute("aria-expanded", willOpen ? "true" : "false");
-    if (willOpen) setVaxHelpOpen(false);
-  });
-  pop.addEventListener("click", (event) => {
-    event.stopPropagation();
-  });
-}
-
 function setVaxHelpOpen(open) {
-  PetLiveWeb.shell.setVaxHelpOpen(
-    {
-      helpBtn: document.getElementById("e-vax-help"),
-      pop: document.getElementById("e-vax-help-pop"),
-    },
-    open
-  );
+  const helpBtn = document.getElementById("e-vax-help");
+  const pop = document.getElementById("e-vax-help-pop");
+  if (!helpBtn || !pop) return;
+  pop.hidden = !open;
+  helpBtn.setAttribute("aria-expanded", open ? "true" : "false");
 }
 
-PetLiveWeb.shell.initVaxHelp(
-  {
-    helpBtn: document.getElementById("e-vax-help"),
-    pop: document.getElementById("e-vax-help-pop"),
-    doc: document,
-  },
-  {
-    closeProofLightbox,
-    helpSelector:
-      "#e-vax-help, #e-vax-help-pop, #fh-vax-help, #fh-vax-help-pop",
-  }
-);
+document.getElementById("e-vax-help")?.addEventListener("click", (event) => {
+  event.preventDefault();
+  event.stopPropagation();
+  const pop = document.getElementById("e-vax-help-pop");
+  setVaxHelpOpen(Boolean(pop?.hidden));
+});
+
+document.getElementById("e-vax-help-pop")?.addEventListener("click", (event) => {
+  event.stopPropagation();
+});
 
 document.addEventListener("click", (event) => {
-  if (
-    event.target.closest(
-      "#e-vax-help, #e-vax-help-pop, #fh-vax-help, #fh-vax-help-pop"
-    )
-  ) {
-    return;
+  if (event.target.closest("#e-vax-help, #e-vax-help-pop")) return;
+  setVaxHelpOpen(false);
+});
+
+document.addEventListener("keydown", (event) => {
+  if (event.key === "Escape") {
+    closeProofLightbox();
+    setVaxHelpOpen(false);
   }
-  const fhHelp = document.getElementById("fh-vax-help");
-  const fhPop = document.getElementById("fh-vax-help-pop");
-  if (fhPop) fhPop.hidden = true;
-  if (fhHelp) fhHelp.setAttribute("aria-expanded", "false");
 });
 
 document.getElementById("proof-lightbox")?.addEventListener("click", (event) => {
@@ -6060,8 +5967,10 @@ function paintCloudChrome() {
 
   PetLiveWeb.shell.applyAuthBusyState?.(document, busy);
 
-  const loginBtn = document.getElementById("intro-login-btn");
-  if (loginBtn) loginBtn.disabled = busy;
+  PetLiveWeb.shell.paintLegalConsent?.(document, {
+    signedIn: session.signedIn,
+    authBusy: busy,
+  });
 
   const loginLabel = document.querySelector("#intro-login-btn .intro-login-label");
   if (loginLabel && !session.signedIn) {
@@ -6070,6 +5979,7 @@ function paintCloudChrome() {
       : "loginWithGoogle";
     loginLabel.setAttribute("data-i18n", key);
     loginLabel.textContent = t(key);
+    const loginBtn = document.getElementById("intro-login-btn");
     if (loginBtn) {
       loginBtn.setAttribute("data-i18n-aria", key);
       loginBtn.setAttribute("aria-label", t(key));
@@ -6305,6 +6215,14 @@ function initIntroAndCloud() {
   }
 
   function startWithGoogleOrEnter() {
+    if (
+      PetLiveWeb.shell.isLegalConsentGranted &&
+      !PetLiveWeb.shell.isLegalConsentGranted(document)
+    ) {
+      showToast(t("legalConsentRequired"));
+      document.getElementById("intro-legal-consent-cb")?.focus?.();
+      return;
+    }
     if (supabaseAuth?.isConfigured?.()) {
       if (supabaseAuth.isAuthBusy?.()) return;
       if (supabaseAuth.getSession().signedIn) {
@@ -6339,9 +6257,14 @@ function initIntroAndCloud() {
     }
   }
 
+  PetLiveWeb.shell.bindLegalConsent(document, {
+    onPaint: paintCloudChrome,
+  });
+
   PetLiveWeb.shell.bindIntroCloudListeners(document, window, {
     onLogin: startWithGoogleOrEnter,
     onLogout: doSignOut,
+    onLegalConsentRequired: () => showToast(t("legalConsentRequired")),
     onOpenOwnerSettings: openOwnerSettingsFromAccount,
     onSync: async () => {
       if (isCloudReconcileBusy()) return;
@@ -6691,7 +6614,6 @@ setMedUnitChip("unrecorded");
 setMedFreqChip("unrecorded");
 enhanceGlassScreenHeads();
 applyI18n();
-initGlassDock();
 initAppNavMenu();
 initIntroAndCloud();
 initDemoMode();
