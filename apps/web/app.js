@@ -74,7 +74,6 @@ function visitTagLabel(tag) {
   return visitLabels.visitTagLabel(tag);
 }
 
-
 const pets = [];
 const archivedPets = [];
 
@@ -309,6 +308,7 @@ let selectedAlertType = "drug_allergy";
 let selectedAlertSeverity = "critical";
 const vaccineList = document.getElementById("vaccine-list");
 const vaccineSub = document.getElementById("vaccine-sub");
+const eVaccineSub = document.getElementById("e-vaccine-sub");
 const vaccineForm = document.getElementById("vaccine-form");
 const vaccineChipsEl = document.getElementById("vaccine-chips");
 const vaccineCustomName = document.getElementById("vaccine-custom-name");
@@ -2132,6 +2132,7 @@ function renderPetHeader(pet) {
     if (timelineSub) timelineSub.textContent = copy.timelineSub;
     if (visitFormSub) visitFormSub.textContent = copy.visitFormSub;
     if (vaccineSub) vaccineSub.textContent = copy.vaccineSub;
+    if (eVaccineSub) eVaccineSub.textContent = copy.vaccineSub;
     return;
   }
 
@@ -2140,6 +2141,7 @@ function renderPetHeader(pet) {
   timelineSub.textContent = copy.timelineSub;
   visitFormSub.textContent = copy.visitFormSub;
   vaccineSub.textContent = copy.vaccineSub;
+  if (eVaccineSub) eVaccineSub.textContent = copy.vaccineSub;
 }
 
 function syncAlertNavTone(alerts) {
@@ -2924,6 +2926,9 @@ const petsController = PetLiveWeb.domains.pets.createController({
 const visitsController = PetLiveWeb.domains.visits.createController({
   clinicLabelOf: (visit) => visitClinicLabel(visit),
 });
+pets.forEach((pet) => {
+  if (pet?.visits) visitsController.sortVisitsNewestFirst(pet.visits);
+});
 const imagingController = PetLiveWeb.domains.imaging.createController();
 const drugsAdapter = PetLiveWeb.domains.drugs.createAdapter({
   searchDrugsApi: (query) => window.PetLive?.drug?.searchDrugs?.(query),
@@ -3184,12 +3189,12 @@ function isDebugAppHatch() {
 }
 
 function go(screen, options = {}) {
-  // Google gate: unsigned users stay on A (intro), except demo / debug hatch.
+  // Supabase gate: unsigned users stay on A (intro), except demo / debug hatch.
   if (
     !DEMO_MODE &&
     !isDebugAppHatch() &&
     screen !== "intro" &&
-    !liveGoogleSignedIn()
+    !livePassportSignedIn()
   ) {
     if (shellNavigation.getActiveScreen?.() === "intro") return false;
     screen = "intro";
@@ -4209,6 +4214,7 @@ function applyMorphTimelinePatches(patches) {
 }
 
 function renderTimeline(pet) {
+  if (pet?.visits) visitsController.sortVisitsNewestFirst(pet.visits);
   const lang =
     (typeof getCurrentLang === "function" && getCurrentLang()) || "zh-Hant";
   const nextVisits = pet?.visits || [];
@@ -4418,6 +4424,7 @@ function getOrCreateVisitForMedSave() {
       medications: [],
     };
     pet.visits.unshift(visit);
+    visitsController.sortVisitsNewestFirst(pet.visits);
   }
   if (weightValue != null) {
     medicationsController.applyVisitWeightOnMedSave(pet, visit, weightValue);
@@ -5614,6 +5621,9 @@ window.onLanguageChange = () => {
 const googleDriveAuth =
   (typeof PetLiveWeb !== "undefined" && PetLiveWeb.auth && PetLiveWeb.auth.googleDrive) ||
   null;
+const supabaseAuth =
+  (typeof PetLiveWeb !== "undefined" && PetLiveWeb.auth && PetLiveWeb.auth.supabase) ||
+  null;
 let cloudBackupTimer = null;
 let lastCloudBackupAt = null;
 let cloudBusy = false;
@@ -5877,6 +5887,10 @@ function closeAccountMenu() {
 }
 
 function getAccountSessionForChrome() {
+  if (supabaseAuth?.isConfigured?.()) {
+    const supa = supabaseAuth.getSession();
+    if (supa) return supa;
+  }
   const live = googleDriveAuth?.getSession?.();
   if (live) return live;
   return {
@@ -5923,9 +5937,21 @@ function liveGoogleSignedIn() {
   return Boolean(googleDriveAuth?.getSession?.().signedIn);
 }
 
+function livePassportSignedIn() {
+  if (supabaseAuth?.isConfigured?.()) {
+    return Boolean(supabaseAuth.getSession()?.signedIn);
+  }
+  return liveGoogleSignedIn();
+}
+
 function paintCloudChrome() {
   const session = getAccountSessionForChrome();
   const origin = window.location.origin || "";
+  const busy = Boolean(
+    session.authBusy ||
+      supabaseAuth?.isAuthBusy?.() ||
+      googleDriveAuth?.isAuthBusy?.()
+  );
 
   paintAccountMenu(session);
   paintReconcileUi();
@@ -5938,6 +5964,27 @@ function paintCloudChrome() {
     },
     session
   );
+
+  PetLiveWeb.shell.applyAuthBusyState?.(document, busy);
+
+  PetLiveWeb.shell.paintLegalConsent?.(document, {
+    signedIn: session.signedIn,
+    authBusy: busy,
+  });
+
+  const loginLabel = document.querySelector("#intro-login-btn .intro-login-label");
+  if (loginLabel && !session.signedIn) {
+    const key = session.remembered
+      ? "loginContinueWithGoogle"
+      : "loginWithGoogle";
+    loginLabel.setAttribute("data-i18n", key);
+    loginLabel.textContent = t(key);
+    const loginBtn = document.getElementById("intro-login-btn");
+    if (loginBtn) {
+      loginBtn.setAttribute("data-i18n-aria", key);
+      loginBtn.setAttribute("aria-label", t(key));
+    }
+  }
 
   const originHint = document.getElementById("intro-origin-hint");
   if (originHint) {
@@ -6045,6 +6092,28 @@ async function pullCloudBackup({ silent } = {}) {
   }
 }
 
+async function handleSupabaseSignIn() {
+  if (!supabaseAuth?.isConfigured?.()) {
+    setIntroStatus(t("cloudBackupNeedConfig"));
+    showToast(t("cloudBackupNeedConfig"));
+    paintCloudChrome();
+    return;
+  }
+  if (supabaseAuth.isAuthBusy?.()) return;
+  try {
+    setIntroStatus("…");
+    paintCloudChrome();
+    await supabaseAuth.signInWithGoogle();
+    // OAuth redirect — boot resumes on return.
+  } catch (err) {
+    const msg = String(err?.message || err);
+    if (msg === "auth_busy") return;
+    setIntroStatus(t("cloudBackupFail"));
+    showToast(t("cloudBackupFail"));
+    paintCloudChrome();
+  }
+}
+
 async function handleGoogleSignIn({ enterApp } = {}) {
   if (!googleDriveAuth) {
     setIntroStatus(t("cloudBackupNeedConfig"));
@@ -6122,14 +6191,22 @@ function enterAppFromIntro() {
 function initIntroAndCloud() {
   function doSignOut() {
     closeAccountMenu();
-    googleDriveAuth?.signOut?.();
-    lastCloudBackupAt = null;
-    setIntroStatus("");
-    paintCloudChrome();
-    showToast(t("logout"));
-    // Google gate: unsigned users must not stay on B.
-    const introEl = app.querySelector('[data-screen="intro"]');
-    if (introEl) go("intro", { replace: true });
+    void Promise.resolve()
+      .then(async () => {
+        if (supabaseAuth?.isConfigured?.()) {
+          await supabaseAuth.signOut();
+        }
+        googleDriveAuth?.signOut?.();
+        lastCloudBackupAt = null;
+        setIntroStatus("");
+        paintCloudChrome();
+        showToast(t("logout"));
+        const introEl = app.querySelector('[data-screen="intro"]');
+        if (introEl) go("intro", { replace: true });
+      })
+      .catch(() => {
+        paintCloudChrome();
+      });
   }
 
   function openOwnerSettingsFromAccount() {
@@ -6138,6 +6215,23 @@ function initIntroAndCloud() {
   }
 
   function startWithGoogleOrEnter() {
+    if (
+      PetLiveWeb.shell.isLegalConsentGranted &&
+      !PetLiveWeb.shell.isLegalConsentGranted(document)
+    ) {
+      showToast(t("legalConsentRequired"));
+      document.getElementById("intro-legal-consent-cb")?.focus?.();
+      return;
+    }
+    if (supabaseAuth?.isConfigured?.()) {
+      if (supabaseAuth.isAuthBusy?.()) return;
+      if (supabaseAuth.getSession().signedIn) {
+        enterAppFromIntro();
+        return;
+      }
+      handleSupabaseSignIn();
+      return;
+    }
     if (googleDriveAuth?.getSession?.().signedIn) {
       enterAppFromIntro();
       return;
@@ -6145,16 +6239,41 @@ function initIntroAndCloud() {
     handleGoogleSignIn({ enterApp: true });
   }
 
+  function showSurface(enterB) {
+    const intro = app.querySelector('[data-screen="intro"]');
+    const home = app.querySelector('[data-screen="home"]');
+    if (!intro || !home) return;
+    if (enterB) {
+      intro.classList.remove("is-active");
+      intro.hidden = true;
+      home.hidden = false;
+      home.classList.add("is-active");
+      markIntroSeen();
+    } else {
+      home.classList.remove("is-active");
+      home.hidden = true;
+      intro.hidden = false;
+      intro.classList.add("is-active");
+    }
+  }
+
+  PetLiveWeb.shell.bindLegalConsent(document, {
+    onPaint: paintCloudChrome,
+  });
+
   PetLiveWeb.shell.bindIntroCloudListeners(document, window, {
     onLogin: startWithGoogleOrEnter,
     onLogout: doSignOut,
+    onLegalConsentRequired: () => showToast(t("legalConsentRequired")),
     onOpenOwnerSettings: openOwnerSettingsFromAccount,
     onSync: async () => {
       if (isCloudReconcileBusy()) return;
+      if (googleDriveAuth?.isAuthBusy?.()) return;
       closeAccountMenu();
       try {
         await googleDriveAuth?.ensureDriveAccess?.();
-      } catch {
+      } catch (err) {
+        if (String(err?.message || err) === "auth_busy") return;
         showToast(t("cloudBackupFail"));
         return;
       }
@@ -6162,11 +6281,13 @@ function initIntroAndCloud() {
     },
     onRestore: async () => {
       if (isCloudReconcileBusy()) return;
+      if (googleDriveAuth?.isAuthBusy?.()) return;
       if (!window.confirm(t("accountRestoreConfirm"))) return;
       closeAccountMenu();
       try {
         await googleDriveAuth?.ensureDriveAccess?.();
-      } catch {
+      } catch (err) {
+        if (String(err?.message || err) === "auth_busy") return;
         showToast(t("cloudBackupFail"));
         return;
       }
@@ -6174,6 +6295,17 @@ function initIntroAndCloud() {
     },
     onGoHome: () => go("home"),
     onSwitchPreview: () => {
+      if (supabaseAuth?.isConfigured?.()) {
+        if (supabaseAuth.isAuthBusy?.()) return;
+        void Promise.resolve()
+          .then(async () => {
+            await supabaseAuth.signOut();
+            googleDriveAuth?.signOut?.();
+            await handleSupabaseSignIn();
+          })
+          .catch(() => paintCloudChrome());
+        return;
+      }
       if (googleDriveAuth) {
         handleGoogleSignIn({ enterApp: false });
       } else {
@@ -6187,47 +6319,49 @@ function initIntroAndCloud() {
       PetLiveWeb.shell.positionAccountPopover(doc, win, chip);
     },
     registerSessionChange: (paintFn) => {
+      supabaseAuth?.onSessionChange?.(paintFn);
       googleDriveAuth?.onSessionChange?.(paintFn);
     },
   });
 
-  // Boot: A (intro) by default → Google login enters B.
-  // Already signed in → B. Escape hatch: ?app=1 / screen=home / ?demo=1.
-  // Do NOT skip A for INTRO_SEEN or hasRealLocalData alone.
-  // Do NOT use C bootSurfaceToHome — preserves B Google-gate / local-first.
-  try {
-    const params = new URLSearchParams(window.location.search || "");
-    const forceApp =
-      DEMO_MODE ||
-      params.get("app") === "1" ||
-      params.get("screen") === "home";
-    const intro = app.querySelector('[data-screen="intro"]');
-    const home = app.querySelector('[data-screen="home"]');
-    const signedIn = Boolean(googleDriveAuth?.getSession?.().signedIn);
-    if (intro && home) {
-      if (signedIn || forceApp) {
-        intro.classList.remove("is-active");
-        intro.hidden = true;
-        home.hidden = false;
-        home.classList.add("is-active");
-        markIntroSeen();
-      } else {
-        home.classList.remove("is-active");
-        home.hidden = true;
-        intro.hidden = false;
-        intro.classList.add("is-active");
+  // Boot: A (intro) by default → Supabase Google login enters B.
+  // Escape hatch: ?app=1 / screen=home / ?demo=1.
+  void (async () => {
+    try {
+      if (supabaseAuth?.isConfigured?.()) {
+        await supabaseAuth.init();
       }
-    }
-  } catch {
-    /* ignore */
-  }
 
-  if (!DEMO_MODE && googleDriveAuth?.getSession?.().signedIn) {
-    reconcileCloudOnBoot({ silent: true, skipAutoPull: FRESH_BOOT });
-  }
+      const params = new URLSearchParams(window.location.search || "");
+      const forceApp =
+        DEMO_MODE ||
+        params.get("app") === "1" ||
+        params.get("screen") === "home";
+
+      if (forceApp) {
+        showSurface(true);
+        paintCloudChrome();
+        return;
+      }
+
+      if (livePassportSignedIn()) {
+        showSurface(true);
+        paintCloudChrome();
+        if (!DEMO_MODE && googleDriveAuth?.getSession?.().signedIn) {
+          reconcileCloudOnBoot({ silent: true, skipAutoPull: FRESH_BOOT });
+        }
+        return;
+      }
+
+      showSurface(false);
+      paintCloudChrome();
+    } catch {
+      showSurface(false);
+      paintCloudChrome();
+    }
+  })();
   // Formal B: never inject prototype seed pets except ?demo=1.
 }
-
 
 /* —— Demo mode (?demo=1): browse-only seed + optional tour —— */
 
@@ -6468,7 +6602,6 @@ function initDemoMode() {
     window.setTimeout(() => startDemoTour(), 480);
   }
 }
-
 
 applyI18n();
 syncAlertSubmitLabel();

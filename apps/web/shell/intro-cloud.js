@@ -72,6 +72,21 @@
     };
 
     loginBtn?.addEventListener("click", () => {
+      const shell = global.PetLiveWeb?.shell;
+      if (
+        shell?.isLegalConsentGranted &&
+        !shell.isLegalConsentGranted(doc)
+      ) {
+        const cb = doc.getElementById("intro-legal-consent-cb");
+        cb?.focus?.();
+        if (typeof hooks.onLegalConsentRequired === "function") {
+          hooks.onLegalConsentRequired();
+        }
+        return;
+      }
+      if (typeof shell?.markLegalConsent === "function") {
+        shell.markLegalConsent();
+      }
       if (typeof onLogin === "function") onLogin();
     });
     logoutBtn?.addEventListener("click", () => {
