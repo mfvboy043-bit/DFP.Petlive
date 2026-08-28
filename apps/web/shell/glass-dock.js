@@ -10,6 +10,12 @@
    */
   function dockKeyForScreen(screen) {
     const id = String(screen || "");
+    if (id === "timeline" || id === "add-visit" || id === "add-med") {
+      return "timeline";
+    }
+    if (id === "alerts") return "alerts";
+    if (id === "imaging" || id === "imaging-proof") return "imaging";
+    if (id === "labs" || id === "lab-add") return "labs";
     if (id === "emergency") return "passport";
     return null;
   }
@@ -22,7 +28,6 @@
   /**
    * Single markup source for C + B.
    * Home jump lives in screen-head (`shell/screen-home-btn.js`), not the dock.
-   * Timeline / alerts / imaging / labs live in feature-buttons hub (`shell/feature-hub.js`).
    * 護照 → passportGo (usually emergency).
    * @param {{ passportGo?: string, startHidden?: boolean }} [opts]
    */
@@ -31,7 +36,7 @@
     const hiddenAttr = opts.startHidden ? " hidden" : "";
     return `
 <nav
-  class="glass-dock glass-dock--solo"
+  class="glass-dock"
   id="glass-dock"
   data-i18n-aria="glassDockAria"
   aria-label="主選單"${hiddenAttr}
@@ -43,6 +48,23 @@
       <span class="glass-dock-lens-label"></span>
     </span>
   </div>
+  <button class="glass-dock-item" type="button" data-go="timeline" data-dock="timeline">
+    <span class="glass-dock-ico" aria-hidden="true">
+      <svg viewBox="0 0 24 24" width="22" height="22" focusable="false">
+        <path fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" d="M4 7h16M4 12h12M4 17h8" />
+      </svg>
+    </span>
+    <span class="glass-dock-label" data-i18n="dockTimeline">時間軸</span>
+  </button>
+  <button class="glass-dock-item" type="button" data-go="alerts" data-dock="alerts">
+    <span class="glass-dock-ico" aria-hidden="true">
+      <svg viewBox="0 0 24 24" width="22" height="22" focusable="false">
+        <path fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" d="M12 4 3.5 19h17L12 4z" />
+        <path fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" d="M12 10v4M12 16.5v.5" />
+      </svg>
+    </span>
+    <span class="glass-dock-label" data-i18n="dockAlerts">警示</span>
+  </button>
   <button class="glass-dock-item" type="button" data-go="${passportGo}" data-dock="passport">
     <span class="glass-dock-ico" aria-hidden="true">
       <svg viewBox="0 0 24 24" width="22" height="22" focusable="false">
@@ -51,6 +73,25 @@
       </svg>
     </span>
     <span class="glass-dock-label" data-i18n="dockPassport">護照</span>
+  </button>
+  <button class="glass-dock-item" type="button" data-go="imaging" data-dock="imaging">
+    <span class="glass-dock-ico" aria-hidden="true">
+      <svg viewBox="0 0 24 24" width="22" height="22" focusable="false">
+        <rect x="3.5" y="6" width="17" height="12" rx="2" fill="none" stroke="currentColor" stroke-width="1.8" />
+        <circle cx="9" cy="12" r="2.2" fill="none" stroke="currentColor" stroke-width="1.8" />
+        <path fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" d="m12.5 14.5 2.2-2.2 3.3 3.2" />
+      </svg>
+    </span>
+    <span class="glass-dock-label" data-i18n="dockImaging">影像</span>
+  </button>
+  <button class="glass-dock-item" type="button" data-go="labs" data-dock="labs">
+    <span class="glass-dock-ico" aria-hidden="true">
+      <svg viewBox="0 0 24 24" width="22" height="22" focusable="false">
+        <path fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" d="M9 3.5h6v5.2l3.5 8.3A2.2 2.2 0 0 1 16.5 20.5h-9a2.2 2.2 0 0 1-2-3.5L9 8.7z" />
+        <path fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" d="M9 3.5h6" />
+      </svg>
+    </span>
+    <span class="glass-dock-label" data-i18n="dockLabs">報告</span>
   </button>
 </nav>`;
   }
