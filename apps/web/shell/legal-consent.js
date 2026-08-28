@@ -52,13 +52,19 @@
     return `<div class="legal-consent-modal" id="${MODAL_ID}" hidden role="dialog" aria-modal="true" aria-labelledby="legal-consent-modal-title">
   <div class="legal-consent-modal-scrim" aria-hidden="true"></div>
   <div class="legal-consent-modal-sheet">
-    <h2 class="legal-consent-modal-title" id="legal-consent-modal-title" data-i18n="legalConsentModalTitle">使用前請先閱讀</h2>
-    <p class="legal-consent-modal-lede" data-i18n-html="legalConsentModalLede">火龍果護照僅供飼主整理寵物健康資訊之參考，不能取代獸醫診斷。請先閱讀並同意下列條款後再登入。</p>
-    <label class="legal-consent-modal-label" for="${MODAL_CB_ID}">
-      <input type="checkbox" id="${MODAL_CB_ID}" />
-      <span data-i18n-html="legalConsentLabel">我已閱讀並同意隱私權政策與使用條款</span>
-    </label>
-    <button type="button" class="legal-consent-modal-confirm" id="${MODAL_CONFIRM_ID}" data-i18n="legalConsentModalConfirm" disabled>同意並繼續</button>
+    <div class="legal-consent-modal-content">
+      <h2 class="legal-consent-modal-title" id="legal-consent-modal-title" data-i18n="legalConsentModalTitle">使用前請先閱讀</h2>
+      <p class="legal-consent-modal-lede" data-i18n="legalConsentModalLede">火龍果護照僅供飼主整理寵物健康資訊之參考，不能取代獸醫診斷。請先閱讀並同意下列條款後再登入。</p>
+    </div>
+    <div class="legal-consent-modal-consent">
+      <label class="legal-consent-modal-label" for="${MODAL_CB_ID}">
+        <input type="checkbox" id="${MODAL_CB_ID}" />
+        <span class="legal-consent-modal-label-text" data-i18n-html="legalConsentLabel">我已閱讀並同意隱私權政策與使用條款</span>
+      </label>
+    </div>
+    <div class="legal-consent-modal-actions">
+      <button type="button" class="legal-consent-modal-confirm" id="${MODAL_CONFIRM_ID}" data-i18n="legalConsentModalConfirm" disabled>同意並繼續</button>
+    </div>
   </div>
 </div>`;
   }
