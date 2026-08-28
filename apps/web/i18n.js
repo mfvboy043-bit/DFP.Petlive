@@ -18,7 +18,7 @@ const I18N = {
     introEyebrow: "飼主持有的寵物健康護照",
     introLede:
       "紀錄先寫在你這邊（本機）。用 Google 登入進入你的護照；需要時，可把備份存進你的 Google 雲端硬碟。<br />僅供參考，不取代獸醫診斷。",
-    introStoriesEyebrow: "兩個真實情境",
+    introStoriesEyebrow: "三個真實情境",
     introStoriesTitle: "換院、急診時，紀錄有跟著走嗎？",
     introStory1Title: "半夜急診那張空白紙",
     introStory1Body:
@@ -26,6 +26,9 @@ const I18N = {
     introStory2Title: "為什麼看了很多醫生都沒用",
     introStory2Body:
       "<p>米米在 A 醫院吃過 A 抗生素，好一點又復發。</p><p>爸爸帶去 C 醫院，新醫生問：「之前吃過什麼？」爸爸也說不清。醫生只好再開同一種 A 抗生素。米米還是咳、還是癢。</p><p>爸爸心裡想：是不是看了很多醫生都沒用？其實不是。是沒有一張小紙，告訴下一位醫生：這個藥試過了，沒效。</p>",
+    introStory3Title: "謎豆子的第二次機會",
+    introStory3Body:
+      "<p>半夜，謎豆子突然一直吐，連站都站不穩。</p><p>主人趕快抱著牠去醫院。</p><p>醫生一邊救謎豆子，一邊問：「牠今天吃過什麼藥？」「有打過什麼針嗎？」</p><p>主人搖搖頭：「我不知道，只知道下午看過醫生。」</p><p>醫生很著急。因為寵物不會說話，沒有人能告訴他，牠的身體今天發生過什麼事。他只能一邊救，一邊猜。</p><p>還好，最後慢慢好起來了。醫生摸摸牠的頭，心裡想：<strong>「如果我早一點知道，就好了。」</strong></p><p>所以，我們想替謎豆子留下一張小小的紙條：今天吃了什麼藥、打了什麼針、醫生幫牠做了什麼。醫院如果不想寫名字，也可以不寫。</p><p>因為這張紙條不是用來找誰做錯事。它只是上一位醫生，留給下一位醫生的一句話：<strong>「我先照顧過牠了，接下來，換你幫我照顧牠。」</strong></p>",
     introStoriesBridge:
       "換院、急診、換醫生時，把「試過什麼、吃過什麼」帶著走。",
     introStoriesNote: "以上為理解情境之示意，不取代獸醫診斷。",
@@ -796,7 +799,7 @@ const I18N = {
     introEyebrow: "An owner-held pet health passport",
     introLede:
       "Records are saved on this device first. Sign in with Google to enter your passport; when you need a backup, you can save it to your Google Drive.<br />Reference only—not a veterinary diagnosis.",
-    introStoriesEyebrow: "Two real situations",
+    introStoriesEyebrow: "Three real situations",
     introStoriesTitle: "When you switch clinics, does the record travel with you?",
     introStory1Title: "The blank chart at midnight ER",
     introStory1Body:
@@ -804,6 +807,9 @@ const I18N = {
     introStory2Title: "Why it feels like no vet can help",
     introStory2Body:
       "<p>At Hospital A, Mimi tried Antibiotic A and felt a bit better, then got sick again.</p><p>At Hospital C, the new vet asked what she’d tried before. Dad couldn’t say clearly. So the vet prescribed the same Antibiotic A again. Mimi still coughed and itched.</p><p>Dad thought: “We’ve seen so many vets—nothing works.” That’s not really true. There was just no little note telling the next vet: we already tried this—it didn’t work.</p>",
+    introStory3Title: "Mystery Bean’s second chance",
+    introStory3Body:
+      "<p>At midnight, Mystery Bean kept vomiting and could barely stand.</p><p>Her owner rushed to the hospital.</p><p>While treating her, the vet asked: “What medicine did she take today?” “Any shots?”</p><p>The owner shook their head: “I don’t know—I only know we saw a vet this afternoon.”</p><p>The vet was worried. Pets can’t talk. No one could say what had happened to her body today. They had to save her while guessing.</p><p>Luckily, she slowly got better. The vet stroked her head and thought: <strong>“If only I had known sooner.”</strong></p><p>So we want to leave a small note for Mystery Bean: what she took, what shots she got, what the vet did. Clinics don’t have to write their name if they prefer.</p><p>This note isn’t for blaming anyone. It’s one vet leaving the next vet a line: <strong>“I’ve cared for her—now please help me care for her.”</strong></p>",
     introStoriesBridge:
       "At every new clinic or ER visit, bring what was tried and what was given.",
     introStoriesNote: "Illustrative scenarios for context only—not a veterinary diagnosis.",
@@ -1575,7 +1581,7 @@ const I18N = {
     introEyebrow: "飼い主が持つペット健康パスポート",
     introLede:
       "記録はまずあなたの端末に残します。Googleでログインしてパスポートへ。必要なときは、あなたのGoogleドライブへバックアップできます。<br />参考用であり、診断の代わりではありません。",
-    introStoriesEyebrow: "2つのリアルな場面",
+    introStoriesEyebrow: "3つのリアルな場面",
     introStoriesTitle: "病院を替えるとき、記録は一緒に行きますか？",
     introStory1Title: "真夜中の救急、その空白の紙",
     introStory1Body:
@@ -1583,6 +1589,9 @@ const I18N = {
     introStory2Title: "なぜ「どの先生もダメ」に感じるのか",
     introStory2Body:
       "<p>ミミはA病院でA抗生物質を試し、少し良くなったあとまた悪化しました。</p><p>パパがC病院へ連れて行くと、新しい獣医さんが「前に何を飲みましたか？」と聞きました。パパははっきり答えられず、同じA抗生物質がまた出されました。ミミはまだ咳き、痒がります。</p><p>パパは「いろんな先生に見てもダメなの？」と思いました。本当は違います。次の先生に「この薬は試したが効かなかった」と伝える小さな紙がなかっただけなのです。</p>",
+    introStory3Title: "ナゾマメの二度目のチャンス",
+    introStory3Body:
+      "<p>真夜中、ナゾマメが吐き続け、立つこともおぼつかなくなりました。</p><p>飼い主さんは抱えて病院へ駆け込みました。</p><p>獣医さんは治療しながら聞きます：「今日、何の薬を飲みましたか？」「注射はしましたか？」</p><p>飼い主さんは首を振ります：「わかりません。午後に病院に行っただけです。」</p><p>獣医さんは焦ります。ペットは話せない。今日、体に何が起きたか、誰も教えてくれない。救いながら、当てずっぽうで進むしかない。</p><p>幸い、少しずつ良くなりました。獣医さんは頭をなでり、心の中で思います：<strong>「もっと早く知れていたら。」</strong></p><p>だから、ナゾマメのために小さなメモを残したい：今日飲んだ薬、打った針、してもらった処置。病院名を書きたくなければ、書かなくてもいい。</p><p>このメモは、誰かを責めるためではありません。前の獣医さんが、次の獣医さんへ残す一言です：<strong>「私が先に世話をした。次は、あなたも一緒に世話をしてください。」</strong></p>",
     introStoriesBridge:
       "病院が替わるたびに、「試した薬・飲ませた薬」を一緒に持っていきましょう。",
     introStoriesNote: "理解のための示意です。診断の代わりではありません。",
@@ -2359,7 +2368,7 @@ const I18N = {
     introEyebrow: "보호자가 보유하는 반려동물 건강 여권",
     introLede:
       "기록은 먼저 이 기기에 저장됩니다. Google로 로그인하면 여권으로 들어갑니다. 필요할 때 내 Google 드라이브에 백업할 수 있습니다.<br />참고용이며 수의사 진단을 대체하지 않습니다.",
-    introStoriesEyebrow: "두 가지 실제 상황",
+    introStoriesEyebrow: "세 가지 실제 상황",
     introStoriesTitle: "병원을 바꿀 때, 기록도 함께 가나요?",
     introStory1Title: "한밤중 응급실, 그 빈 종이",
     introStory1Body:
@@ -2367,6 +2376,9 @@ const I18N = {
     introStory2Title: "왜 ‘여러 병원을 다녀도 소용없다’고 느낄까",
     introStory2Body:
       "<p>미미는 A병원에서 A항생제를 써 보고 조금 나아졌다가 다시 아팠습니다.</p><p>아빠가 C병원에 가자 새 수의사가 “전에 뭘 드셨나요?”라고 물었습니다. 아빠는 분명히 말하지 못했고, 같은 A항생제가 다시 처방되었습니다. 미미는 여전히 기침하고 가렵습니다.</p><p>아빠는 ‘병원을 많이 다녀도 소용없나?’라고 생각했습니다. 사실은 그렇지 않습니다. 다음 수의사에게 ‘이 약은 이미 써 봤는데 효과 없었다’고 알려줄 작은 종이가 없었을 뿐입니다.</p>",
+    introStory3Title: "수수께끼콩의 두 번째 기회",
+    introStory3Body:
+      "<p>한밤중, 수수께끼콩이 계속 토하고 서 있기도 힘들어했습니다.</p><p>보호자는 안고 병원으로 달려갔습니다.</p><p>수의사는 치료하면서 묻습니다. “오늘 무슨 약을 먹었나요?” “주사는 맞았나요?”</p><p>보호자는 고개를 저었습니다. “모르겠어요. 오후에 병원에 갔다는 것만 알아요.”</p><p>수의사는 조급해합니다. 반려동물은 말을 못 합니다. 오늘 몸에 무슨 일이 있었는지 아무도 알려줄 수 없습니다. 구하면서 추측할 수밖에 없습니다.</p><p>다행히, 천천히 나아졌습니다. 수의사는 머리를 쓰다듬으며 생각합니다. <strong>“조금만 더 일찍 알았더라면.”</strong></p><p>그래서 수수께끼콩을 위해 작은 쪽지를 남기고 싶습니다. 오늘 먹은 약, 맞은 주사, 받은 처치. 병원 이름을 쓰기 싫으면, 안 써도 됩니다.</p><p>이 쪽지는 누굴 탓하기 위한 것이 아닙니다. 앞 수의사가 다음 수의사에게 남기는 한마디입니다. <strong>“내가 먼저 돌봤어. 이제 당신도 함께 돌봐 주세요.”</strong></p>",
     introStoriesBridge:
       "병원·응급·담당 수의사가 바뀔 때마다 ‘무엇을 써 봤는지’를 함께 가져가세요.",
     introStoriesNote: "상황 이해를 위한 예시이며, 수의사 진단을 대체하지 않습니다.",

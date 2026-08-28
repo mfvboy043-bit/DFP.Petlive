@@ -148,6 +148,19 @@
   );
 }
 
+.intro-story-card:nth-child(3)::before {
+  background: linear-gradient(
+    180deg,
+    rgba(90, 125, 108, 0.55) 0%,
+    rgba(79, 157, 120, 0.5) 100%
+  );
+}
+
+.intro-story-body strong {
+  font-weight: 700;
+  color: var(--leaf-deep, #3f5c4e);
+}
+
 .intro-story-index {
   display: block;
   font-family: "Noto Serif TC", serif;
