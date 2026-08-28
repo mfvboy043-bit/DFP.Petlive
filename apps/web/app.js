@@ -74,7 +74,6 @@ function visitTagLabel(tag) {
   return visitLabels.visitTagLabel(tag);
 }
 
-
 const pets = [];
 const archivedPets = [];
 
@@ -1444,45 +1443,38 @@ function renderVaccineList(pet) {
   vaccineList.innerHTML = vaccineRenderer.buildVaccineListHtml(pet, pet.vaccines);
 }
 
-function syncVaccineNavLights(status, lightsEl) {
+function syncVaccineNavLights(status) {
+  const lights = document.getElementById("e-vax-lights");
+  if (!lights) return;
   const titleByStatus = {
     protected: t("vaxLightGreen"),
     approaching: t("vaxLightOrange"),
     expired: t("vaxLightRed"),
   };
-  const targets = lightsEl
-    ? [lightsEl]
-    : Array.from(document.querySelectorAll(".e-vax-lights"));
-  targets.forEach((lights) => {
-    if (!lights) return;
-    lights.querySelectorAll(".e-vax-dot").forEach((dot) => {
-      const key = dot.dataset.status;
-      const on = status && key === status;
-      dot.classList.toggle("is-on", Boolean(on));
-      if (titleByStatus[key]) dot.title = titleByStatus[key];
-    });
-    lights.setAttribute(
-      "aria-label",
-      status ? titleByStatus[status] : t("noVaccineNext")
-    );
+  lights.querySelectorAll(".e-vax-dot").forEach((dot) => {
+    const key = dot.dataset.status;
+    const on = status && key === status;
+    dot.classList.toggle("is-on", Boolean(on));
+    if (titleByStatus[key]) dot.title = titleByStatus[key];
   });
+  lights.setAttribute(
+    "aria-label",
+    status ? titleByStatus[status] : t("noVaccineNext")
+  );
 }
 
 function renderEmergencyVaccineNav(pet) {
+  const nextEl = document.getElementById("e-vaccine-next");
+  const vaccineBtn = document.getElementById("e-vaccine-btn");
+  if (!nextEl || !vaccineBtn) return;
+
+  vaccineBtn.classList.remove("is-protected", "is-approaching", "is-expired");
+
   const presentation = vaccineRenderer.buildEmergencyNavPresentation(getNextVaccine(pet));
-  document.querySelectorAll('.e-vax-nav[data-go="vaccines"]').forEach((vaccineBtn) => {
-    vaccineBtn.classList.remove("is-protected", "is-approaching", "is-expired");
-    const nextEl = vaccineBtn.querySelector("#e-vaccine-next, #fh-vaccine-next");
-    if (nextEl) {
-      const keepId = nextEl.id;
-      nextEl.textContent = presentation.nextText;
-      nextEl.className = presentation.nextClassName || "";
-      if (keepId) nextEl.id = keepId;
-    }
-    vaccineBtn.classList.add(presentation.btnClass);
-    const lights = vaccineBtn.querySelector(".e-vax-lights");
-    if (lights) syncVaccineNavLights(presentation.lightStatus, lights);
-  });
+  nextEl.textContent = presentation.nextText;
+  nextEl.className = presentation.nextClassName;
+  vaccineBtn.classList.add(presentation.btnClass);
+  syncVaccineNavLights(presentation.lightStatus);
 }
 
 function renderVaccines(pet) {
@@ -2002,29 +1994,36 @@ function cancelArchivePetFlow() {
 
 function confirmArchivePet(event) {
   event.preventDefault();
-  PetLiveWeb.shell.confirmArchivePet({
-    getPendingArchivePet,
-    passedAwayDate: document.getElementById("archive-passed-date").value,
-    memorialNote: document
-      .getElementById("archive-memorial-note")
-      .value.trim(),
-    archivePet: (petId, payload) => petsLifecycle.archivePet(petId, payload),
+  const pet = getPendingArchivePet();
+  if (!pet) return;
+
+  const passedAwayDate = document.getElementById("archive-passed-date").value;
+  const memorialNote = document
+    .getElementById("archive-memorial-note")
+    .value.trim();
+  if (!passedAwayDate) {
+    showToast(t("toastNeedPassedDate"));
+    return;
+  }
+
+  const result = petsLifecycle.archivePet(pet.id, {
+    passedAwayDate,
+    memorialNote,
     currentPetId,
-    onArchived: () => {
-      pendingArchivePetId = null;
-    },
-    setManageMode,
-    setCurrentPetId: (id) => {
-      currentPetId = id;
-      appState.setCurrentPetId(currentPetId);
-    },
-    applySelectedPet,
-    renderArchiveList,
-    showToast,
-    t,
-    clearNavigationHistory,
-    go,
   });
+  if (!result.ok) return;
+
+  pendingArchivePetId = null;
+  setManageMode(false);
+  if (result.nextCurrentPetId !== undefined) {
+    currentPetId = result.nextCurrentPetId;
+    appState.setCurrentPetId(currentPetId);
+  }
+  applySelectedPet();
+  renderArchiveList();
+  showToast(t("toastArchived", { name: result.archived.name }));
+  clearNavigationHistory();
+  go("archive", { replace: true });
 }
 
 function getPendingRemovePet() {
@@ -3190,17 +3189,14 @@ function isDebugAppHatch() {
 }
 
 function go(screen, options = {}) {
-  // Google gate: unsigned users stay on A (intro), except demo / debug hatch.
+  // Supabase gate: unsigned users stay on A (intro), except demo / debug hatch.
   if (
     !DEMO_MODE &&
     !isDebugAppHatch() &&
     screen !== "intro" &&
-    !liveGoogleSignedIn()
+    !livePassportSignedIn()
   ) {
-    if (shellNavigation.getActiveScreen?.() === "intro") {
-      paintGlassDock({ animateJump: false });
-      return false;
-    }
+    if (shellNavigation.getActiveScreen?.() === "intro") return false;
     screen = "intro";
     options = { ...options, replace: true };
   }
@@ -3220,20 +3216,15 @@ function go(screen, options = {}) {
   ];
   if (!DEMO_MODE && needsPet.includes(screen) && !getCurrentPet()) {
     showToast(t("toastNeedPetFirst"));
-    paintGlassDock({ animateJump: false });
     return false;
   }
   closeAppNavMenu();
   closeAccountMenu();
   const changed = shellNavigation.go(screen, options);
-  if (!changed) {
-    paintGlassDock({ animateJump: false });
-    return false;
-  }
+  if (!changed) return false;
   // Instant jump — smooth scroll made every screen change feel delayed on phone.
   resetPageScroll();
   resetViewportZoom();
-  paintGlassDock({ animateJump: true });
   return true;
 }
 
@@ -3248,43 +3239,11 @@ function goBack() {
     resetPageScroll();
     resetViewportZoom();
   }
-  paintGlassDock({ animateJump: Boolean(changed) });
   return changed;
 }
 
 function clearNavigationHistory() {
   shellNavigation.clearHistory();
-}
-
-/** Bottom glass dock — shell brain; facade only wires active screen + intro hide. */
-let glassDockApi = null;
-
-function paintGlassDock({ animateJump } = {}) {
-  if (glassDockApi?.paint) {
-    glassDockApi.paint(Boolean(animateJump));
-    return;
-  }
-  PetLiveWeb.shell.paintGlassDock?.(document, {
-    getActiveScreen: () =>
-      app.querySelector(".screen.is-active")?.dataset.screen || "home",
-    animateJump: Boolean(animateJump),
-    hideOnScreens: ["intro", "home"],
-  });
-}
-
-function initGlassDock() {
-  glassDockApi = PetLiveWeb.shell.initGlassDock(document, {
-    win: window,
-    getActiveScreen: () =>
-      app.querySelector(".screen.is-active")?.dataset.screen || "home",
-    hideOnScreens: ["intro", "home"],
-    passportGo: "emergency",
-    startHidden: true,
-    onGo: (screen) => go(screen),
-    onMounted: () => {
-      if (typeof applyI18n === "function") applyI18n();
-    },
-  });
 }
 
 function glassChromeNavAccountMarkup() {
@@ -3308,23 +3267,6 @@ function enhanceGlassScreenHeads() {
       }
       head.insertAdjacentHTML("beforeend", glassChromeActionsMarkup());
     });
-  PetLiveWeb.shell.ensureScreenHomeBtns?.(document, {
-    onGo: (screen) => go(screen),
-  });
-  PetLiveWeb.shell.ensureFeatureHub?.(document, {
-    onGo: (screen) => go(screen),
-    onMounted: () => {
-      wireFeatureHubVaxHelp();
-      const pet = typeof currentPet === "function" ? currentPet() : null;
-      if (pet) {
-        if (typeof renderEmergencyVaccineNav === "function") renderEmergencyVaccineNav(pet);
-        if (typeof renderAlertBadge === "function") renderAlertBadge(pet);
-        if (typeof renderLabNav === "function") renderLabNav(pet);
-        if (typeof renderImagingNav === "function") renderImagingNav(pet);
-      }
-    },
-  });
-  if (typeof applyI18n === "function") applyI18n();
 }
 
 function syncAppNavBtnIcons(open) {
@@ -3382,62 +3324,35 @@ document.querySelectorAll("[data-go]").forEach((btn) => {
   }
 });
 
-
-function wireFeatureHubVaxHelp() {
-  const helpBtn = document.getElementById("fh-vax-help");
-  const pop = document.getElementById("fh-vax-help-pop");
-  if (!helpBtn || !pop || helpBtn.getAttribute("data-vax-help-wired") === "1") return;
-  helpBtn.setAttribute("data-vax-help-wired", "1");
-  helpBtn.addEventListener("click", (event) => {
-    event.preventDefault();
-    event.stopPropagation();
-    const willOpen = Boolean(pop.hidden);
-    pop.hidden = !willOpen;
-    helpBtn.setAttribute("aria-expanded", willOpen ? "true" : "false");
-    // Close the card legend if the hub one opens.
-    if (willOpen) setVaxHelpOpen(false);
-  });
-  pop.addEventListener("click", (event) => {
-    event.stopPropagation();
-  });
-}
-
 function setVaxHelpOpen(open) {
-  PetLiveWeb.shell.setVaxHelpOpen(
-    {
-      helpBtn: document.getElementById("e-vax-help"),
-      pop: document.getElementById("e-vax-help-pop"),
-    },
-    open
-  );
+  const helpBtn = document.getElementById("e-vax-help");
+  const pop = document.getElementById("e-vax-help-pop");
+  if (!helpBtn || !pop) return;
+  pop.hidden = !open;
+  helpBtn.setAttribute("aria-expanded", open ? "true" : "false");
 }
 
-PetLiveWeb.shell.initVaxHelp(
-  {
-    helpBtn: document.getElementById("e-vax-help"),
-    pop: document.getElementById("e-vax-help-pop"),
-    doc: document,
-  },
-  {
-    closeProofLightbox,
-    helpSelector:
-      "#e-vax-help, #e-vax-help-pop, #fh-vax-help, #fh-vax-help-pop",
-  }
-);
+document.getElementById("e-vax-help")?.addEventListener("click", (event) => {
+  event.preventDefault();
+  event.stopPropagation();
+  const pop = document.getElementById("e-vax-help-pop");
+  setVaxHelpOpen(Boolean(pop?.hidden));
+});
 
-// Feature Hub popover: outside-click close (card legend handled by initVaxHelp).
+document.getElementById("e-vax-help-pop")?.addEventListener("click", (event) => {
+  event.stopPropagation();
+});
+
 document.addEventListener("click", (event) => {
-  if (
-    event.target.closest(
-      "#e-vax-help, #e-vax-help-pop, #fh-vax-help, #fh-vax-help-pop"
-    )
-  ) {
-    return;
+  if (event.target.closest("#e-vax-help, #e-vax-help-pop")) return;
+  setVaxHelpOpen(false);
+});
+
+document.addEventListener("keydown", (event) => {
+  if (event.key === "Escape") {
+    closeProofLightbox();
+    setVaxHelpOpen(false);
   }
-  const fhHelp = document.getElementById("fh-vax-help");
-  const fhPop = document.getElementById("fh-vax-help-pop");
-  if (fhPop) fhPop.hidden = true;
-  if (fhHelp) fhHelp.setAttribute("aria-expanded", "false");
 });
 
 document.getElementById("proof-lightbox")?.addEventListener("click", (event) => {
@@ -3707,25 +3622,46 @@ function renderDrugInfoCard(drug) {
   });
 }
 
-PetLiveWeb.shell.bindDrugSearch(
-  { drugSearch, drugResults, selectedDrugEl },
-  {
-    searchDrugs,
-    resolveEnrichedDrug,
-    getDrugById: (id) => window.PetLive?.drug?.getDrugById?.(id),
-    renderDrugInfoCard,
-    setMedEntryMode,
-    getMedEntryMode: () => medEntryMode,
-    t,
-    onSelectedDrug: (drug) => {
-      selectedDrug = drug;
-    },
-    buildDrugResultsHtml: (list) =>
-      medicationsRenderer
-        ? medicationsRenderer.buildDrugResultsHtml(list)
-        : { hidden: true, html: "" },
+function renderDrugResults(list) {
+  if (!medicationsRenderer) return;
+  const built = medicationsRenderer.buildDrugResultsHtml(list);
+  drugResults.hidden = built.hidden;
+  drugResults.innerHTML = built.html;
+}
+
+let suppressDrugSearchInput = false;
+
+drugSearch.addEventListener("input", () => {
+  if (suppressDrugSearchInput) return;
+  selectedDrug = null;
+  selectedDrugEl.hidden = true;
+  renderDrugInfoCard(null);
+  renderDrugResults(searchDrugs(drugSearch.value));
+});
+
+drugResults.addEventListener("click", (event) => {
+  const btn = event.target.closest("[data-drug-id]");
+  if (!btn) return;
+  selectedDrug = resolveEnrichedDrug(btn.dataset.drugId);
+  if (!selectedDrug && window.PetLive?.drug?.getDrugById) {
+    const result = window.PetLive.drug.getDrugById(btn.dataset.drugId);
+    if (result?.ok) selectedDrug = resolveEnrichedDrug(result.data) || result.data;
   }
-);
+  if (!selectedDrug) return;
+  drugResults.hidden = true;
+  suppressDrugSearchInput = true;
+  drugSearch.value = selectedDrug.genericName;
+  suppressDrugSearchInput = false;
+  selectedDrugEl.hidden = false;
+  selectedDrugEl.textContent = t("selectedDrug", {
+    name: `${selectedDrug.genericName}${
+      selectedDrug.brandNameZh ? ` / ${selectedDrug.brandNameZh}` : ""
+    }`,
+  });
+  // Stay on manual entry so the safety card is visible
+  if (medEntryMode !== "manual") setMedEntryMode("manual");
+  renderDrugInfoCard(selectedDrug);
+});
 
 document.getElementById("visit-form").addEventListener("submit", (event) => {
   event.preventDefault();
@@ -4803,32 +4739,35 @@ async function appendImagingFiles(files, slot) {
 }
 
 function openVisitImaging(visitIndex) {
-  PetLiveWeb.shell.openImagingProofScreen({
-    visitIndex,
-    getCurrentPet,
-    getVisitImaging,
-    visitClinicLabel,
-    setPendingImagingVisitIndex: (i) => {
-      pendingImagingVisitIndex = i;
-    },
-    setPendingXrayPhotos: (photos) => {
-      pendingXrayPhotos = photos;
-    },
-    setPendingUsPhotos: (photos) => {
-      pendingUsPhotos = photos;
-    },
-    nameEl: document.getElementById("imaging-proof-name"),
-    metaEl: document.getElementById("imaging-proof-meta"),
-    subEl: document.getElementById("imaging-proof-sub"),
-    kickerEl: document.querySelector(
-      "#imaging-proof-form .archive-pet-kicker"
-    ),
-    xrayInput: document.getElementById("imaging-xray-photo"),
-    usInput: document.getElementById("imaging-us-photo"),
-    renderImagingSlotPreviews,
-    go,
-    t,
-  });
+  const pet = getCurrentPet();
+  const visit = pet?.visits?.[visitIndex];
+  if (!visit) return;
+
+  pendingImagingVisitIndex = visitIndex;
+  const imaging = getVisitImaging(visit);
+  pendingXrayPhotos = [...imaging.xrayPhotos];
+  pendingUsPhotos = [...imaging.usPhotos];
+
+  document.getElementById("imaging-proof-name").textContent =
+    visitClinicLabel(visit);
+  document.getElementById("imaging-proof-meta").textContent = visit.date;
+  document.getElementById("imaging-proof-sub").textContent = t(
+    "timelineVisitImagingProofSub"
+  );
+  const targetKicker = document.querySelector(
+    "#imaging-proof-form .archive-pet-kicker"
+  );
+  if (targetKicker) {
+    targetKicker.setAttribute("data-i18n", "timelineVisitImagingTarget");
+    targetKicker.textContent = t("timelineVisitImagingTarget");
+  }
+  const xrayInput = document.getElementById("imaging-xray-photo");
+  const usInput = document.getElementById("imaging-us-photo");
+  if (xrayInput) xrayInput.value = "";
+  if (usInput) usInput.value = "";
+  renderImagingSlotPreviews("xray");
+  renderImagingSlotPreviews("us");
+  go("imaging-proof");
 }
 
 function openCompleteDrugs(visitIndex) {
@@ -4918,24 +4857,97 @@ function saveVisitWeightAtIndex(visitIndex) {
   return true;
 }
 
-PetLiveWeb.shell.bindTimelineList(timelineList, {
-  toggleDrugNotesButton,
-  toggleMedDetailButton,
-  toggleVisitWeightButton,
-  toggleVisitRxButton,
-  toggleVisitImagingButton,
-  go,
-  openProofLightbox,
-  getCurrentPet,
-  clearVisitProofSlot,
-  clearVisitImagingPhoto,
-  showToast,
-  t,
-  applySelectedPet,
-  openVisitProof,
-  openVisitImaging,
-  openCompleteDrugs,
-  saveVisitWeightAtIndex,
+timelineList.addEventListener("click", (event) => {
+  const notesToggle = event.target.closest("[data-drug-notes-toggle]");
+  if (notesToggle) {
+    toggleDrugNotesButton(notesToggle);
+    return;
+  }
+  const medDetailToggle = event.target.closest("[data-med-detail-toggle]");
+  if (medDetailToggle) {
+    toggleMedDetailButton(medDetailToggle);
+    return;
+  }
+  const visitWeightToggle = event.target.closest("[data-visit-weight-toggle]");
+  if (visitWeightToggle) {
+    toggleVisitWeightButton(visitWeightToggle);
+    return;
+  }
+  const visitLabsBtn = event.target.closest("[data-open-labs]");
+  if (visitLabsBtn) {
+    go("labs");
+    return;
+  }
+  const visitRxToggle = event.target.closest("[data-visit-rx-toggle]");
+  if (visitRxToggle) {
+    toggleVisitRxButton(visitRxToggle);
+    return;
+  }
+  const visitImagingToggle = event.target.closest("[data-visit-imaging-toggle]");
+  if (visitImagingToggle) {
+    toggleVisitImagingButton(visitImagingToggle);
+    return;
+  }
+  const proofLightboxBtn = event.target.closest("[data-proof-lightbox]");
+  if (proofLightboxBtn) {
+    const img = proofLightboxBtn.querySelector("img");
+    openProofLightbox(img?.currentSrc || img?.src, proofLightboxBtn.dataset.proofCaption);
+    return;
+  }
+  const clearSlotBtn = event.target.closest("[data-visit-proof-clear-slot]");
+  if (clearSlotBtn) {
+    const pet = getCurrentPet();
+    const visitIndex = Number(clearSlotBtn.dataset.visitIndex);
+    const visit = pet.visits[visitIndex];
+    const slot = clearSlotBtn.dataset.visitProofClearSlot;
+    if (!visit || !slot) return;
+    clearVisitProofSlot(visit, slot);
+    showToast(t("toastProofCleared"));
+    applySelectedPet();
+    const toggle = document.querySelector(
+      `[data-visit-rx-toggle][aria-controls="visit-rx-${visitIndex}"]`
+    );
+    if (toggle) toggleVisitRxButton(toggle);
+    return;
+  }
+  const clearImagingBtn = event.target.closest("[data-visit-imaging-clear-slot]");
+  if (clearImagingBtn) {
+    const pet = getCurrentPet();
+    const visitIndex = Number(clearImagingBtn.dataset.visitIndex);
+    const visit = pet?.visits?.[visitIndex];
+    const slot = clearImagingBtn.dataset.visitImagingClearSlot;
+    const photoIndex = Number(clearImagingBtn.dataset.visitImagingClearIndex);
+    if (!visit || !slot) return;
+    clearVisitImagingPhoto(visit, slot, photoIndex);
+    showToast(t("toastImagingCleared"));
+    applySelectedPet();
+    const toggle = document.querySelector(
+      `[data-visit-imaging-toggle][aria-controls="visit-imaging-${visitIndex}"]`
+    );
+    if (toggle) toggleVisitImagingButton(toggle);
+    return;
+  }
+  const visitUpload = event.target.closest("[data-visit-proof-upload]");
+  if (visitUpload) {
+    openVisitProof(Number(visitUpload.dataset.visitProofUpload));
+    return;
+  }
+  const imagingUpload = event.target.closest("[data-visit-imaging-upload]");
+  if (imagingUpload) {
+    openVisitImaging(Number(imagingUpload.dataset.visitImagingUpload));
+    return;
+  }
+  const completeBtn = event.target.closest("[data-complete-visit]");
+  if (completeBtn) {
+    openCompleteDrugs(Number(completeBtn.dataset.completeVisit));
+  }
+});
+
+timelineList.addEventListener("submit", (event) => {
+  const form = event.target.closest("[data-visit-weight-form]");
+  if (!form) return;
+  event.preventDefault();
+  saveVisitWeightAtIndex(Number(form.dataset.visitWeightForm));
 });
 
 if (eMeds) {
@@ -5521,16 +5533,32 @@ document.getElementById("e-pet-photo-input")?.addEventListener("change", async (
 const langFab = document.getElementById("lang-fab");
 const langMenu = document.getElementById("lang-menu");
 
-const langMenuApi = PetLiveWeb.shell.initLangMenu(
-  { langFab, langMenu, doc: document },
-  {
-    onPickLang: (lang) => setLanguage(lang),
-    onToast: () => showToast(t("langChanged")),
-  }
-);
-
 function closeLangMenu() {
-  langMenuApi.closeLangMenu();
+  if (!langMenu || !langFab) return;
+  langMenu.hidden = true;
+  langFab.setAttribute("aria-expanded", "false");
+}
+
+if (langFab && langMenu) {
+  langFab.addEventListener("click", (event) => {
+    event.stopPropagation();
+    const open = langMenu.hidden;
+    langMenu.hidden = !open;
+    langFab.setAttribute("aria-expanded", open ? "true" : "false");
+  });
+
+  langMenu.addEventListener("click", (event) => {
+    const btn = event.target.closest("[data-lang]");
+    if (!btn) return;
+    setLanguage(btn.dataset.lang);
+    closeLangMenu();
+    showToast(t("langChanged"));
+  });
+
+  document.addEventListener("click", (event) => {
+    if (event.target.closest("#lang-switcher")) return;
+    closeLangMenu();
+  });
 }
 
 let dynamicLanguageRefreshes = 0;
@@ -5592,6 +5620,9 @@ window.onLanguageChange = () => {
 
 const googleDriveAuth =
   (typeof PetLiveWeb !== "undefined" && PetLiveWeb.auth && PetLiveWeb.auth.googleDrive) ||
+  null;
+const supabaseAuth =
+  (typeof PetLiveWeb !== "undefined" && PetLiveWeb.auth && PetLiveWeb.auth.supabase) ||
   null;
 let cloudBackupTimer = null;
 let lastCloudBackupAt = null;
@@ -5856,6 +5887,10 @@ function closeAccountMenu() {
 }
 
 function getAccountSessionForChrome() {
+  if (supabaseAuth?.isConfigured?.()) {
+    const supa = supabaseAuth.getSession();
+    if (supa) return supa;
+  }
   const live = googleDriveAuth?.getSession?.();
   if (live) return live;
   return {
@@ -5902,11 +5937,20 @@ function liveGoogleSignedIn() {
   return Boolean(googleDriveAuth?.getSession?.().signedIn);
 }
 
+function livePassportSignedIn() {
+  if (supabaseAuth?.isConfigured?.()) {
+    return Boolean(supabaseAuth.getSession()?.signedIn);
+  }
+  return liveGoogleSignedIn();
+}
+
 function paintCloudChrome() {
   const session = getAccountSessionForChrome();
   const origin = window.location.origin || "";
   const busy = Boolean(
-    session.authBusy || googleDriveAuth?.isAuthBusy?.()
+    session.authBusy ||
+      supabaseAuth?.isAuthBusy?.() ||
+      googleDriveAuth?.isAuthBusy?.()
   );
 
   paintAccountMenu(session);
@@ -5923,6 +5967,9 @@ function paintCloudChrome() {
 
   PetLiveWeb.shell.applyAuthBusyState?.(document, busy);
 
+  const loginBtn = document.getElementById("intro-login-btn");
+  if (loginBtn) loginBtn.disabled = busy;
+
   const loginLabel = document.querySelector("#intro-login-btn .intro-login-label");
   if (loginLabel && !session.signedIn) {
     const key = session.remembered
@@ -5930,7 +5977,6 @@ function paintCloudChrome() {
       : "loginWithGoogle";
     loginLabel.setAttribute("data-i18n", key);
     loginLabel.textContent = t(key);
-    const loginBtn = document.getElementById("intro-login-btn");
     if (loginBtn) {
       loginBtn.setAttribute("data-i18n-aria", key);
       loginBtn.setAttribute("aria-label", t(key));
@@ -6043,12 +6089,31 @@ async function pullCloudBackup({ silent } = {}) {
   }
 }
 
+async function handleSupabaseSignIn() {
+  if (!supabaseAuth?.isConfigured?.()) {
+    setIntroStatus(t("cloudBackupNeedConfig"));
+    showToast(t("cloudBackupNeedConfig"));
+    paintCloudChrome();
+    return;
+  }
+  if (supabaseAuth.isAuthBusy?.()) return;
+  try {
+    setIntroStatus("…");
+    paintCloudChrome();
+    await supabaseAuth.signInWithGoogle();
+    // OAuth redirect — boot resumes on return.
+  } catch (err) {
+    const msg = String(err?.message || err);
+    if (msg === "auth_busy") return;
+    setIntroStatus(t("cloudBackupFail"));
+    showToast(t("cloudBackupFail"));
+    paintCloudChrome();
+  }
+}
+
 async function handleGoogleSignIn({ enterApp } = {}) {
   if (!googleDriveAuth) {
     setIntroStatus(t("cloudBackupNeedConfig"));
-    return;
-  }
-  if (googleDriveAuth.isAuthBusy?.()) {
     return;
   }
   if (!googleDriveAuth.getSession().configured) {
@@ -6059,7 +6124,6 @@ async function handleGoogleSignIn({ enterApp } = {}) {
   }
   try {
     setIntroStatus("…");
-    paintCloudChrome();
     await googleDriveAuth.signIn();
     const session = googleDriveAuth.getSession();
     setIntroStatus(
@@ -6090,10 +6154,6 @@ async function handleGoogleSignIn({ enterApp } = {}) {
     }, 400);
   } catch (err) {
     const msg = String(err?.message || err);
-    if (msg === "auth_busy") {
-      paintCloudChrome();
-      return;
-    }
     if (msg === "missing_client_id") {
       setIntroStatus(t("cloudBackupNeedConfig"));
     } else if (
@@ -6128,14 +6188,22 @@ function enterAppFromIntro() {
 function initIntroAndCloud() {
   function doSignOut() {
     closeAccountMenu();
-    googleDriveAuth?.signOut?.();
-    lastCloudBackupAt = null;
-    setIntroStatus("");
-    paintCloudChrome();
-    showToast(t("logout"));
-    // Google gate: unsigned users must not stay on B.
-    const introEl = app.querySelector('[data-screen="intro"]');
-    if (introEl) go("intro", { replace: true });
+    void Promise.resolve()
+      .then(async () => {
+        if (supabaseAuth?.isConfigured?.()) {
+          await supabaseAuth.signOut();
+        }
+        googleDriveAuth?.signOut?.();
+        lastCloudBackupAt = null;
+        setIntroStatus("");
+        paintCloudChrome();
+        showToast(t("logout"));
+        const introEl = app.querySelector('[data-screen="intro"]');
+        if (introEl) go("intro", { replace: true });
+      })
+      .catch(() => {
+        paintCloudChrome();
+      });
   }
 
   function openOwnerSettingsFromAccount() {
@@ -6144,7 +6212,15 @@ function initIntroAndCloud() {
   }
 
   function startWithGoogleOrEnter() {
-    if (googleDriveAuth?.isAuthBusy?.()) return;
+    if (supabaseAuth?.isConfigured?.()) {
+      if (supabaseAuth.isAuthBusy?.()) return;
+      if (supabaseAuth.getSession().signedIn) {
+        enterAppFromIntro();
+        return;
+      }
+      handleSupabaseSignIn();
+      return;
+    }
     if (googleDriveAuth?.getSession?.().signedIn) {
       enterAppFromIntro();
       return;
@@ -6203,7 +6279,17 @@ function initIntroAndCloud() {
     },
     onGoHome: () => go("home"),
     onSwitchPreview: () => {
-      if (googleDriveAuth?.isAuthBusy?.()) return;
+      if (supabaseAuth?.isConfigured?.()) {
+        if (supabaseAuth.isAuthBusy?.()) return;
+        void Promise.resolve()
+          .then(async () => {
+            await supabaseAuth.signOut();
+            googleDriveAuth?.signOut?.();
+            await handleSupabaseSignIn();
+          })
+          .catch(() => paintCloudChrome());
+        return;
+      }
       if (googleDriveAuth) {
         handleGoogleSignIn({ enterApp: false });
       } else {
@@ -6217,17 +6303,19 @@ function initIntroAndCloud() {
       PetLiveWeb.shell.positionAccountPopover(doc, win, chip);
     },
     registerSessionChange: (paintFn) => {
+      supabaseAuth?.onSessionChange?.(paintFn);
       googleDriveAuth?.onSessionChange?.(paintFn);
     },
   });
 
-  // Boot: A (intro) by default → Google login enters B.
-  // Live token → B. Remembered intent → await silent restore; success → B; fail → A + CTA.
+  // Boot: A (intro) by default → Supabase Google login enters B.
   // Escape hatch: ?app=1 / screen=home / ?demo=1.
-  // Do NOT skip A for INTRO_SEEN, remembered profile alone, or hasRealLocalData.
-  // Do NOT use C bootSurfaceToHome — preserves B Google-gate / local-first.
   void (async () => {
     try {
+      if (supabaseAuth?.isConfigured?.()) {
+        await supabaseAuth.init();
+      }
+
       const params = new URLSearchParams(window.location.search || "");
       const forceApp =
         DEMO_MODE ||
@@ -6240,41 +6328,16 @@ function initIntroAndCloud() {
         return;
       }
 
-      let session = googleDriveAuth?.getSession?.() || {
-        signedIn: false,
-        remembered: false,
-      };
-
-      // Hold on A while silent restore runs — never flash B then kick back.
-      if (!session.signedIn && session.remembered && googleDriveAuth?.trySilentRestore) {
-        setIntroStatus(t("cloudRestoringSession"));
-        showSurface(false);
-        paintCloudChrome();
-        try {
-          await googleDriveAuth.trySilentRestore();
-        } catch {
-          /* stay unsigned; interactive CTA below */
-        }
-        session = googleDriveAuth.getSession();
-      }
-
-      if (session.signedIn) {
+      if (livePassportSignedIn()) {
         showSurface(true);
         paintCloudChrome();
-        if (!DEMO_MODE) {
+        if (!DEMO_MODE && googleDriveAuth?.getSession?.().signedIn) {
           reconcileCloudOnBoot({ silent: true, skipAutoPull: FRESH_BOOT });
         }
         return;
       }
 
       showSurface(false);
-      if (session.remembered) {
-        setIntroStatus(
-          t("cloudRememberedNeedGoogle", {
-            email: session.profile?.email || "",
-          })
-        );
-      }
       paintCloudChrome();
     } catch {
       showSurface(false);
@@ -6283,7 +6346,6 @@ function initIntroAndCloud() {
   })();
   // Formal B: never inject prototype seed pets except ?demo=1.
 }
-
 
 /* —— Demo mode (?demo=1): browse-only seed + optional tour —— */
 
@@ -6525,7 +6587,6 @@ function initDemoMode() {
   }
 }
 
-
 applyI18n();
 syncAlertSubmitLabel();
 syncBreedFields();
@@ -6539,7 +6600,6 @@ enhanceGlassScreenHeads();
 applyI18n();
 initAppNavMenu();
 initIntroAndCloud();
-initGlassDock();
 initDemoMode();
 
 if (typeof PetLiveWeb?.storage?.markBootComplete === "function") {
