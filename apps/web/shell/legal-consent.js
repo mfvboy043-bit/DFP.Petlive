@@ -96,7 +96,7 @@
     const modal = mountLegalConsentModal(doc);
     const modalCb = doc.getElementById(MODAL_CB_ID);
 
-    if (signedIn && isConsentGranted(doc)) {
+    if (signedIn) {
       if (wrap) wrap.hidden = true;
       setLegalConsentModalOpen(doc, false);
       if (loginBtn) loginBtn.disabled = Boolean(authBusy);
@@ -112,7 +112,8 @@
       if (wrap) wrap.hidden = true;
       loginBtn.disabled = Boolean(authBusy);
       syncModalConfirmState(doc);
-      setLegalConsentModalOpen(doc, !isConsentGranted(doc));
+      // Intro A: keep modal closed until login (promptLegalConsent).
+      setLegalConsentModalOpen(doc, false);
       return;
     }
 

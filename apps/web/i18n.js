@@ -31,6 +31,10 @@ const I18N = {
     introStoriesNote: "以上為理解情境之示意，不取代獸醫診斷。",
     introStoryExpand: "展開故事",
     introStoryCollapse: "收合故事",
+    legalConsentModalTitle: "使用前請先閱讀",
+    legalConsentModalLede:
+      "火龍果護照僅供飼主整理寵物健康資訊之參考，不能取代獸醫診斷。請先閱讀並同意下列條款後再登入。",
+    legalConsentModalConfirm: "同意並繼續",
     legalConsentLabel:
       '我已閱讀並同意 <a href="./legal/privacy.html?v=20260828-legal-v12" target="_blank" rel="noopener">隱私權政策</a> 與 <a href="./legal/terms.html?v=20260828-legal-v12" target="_blank" rel="noopener">醫療免責與使用條款</a>',
     legalConsentRequired: "請先勾選同意隱私權政策與使用條款",
@@ -805,6 +809,10 @@ const I18N = {
     introStoriesNote: "Illustrative scenarios for context only—not a veterinary diagnosis.",
     introStoryExpand: "Expand story",
     introStoryCollapse: "Collapse story",
+    legalConsentModalTitle: "Please read before continuing",
+    legalConsentModalLede:
+      "Petlive Passport helps you organize pet health information for reference only—it does not replace veterinary diagnosis. Please read and agree to the terms below before signing in.",
+    legalConsentModalConfirm: "Agree and continue",
     legalConsentLabel:
       'I have read and agree to the <a href="./legal/privacy.html?v=20260828-legal-v12" target="_blank" rel="noopener">Privacy Policy</a> and <a href="./legal/terms.html?v=20260828-legal-v12" target="_blank" rel="noopener">Medical Disclaimer &amp; Terms</a>',
     legalConsentRequired: "Please agree to the Privacy Policy and Terms first",
@@ -1580,6 +1588,10 @@ const I18N = {
     introStoriesNote: "理解のための示意です。診断の代わりではありません。",
     introStoryExpand: "ストーリーを開く",
     introStoryCollapse: "ストーリーを閉じる",
+    legalConsentModalTitle: "ご利用前にお読みください",
+    legalConsentModalLede:
+      "火龍果パスポートは、飼い主がペットの健康情報を整理するための参考ツールです。獣医師の診断に代わるものではありません。ログイン前に、以下の条項をお読みのうえ同意してください。",
+    legalConsentModalConfirm: "同意して続ける",
     legalConsentLabel:
       '<a href="./legal/privacy.html?v=20260828-legal-v12" target="_blank" rel="noopener">プライバシーポリシー</a>と<a href="./legal/terms.html?v=20260828-legal-v12" target="_blank" rel="noopener">免責事項・利用規約</a>に同意します',
     legalConsentRequired: "先にプライバシーポリシーと利用規約への同意にチェックを入れてください",
@@ -2360,6 +2372,10 @@ const I18N = {
     introStoriesNote: "상황 이해를 위한 예시이며, 수의사 진단을 대체하지 않습니다.",
     introStoryExpand: "이야기 펼치기",
     introStoryCollapse: "이야기 접기",
+    legalConsentModalTitle: "이용 전에 먼저 읽어 주세요",
+    legalConsentModalLede:
+      "드래곤프루트 여권은 반려동물 건강 정보를 정리하는 참고 도구입니다. 수의사 진단을 대체하지 않습니다. 로그인 전에 아래 약관을 읽고 동의해 주세요.",
+    legalConsentModalConfirm: "동의하고 계속",
     legalConsentLabel:
       '<a href="./legal/privacy.html?v=20260828-legal-v12" target="_blank" rel="noopener">개인정보 처리방침</a> 및 <a href="./legal/terms.html?v=20260828-legal-v12" target="_blank" rel="noopener">면책·이용약관</a>에 동의합니다',
     legalConsentRequired: "먼저 개인정보 처리방침과 이용약관에 동의해 주세요",
