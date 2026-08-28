@@ -11,12 +11,11 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,700&family=Noto+Sans+TC:wght@400;500;700&family=Noto+Serif+TC:wght@600;700&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="./styles.css?v=20260828-c-cover-b" />
+  <link rel="stylesheet" href="./styles.css?v=20260828-c-emergency-head" />
   <link rel="stylesheet" href="./shell/glass-dock.css?v=20260828-dock-smooth" />
   <link rel="stylesheet" href="./shell/screen-home-btn.css?v=20260827-screen-home-btn" />
   <link rel="stylesheet" href="./shell/feature-hub.css?v=20260827-vax-keep-card" />
   <link rel="stylesheet" href="./legal/legal.css?v=20260828-legal-v13" />
-  <link rel="stylesheet" href="./shell/legal-consent-modal.css?v=20260828-legal-v13" />
 </head>
 <body>
   <div class="atmosphere" aria-hidden="true">
@@ -97,6 +96,17 @@
             紀錄先寫在你這邊（本機）。用 Google 登入進入你的護照；需要時，可把備份存進你的 Google 雲端硬碟。<br />
             僅供參考，不取代獸醫診斷。
           </p>
+          <div class="intro-legal-consent" id="intro-legal-consent">
+            <label class="intro-legal-consent-label" for="intro-legal-consent-cb">
+              <input type="checkbox" id="intro-legal-consent-cb" />
+              <span data-i18n-html="legalConsentLabel">
+                我已閱讀並同意
+                <a href="./legal/privacy.html?v=20260828-legal-v12" target="_blank" rel="noopener">隱私權政策</a>
+                與
+                <a href="./legal/terms.html?v=20260828-legal-v12" target="_blank" rel="noopener">醫療免責與使用條款</a>
+              </span>
+            </label>
+          </div>
           <p class="intro-status" id="intro-status" role="status"></p>
           <p class="intro-origin-hint" id="intro-origin-hint" hidden></p>
           <p class="intro-demo-entry">
@@ -1513,8 +1523,17 @@
           </h2>
         </div>
         <div class="screen-head-actions" data-glass-chrome>
-          <button class="btn btn-small e-copy-summary" type="button" id="copy-card" data-i18n="copySummary">
-            複製摘要
+          <button
+            class="btn btn-small e-copy-summary"
+            type="button"
+            id="copy-card"
+            data-i18n-aria="copySummary"
+            data-i18n-title="copySummary"
+          >
+            <span class="e-copy-summary-stack" aria-hidden="true">
+              <span data-i18n="copySummaryLine1">複製摘要</span>
+              <span data-i18n="copySummaryLine2"></span>
+            </span>
           </button>
         </div>
       </header>
@@ -1554,9 +1573,6 @@
                 </span>
               </button>
               <div class="e-name-aside">
-                <button class="btn btn-small e-copy-summary" type="button" id="copy-card" data-i18n="copySummary">
-                  複製摘要
-                </button>
                 <p class="e-chip-meta" id="e-chip-line">晶片號碼：未填寫</p>
               </div>
             </div>
@@ -1994,8 +2010,8 @@
   <script defer src="./shell/calendar-chooser.js?v=20260827-abcd"></script>
   <script defer src="./shell/proof-preview.js?v=20260827-fo-render"></script>
   <script defer src="./shell/account-chrome.js?v=20260827-wire-bundles"></script>
-  <script defer src="./shell/legal-consent.js?v=20260828-legal-v13"></script>
-  <script defer src="./shell/intro-cloud.js?v=20260828-legal-v13"></script>
+  <script defer src="./shell/legal-consent.js?v=20260828-legal-v12"></script>
+  <script defer src="./shell/intro-cloud.js?v=20260828-legal-v12"></script>
   <script defer src="./shell/alert-form.js?v=20260827-wire-thin-forms"></script>
   <script defer src="./shell/parasite-form.js?v=20260827-wire-thin-forms"></script>
   <script defer src="./shell/breed-form.js?v=20260827-wire-thin-forms"></script>
@@ -2043,6 +2059,6 @@
   <script defer src="./domains/owner/controller.js?v=20260827-ow-st-cover"></script>
   <script defer src="./domains/cloud/selectors.js?v=20260827-cl-cover"></script>
   <script defer src="./domains/cloud/controller.js?v=20260827-modules-w4p1"></script>
-  <script defer src="./app.js?v=20260828-legal-v13"></script>
+  <script defer src="./app.js?v=20260828-c-cover-b"></script>
 </body>
 </html>

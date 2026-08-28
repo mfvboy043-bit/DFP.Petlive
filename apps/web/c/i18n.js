@@ -19,7 +19,10 @@ const I18N = {
     introTitle: "介紹",
     introEyebrow: "飼主持有的寵物健康護照",
     introLede:
-      "紀錄留在你這邊。登入 Google，可把備份寫進<strong>你的</strong>雲端硬碟——不是我們的伺服器。<br />僅供參考，不取代獸醫診斷。",
+      "紀錄先寫在你的裝置。Google 登入進入護照；備份可選擇 Google 雲端硬碟（詳見隱私說明）。<br />僅供參考，不取代獸醫診斷。",
+    legalConsentLabel:
+      '我已閱讀並同意 <a href="../legal/privacy.html?v=20260828-legal-v13" target="_blank" rel="noopener">隱私權政策</a> 與 <a href="../legal/terms.html?v=20260828-legal-v13" target="_blank" rel="noopener">醫療免責與使用條款</a>',
+    legalConsentRequired: "請先勾選同意隱私權政策與使用條款",
     introStart: "開始使用",
     introTryLocal: "本機試用",
     introEnterApp: "進入護照",
@@ -479,6 +482,8 @@ const I18N = {
     emergencyTitleLine2: "",
     emergencySub: "給獸醫師快速參考 · 非電子病歷",
     copySummary: "複製摘要",
+    copySummaryLine1: "複製摘要",
+    copySummaryLine2: "",
     detailNav: "此寵物的詳細紀錄",
     eDocsNav: "影像與檢驗資料",
     eXrayTitle: "X-Ray&超音波 影像",
@@ -719,7 +724,10 @@ const I18N = {
     introTitle: "Intro",
     introEyebrow: "An owner-held pet health passport",
     introLede:
-      "Your records stay with you. Sign in with Google to back up into <strong>your</strong> Drive—not our servers.<br />Reference only—not a veterinary diagnosis.",
+      "Records stay on your device first. Sign in with Google to enter; optional backup to your Google Drive (see Privacy Policy).<br />Reference only—not a veterinary diagnosis.",
+    legalConsentLabel:
+      'I have read and agree to the <a href="../legal/privacy.html?v=20260828-legal-v13" target="_blank" rel="noopener">Privacy Policy</a> and <a href="../legal/terms.html?v=20260828-legal-v13" target="_blank" rel="noopener">Medical Disclaimer &amp; Terms</a>',
+    legalConsentRequired: "Please agree to the Privacy Policy and Terms first",
     introStart: "Get started",
     introTryLocal: "Try offline",
     introEnterApp: "Enter passport",
@@ -1179,6 +1187,8 @@ const I18N = {
     emergencyTitleLine2: "card",
     emergencySub: "Quick reference for vets · Not an EMR",
     copySummary: "Copy summary",
+    copySummaryLine1: "Copy",
+    copySummaryLine2: "summary",
     detailNav: "Detailed records for this pet",
     eDocsNav: "Imaging & lab records",
     eXrayTitle: "X-ray & ultrasound images",
@@ -1419,7 +1429,10 @@ const I18N = {
     introTitle: "紹介",
     introEyebrow: "飼い主が持つペット健康パスポート",
     introLede:
-      "記録はあなたの側に残ります。Googleでログインすると、<strong>あなたの</strong>ドライブへバックアップ——当社サーバーではありません。<br />参考用であり、診断の代わりではありません。",
+      "記録は端末に保存されます。Googleログインでパスポートへ。バックアップはGoogleドライブへ任意（プライバシーポリシー参照）。<br />参考用であり、診断の代わりではありません。",
+    legalConsentLabel:
+      '<a href="../legal/privacy.html?v=20260828-legal-v13" target="_blank" rel="noopener">プライバシーポリシー</a>と<a href="../legal/terms.html?v=20260828-legal-v13" target="_blank" rel="noopener">免責事項・利用規約</a>に同意します',
+    legalConsentRequired: "先にプライバシーポリシーと利用規約への同意にチェックを入れてください",
     introStart: "はじめる",
     introTryLocal: "端末だけで試す",
     introEnterApp: "パスポートへ",
@@ -1884,6 +1897,8 @@ const I18N = {
     emergencyTitleLine2: "カード",
     emergencySub: "獣医師向けクイック参考 · 電子カルテではありません",
     copySummary: "要約をコピー",
+    copySummaryLine1: "要約を",
+    copySummaryLine2: "コピー",
     detailNav: "この子の詳細記録",
     eDocsNav: "画像と検査データ",
     eXrayTitle: "X線・超音波画像",
@@ -2124,7 +2139,10 @@ const I18N = {
     introTitle: "소개",
     introEyebrow: "보호자가 보유하는 반려동물 건강 여권",
     introLede:
-      "기록은 당신 쪽에 남습니다. Google로 로그인하면 <strong>당신의</strong> 드라이브에 백업합니다—저희 서버가 아닙니다.<br />참고용이며 수의사 진단을 대체하지 않습니다.",
+      "기록은 기기에 먼저 저장됩니다. Google 로그인 후 여권 이용; Google Drive 백업은 선택(개인정보 처리방침 참고).<br />참고용이며 수의사 진단을 대체하지 않습니다.",
+    legalConsentLabel:
+      '<a href="../legal/privacy.html?v=20260828-legal-v13" target="_blank" rel="noopener">개인정보 처리방침</a> 및 <a href="../legal/terms.html?v=20260828-legal-v13" target="_blank" rel="noopener">면책·이용약관</a>에 동의합니다',
+    legalConsentRequired: "먼저 개인정보 처리방침과 이용약관에 동의해 주세요",
     introStart: "시작하기",
     introTryLocal: "기기로만 체험",
     introEnterApp: "여권 열기",
@@ -2589,6 +2607,8 @@ const I18N = {
     emergencyTitleLine2: "",
     emergencySub: "수의사 빠른 참고 · 전자의무기록 아님",
     copySummary: "요약 복사",
+    copySummaryLine1: "요약 복사",
+    copySummaryLine2: "",
     detailNav: "이 아이의 상세 기록",
     eDocsNav: "영상 및 검사 자료",
     eXrayTitle: "X-Ray·초음파 영상",

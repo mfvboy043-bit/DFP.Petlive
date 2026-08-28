@@ -352,6 +352,42 @@ html[lang="ko"] .lede {
   color: var(--text-strong);
 }
 
+.e-title-stack {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: center;
+  line-height: 1.05;
+  gap: 0;
+}
+
+.e-title-stack span:empty {
+  display: none;
+}
+
+html[lang="zh-Hant"] .e-title-stack,
+html[lang="ko"] .e-title-stack {
+  flex-direction: row;
+  gap: 0;
+}
+
+html[lang="en"] .screen-emergency > .screen-head h2,
+html[lang="ja"] .screen-emergency > .screen-head h2 {
+  font-size: 12px;
+  line-height: 1.1;
+}
+
+html[lang="en"] .screen-emergency .e-title-stack,
+html[lang="ja"] .screen-emergency .e-title-stack {
+  flex-direction: column;
+}
+
+html[lang="en"] .screen-emergency .e-title-stack > span,
+html[lang="ja"] .screen-emergency .e-title-stack > span {
+  display: block;
+  white-space: nowrap;
+}
+
 .screen-head p {
   margin: 3px 0 0;
 
@@ -891,6 +927,45 @@ h4 {
   justify-content: flex-end;
   gap: 6px;
   margin-left: auto;
+}
+
+.screen-head-actions .e-copy-summary {
+  flex: 0 0 auto;
+  width: auto;
+  min-height: 34px;
+  max-height: 34px;
+  padding: 6px 10px;
+  font-size: 0.78rem;
+  white-space: nowrap;
+}
+
+.e-copy-summary-stack {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  line-height: 1.05;
+  gap: 1px;
+}
+
+.e-copy-summary-stack span:empty {
+  display: none;
+}
+
+html:not([lang="en"]):not([lang="ja"]) .e-copy-summary-stack {
+  flex-direction: row;
+  gap: 0;
+}
+
+html[lang="en"] .screen-head-actions .e-copy-summary,
+html[lang="ja"] .screen-head-actions .e-copy-summary {
+  min-height: 34px;
+  max-height: 34px;
+  padding: 4px 8px;
+  font-size: 0.6rem;
+  white-space: normal;
+  text-wrap: balance;
+  text-align: center;
 }
 
 .screen-head-actions .account-menu {
