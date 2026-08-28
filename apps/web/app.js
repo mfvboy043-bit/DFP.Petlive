@@ -3412,40 +3412,38 @@ function wireFeatureHubVaxHelp() {
 }
 
 function setVaxHelpOpen(open) {
-  PetLiveWeb.shell.setVaxHelpOpen(
-    {
-      helpBtn: document.getElementById("e-vax-help"),
-      pop: document.getElementById("e-vax-help-pop"),
-    },
-    open
-  );
+  const helpBtn = document.getElementById("e-vax-help");
+  const pop = document.getElementById("e-vax-help-pop");
+  if (!helpBtn || !pop) return;
+  pop.hidden = !open;
+  helpBtn.setAttribute("aria-expanded", open ? "true" : "false");
 }
 
-PetLiveWeb.shell.initVaxHelp(
-  {
-    helpBtn: document.getElementById("e-vax-help"),
-    pop: document.getElementById("e-vax-help-pop"),
-    doc: document,
-  },
-  {
-    closeProofLightbox,
-    helpSelector:
-      "#e-vax-help, #e-vax-help-pop, #fh-vax-help, #fh-vax-help-pop",
-  }
-);
+document.getElementById("e-vax-help")?.addEventListener("click", (event) => {
+  event.preventDefault();
+  event.stopPropagation();
+  const pop = document.getElementById("e-vax-help-pop");
+  setVaxHelpOpen(Boolean(pop?.hidden));
+});
+
+document.getElementById("e-vax-help-pop")?.addEventListener("click", (event) => {
+  event.stopPropagation();
+});
 
 document.addEventListener("click", (event) => {
-  if (
-    event.target.closest(
-      "#e-vax-help, #e-vax-help-pop, #fh-vax-help, #fh-vax-help-pop"
-    )
-  ) {
-    return;
-  }
+  if (event.target.closest("#e-vax-help, #e-vax-help-pop, #fh-vax-help, #fh-vax-help-pop")) return;
+  setVaxHelpOpen(false);
   const fhHelp = document.getElementById("fh-vax-help");
   const fhPop = document.getElementById("fh-vax-help-pop");
   if (fhPop) fhPop.hidden = true;
   if (fhHelp) fhHelp.setAttribute("aria-expanded", "false");
+});
+
+document.addEventListener("keydown", (event) => {
+  if (event.key === "Escape") {
+    closeProofLightbox();
+    setVaxHelpOpen(false);
+  }
 });
 
 document.getElementById("proof-lightbox")?.addEventListener("click", (event) => {
