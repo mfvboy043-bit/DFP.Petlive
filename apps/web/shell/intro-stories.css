@@ -8,6 +8,7 @@
   margin: 2px 0 22px;
   max-width: 42em;
   min-width: 0;
+  width: 100%;
 }
 
 .intro-foot {
@@ -57,6 +58,7 @@
     0 0 0 1px rgba(61, 107, 87, 0.1),
     0 10px 28px rgba(26, 52, 45, 0.06);
   min-width: 0;
+  overflow: visible;
 }
 
 .intro-story-card::before {
@@ -101,17 +103,18 @@
 }
 
 .intro-story-body {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
   font-size: 14px;
   line-height: 1.78;
   color: var(--text, #26322d);
+  text-wrap: pretty;
+  overflow-wrap: anywhere;
 }
 
 .intro-story-body p {
-  margin: 0 0 11px;
-}
-
-.intro-story-body p:last-child {
-  margin-bottom: 0;
+  margin: 0;
 }
 
 .intro-stories-bridge {
@@ -146,13 +149,83 @@ html[lang="ko"] .intro-story-body {
   word-break: keep-all;
 }
 
-@media (max-width: 720px) {
+/* Phone — match §37 mobile polish (max-width: 759px) */
+@media (max-width: 759px) {
+  .screen-intro .intro-hero {
+    margin-bottom: 10px;
+  }
+
+  .screen-intro .intro-mascot {
+    margin-top: 0;
+    margin-bottom: 4px;
+    width: min(96px, 26vw);
+  }
+
   .intro-stories {
-    margin-top: 2px;
+    margin: 14px 0 24px;
+    max-width: none;
+  }
+
+  .intro-stories-eyebrow {
+    font-size: 11px;
+    letter-spacing: 0.1em;
   }
 
   .intro-stories-title {
     max-width: none;
+    margin-bottom: 14px;
+    font-size: clamp(21px, 6.2vw, 24px);
+    line-height: 1.38;
+  }
+
+  .intro-stories-stack {
+    gap: 16px;
+  }
+
+  .intro-story-card {
+    padding: 16px 16px 16px 18px;
+    border-radius: 16px;
+    background: rgba(255, 253, 250, 0.97);
+    box-shadow:
+      0 1px 0 rgba(255, 255, 255, 0.85) inset,
+      0 0 0 1px rgba(61, 107, 87, 0.12),
+      0 8px 22px rgba(26, 52, 45, 0.08);
+  }
+
+  .intro-story-card::before {
+    inset: 14px auto 14px 0;
+  }
+
+  .intro-story-index {
+    margin-bottom: 6px;
+    font-size: 12px;
+  }
+
+  .intro-story-title {
+    max-width: none;
+    margin-bottom: 10px;
+    font-size: 17px;
+    line-height: 1.45;
+  }
+
+  .intro-story-body {
+    gap: 14px;
+    font-size: 15px;
+    line-height: 1.82;
+    letter-spacing: 0.01em;
+    -webkit-text-size-adjust: 100%;
+  }
+
+  .intro-stories-bridge {
+    margin-top: 18px;
+    padding: 14px 16px;
+    font-size: 15px;
+    line-height: 1.72;
+  }
+
+  .intro-stories-note {
+    font-size: 12px;
+    line-height: 1.55;
   }
 }
 
@@ -163,11 +236,13 @@ html[lang="ko"] .intro-story-body {
       box-shadow 180ms ease;
   }
 
-  .intro-story-card:hover {
-    transform: translateY(-1px);
-    box-shadow:
-      0 1px 0 rgba(255, 255, 255, 0.65) inset,
-      0 0 0 1px rgba(61, 107, 87, 0.14),
-      0 14px 32px rgba(26, 52, 45, 0.08);
+  @media (hover: hover) {
+    .intro-story-card:hover {
+      transform: translateY(-1px);
+      box-shadow:
+        0 1px 0 rgba(255, 255, 255, 0.65) inset,
+        0 0 0 1px rgba(61, 107, 87, 0.14),
+        0 14px 32px rgba(26, 52, 45, 0.08);
+    }
   }
 }
