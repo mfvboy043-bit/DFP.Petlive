@@ -29,6 +29,8 @@ const I18N = {
     introStoriesBridge:
       "換院、急診、換醫生時，把「試過什麼、吃過什麼」帶著走。",
     introStoriesNote: "以上為理解情境之示意，不取代獸醫診斷。",
+    introStoryExpand: "展開故事",
+    introStoryCollapse: "收合故事",
     legalConsentLabel:
       '我已閱讀並同意 <a href="./legal/privacy.html?v=20260828-legal-v12" target="_blank" rel="noopener">隱私權政策</a> 與 <a href="./legal/terms.html?v=20260828-legal-v12" target="_blank" rel="noopener">醫療免責與使用條款</a>',
     legalConsentRequired: "請先勾選同意隱私權政策與使用條款",
@@ -801,6 +803,8 @@ const I18N = {
     introStoriesBridge:
       "At every new clinic or ER visit, bring what was tried and what was given.",
     introStoriesNote: "Illustrative scenarios for context only—not a veterinary diagnosis.",
+    introStoryExpand: "Expand story",
+    introStoryCollapse: "Collapse story",
     legalConsentLabel:
       'I have read and agree to the <a href="./legal/privacy.html?v=20260828-legal-v12" target="_blank" rel="noopener">Privacy Policy</a> and <a href="./legal/terms.html?v=20260828-legal-v12" target="_blank" rel="noopener">Medical Disclaimer &amp; Terms</a>',
     legalConsentRequired: "Please agree to the Privacy Policy and Terms first",
@@ -1574,6 +1578,8 @@ const I18N = {
     introStoriesBridge:
       "病院が替わるたびに、「試した薬・飲ませた薬」を一緒に持っていきましょう。",
     introStoriesNote: "理解のための示意です。診断の代わりではありません。",
+    introStoryExpand: "ストーリーを開く",
+    introStoryCollapse: "ストーリーを閉じる",
     legalConsentLabel:
       '<a href="./legal/privacy.html?v=20260828-legal-v12" target="_blank" rel="noopener">プライバシーポリシー</a>と<a href="./legal/terms.html?v=20260828-legal-v12" target="_blank" rel="noopener">免責事項・利用規約</a>に同意します',
     legalConsentRequired: "先にプライバシーポリシーと利用規約への同意にチェックを入れてください",
@@ -2352,6 +2358,8 @@ const I18N = {
     introStoriesBridge:
       "병원·응급·담당 수의사가 바뀔 때마다 ‘무엇을 써 봤는지’를 함께 가져가세요.",
     introStoriesNote: "상황 이해를 위한 예시이며, 수의사 진단을 대체하지 않습니다.",
+    introStoryExpand: "이야기 펼치기",
+    introStoryCollapse: "이야기 접기",
     legalConsentLabel:
       '<a href="./legal/privacy.html?v=20260828-legal-v12" target="_blank" rel="noopener">개인정보 처리방침</a> 및 <a href="./legal/terms.html?v=20260828-legal-v12" target="_blank" rel="noopener">면책·이용약관</a>에 동의합니다',
     legalConsentRequired: "먼저 개인정보 처리방침과 이용약관에 동의해 주세요",

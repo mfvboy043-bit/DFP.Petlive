@@ -5716,6 +5716,7 @@ window.onLanguageChange = () => {
         : selectedClinic
     );
   }
+  PetLiveWeb.shell.paintIntroStoryAria?.(document, t);
 };
 
 /* ---------- Intro + Google Drive backup ---------- */
@@ -6370,6 +6371,7 @@ function initIntroAndCloud() {
 
   PetLiveWeb.shell.mountLegalConsentModal?.(document);
   applyI18n();
+  PetLiveWeb.shell.initIntroStories?.(document, window, { t });
 
   PetLiveWeb.shell.bindLegalConsent(document, {
     onPaint: paintCloudChrome,

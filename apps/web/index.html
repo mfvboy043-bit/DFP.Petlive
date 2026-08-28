@@ -15,7 +15,7 @@
   <link rel="stylesheet" href="./shell/glass-dock.css?v=20260828-dock-smooth" />
   <link rel="stylesheet" href="./shell/screen-home-btn.css?v=20260827-screen-home-btn" />
   <link rel="stylesheet" href="./shell/feature-hub.css?v=20260827-vax-keep-card" />
-  <link rel="stylesheet" href="./shell/intro-stories.css?v=20260828-intro-stories-m" />
+  <link rel="stylesheet" href="./shell/intro-stories.css?v=20260829-intro-accordion" />
   <link rel="stylesheet" href="./legal/legal.css?v=20260828-legal-v14" />
   <link rel="stylesheet" href="./shell/legal-consent-modal.css?v=20260828-legal-v14" />
 </head>
@@ -121,22 +121,32 @@
         </h2>
         <div class="intro-stories-stack">
           <article class="intro-story-card">
-            <span class="intro-story-index" aria-hidden="true">01</span>
-            <h3 class="intro-story-title" data-i18n="introStory1Title">半夜急診那張空白紙</h3>
-            <div class="intro-story-body" data-i18n-html="introStory1Body">
-              <p>豆豆在 A 醫院吃了很強的藥，爸爸只記得「有吃」，沒記名字。</p>
-              <p>幾天後半夜，豆豆突然沒精神、開始吐，爸爸抱著衝去 B 醫院急診。醫生驗血：肝臟數字像紅燈狂閃。</p>
-              <p>可 B 醫院不知道——豆豆前幾天已經吃過類固醇。醫生不敢亂加藥，只能一項一項查。豆豆在等，爸爸在急，最好的黃金時間，就這樣溜走。</p>
-            </div>
+            <details class="intro-story-disclosure">
+              <summary class="intro-story-summary">
+                <span class="intro-story-index" aria-hidden="true">01</span>
+                <h3 class="intro-story-title" data-i18n="introStory1Title">半夜急診那張空白紙</h3>
+                <span class="intro-story-chevron" aria-hidden="true"></span>
+              </summary>
+              <div class="intro-story-body" data-i18n-html="introStory1Body">
+                <p>豆豆在 A 醫院吃了很強的藥，爸爸只記得「有吃」，沒記名字。</p>
+                <p>幾天後半夜，豆豆突然沒精神、開始吐，爸爸抱著衝去 B 醫院急診。醫生驗血：肝臟數字像紅燈狂閃。</p>
+                <p>可 B 醫院不知道——豆豆前幾天已經吃過類固醇。醫生不敢亂加藥，只能一項一項查。豆豆在等，爸爸在急，最好的黃金時間，就這樣溜走。</p>
+              </div>
+            </details>
           </article>
           <article class="intro-story-card">
-            <span class="intro-story-index" aria-hidden="true">02</span>
-            <h3 class="intro-story-title" data-i18n="introStory2Title">為什麼看了很多醫生都沒用</h3>
-            <div class="intro-story-body" data-i18n-html="introStory2Body">
-              <p>米米在 A 醫院吃過 A 抗生素，好一點又復發。</p>
-              <p>爸爸帶去 C 醫院，新醫生問：「之前吃過什麼？」爸爸也說不清。醫生只好再開同一種 A 抗生素。米米還是咳、還是癢。</p>
-              <p>爸爸心裡想：是不是看了很多醫生都沒用？其實不是。是沒有一張小紙，告訴下一位醫生：這個藥試過了，沒效。</p>
-            </div>
+            <details class="intro-story-disclosure">
+              <summary class="intro-story-summary">
+                <span class="intro-story-index" aria-hidden="true">02</span>
+                <h3 class="intro-story-title" data-i18n="introStory2Title">為什麼看了很多醫生都沒用</h3>
+                <span class="intro-story-chevron" aria-hidden="true"></span>
+              </summary>
+              <div class="intro-story-body" data-i18n-html="introStory2Body">
+                <p>米米在 A 醫院吃過 A 抗生素，好一點又復發。</p>
+                <p>爸爸帶去 C 醫院，新醫生問：「之前吃過什麼？」爸爸也說不清。醫生只好再開同一種 A 抗生素。米米還是咳、還是癢。</p>
+                <p>爸爸心裡想：是不是看了很多醫生都沒用？其實不是。是沒有一張小紙，告訴下一位醫生：這個藥試過了，沒效。</p>
+              </div>
+            </details>
           </article>
         </div>
         <p class="intro-stories-bridge" data-i18n="introStoriesBridge">
@@ -2019,7 +2029,7 @@
   <script defer src="./auth/google-drive.js?v=20260827-google-session"></script>
   <script type="module" src="./runtime/petlive.js?v=20260824-drug-seed-dedupe"></script>
   <script defer src="./runtime/safe-ui.js?v=20260812-local-first"></script>
-  <script defer src="./i18n.js?v=20260828-intro-stories"></script>
+  <script defer src="./i18n.js?v=20260829-intro-accordion"></script>
   <script defer src="./breeds-database.js?v=20260825-breed-typeahead-adopt"></script>
   <script defer src="./domains/breed/selectors.js?v=20260827-small-brains"></script>
   <script defer src="./domains/breed/controller.js?v=20260827-tl-br-cover-b"></script>
@@ -2039,6 +2049,7 @@
   <script defer src="./shell/calendar-chooser.js?v=20260827-abcd"></script>
   <script defer src="./shell/proof-preview.js?v=20260827-fo-render"></script>
   <script defer src="./shell/account-chrome.js?v=20260827-wire-bundles"></script>
+  <script defer src="./shell/intro-stories.js?v=20260829-intro-accordion"></script>
   <script defer src="./shell/legal-consent.js?v=20260828-legal-v14"></script>
   <script defer src="./shell/intro-cloud.js?v=20260828-legal-v14"></script>
   <script defer src="./shell/alert-form.js?v=20260827-wire-thin-forms"></script>
