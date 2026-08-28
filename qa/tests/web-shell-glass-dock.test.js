@@ -18,31 +18,29 @@ function loadShell(files) {
 }
 
 describe("shell glass-dock", () => {
-  it("dockKeyForScreen maps passport tabs and child screens", () => {
+  it("dockKeyForScreen maps passport only; detail screens have no dock tab", () => {
     const shell = loadShell(["shell/glass-dock.js"]);
-    assert.equal(shell.dockKeyForScreen("timeline"), "timeline");
-    assert.equal(shell.dockKeyForScreen("add-visit"), "timeline");
-    assert.equal(shell.dockKeyForScreen("add-med"), "timeline");
-    assert.equal(shell.dockKeyForScreen("alerts"), "alerts");
-    assert.equal(shell.dockKeyForScreen("home"), null);
+    assert.equal(shell.dockKeyForScreen("timeline"), null);
+    assert.equal(shell.dockKeyForScreen("add-visit"), null);
+    assert.equal(shell.dockKeyForScreen("alerts"), null);
+    assert.equal(shell.dockKeyForScreen("imaging"), null);
+    assert.equal(shell.dockKeyForScreen("labs"), null);
     assert.equal(shell.dockKeyForScreen("emergency"), "passport");
-    assert.equal(shell.dockKeyForScreen("imaging"), "imaging");
-    assert.equal(shell.dockKeyForScreen("imaging-proof"), "imaging");
-    assert.equal(shell.dockKeyForScreen("labs"), "labs");
-    assert.equal(shell.dockKeyForScreen("lab-add"), "labs");
     assert.equal(shell.dockKeyForScreen("intro"), null);
-    assert.equal(shell.dockKeyForScreen("owner-settings"), null);
   });
 
-  it("glassDockMarkup has five tabs without dock home", () => {
+  it("glassDockMarkup is solo passport tab with passportGo", () => {
     const shell = loadShell(["shell/glass-dock.js"]);
     const markup = shell.glassDockMarkup({ passportGo: "emergency" });
     assert.match(markup, /id="glass-dock"/);
+    assert.match(markup, /glass-dock--solo/);
     assert.doesNotMatch(markup, /data-dock="home"/);
-    assert.doesNotMatch(markup, /data-i18n="dockHome"/);
     assert.match(markup, /data-dock="passport"/);
     assert.match(markup, /data-go="emergency"/);
-    assert.match(markup, /data-dock="timeline"/);
+    assert.doesNotMatch(markup, /data-dock="timeline"/);
+    assert.doesNotMatch(markup, /data-dock="alerts"/);
+    assert.doesNotMatch(markup, /data-dock="imaging"/);
+    assert.doesNotMatch(markup, /data-dock="labs"/);
     const hidden = shell.glassDockMarkup({ passportGo: "emergency", startHidden: true });
     assert.match(hidden, /\shidden/);
     const defaultGo = shell.glassDockMarkup({});

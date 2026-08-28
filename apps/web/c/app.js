@@ -1964,8 +1964,8 @@ function renderPetHeader(pet) {
 
 function syncAlertNavTone(alerts) {
   const highest = highestAlertSeverity(alerts);
-  const nav = document.querySelector(".e-nav-alerts");
-  [alertCountBtn, nav].forEach((el) => {
+  const navs = document.querySelectorAll(".e-nav-alerts");
+  [alertCountBtn, ...navs].forEach((el) => {
     if (!el) return;
     el.classList.toggle("is-critical", highest === "critical");
     el.classList.toggle("is-caution", highest === "caution");
@@ -2299,6 +2299,13 @@ renderCoordinator.register("emergency", "emergencyLabNav", (pet) => {
 });
 renderCoordinator.register("emergency", "emergencyImagingNav", (pet) => {
   if (pet) renderEmergencyImagingNav(pet);
+});
+renderCoordinator.register("feature-buttons", "featureHubNav", (pet) => {
+  if (!pet) return;
+  renderEmergencyVaccineNav(pet);
+  renderAlertBadge(pet);
+  renderEmergencyLabNav(pet);
+  renderEmergencyImagingNav(pet);
 });
 renderCoordinator.register(
   "labs",
@@ -3052,8 +3059,8 @@ function enhanceGlassScreenHeads() {
       if (pet) {
         if (typeof renderEmergencyVaccineNav === "function") renderEmergencyVaccineNav(pet);
         if (typeof renderAlertBadge === "function") renderAlertBadge(pet);
-        if (typeof renderLabNav === "function") renderLabNav(pet);
-        if (typeof renderImagingNav === "function") renderImagingNav(pet);
+        if (typeof renderEmergencyLabNav === "function") renderEmergencyLabNav(pet);
+        if (typeof renderEmergencyImagingNav === "function") renderEmergencyImagingNav(pet);
       }
     },
   });

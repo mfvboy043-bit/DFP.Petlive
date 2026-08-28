@@ -8,6 +8,17 @@
   --glass-dock-offset: 66px;
 }
 
+.glass-dock--solo {
+  width: auto;
+  min-width: 7.5rem;
+  justify-content: center;
+}
+
+.glass-dock--solo .glass-dock-item {
+  flex: 0 0 auto;
+  min-width: 5.5rem;
+}
+
 .glass-dock {
   position: fixed;
   left: 50%;
