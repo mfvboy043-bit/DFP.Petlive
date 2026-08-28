@@ -248,6 +248,81 @@
   margin: 0;
 }
 
+.intro-story-body .story-epigraph {
+  margin: 0 0 2px;
+  font-family: "Noto Serif TC", serif;
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  color: var(--leaf-mid, #4f7a66);
+}
+
+.intro-story-body .story-epigraph em {
+  font-style: normal;
+}
+
+.intro-story-body blockquote {
+  margin: 0;
+  padding: 10px 14px;
+  border-left: 3px solid rgba(90, 125, 108, 0.45);
+  border-radius: 0 10px 10px 0;
+  background: rgba(228, 235, 230, 0.38);
+}
+
+.intro-story-body blockquote p {
+  margin: 0;
+  font-size: 13.5px;
+  line-height: 1.65;
+  color: var(--text-strong, #17231e);
+}
+
+.intro-story-body blockquote p + p {
+  margin-top: 6px;
+}
+
+.intro-story-body .story-pull {
+  border-left-color: var(--leaf, #5a7d6c);
+  background: rgba(228, 235, 230, 0.52);
+}
+
+.intro-story-body .story-pull--closing {
+  margin-top: 2px;
+}
+
+.intro-story-body hr.story-divider {
+  margin: 4px 0;
+  border: none;
+  height: 1px;
+  background: linear-gradient(
+    90deg,
+    rgba(90, 125, 108, 0.35) 0%,
+    rgba(90, 125, 108, 0.08) 100%
+  );
+}
+
+.intro-story-body .story-list {
+  margin: 0;
+  padding-left: 1.25em;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.intro-story-body .story-list li {
+  line-height: 1.6;
+  color: var(--text, #26322d);
+}
+
+.intro-story-body .story-list li::marker {
+  color: var(--leaf, #5a7d6c);
+}
+
+.intro-story-body .story-note {
+  font-size: 12.5px;
+  line-height: 1.55;
+  color: var(--text-muted, #718078);
+}
+
 .intro-stories-bridge {
   margin: 16px 0 0;
   padding: 12px 14px;
