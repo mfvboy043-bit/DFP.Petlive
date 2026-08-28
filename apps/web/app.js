@@ -6310,8 +6310,8 @@ function initIntroAndCloud() {
       PetLiveWeb.shell.isLegalConsentGranted &&
       !PetLiveWeb.shell.isLegalConsentGranted(document)
     ) {
+      PetLiveWeb.shell.promptLegalConsent?.(document);
       showToast(t("legalConsentRequired"));
-      document.getElementById("intro-legal-consent-cb")?.focus?.();
       return;
     }
     if (supabaseAuth?.isConfigured?.()) {
@@ -6347,6 +6347,9 @@ function initIntroAndCloud() {
       intro.classList.add("is-active");
     }
   }
+
+  PetLiveWeb.shell.mountLegalConsentModal?.(document);
+  applyI18n();
 
   PetLiveWeb.shell.bindLegalConsent(document, {
     onPaint: paintCloudChrome,

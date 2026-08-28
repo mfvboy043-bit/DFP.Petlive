@@ -77,15 +77,18 @@
         shell?.isLegalConsentGranted &&
         !shell.isLegalConsentGranted(doc)
       ) {
-        const cb = doc.getElementById("intro-legal-consent-cb");
-        cb?.focus?.();
+        if (typeof shell.promptLegalConsent === "function") {
+          shell.promptLegalConsent(doc);
+        } else {
+          doc.getElementById("intro-legal-consent-cb")?.focus?.();
+        }
         if (typeof hooks.onLegalConsentRequired === "function") {
           hooks.onLegalConsentRequired();
         }
         return;
       }
       if (typeof shell?.markLegalConsent === "function") {
-        shell.markLegalConsent();
+        shell.markLegalConsent(doc);
       }
       if (typeof onLogin === "function") onLogin();
     });

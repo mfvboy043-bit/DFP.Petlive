@@ -17,7 +17,7 @@ const I18N = {
     introTitle: "介紹",
     introEyebrow: "飼主持有的寵物健康護照",
     introLede:
-      "紀錄先寫在你的裝置。Google 登入進入護照；備份可選擇 Google 雲端硬碟（詳見隱私說明）。<br />僅供參考，不取代獸醫診斷。",
+      "紀錄先寫在你這邊（本機）。用 Google 登入進入你的護照；需要時，可把備份存進你的 Google 雲端硬碟。<br />僅供參考，不取代獸醫診斷。",
     legalConsentLabel:
       '我已閱讀並同意 <a href="./legal/privacy.html?v=20260828-legal-v12" target="_blank" rel="noopener">隱私權政策</a> 與 <a href="./legal/terms.html?v=20260828-legal-v12" target="_blank" rel="noopener">醫療免責與使用條款</a>',
     legalConsentRequired: "請先勾選同意隱私權政策與使用條款",
@@ -778,7 +778,7 @@ const I18N = {
     introTitle: "Intro",
     introEyebrow: "An owner-held pet health passport",
     introLede:
-      "Records stay on your device first. Sign in with Google to enter; optional backup to your Google Drive (see Privacy Policy).<br />Reference only—not a veterinary diagnosis.",
+      "Records are saved on this device first. Sign in with Google to enter your passport; when you need a backup, you can save it to your Google Drive.<br />Reference only—not a veterinary diagnosis.",
     legalConsentLabel:
       'I have read and agree to the <a href="./legal/privacy.html?v=20260828-legal-v12" target="_blank" rel="noopener">Privacy Policy</a> and <a href="./legal/terms.html?v=20260828-legal-v12" target="_blank" rel="noopener">Medical Disclaimer &amp; Terms</a>',
     legalConsentRequired: "Please agree to the Privacy Policy and Terms first",
@@ -1540,7 +1540,7 @@ const I18N = {
     introTitle: "紹介",
     introEyebrow: "飼い主が持つペット健康パスポート",
     introLede:
-      "記録は端末に保存されます。Googleログインでパスポートへ。バックアップはGoogleドライブへ任意（プライバシーポリシー参照）。<br />参考用であり、診断の代わりではありません。",
+      "記録はまずあなたの端末に残します。Googleでログインしてパスポートへ。必要なときは、あなたのGoogleドライブへバックアップできます。<br />参考用であり、診断の代わりではありません。",
     legalConsentLabel:
       '<a href="./legal/privacy.html?v=20260828-legal-v12" target="_blank" rel="noopener">プライバシーポリシー</a>と<a href="./legal/terms.html?v=20260828-legal-v12" target="_blank" rel="noopener">免責事項・利用規約</a>に同意します',
     legalConsentRequired: "先にプライバシーポリシーと利用規約への同意にチェックを入れてください",
@@ -2307,7 +2307,7 @@ const I18N = {
     introTitle: "소개",
     introEyebrow: "보호자가 보유하는 반려동물 건강 여권",
     introLede:
-      "기록은 기기에 먼저 저장됩니다. Google 로그인 후 여권 이용; Google Drive 백업은 선택(개인정보 처리방침 참고).<br />참고용이며 수의사 진단을 대체하지 않습니다.",
+      "기록은 먼저 이 기기에 저장됩니다. Google로 로그인하면 여권으로 들어갑니다. 필요할 때 내 Google 드라이브에 백업할 수 있습니다.<br />참고용이며 수의사 진단을 대체하지 않습니다.",
     legalConsentLabel:
       '<a href="./legal/privacy.html?v=20260828-legal-v12" target="_blank" rel="noopener">개인정보 처리방침</a> 및 <a href="./legal/terms.html?v=20260828-legal-v12" target="_blank" rel="noopener">면책·이용약관</a>에 동의합니다',
     legalConsentRequired: "먼저 개인정보 처리방침과 이용약관에 동의해 주세요",

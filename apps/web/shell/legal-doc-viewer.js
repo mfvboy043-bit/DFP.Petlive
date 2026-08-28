@@ -132,7 +132,7 @@
     if (!slug || !target) return;
 
     const params = new URLSearchParams(win.location.search || "");
-    const version = params.get("v") || "20260828-legal-v12";
+    const version = params.get("v") || "20260828-legal-v13";
     target.innerHTML = "<p class=\"legal-loading\">載入中…</p>";
 
     try {
