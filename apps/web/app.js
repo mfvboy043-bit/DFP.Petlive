@@ -3214,6 +3214,17 @@ function go(screen, options = {}) {
     screen = "intro";
     options = { ...options, replace: true };
   }
+  if (
+    !DEMO_MODE &&
+    screen !== "intro" &&
+    PetLiveWeb.shell.isLegalConsentGranted &&
+    !PetLiveWeb.shell.isLegalConsentGranted(document)
+  ) {
+    showIntroSurface(false);
+    PetLiveWeb.shell.promptLegalConsent?.(document);
+    showToast(t("legalConsentRequired"));
+    return false;
+  }
   const needsPet = [
     "emergency",
     "feature-buttons",
@@ -6274,7 +6285,33 @@ function markIntroSeen() {
   }
 }
 
+function showIntroSurface(enterB) {
+  const intro = app.querySelector('[data-screen="intro"]');
+  const home = app.querySelector('[data-screen="home"]');
+  if (!intro || !home) return;
+  if (enterB) {
+    intro.classList.remove("is-active");
+    intro.hidden = true;
+    home.hidden = false;
+    home.classList.add("is-active");
+    markIntroSeen();
+  } else {
+    home.classList.remove("is-active");
+    home.hidden = true;
+    intro.hidden = false;
+    intro.classList.add("is-active");
+  }
+}
+
 function enterAppFromIntro() {
+  if (
+    PetLiveWeb.shell.isLegalConsentGranted &&
+    !PetLiveWeb.shell.isLegalConsentGranted(document)
+  ) {
+    PetLiveWeb.shell.promptLegalConsent?.(document);
+    showToast(t("legalConsentRequired"));
+    return;
+  }
   markIntroSeen();
   go("home", { replace: true });
 }
@@ -6290,10 +6327,11 @@ function initIntroAndCloud() {
         googleDriveAuth?.signOut?.();
         lastCloudBackupAt = null;
         setIntroStatus("");
+        showIntroSurface(false);
         paintCloudChrome();
         showToast(t("logout"));
-        const introEl = app.querySelector('[data-screen="intro"]');
-        if (introEl) go("intro", { replace: true });
+        clearNavigationHistory();
+        go("intro", { replace: true });
       })
       .catch(() => {
         paintCloudChrome();
@@ -6330,29 +6368,16 @@ function initIntroAndCloud() {
     handleGoogleSignIn({ enterApp: true });
   }
 
-  function showSurface(enterB) {
-    const intro = app.querySelector('[data-screen="intro"]');
-    const home = app.querySelector('[data-screen="home"]');
-    if (!intro || !home) return;
-    if (enterB) {
-      intro.classList.remove("is-active");
-      intro.hidden = true;
-      home.hidden = false;
-      home.classList.add("is-active");
-      markIntroSeen();
-    } else {
-      home.classList.remove("is-active");
-      home.hidden = true;
-      intro.hidden = false;
-      intro.classList.add("is-active");
-    }
-  }
-
   PetLiveWeb.shell.mountLegalConsentModal?.(document);
   applyI18n();
 
   PetLiveWeb.shell.bindLegalConsent(document, {
     onPaint: paintCloudChrome,
+    onAccepted: () => {
+      if (livePassportSignedIn()) {
+        enterAppFromIntro();
+      }
+    },
   });
 
   PetLiveWeb.shell.bindIntroCloudListeners(document, window, {
@@ -6433,13 +6458,22 @@ function initIntroAndCloud() {
         params.get("screen") === "home";
 
       if (forceApp) {
-        showSurface(true);
+        showIntroSurface(true);
         paintCloudChrome();
         return;
       }
 
       if (livePassportSignedIn()) {
-        showSurface(true);
+        if (
+          PetLiveWeb.shell.isLegalConsentGranted &&
+          !PetLiveWeb.shell.isLegalConsentGranted(document)
+        ) {
+          showIntroSurface(false);
+          paintCloudChrome();
+          PetLiveWeb.shell.promptLegalConsent?.(document);
+          return;
+        }
+        showIntroSurface(true);
         paintCloudChrome();
         if (!DEMO_MODE && googleDriveAuth?.getSession?.().signedIn) {
           reconcileCloudOnBoot({ silent: true, skipAutoPull: FRESH_BOOT });
@@ -6447,10 +6481,10 @@ function initIntroAndCloud() {
         return;
       }
 
-      showSurface(false);
+      showIntroSurface(false);
       paintCloudChrome();
     } catch {
-      showSurface(false);
+      showIntroSurface(false);
       paintCloudChrome();
     }
   })();

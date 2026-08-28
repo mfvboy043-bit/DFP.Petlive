@@ -96,7 +96,7 @@
     const modal = mountLegalConsentModal(doc);
     const modalCb = doc.getElementById(MODAL_CB_ID);
 
-    if (signedIn) {
+    if (signedIn && isConsentGranted(doc)) {
       if (wrap) wrap.hidden = true;
       setLegalConsentModalOpen(doc, false);
       if (loginBtn) loginBtn.disabled = Boolean(authBusy);
@@ -146,6 +146,7 @@
       markLegalConsent(doc);
       setLegalConsentModalOpen(doc, false);
       if (typeof hooks.onPaint === "function") hooks.onPaint();
+      if (typeof hooks.onAccepted === "function") hooks.onAccepted();
     });
   }
 

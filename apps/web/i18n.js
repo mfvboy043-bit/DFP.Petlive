@@ -18,6 +18,17 @@ const I18N = {
     introEyebrow: "飼主持有的寵物健康護照",
     introLede:
       "紀錄先寫在你這邊（本機）。用 Google 登入進入你的護照；需要時，可把備份存進你的 Google 雲端硬碟。<br />僅供參考，不取代獸醫診斷。",
+    introStoriesEyebrow: "兩個真實情境",
+    introStoriesTitle: "換院、急診時，紀錄有跟著走嗎？",
+    introStory1Title: "半夜急診那張空白紙",
+    introStory1Body:
+      "<p>豆豆在 A 醫院吃了很強的藥，爸爸只記得「有吃」，沒記名字。</p><p>幾天後半夜，豆豆突然沒精神、開始吐，爸爸抱著衝去 B 醫院急診。醫生驗血：肝臟數字像紅燈狂閃。</p><p>可 B 醫院不知道——豆豆前幾天已經吃過類固醇。醫生不敢亂加藥，只能一項一項查。豆豆在等，爸爸在急，最好的黃金時間，就這樣溜走。</p>",
+    introStory2Title: "為什麼看了很多醫生都沒用",
+    introStory2Body:
+      "<p>米米在 A 醫院吃過 A 抗生素，好一點又復發。</p><p>爸爸帶去 C 醫院，新醫生問：「之前吃過什麼？」爸爸也說不清。醫生只好再開同一種 A 抗生素。米米還是咳、還是癢。</p><p>爸爸心裡想：是不是看了很多醫生都沒用？其實不是。是沒有一張小紙，告訴下一位醫生：這個藥試過了，沒效。</p>",
+    introStoriesBridge:
+      "換院、急診、換醫生時，把「試過什麼、吃過什麼」帶著走。",
+    introStoriesNote: "以上為理解情境之示意，不取代獸醫診斷。",
     legalConsentLabel:
       '我已閱讀並同意 <a href="./legal/privacy.html?v=20260828-legal-v12" target="_blank" rel="noopener">隱私權政策</a> 與 <a href="./legal/terms.html?v=20260828-legal-v12" target="_blank" rel="noopener">醫療免責與使用條款</a>',
     legalConsentRequired: "請先勾選同意隱私權政策與使用條款",
@@ -779,6 +790,17 @@ const I18N = {
     introEyebrow: "An owner-held pet health passport",
     introLede:
       "Records are saved on this device first. Sign in with Google to enter your passport; when you need a backup, you can save it to your Google Drive.<br />Reference only—not a veterinary diagnosis.",
+    introStoriesEyebrow: "Two real situations",
+    introStoriesTitle: "When you switch clinics, does the record travel with you?",
+    introStory1Title: "The blank chart at midnight ER",
+    introStory1Body:
+      "<p>At Hospital A, DouDou got strong medicine. Dad only remembered “he took something,” not the name.</p><p>One midnight DouDou got weak and started vomiting. Dad rushed to Hospital B. The blood test flashed red—liver numbers looked scary.</p><p>But Hospital B didn’t know DouDou had already taken steroids. The vet couldn’t add medicine safely and had to check step by step. DouDou waited. Dad panicked. Precious minutes slipped away.</p>",
+    introStory2Title: "Why it feels like no vet can help",
+    introStory2Body:
+      "<p>At Hospital A, Mimi tried Antibiotic A and felt a bit better, then got sick again.</p><p>At Hospital C, the new vet asked what she’d tried before. Dad couldn’t say clearly. So the vet prescribed the same Antibiotic A again. Mimi still coughed and itched.</p><p>Dad thought: “We’ve seen so many vets—nothing works.” That’s not really true. There was just no little note telling the next vet: we already tried this—it didn’t work.</p>",
+    introStoriesBridge:
+      "At every new clinic or ER visit, bring what was tried and what was given.",
+    introStoriesNote: "Illustrative scenarios for context only—not a veterinary diagnosis.",
     legalConsentLabel:
       'I have read and agree to the <a href="./legal/privacy.html?v=20260828-legal-v12" target="_blank" rel="noopener">Privacy Policy</a> and <a href="./legal/terms.html?v=20260828-legal-v12" target="_blank" rel="noopener">Medical Disclaimer &amp; Terms</a>',
     legalConsentRequired: "Please agree to the Privacy Policy and Terms first",
@@ -1541,6 +1563,17 @@ const I18N = {
     introEyebrow: "飼い主が持つペット健康パスポート",
     introLede:
       "記録はまずあなたの端末に残します。Googleでログインしてパスポートへ。必要なときは、あなたのGoogleドライブへバックアップできます。<br />参考用であり、診断の代わりではありません。",
+    introStoriesEyebrow: "2つのリアルな場面",
+    introStoriesTitle: "病院を替えるとき、記録は一緒に行きますか？",
+    introStory1Title: "真夜中の救急、その空白の紙",
+    introStory1Body:
+      "<p>トトはA病院で強いお薬を飲みました。パパは「飲んだ」とだけ覚えていて、名前は覚えていません。</p><p>数日後の真夜中、トトはぐったりして吐き始め、パパはB病院の救急へ抱えて駆け込みました。血液検査では、肝臓の数字が赤信号のように光りました。</p><p>でもB病院は知りません——トトは数日前にステロイドを飲んでいたこと。獣医さんは安全のため、すぐに薬を足せず一つずつ確認。トトは待ち、パパは焦り、大切な時間だけが過ぎていきました。</p>",
+    introStory2Title: "なぜ「どの先生もダメ」に感じるのか",
+    introStory2Body:
+      "<p>ミミはA病院でA抗生物質を試し、少し良くなったあとまた悪化しました。</p><p>パパがC病院へ連れて行くと、新しい獣医さんが「前に何を飲みましたか？」と聞きました。パパははっきり答えられず、同じA抗生物質がまた出されました。ミミはまだ咳き、痒がります。</p><p>パパは「いろんな先生に見てもダメなの？」と思いました。本当は違います。次の先生に「この薬は試したが効かなかった」と伝える小さな紙がなかっただけなのです。</p>",
+    introStoriesBridge:
+      "病院が替わるたびに、「試した薬・飲ませた薬」を一緒に持っていきましょう。",
+    introStoriesNote: "理解のための示意です。診断の代わりではありません。",
     legalConsentLabel:
       '<a href="./legal/privacy.html?v=20260828-legal-v12" target="_blank" rel="noopener">プライバシーポリシー</a>と<a href="./legal/terms.html?v=20260828-legal-v12" target="_blank" rel="noopener">免責事項・利用規約</a>に同意します',
     legalConsentRequired: "先にプライバシーポリシーと利用規約への同意にチェックを入れてください",
@@ -2308,6 +2341,17 @@ const I18N = {
     introEyebrow: "보호자가 보유하는 반려동물 건강 여권",
     introLede:
       "기록은 먼저 이 기기에 저장됩니다. Google로 로그인하면 여권으로 들어갑니다. 필요할 때 내 Google 드라이브에 백업할 수 있습니다.<br />참고용이며 수의사 진단을 대체하지 않습니다.",
+    introStoriesEyebrow: "두 가지 실제 상황",
+    introStoriesTitle: "병원을 바꿀 때, 기록도 함께 가나요?",
+    introStory1Title: "한밤중 응급실, 그 빈 종이",
+    introStory1Body:
+      "<p>토토는 A병원에서 강한 약을 먹었습니다. 아빠는 ‘먹었다’만 기억하고 이름은 몰랐습니다.</p><p>며칠 뒤 한밤중 토토가 힘없이 토하기 시작했고, 아빠는 B병원 응급실로 달려갔습니다. 혈액 검사에서 간 수치가 빨간불처럼 올라갔습니다.</p><p>하지만 B병원은 몰랐습니다—토토가 며칠 전 스테로이드를 먹었다는 것. 수의사는 안전하게 바로 약을 더할 수 없어 하나씩 확인해야 했습니다. 토토는 기다리고, 아빠는 조급해졌고, 소중한 시간만 흘러갔습니다.</p>",
+    introStory2Title: "왜 ‘여러 병원을 다녀도 소용없다’고 느낄까",
+    introStory2Body:
+      "<p>미미는 A병원에서 A항생제를 써 보고 조금 나아졌다가 다시 아팠습니다.</p><p>아빠가 C병원에 가자 새 수의사가 “전에 뭘 드셨나요?”라고 물었습니다. 아빠는 분명히 말하지 못했고, 같은 A항생제가 다시 처방되었습니다. 미미는 여전히 기침하고 가렵습니다.</p><p>아빠는 ‘병원을 많이 다녀도 소용없나?’라고 생각했습니다. 사실은 그렇지 않습니다. 다음 수의사에게 ‘이 약은 이미 써 봤는데 효과 없었다’고 알려줄 작은 종이가 없었을 뿐입니다.</p>",
+    introStoriesBridge:
+      "병원·응급·담당 수의사가 바뀔 때마다 ‘무엇을 써 봤는지’를 함께 가져가세요.",
+    introStoriesNote: "상황 이해를 위한 예시이며, 수의사 진단을 대체하지 않습니다.",
     legalConsentLabel:
       '<a href="./legal/privacy.html?v=20260828-legal-v12" target="_blank" rel="noopener">개인정보 처리방침</a> 및 <a href="./legal/terms.html?v=20260828-legal-v12" target="_blank" rel="noopener">면책·이용약관</a>에 동의합니다',
     legalConsentRequired: "먼저 개인정보 처리방침과 이용약관에 동의해 주세요",
