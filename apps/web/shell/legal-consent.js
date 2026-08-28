@@ -41,8 +41,7 @@
   }
 
   function isConsentGranted(doc) {
-    const cb = consentCheckbox(doc);
-    return Boolean(hasLegalConsent(doc) || cb?.checked);
+    return hasLegalConsent(doc);
   }
 
   function usesIntroModal(doc) {
@@ -98,8 +97,10 @@
 
     if (signedIn) {
       if (wrap) wrap.hidden = true;
-      setLegalConsentModalOpen(doc, false);
       if (loginBtn) loginBtn.disabled = Boolean(authBusy);
+      if (hasLegalConsent(doc)) {
+        setLegalConsentModalOpen(doc, false);
+      }
       return;
     }
 

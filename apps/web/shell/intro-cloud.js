@@ -87,9 +87,6 @@
         }
         return;
       }
-      if (typeof shell?.markLegalConsent === "function") {
-        shell.markLegalConsent(doc);
-      }
       if (typeof onLogin === "function") onLogin();
     });
     logoutBtn?.addEventListener("click", () => {

@@ -6378,7 +6378,9 @@ function initIntroAndCloud() {
     onAccepted: () => {
       if (livePassportSignedIn()) {
         enterAppFromIntro();
+        return;
       }
+      startWithGoogleOrEnter();
     },
   });
 
