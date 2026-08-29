@@ -1,0 +1,387 @@
+/* ---------------------------------------------------------
+   Shell — bottom glass dock (What'Sub-like floating pill)
+   Shared by A/B and C. Same frost language as topbar / screen-head.
+   --------------------------------------------------------- */
+
+:root {
+  --glass-dock-h: 52px;
+  --glass-dock-offset: 66px;
+}
+
+.glass-dock--solo {
+  width: auto;
+  min-width: 7.5rem;
+  justify-content: center;
+}
+
+.glass-dock--solo .glass-dock-item {
+  flex: 0 0 auto;
+  min-width: 5.5rem;
+}
+
+.glass-dock {
+  position: fixed;
+  left: 50%;
+  right: auto;
+  bottom: max(10px, env(safe-area-inset-bottom, 0px));
+  z-index: 46;
+
+  display: flex;
+  align-items: stretch;
+  justify-content: space-between;
+  gap: 0;
+
+  box-sizing: border-box;
+  width: min(460px, calc(100% - 2 * var(--screen-padding) - 32px));
+  max-width: min(460px, calc(100% - 2 * var(--screen-padding) - 32px));
+  margin: 0;
+  padding: 4px 4px;
+  transform: translateX(-50%);
+  overflow: visible;
+  /* Allow finger to slide across tabs while holding the glass lens */
+  touch-action: none;
+
+  border: 1px solid rgba(255, 255, 255, 0.42);
+  border-radius: 999px;
+
+  background:
+    linear-gradient(
+      155deg,
+      rgba(255, 253, 250, 0.1) 0%,
+      rgba(255, 255, 255, 0.04) 48%,
+      rgba(232, 244, 239, 0.06) 100%
+    );
+
+  backdrop-filter: blur(12px) saturate(1.08);
+  -webkit-backdrop-filter: blur(12px) saturate(1.08);
+
+  box-shadow:
+    0 1px 0 rgba(255, 255, 255, 0.35) inset,
+    0 0 0 1px rgba(61, 107, 87, 0.1),
+    0 6px 18px rgba(26, 52, 45, 0.06);
+
+  isolation: isolate;
+
+  /* Chrome labels only — block long-press select / iOS callout on this dock */
+  -webkit-user-select: none;
+  user-select: none;
+  -webkit-touch-callout: none;
+}
+
+.glass-dock,
+.glass-dock * {
+  -webkit-user-select: none;
+  user-select: none;
+  -webkit-touch-callout: none;
+}
+
+/* display:flex above beats the UA [hidden] rule — force hide */
+.glass-dock[hidden] {
+  display: none !important;
+}
+
+/* Sliding selection pill — pop bigger, then leap to next tab */
+.glass-dock-thumb {
+  position: absolute;
+  top: 4px;
+  bottom: 4px;
+  left: 0;
+  width: 0;
+  border-radius: 18px;
+  background: rgba(245, 239, 228, 0.92);
+  box-shadow:
+    0 1px 0 rgba(255, 255, 255, 0.7) inset,
+    0 4px 14px rgba(26, 52, 45, 0.1);
+  pointer-events: none;
+  z-index: 0;
+  opacity: 0;
+  transform: translateX(0) scale(1);
+  transform-origin: center center;
+  will-change: transform, width;
+  transition:
+    transform 280ms cubic-bezier(0.22, 1, 0.36, 1),
+    width 280ms cubic-bezier(0.22, 1, 0.36, 1),
+    opacity 140ms ease;
+}
+
+.glass-dock-thumb.is-ready {
+  opacity: 1;
+}
+
+.glass-dock-thumb.is-animating {
+  transition: none;
+}
+
+.glass-dock-item {
+  position: relative;
+  z-index: 1;
+  flex: 1 1 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 1px;
+  min-width: 0;
+  min-height: var(--glass-dock-h);
+  padding: 4px 2px 5px;
+  margin: 0;
+  border: 0;
+  border-radius: 18px;
+  background: transparent;
+  color: var(--text-muted, #5c6b64);
+  box-shadow: none;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  transition: color 180ms ease;
+}
+
+.glass-dock-item:hover {
+  color: var(--leaf-deep, #2f4f42);
+}
+
+.glass-dock-item:focus-visible {
+  outline: 2px solid rgba(61, 107, 87, 0.45);
+  outline-offset: 2px;
+}
+
+.glass-dock-item.is-active {
+  color: var(--leaf-deep, #2f4f42);
+  background: transparent;
+  box-shadow: none;
+}
+
+.glass-dock-ico {
+  display: grid;
+  place-items: center;
+  width: 22px;
+  height: 22px;
+  line-height: 0;
+  transform: scale(1);
+  transform-origin: center bottom;
+  transition: transform 180ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.glass-dock-item.is-active .glass-dock-ico {
+  transform: scale(1.22);
+}
+
+.glass-dock-item.is-pressing {
+  color: var(--leaf-deep, #2f4f42);
+}
+
+.glass-dock-item.is-pressing .glass-dock-ico,
+.glass-dock-item.is-pressing .glass-dock-label {
+  opacity: 0.18;
+}
+
+.glass-dock-item.is-jumping .glass-dock-ico {
+  animation: glass-dock-ico-jump 480ms cubic-bezier(0.2, 0.85, 0.2, 1);
+}
+
+@keyframes glass-dock-ico-jump {
+  0% {
+    transform: scale(0.92);
+  }
+  32% {
+    transform: scale(1.55);
+  }
+  58% {
+    transform: scale(1.12);
+  }
+  78% {
+    transform: scale(1.28);
+  }
+  100% {
+    transform: scale(1.22);
+  }
+}
+
+.glass-dock-ico svg {
+  display: block;
+  width: 18px;
+  height: 18px;
+}
+
+.glass-dock-label {
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-family: "Noto Sans TC", system-ui, sans-serif;
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  line-height: 1.15;
+}
+
+/* Press-hold transparent glass magnifier — sliding bubble follows finger */
+.glass-dock-lens {
+  position: absolute;
+  z-index: 12;
+  left: 0;
+  top: 0;
+  width: 104px;
+  height: 104px;
+  margin: 0;
+  padding: 0;
+  border-radius: 50%;
+  pointer-events: none;
+  opacity: 0;
+  transform: translate(-50%, -78%) scale(0.36);
+  transform-origin: center bottom;
+  transition:
+    opacity 120ms ease,
+    transform 260ms cubic-bezier(0.18, 1.2, 0.28, 1),
+    left 180ms cubic-bezier(0.22, 1, 0.36, 1),
+    top 180ms cubic-bezier(0.22, 1, 0.36, 1);
+  filter: drop-shadow(0 14px 24px rgba(26, 52, 45, 0.18));
+  will-change: left, top, transform;
+}
+
+.glass-dock-lens.is-visible {
+  opacity: 1;
+  transform: translate(-50%, -78%) scale(1);
+}
+
+/* While dragging: soft liquid squash so it reads as a sliding bubble */
+.glass-dock-lens.is-visible.is-sliding {
+  transform: translate(-50%, -78%) scale(1.06, 0.94);
+  transition:
+    opacity 100ms ease,
+    transform 120ms cubic-bezier(0.22, 1, 0.36, 1),
+    left 90ms cubic-bezier(0.2, 0.9, 0.2, 1),
+    top 90ms cubic-bezier(0.2, 0.9, 0.2, 1);
+}
+
+.glass-dock-lens-face {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  border-radius: 50%;
+  border: 1px solid rgba(255, 255, 255, 0.58);
+  background:
+    radial-gradient(
+      120% 90% at 32% 22%,
+      rgba(255, 255, 255, 0.42) 0%,
+      rgba(255, 255, 255, 0.14) 42%,
+      rgba(232, 244, 239, 0.16) 100%
+    );
+  backdrop-filter: blur(18px) saturate(1.2);
+  -webkit-backdrop-filter: blur(18px) saturate(1.2);
+  box-shadow:
+    0 1px 0 rgba(255, 255, 255, 0.72) inset,
+    0 0 0 1px rgba(61, 107, 87, 0.07),
+    0 10px 22px rgba(26, 52, 45, 0.12);
+  overflow: hidden;
+}
+
+.glass-dock-lens-face::before {
+  content: "";
+  position: absolute;
+  left: 18%;
+  right: 28%;
+  top: 10%;
+  height: 28%;
+  border-radius: 999px;
+  background: linear-gradient(
+    180deg,
+    rgba(255, 255, 255, 0.55) 0%,
+    rgba(255, 255, 255, 0) 100%
+  );
+  pointer-events: none;
+}
+
+.glass-dock-lens-ico {
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  color: var(--leaf-deep, #2f4f42);
+  line-height: 0;
+  transition: transform 180ms cubic-bezier(0.18, 1.2, 0.28, 1);
+}
+
+.glass-dock-lens.is-switching .glass-dock-lens-ico {
+  animation: glass-dock-lens-pop 280ms cubic-bezier(0.18, 1.25, 0.28, 1);
+}
+
+@keyframes glass-dock-lens-pop {
+  0% {
+    transform: scale(0.82);
+  }
+  55% {
+    transform: scale(1.14);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+.glass-dock-lens-ico svg {
+  display: block;
+  width: 38px;
+  height: 38px;
+}
+
+.glass-dock-lens-label {
+  max-width: 84px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: var(--leaf-deep, #2f4f42);
+  font-family: "Noto Sans TC", system-ui, sans-serif;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.01em;
+  line-height: 1.1;
+}
+
+.glass-dock.is-pressing .glass-dock-thumb {
+  opacity: 0.22;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .glass-dock-thumb {
+    transition: none;
+  }
+
+  .glass-dock-ico,
+  .glass-dock-item.is-jumping .glass-dock-ico {
+    animation: none;
+    transition: none;
+  }
+
+  .glass-dock-lens,
+  .glass-dock-lens.is-visible.is-sliding {
+    transition: opacity 80ms ease;
+    transform: translate(-50%, -78%) scale(1);
+  }
+
+  .glass-dock-lens.is-switching .glass-dock-lens-ico {
+    animation: none;
+  }
+}
+
+/* Keep scroll / toast / lang FAB clear of the dock while visible */
+html.has-glass-dock .app {
+  padding-bottom: calc(
+    var(--glass-dock-offset) + env(safe-area-inset-bottom, 0px) + 12px
+  );
+}
+
+html.has-glass-dock .toast {
+  bottom: calc(
+    var(--glass-dock-offset) + env(safe-area-inset-bottom, 0px) + 12px
+  );
+}
+
+html.has-glass-dock .lang-switcher {
+  bottom: calc(
+    var(--glass-dock-offset, 66px) + env(safe-area-inset-bottom, 0px)
+  );
+}

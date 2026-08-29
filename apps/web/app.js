@@ -294,6 +294,7 @@ const archiveList = document.getElementById("archive-list");
 const archiveBtn = document.getElementById("archive-btn");
 const timelineSub = document.getElementById("timeline-sub");
 const timelineList = document.getElementById("timeline-list");
+const petWeightScaleSub = document.getElementById("pet-weight-scale-sub");
 const alertList = document.getElementById("alert-list");
 const alertSections = document.getElementById("alert-sections");
 const alertForm = document.getElementById("alert-form");
@@ -962,6 +963,21 @@ const parasiteLabels = PetLiveWeb.domains.parasite.createLabels({
   label: (key, params) => t(key, params),
 });
 
+const weightController = PetLiveWeb.domains.weight.createController();
+const PWS_UNIT_STORAGE_KEY = "petlive-weight-display-unit";
+let selectedPwsGranularity = "year";
+let selectedPwsFocus = { year: null, month: null };
+let selectedPwsDisplayUnit = (() => {
+  try {
+    const stored = localStorage.getItem(PWS_UNIT_STORAGE_KEY);
+    return stored === "lb" ? "lb" : "kg";
+  } catch {
+    return "kg";
+  }
+})();
+let selectedPwsFormUnit = "kg";
+let weightRenderer;
+
 const PARASITE_APPROACHING_DAYS = parasiteController.APPROACHING_DAYS;
 const PARASITE_KINDS = parasiteController.KINDS;
 const PARASITE_PRODUCT_CATALOG = parasiteController.PRODUCT_CATALOG;
@@ -1443,38 +1459,45 @@ function renderVaccineList(pet) {
   vaccineList.innerHTML = vaccineRenderer.buildVaccineListHtml(pet, pet.vaccines);
 }
 
-function syncVaccineNavLights(status) {
-  const lights = document.getElementById("e-vax-lights");
-  if (!lights) return;
+function syncVaccineNavLights(status, lightsEl) {
   const titleByStatus = {
     protected: t("vaxLightGreen"),
     approaching: t("vaxLightOrange"),
     expired: t("vaxLightRed"),
   };
-  lights.querySelectorAll(".e-vax-dot").forEach((dot) => {
-    const key = dot.dataset.status;
-    const on = status && key === status;
-    dot.classList.toggle("is-on", Boolean(on));
-    if (titleByStatus[key]) dot.title = titleByStatus[key];
+  const targets = lightsEl
+    ? [lightsEl]
+    : Array.from(document.querySelectorAll(".e-vax-lights"));
+  targets.forEach((lights) => {
+    if (!lights) return;
+    lights.querySelectorAll(".e-vax-dot").forEach((dot) => {
+      const key = dot.dataset.status;
+      const on = status && key === status;
+      dot.classList.toggle("is-on", Boolean(on));
+      if (titleByStatus[key]) dot.title = titleByStatus[key];
+    });
+    lights.setAttribute(
+      "aria-label",
+      status ? titleByStatus[status] : t("noVaccineNext")
+    );
   });
-  lights.setAttribute(
-    "aria-label",
-    status ? titleByStatus[status] : t("noVaccineNext")
-  );
 }
 
 function renderEmergencyVaccineNav(pet) {
-  const nextEl = document.getElementById("e-vaccine-next");
-  const vaccineBtn = document.getElementById("e-vaccine-btn");
-  if (!nextEl || !vaccineBtn) return;
-
-  vaccineBtn.classList.remove("is-protected", "is-approaching", "is-expired");
-
   const presentation = vaccineRenderer.buildEmergencyNavPresentation(getNextVaccine(pet));
-  nextEl.textContent = presentation.nextText;
-  nextEl.className = presentation.nextClassName;
-  vaccineBtn.classList.add(presentation.btnClass);
-  syncVaccineNavLights(presentation.lightStatus);
+  document.querySelectorAll('.e-vax-nav[data-go="vaccines"]').forEach((vaccineBtn) => {
+    vaccineBtn.classList.remove("is-protected", "is-approaching", "is-expired");
+    const nextEl = vaccineBtn.querySelector("#e-vaccine-next, #fh-vaccine-next");
+    if (nextEl) {
+      const keepId = nextEl.id;
+      nextEl.textContent = presentation.nextText;
+      nextEl.className = presentation.nextClassName || "";
+      if (keepId) nextEl.id = keepId;
+    }
+    vaccineBtn.classList.add(presentation.btnClass);
+    const lights = vaccineBtn.querySelector(".e-vax-lights");
+    if (lights) syncVaccineNavLights(presentation.lightStatus, lights);
+  });
 }
 
 function renderVaccines(pet) {
@@ -2116,6 +2139,181 @@ function safeRender(sectionName, fn, onError) {
   }
 }
 
+function paintPetWeightScaleHead(pet) {
+  if (!petWeightScaleSub) return;
+  if (!pet) {
+    petWeightScaleSub.textContent = t("petWeightScaleSub", { name: "—" });
+    return;
+  }
+  petWeightScaleSub.textContent = t("petWeightScaleSub", { name: pet.name || "—" });
+}
+
+function formatPetWeightDisplay(weightKg, unit) {
+  return PetLiveWeb.domains.weight.formatWeight(weightKg, unit);
+}
+
+function paintPwsGranularityChips() {
+  document.querySelectorAll("#pws-granularity-chips .chip").forEach((chip) => {
+    chip.classList.toggle(
+      "is-on",
+      chip.dataset.pwsGranularity === selectedPwsGranularity
+    );
+  });
+}
+
+function paintPwsDisplayUnitChips() {
+  document.querySelectorAll("#pws-display-unit-chips .chip").forEach((chip) => {
+    chip.classList.toggle("is-on", chip.dataset.pwsDisplayUnit === selectedPwsDisplayUnit);
+  });
+}
+
+function paintPwsFormUnitChips() {
+  document.querySelectorAll("#pws-form-unit-chips .chip").forEach((chip) => {
+    chip.classList.toggle("is-on", chip.dataset.pwsFormUnit === selectedPwsFormUnit);
+  });
+}
+
+function paintPwsFocusLabel() {
+  const el = document.getElementById("pws-focus-label");
+  if (!el) return;
+  if (selectedPwsGranularity === "month" && selectedPwsFocus.year) {
+    el.hidden = false;
+    el.textContent = t("petWeightFocusYear", { year: selectedPwsFocus.year });
+    return;
+  }
+  if (selectedPwsGranularity === "day" && selectedPwsFocus.year && selectedPwsFocus.month) {
+    el.hidden = false;
+    el.textContent = t("petWeightFocusMonth", {
+      year: selectedPwsFocus.year,
+      month: selectedPwsFocus.month,
+    });
+    return;
+  }
+  el.hidden = true;
+  el.textContent = "";
+}
+
+function renderPetWeightScale(pet) {
+  const chartWrap = document.getElementById("pws-chart-wrap");
+  const list = document.getElementById("pws-log-list");
+  if (!chartWrap || !weightRenderer) return;
+
+  paintPwsGranularityChips();
+  paintPwsDisplayUnitChips();
+  paintPwsFormUnitChips();
+  paintPwsFocusLabel();
+
+  const points = PetLiveWeb.domains.weight.collectWeightPoints(pet, visitWeightKg);
+  const series = PetLiveWeb.domains.weight.aggregateForChart(
+    points,
+    selectedPwsGranularity,
+    selectedPwsFocus
+  );
+  chartWrap.innerHTML = weightRenderer.buildChartHtml(series, {
+    unit: selectedPwsDisplayUnit,
+    granularity: selectedPwsGranularity,
+  });
+
+  if (list) {
+    list.innerHTML = weightRenderer.buildLogListHtml(points, selectedPwsDisplayUnit);
+  }
+}
+
+function savePetWeightFromForm(event) {
+  event.preventDefault();
+  const pet = getCurrentPet();
+  if (!pet) return false;
+
+  const date = document.getElementById("pws-record-date")?.value || "";
+  const weight = document.getElementById("pws-weight-value")?.value || "";
+  const result = weightController.addLog(pet, {
+    date,
+    weight,
+    unit: selectedPwsFormUnit,
+  });
+
+  if (!result.ok) {
+    if (result.reason === "needDate") showToast(t("toastPetWeightNeedDate"));
+    else showToast(t("toastPetWeightNeedWeight"));
+    return false;
+  }
+
+  schedulePetsGraphPersist();
+  renderPetWeightScale(pet);
+  showToast(t("toastPetWeightSaved"));
+  document.getElementById("pet-weight-log-form")?.reset();
+  paintPwsFormUnitChips();
+  syncDateProxies();
+  return true;
+}
+
+function wirePetWeightScale() {
+  document.getElementById("pws-granularity-chips")?.addEventListener("click", (event) => {
+    const chip = event.target.closest("[data-pws-granularity]");
+    if (!chip) return;
+    selectedPwsGranularity = chip.dataset.pwsGranularity || "year";
+    if (selectedPwsGranularity === "year") {
+      selectedPwsFocus = { year: null, month: null };
+    } else if (selectedPwsGranularity === "month") {
+      selectedPwsFocus = { ...selectedPwsFocus, month: null };
+    }
+    renderPetWeightScale(getCurrentPet());
+  });
+
+  document.getElementById("pws-display-unit-chips")?.addEventListener("click", (event) => {
+    const chip = event.target.closest("[data-pws-display-unit]");
+    if (!chip) return;
+    selectedPwsDisplayUnit = chip.dataset.pwsDisplayUnit === "lb" ? "lb" : "kg";
+    try {
+      localStorage.setItem(PWS_UNIT_STORAGE_KEY, selectedPwsDisplayUnit);
+    } catch {
+      /* ignore */
+    }
+    renderPetWeightScale(getCurrentPet());
+  });
+
+  document.getElementById("pws-form-unit-chips")?.addEventListener("click", (event) => {
+    const chip = event.target.closest("[data-pws-form-unit]");
+    if (!chip) return;
+    selectedPwsFormUnit = chip.dataset.pwsFormUnit === "lb" ? "lb" : "kg";
+    paintPwsFormUnitChips();
+  });
+
+  document.getElementById("pet-weight-log-form")?.addEventListener("submit", savePetWeightFromForm);
+
+  document.getElementById("pws-chart-wrap")?.addEventListener("click", (event) => {
+    const target = event.target.closest("[data-pws-drill-year]");
+    if (!target) return;
+    const year = Number(target.dataset.pwsDrillYear);
+    const month = Number(target.dataset.pwsDrillMonth);
+    if (!Number.isFinite(year)) return;
+
+    if (selectedPwsGranularity === "year") {
+      selectedPwsGranularity = "month";
+      selectedPwsFocus = { year, month: null };
+    } else if (selectedPwsGranularity === "month" && Number.isFinite(month)) {
+      selectedPwsGranularity = "day";
+      selectedPwsFocus = { year, month };
+    } else {
+      return;
+    }
+    renderPetWeightScale(getCurrentPet());
+  });
+
+  document.getElementById("pws-log-list")?.addEventListener("click", (event) => {
+    const btn = event.target.closest("[data-pws-remove]");
+    if (!btn) return;
+    const pet = getCurrentPet();
+    if (!pet) return;
+    const id = btn.getAttribute("data-pws-remove");
+    const result = weightController.removeLog(pet, id);
+    if (!result.ok) return;
+    schedulePetsGraphPersist();
+    renderPetWeightScale(pet);
+    showToast(t("toastPetWeightRemoved"));
+  });
+}
+
 function renderPetHeader(pet) {
   petCurrentEl.classList.remove("is-updating");
   void petCurrentEl.offsetWidth;
@@ -2146,8 +2344,8 @@ function renderPetHeader(pet) {
 
 function syncAlertNavTone(alerts) {
   const highest = highestAlertSeverity(alerts);
-  const nav = document.querySelector(".e-nav-alerts");
-  [alertCountBtn, nav].forEach((el) => {
+  const navs = document.querySelectorAll(".e-nav-alerts");
+  [alertCountBtn, ...navs].forEach((el) => {
     if (!el) return;
     el.classList.toggle("is-critical", highest === "critical");
     el.classList.toggle("is-caution", highest === "caution");
@@ -2493,6 +2691,17 @@ renderCoordinator.register("emergency", "emergencyLabNav", (pet) => {
 });
 renderCoordinator.register("emergency", "emergencyImagingNav", (pet) => {
   if (pet) renderEmergencyImagingNav(pet);
+});
+renderCoordinator.register("feature-buttons", "featureHubNav", (pet) => {
+  if (!pet) return;
+  renderEmergencyVaccineNav(pet);
+  renderAlertBadge(pet);
+  renderEmergencyLabNav(pet);
+  renderEmergencyImagingNav(pet);
+});
+renderCoordinator.register("pet-weight-scale", "petWeightScale", (pet) => {
+  paintPetWeightScaleHead(pet);
+  renderPetWeightScale(pet);
 });
 renderCoordinator.register(
   "labs",
@@ -3200,8 +3409,20 @@ function go(screen, options = {}) {
     screen = "intro";
     options = { ...options, replace: true };
   }
+  if (
+    !DEMO_MODE &&
+    screen !== "intro" &&
+    PetLiveWeb.shell.isLegalConsentGranted &&
+    !PetLiveWeb.shell.isLegalConsentGranted(document)
+  ) {
+    showIntroSurface(false);
+    PetLiveWeb.shell.promptLegalConsent?.(document);
+    showToast(t("legalConsentRequired"));
+    return false;
+  }
   const needsPet = [
     "emergency",
+    "feature-buttons",
     "add-visit",
     "timeline",
     "alerts",
@@ -3221,10 +3442,14 @@ function go(screen, options = {}) {
   closeAppNavMenu();
   closeAccountMenu();
   const changed = shellNavigation.go(screen, options);
-  if (!changed) return false;
+  if (!changed) {
+    paintGlassDock({ animateJump: false });
+    return false;
+  }
   // Instant jump — smooth scroll made every screen change feel delayed on phone.
   resetPageScroll();
   resetViewportZoom();
+  paintGlassDock({ animateJump: true });
   return true;
 }
 
@@ -3239,11 +3464,43 @@ function goBack() {
     resetPageScroll();
     resetViewportZoom();
   }
+  paintGlassDock({ animateJump: Boolean(changed) });
   return changed;
 }
 
 function clearNavigationHistory() {
   shellNavigation.clearHistory();
+}
+
+/** Bottom glass dock — shell brain; facade only wires active screen. */
+let glassDockApi = null;
+
+function paintGlassDock({ animateJump } = {}) {
+  if (glassDockApi?.paint) {
+    glassDockApi.paint(Boolean(animateJump));
+    return;
+  }
+  PetLiveWeb.shell.paintGlassDock?.(document, {
+    getActiveScreen: () =>
+      app.querySelector(".screen.is-active")?.dataset.screen || "home",
+    animateJump: Boolean(animateJump),
+    hideOnScreens: ["home", "intro"],
+  });
+}
+
+function initGlassDock() {
+  glassDockApi = PetLiveWeb.shell.initGlassDock(document, {
+    win: window,
+    getActiveScreen: () =>
+      app.querySelector(".screen.is-active")?.dataset.screen || "home",
+    hideOnScreens: ["home", "intro"],
+    passportGo: "emergency",
+    startHidden: false,
+    onGo: (screen) => go(screen),
+    onMounted: () => {
+      if (typeof applyI18n === "function") applyI18n();
+    },
+  });
 }
 
 function glassChromeNavAccountMarkup() {
@@ -3267,6 +3524,23 @@ function enhanceGlassScreenHeads() {
       }
       head.insertAdjacentHTML("beforeend", glassChromeActionsMarkup());
     });
+  PetLiveWeb.shell.ensureScreenHomeBtns?.(document, {
+    onGo: (screen) => go(screen),
+  });
+  PetLiveWeb.shell.ensureFeatureHub?.(document, {
+    onGo: (screen) => go(screen),
+    onMounted: () => {
+      wireFeatureHubVaxHelp();
+      const pet = getCurrentPet();
+      if (pet) {
+        renderEmergencyVaccineNav(pet);
+        renderAlertBadge(pet);
+        renderEmergencyLabNav(pet);
+        renderEmergencyImagingNav(pet);
+      }
+    },
+  });
+  if (typeof applyI18n === "function") applyI18n();
 }
 
 function syncAppNavBtnIcons(open) {
@@ -3324,6 +3598,25 @@ document.querySelectorAll("[data-go]").forEach((btn) => {
   }
 });
 
+
+function wireFeatureHubVaxHelp() {
+  const helpBtn = document.getElementById("fh-vax-help");
+  const pop = document.getElementById("fh-vax-help-pop");
+  if (!helpBtn || !pop || helpBtn.getAttribute("data-vax-help-wired") === "1") return;
+  helpBtn.setAttribute("data-vax-help-wired", "1");
+  helpBtn.addEventListener("click", (event) => {
+    event.preventDefault();
+    event.stopPropagation();
+    const willOpen = Boolean(pop.hidden);
+    pop.hidden = !willOpen;
+    helpBtn.setAttribute("aria-expanded", willOpen ? "true" : "false");
+    if (willOpen) setVaxHelpOpen(false);
+  });
+  pop.addEventListener("click", (event) => {
+    event.stopPropagation();
+  });
+}
+
 function setVaxHelpOpen(open) {
   const helpBtn = document.getElementById("e-vax-help");
   const pop = document.getElementById("e-vax-help-pop");
@@ -3344,8 +3637,12 @@ document.getElementById("e-vax-help-pop")?.addEventListener("click", (event) => 
 });
 
 document.addEventListener("click", (event) => {
-  if (event.target.closest("#e-vax-help, #e-vax-help-pop")) return;
+  if (event.target.closest("#e-vax-help, #e-vax-help-pop, #fh-vax-help, #fh-vax-help-pop")) return;
   setVaxHelpOpen(false);
+  const fhHelp = document.getElementById("fh-vax-help");
+  const fhPop = document.getElementById("fh-vax-help-pop");
+  if (fhPop) fhPop.hidden = true;
+  if (fhHelp) fhHelp.setAttribute("aria-expanded", "false");
 });
 
 document.addEventListener("keydown", (event) => {
@@ -4132,6 +4429,13 @@ imagingRenderer = PetLiveWeb.domains.imaging.createRenderer({
   escapeHtml: escapeAlertHtml,
   visitClinicLabel,
   formatImagingTypes,
+});
+
+weightRenderer = PetLiveWeb.domains.weight.createRenderer({
+  label: (key, params) => t(key, params),
+  escapeHtml: escapeAlertHtml,
+  formatWeight: formatPetWeightDisplay,
+  locale: typeof getCurrentLang === "function" ? getCurrentLang() : "zh-Hant",
 });
 
 alertsRenderer = PetLiveWeb.domains.alerts.createRenderer({
@@ -5614,6 +5918,7 @@ window.onLanguageChange = () => {
         : selectedClinic
     );
   }
+  PetLiveWeb.shell.paintIntroStoryAria?.(document, t);
 };
 
 /* ---------- Intro + Google Drive backup ---------- */
@@ -6183,7 +6488,33 @@ function markIntroSeen() {
   }
 }
 
+function showIntroSurface(enterB) {
+  const intro = app.querySelector('[data-screen="intro"]');
+  const home = app.querySelector('[data-screen="home"]');
+  if (!intro || !home) return;
+  if (enterB) {
+    intro.classList.remove("is-active");
+    intro.hidden = true;
+    home.hidden = false;
+    home.classList.add("is-active");
+    markIntroSeen();
+  } else {
+    home.classList.remove("is-active");
+    home.hidden = true;
+    intro.hidden = false;
+    intro.classList.add("is-active");
+  }
+}
+
 function enterAppFromIntro() {
+  if (
+    PetLiveWeb.shell.isLegalConsentGranted &&
+    !PetLiveWeb.shell.isLegalConsentGranted(document)
+  ) {
+    PetLiveWeb.shell.promptLegalConsent?.(document);
+    showToast(t("legalConsentRequired"));
+    return;
+  }
   markIntroSeen();
   go("home", { replace: true });
 }
@@ -6199,10 +6530,11 @@ function initIntroAndCloud() {
         googleDriveAuth?.signOut?.();
         lastCloudBackupAt = null;
         setIntroStatus("");
+        showIntroSurface(false);
         paintCloudChrome();
         showToast(t("logout"));
-        const introEl = app.querySelector('[data-screen="intro"]');
-        if (introEl) go("intro", { replace: true });
+        clearNavigationHistory();
+        go("intro", { replace: true });
       })
       .catch(() => {
         paintCloudChrome();
@@ -6219,8 +6551,8 @@ function initIntroAndCloud() {
       PetLiveWeb.shell.isLegalConsentGranted &&
       !PetLiveWeb.shell.isLegalConsentGranted(document)
     ) {
+      PetLiveWeb.shell.promptLegalConsent?.(document);
       showToast(t("legalConsentRequired"));
-      document.getElementById("intro-legal-consent-cb")?.focus?.();
       return;
     }
     if (supabaseAuth?.isConfigured?.()) {
@@ -6239,26 +6571,19 @@ function initIntroAndCloud() {
     handleGoogleSignIn({ enterApp: true });
   }
 
-  function showSurface(enterB) {
-    const intro = app.querySelector('[data-screen="intro"]');
-    const home = app.querySelector('[data-screen="home"]');
-    if (!intro || !home) return;
-    if (enterB) {
-      intro.classList.remove("is-active");
-      intro.hidden = true;
-      home.hidden = false;
-      home.classList.add("is-active");
-      markIntroSeen();
-    } else {
-      home.classList.remove("is-active");
-      home.hidden = true;
-      intro.hidden = false;
-      intro.classList.add("is-active");
-    }
-  }
+  PetLiveWeb.shell.mountLegalConsentModal?.(document);
+  applyI18n();
+  PetLiveWeb.shell.initIntroStories?.(document, window, { t });
 
   PetLiveWeb.shell.bindLegalConsent(document, {
     onPaint: paintCloudChrome,
+    onAccepted: () => {
+      if (livePassportSignedIn()) {
+        enterAppFromIntro();
+        return;
+      }
+      startWithGoogleOrEnter();
+    },
   });
 
   PetLiveWeb.shell.bindIntroCloudListeners(document, window, {
@@ -6339,13 +6664,22 @@ function initIntroAndCloud() {
         params.get("screen") === "home";
 
       if (forceApp) {
-        showSurface(true);
+        showIntroSurface(true);
         paintCloudChrome();
         return;
       }
 
       if (livePassportSignedIn()) {
-        showSurface(true);
+        if (
+          PetLiveWeb.shell.isLegalConsentGranted &&
+          !PetLiveWeb.shell.isLegalConsentGranted(document)
+        ) {
+          showIntroSurface(false);
+          paintCloudChrome();
+          PetLiveWeb.shell.promptLegalConsent?.(document);
+          return;
+        }
+        showIntroSurface(true);
         paintCloudChrome();
         if (!DEMO_MODE && googleDriveAuth?.getSession?.().signedIn) {
           reconcileCloudOnBoot({ silent: true, skipAutoPull: FRESH_BOOT });
@@ -6353,10 +6687,10 @@ function initIntroAndCloud() {
         return;
       }
 
-      showSurface(false);
+      showIntroSurface(false);
       paintCloudChrome();
     } catch {
-      showSurface(false);
+      showIntroSurface(false);
       paintCloudChrome();
     }
   })();
@@ -6614,7 +6948,9 @@ setMedUnitChip("unrecorded");
 setMedFreqChip("unrecorded");
 enhanceGlassScreenHeads();
 applyI18n();
+initGlassDock();
 initAppNavMenu();
+wirePetWeightScale();
 initIntroAndCloud();
 initDemoMode();
 

@@ -1,5 +1,5 @@
 /* =========================================================
-   PETLIVE · PET HEALTH PASSPORT — Formal B stylesheet
+   PETLIVE · PET HEALTH PASSPORT — Formal B stylesheet (C cover)
    UI SYSTEM v2 · Mobile First / Local First · Zero-build
    Single file (no bundler). Morandi sage / beige / milktea.
    =========================================================
@@ -126,13 +126,11 @@ html {
   min-height: 100%;
   background: #f4f1ea;
   -webkit-text-size-adjust: 100%;
-  overflow-x: clip;
 }
 
 body {
   min-height: 100vh;
   margin: 0;
-  overflow-x: clip;
 
   font-family:
     "Noto Sans TC",
@@ -265,15 +263,11 @@ ol {
   width: min(100%, var(--content-max));
   min-height: 100vh;
   margin: 0 auto;
-  overflow-x: clip;
-  max-width: 100%;
 }
 
 .screen {
   width: 100%;
-  max-width: 100%;
   min-height: 100vh;
-  overflow-x: clip;
   padding:
     max(18px, env(safe-area-inset-top))
     var(--screen-padding)
@@ -510,20 +504,6 @@ h4 {
   display: block;
 }
 
-.intro-login-label {
-  white-space: nowrap;
-}
-
-@media (max-width: 420px) {
-  .intro-login-label {
-    display: none;
-  }
-
-  .intro-login-btn {
-    padding: 0 10px;
-  }
-}
-
 .intro-login-btn[hidden] {
   display: none !important;
 }
@@ -575,7 +555,7 @@ h4 {
 }
 
 .intro-lede {
-  margin: 12px 0 18px;
+  margin: 12px 0 22px;
   max-width: 36em;
 }
 
@@ -610,7 +590,8 @@ h4 {
   .intro-mascot {
     width: min(120px, 40vw);
     justify-self: end;
-    margin-top: -40px;
+    margin-top: 0;
+    margin-bottom: 0;
   }
 }
 
@@ -1636,21 +1617,16 @@ html[lang="ko"] .hero-intro .brand-zh {
   gap: 17px;
 
   width: 100%;
-  max-width: 100%;
-  min-width: 0;
-  overflow-x: clip;
 }
 
 .field,
 .chip-field {
   min-width: 0;
-  max-width: 100%;
 }
 
 .field {
   display: grid;
   gap: 7px;
-  overflow-x: clip;
 }
 
 .field > span,
@@ -1707,7 +1683,6 @@ select:focus {
   gap: 11px;
   width: 100%;
   min-width: 0;
-  overflow-x: clip;
 }
 
 /* Unified control height inside add-pet / vaccine / parasite date pairs */
@@ -1745,19 +1720,6 @@ input[type="week"] {
   min-width: 0;
   max-width: 100%;
   box-sizing: border-box;
-  /* Kill WebKit’s default ~200–280px floor so fields stay inside .form */
-  -webkit-min-logical-width: 0;
-}
-
-/* Half-column rows: force date inputs to shrink past WebKit min-content */
-.field-row input[type="date"],
-.field-row input[type="time"],
-.field-row input[type="month"] {
-  width: 0;
-  min-width: 100%;
-  max-width: 100%;
-  padding-inline: 8px;
-  overflow: hidden;
 }
 
 /*
@@ -1822,22 +1784,6 @@ input[type="week"] {
   box-shadow:
     inset 0 0 0 1px #8fb5a0,
     0 0 0 4px rgba(61, 107, 87, 0.08);
-}
-
-input[type="date"]::-webkit-datetime-edit,
-input[type="time"]::-webkit-datetime-edit,
-input[type="datetime-local"]::-webkit-datetime-edit,
-input[type="month"]::-webkit-datetime-edit,
-input[type="week"]::-webkit-datetime-edit {
-  min-width: 0;
-  max-width: 100%;
-  overflow: hidden;
-}
-
-input[type="date"]::-webkit-calendar-picker-indicator,
-input[type="month"]::-webkit-calendar-picker-indicator {
-  flex-shrink: 0;
-  margin-inline-start: 2px;
 }
 
 #alert-since-field,
@@ -2109,6 +2055,7 @@ input[type="month"]::-webkit-calendar-picker-indicator {
   line-height: 1.4;
   color: var(--text-muted);
 }
+
 
 .breed-results .breed-results-empty {
   margin: 0;
@@ -2494,7 +2441,7 @@ input[type="month"]::-webkit-calendar-picker-indicator {
 /* ---------------------------------------------------------
    17. STAMP LANGUAGE
    Legacy .source-stamp / .owner-stamp / .clinic-stamp removed
-   (unused in B HTML + JS; evidence in proposal notes).
+   (unused in C HTML + JS; evidence in proposal notes).
    --------------------------------------------------------- */
 
 /* ---------------------------------------------------------
@@ -2509,6 +2456,14 @@ input[type="month"]::-webkit-calendar-picker-indicator {
   border-radius: 0 var(--r-sm) var(--r-sm) 0;
   background: color-mix(in srgb, var(--paper) 70%, var(--leaf-pale));
   color: var(--text-muted);
+  line-height: 1.55;
+}
+
+.alert-disclaimer-vet {
+  display: inline-block;
+  margin-top: 2px;
+  color: var(--alert, #c23b3b);
+  font-weight: 600;
 }
 
 .alert-form {
@@ -2701,7 +2656,6 @@ input[type="month"]::-webkit-calendar-picker-indicator {
   border-radius: 18px;
   max-width: 100%;
   min-width: 0;
-  overflow-x: clip;
   background:
     linear-gradient(
       160deg,
@@ -2854,27 +2808,6 @@ input[type="month"]::-webkit-calendar-picker-indicator {
 .parasite-cal-chooser-providers .btn {
   width: 100%;
   min-width: 0;
-}
-
-.parasite-cal-chooser-providers .parasite-cal-apple-btn,
-.parasite-cal-chooser-providers .parasite-cal-google-btn {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-}
-
-.parasite-cal-apple-g,
-.parasite-cal-google-g {
-  display: inline-flex;
-  width: 18px;
-  height: 18px;
-  flex: 0 0 auto;
-}
-
-.parasite-cal-apple-g svg,
-.parasite-cal-google-g svg {
-  display: block;
 }
 
 /* ---------------------------------------------------------
@@ -3509,6 +3442,7 @@ button.tl-med-summary.is-open {
   border-bottom: 0;
 }
 
+
 /* ---------------------------------------------------------
    21. PASSPORT PLATE WASH
    Opaque paper field (no alpha bleed through body).
@@ -3548,7 +3482,7 @@ button.tl-med-summary.is-open {
   position: relative;
   z-index: 12;
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: repeat(2, 1fr);
   gap: 8px;
 
   margin: 14px 0 0;
@@ -3590,6 +3524,18 @@ button.tl-med-summary.is-open {
 .e-vax-nav {
   overflow: visible;
   z-index: 1;
+}
+
+/* Inside passport card: between alerts and current meds */
+#e-card > .e-vax-nav {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 2px;
+  width: 100%;
+  box-sizing: border-box;
+  margin: 4px 0 2px;
+  cursor: pointer;
 }
 
 /* Keep legend above emergency card (card transform creates its own stack) */
@@ -3640,7 +3586,8 @@ button.tl-med-summary.is-open {
   color: var(--text-strong);
 }
 
-.e-quick-nav small {
+.e-quick-nav small,
+.e-vax-nav > small {
   display: block;
 
   margin-top: 2px;
@@ -3738,7 +3685,7 @@ button.tl-med-summary.is-open {
 
 .e-card-top {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) auto;
+  grid-template-columns: 1fr auto;
   gap: 14px;
 
   padding-bottom: 16px;
@@ -3746,13 +3693,8 @@ button.tl-med-summary.is-open {
   border-bottom: 1px solid #e2ddd4;
 }
 
-.e-card-top-main {
-  min-width: 0;
-}
-
 .e-brand {
-  margin: 0 0 7px;
-  min-width: 0;
+  margin-bottom: 7px;
 
   font-family: "Noto Serif TC", serif;
   font-size: 12px;
@@ -3763,7 +3705,7 @@ button.tl-med-summary.is-open {
 
 .e-name-row {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   gap: 7px;
   min-width: 0;
 }
@@ -3780,10 +3722,27 @@ button.tl-med-summary.is-open {
   color: var(--text-strong);
 }
 
+.e-name-aside {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 6px;
+  margin-left: auto;
+  flex: 0 1 auto;
+  min-width: 0;
+}
+
+.e-copy-summary {
+  min-height: 34px;
+  padding: 6px 11px;
+  font-size: 0.8rem;
+}
+
 .e-pet-photo-edit {
   display: grid;
   place-items: center;
   flex: 0 0 auto;
+  margin-top: 5px;
 
   width: 27px;
   height: 27px;
@@ -3813,35 +3772,16 @@ button.tl-med-summary.is-open {
   margin-top: 2px;
 }
 
-/* EN meta lines: keep readable full words, force one line on the card */
-html[lang="en"] .e-card-top-main > .e-sub {
-  font-size: 0.82rem;
-  letter-spacing: -0.015em;
-  white-space: nowrap;
-}
-
-.e-name-row .e-chip-meta {
-  margin: 0 0 0 auto;
-  flex: 0 1 auto;
-  min-width: 0;
-  padding-bottom: 0;
-  font-size: 0.78rem;
-  font-weight: 500;
-  font-style: italic;
-  line-height: 1.25;
-  letter-spacing: 0.01em;
-  text-align: right;
-  color: var(--text-muted);
-}
-
 .e-chip-meta {
   margin: 0;
   min-width: 0;
+  padding-bottom: 2px;
   font-size: 0.78rem;
   font-weight: 500;
   font-style: italic;
-  line-height: 1.25;
+  line-height: 1;
   letter-spacing: 0.01em;
+  text-align: right;
   color: var(--text-muted);
 }
 
@@ -4342,9 +4282,21 @@ html[lang="en"] .e-owner-k::after {
   min-width: 0;
 }
 
+.e-vaccine-label > .e-vax-title,
 .e-vaccine-label > span:first-child {
   flex: 0 0 auto;
   white-space: nowrap;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--text-strong);
+}
+
+.e-vax-note {
+  margin: 2px 0 0;
+  font-size: 11px;
+  font-weight: 500;
+  line-height: 1.35;
+  color: var(--text-muted);
 }
 
 .e-quick-nav .e-vax-lights,
@@ -4758,8 +4710,10 @@ html[lang="en"] .e-owner-k::after {
   isolation: isolate;
 
   right: max(16px, env(safe-area-inset-right));
+  /* Sit above the fixed glass dock when it is visible */
   bottom: max(18px, calc(18px + env(safe-area-inset-bottom)));
 }
+
 
 .lang-fab {
   display: grid;
@@ -4819,6 +4773,7 @@ html[lang="en"] .e-owner-k::after {
 .lang-menu button:hover {
   background: var(--leaf-pale);
 }
+
 
 /* ---------------------------------------------------------
    31. COMPLETION / STATES
@@ -5085,13 +5040,13 @@ html[lang="en"] .e-owner-k::after {
 
 /* =========================================================
    36. JS HOOK COMPAT
-   Purpose: keep B app.js / domain render class hooks working without
+   Purpose: keep C app.js / domain render class hooks working without
    HTML or JS renames. Prefer fixing ownership in §§6–35 later; until
    then, treat this tail as the live override layer for:
      • Legacy :root token aliases (--ink, --foam, --macaron-*, fonts…)
      • Pet picker / account chrome / parasite-vaccine status rows
      • Alert plates, emergency nav tones, timeline block language
-   Do not delete rules here without evidence against B HTML + JS.
+   Do not delete rules here without evidence against C HTML + JS.
    Compound/drug-notes visuals: see §20b (do not re-override).
    ========================================================= */
 
@@ -5362,6 +5317,7 @@ html.is-photo-crop-open body {
   background: color-mix(in srgb, var(--alert) 8%, rgba(255, 255, 255, 0.5));
 }
 
+/* Rainbow / settings (HTML uses glow span + SVG, not only ::before) */
 .settings-btn-ico {
   display: grid;
   place-items: center;
@@ -5947,7 +5903,7 @@ html.is-photo-crop-open body {
   flex-wrap: wrap;
   align-items: center;
   justify-content: flex-end;
-  gap: 4px 10px;
+  gap: 6px;
   flex-shrink: 0;
 }
 
@@ -5957,10 +5913,20 @@ html.is-photo-crop-open body {
   font-size: 0.82rem;
   font-weight: 700;
   color: var(--leaf-deep);
+  border: 1px solid rgba(120, 138, 128, 0.42);
+  background: rgba(255, 255, 255, 0.42);
+}
+
+.alert-section-add:hover,
+.alert-section-edit:hover {
+  background: rgba(61, 107, 87, 0.08);
+  border-color: rgba(100, 122, 110, 0.55);
 }
 
 .alert-section.is-editing .alert-section-edit {
-  color: var(--milktea);
+  color: var(--alert);
+  border-color: color-mix(in srgb, var(--alert) 45%, rgba(255, 255, 255, 0.5));
+  background: color-mix(in srgb, var(--alert) 8%, rgba(255, 255, 255, 0.5));
 }
 
 .alert-section.is-editing .alert-item-actions {
@@ -6055,7 +6021,7 @@ html.is-photo-crop-open body {
   color: var(--alert);
 }
 
-.e-quick-nav > .e-vax-nav.is-protected {
+.e-vax-nav.is-protected {
   background:
     linear-gradient(
       165deg,
@@ -6070,7 +6036,7 @@ html.is-photo-crop-open body {
     0 2px 6px rgba(50, 57, 53, 0.04);
 }
 
-.e-quick-nav > .e-vax-nav.is-approaching {
+.e-vax-nav.is-approaching {
   background:
     linear-gradient(
       165deg,
@@ -6085,7 +6051,7 @@ html.is-photo-crop-open body {
     0 2px 6px rgba(50, 57, 53, 0.04);
 }
 
-.e-quick-nav > .e-vax-nav.is-expired {
+.e-vax-nav.is-expired {
   background:
     linear-gradient(
       165deg,
@@ -6100,17 +6066,20 @@ html.is-photo-crop-open body {
     0 2px 6px rgba(50, 57, 53, 0.05);
 }
 
-.e-quick-nav small.e-nav-protected {
+.e-quick-nav small.e-nav-protected,
+.e-vax-nav small.e-nav-protected {
   color: var(--safe);
   font-weight: 600;
 }
 
-.e-quick-nav small.e-nav-approaching {
+.e-quick-nav small.e-nav-approaching,
+.e-vax-nav small.e-nav-approaching {
   color: var(--attention);
   font-weight: 600;
 }
 
-.e-quick-nav small.e-nav-expired {
+.e-quick-nav small.e-nav-expired,
+.e-vax-nav small.e-nav-expired {
   color: color-mix(in srgb, var(--status-rose) 45%, var(--text));
   font-weight: 600;
 }
@@ -6191,6 +6160,259 @@ html.is-photo-crop-open body {
 .e-alert-source {
   font-size: 0.85em;
   color: var(--text-muted);
+}
+
+/* Pet weight scale — L-axis chart + manual log */
+.pet-weight-scale-body {
+  display: grid;
+  gap: 16px;
+  padding: 0 var(--screen-padding) 28px;
+}
+
+.pws-section-title {
+  margin: 0;
+  font-family: var(--font-serif);
+  font-size: 17px;
+  font-weight: 700;
+  color: var(--text);
+}
+
+.pws-head-row {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 10px;
+}
+
+.pws-focus {
+  margin: 0;
+  font-size: 13px;
+  color: var(--text-muted);
+}
+
+.pws-chart-section,
+.pws-form,
+.pws-list-section {
+  padding: 16px;
+  border-radius: 18px;
+  background: rgba(255, 253, 250, 0.78);
+  border: 1px solid rgba(47, 79, 66, 0.1);
+}
+
+.pws-toolbar {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px 12px;
+  margin-bottom: 12px;
+  align-items: start;
+}
+
+.pws-granularity-field,
+.pws-unit-field {
+  margin: 0;
+  padding: 0;
+  border: 0;
+  min-width: 0;
+}
+
+.pws-granularity-field legend,
+.pws-unit-field legend {
+  font-size: 13px;
+  color: var(--text-muted);
+  margin-bottom: 6px;
+}
+
+.pws-granularity-chips,
+.pws-unit-field .chips,
+.pws-form .chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.pws-granularity-chips .chip,
+.pws-unit-field .chip,
+.pws-form-unit-field .chip {
+  min-width: 0;
+  flex: 1 1 auto;
+}
+
+.pws-chart-wrap {
+  min-height: 200px;
+  border-radius: 14px;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.72), rgba(247, 244, 238, 0.55));
+  border: 1px solid rgba(47, 79, 66, 0.08);
+  padding: 8px 4px 4px;
+}
+
+.pws-chart {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+.pws-axis {
+  stroke: rgba(47, 79, 66, 0.35);
+  stroke-width: 1.5;
+}
+
+.pws-grid-line {
+  stroke: rgba(47, 79, 66, 0.08);
+  stroke-width: 1;
+}
+
+.pws-month-band {
+  fill: rgba(53, 95, 84, 0.05);
+}
+
+.pws-line {
+  fill: none;
+  stroke: rgba(53, 95, 84, 0.55);
+  stroke-width: 2;
+  stroke-linejoin: round;
+  stroke-linecap: round;
+}
+
+.pws-point {
+  stroke: #fff;
+  stroke-width: 1.5;
+}
+
+.pws-point.is-manual {
+  fill: #355f54;
+}
+
+.pws-point.is-visit {
+  fill: #3a5166;
+}
+
+.pws-point.is-profile {
+  fill: #8a5a2b;
+}
+
+.pws-point[data-pws-drill-year],
+.pws-drill-target[data-pws-drill-year] {
+  cursor: pointer;
+}
+
+.pws-axis-label {
+  fill: var(--text-muted);
+  font-size: 10px;
+}
+
+.pws-unit-tag {
+  fill: var(--text-muted);
+  font-size: 10px;
+  font-weight: 600;
+}
+
+.pws-chart-empty {
+  margin: 0;
+  padding: 48px 16px;
+  text-align: center;
+  color: var(--text-muted);
+  font-size: 14px;
+  line-height: 1.55;
+}
+
+.pws-form .pws-form-fields {
+  display: grid;
+  grid-template-columns: minmax(0, 1.15fr) minmax(0, 0.85fr) minmax(0, 1fr);
+  gap: 10px;
+  align-items: end;
+}
+
+.pws-form-unit-field {
+  margin: 0;
+  padding: 0;
+  border: 0;
+  min-width: 0;
+}
+
+.pws-form-unit-field legend {
+  font-size: 13px;
+  color: var(--text-muted);
+  margin-bottom: 6px;
+}
+
+.pws-form-unit-field .chips {
+  flex-wrap: nowrap;
+}
+
+.pws-form-unit-field .chip {
+  flex: 1 1 0;
+  min-width: 0;
+  padding-left: 10px;
+  padding-right: 10px;
+}
+
+.pws-list {
+  display: grid;
+  gap: 10px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.pws-item {
+  padding: 12px 14px;
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.72);
+  border: 1px solid rgba(47, 79, 66, 0.08);
+}
+
+.pws-item.is-manual {
+  border-left: 3px solid #355f54;
+}
+
+.pws-item.is-visit {
+  border-left: 3px solid #3a5166;
+}
+
+.pws-item.is-profile {
+  border-left: 3px solid #8a5a2b;
+}
+
+.pws-item-empty {
+  text-align: center;
+  border-style: dashed;
+}
+
+.pws-item-empty p {
+  margin: 0;
+  color: var(--text-muted);
+}
+
+.pws-item-head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.pws-item-source {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.pws-item-head time {
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+.pws-item-weight {
+  margin: 6px 0 0;
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--text);
+}
+
+.pws-item-remove {
+  margin-left: auto;
+  font-size: 12px;
+  padding: 4px 8px;
 }
 
 /* Timeline — same block language as .alert-section */
@@ -6989,9 +7211,6 @@ html.is-proof-lightbox-open body {
   .pet-switcher {
     padding: 14px 14px 16px;
     border-radius: 22px;
-    /* visible: overflow-x clip on this ancestor broke pet-picker touch pan on iOS */
-    overflow-x: visible;
-    overflow-y: visible;
     background:
       linear-gradient(
         155deg,
@@ -7299,7 +7518,7 @@ html.is-proof-lightbox-open body {
     font-size: 12.5px;
   }
 
-  .screen-head {
+.screen-head {
     position: sticky;
     top: 0;
     z-index: 8;
@@ -7359,12 +7578,6 @@ html.is-proof-lightbox-open body {
     font-size: 15px;
   }
 
-  html[lang="en"] .screen-emergency > .screen-head h2,
-  html[lang="ja"] .screen-emergency > .screen-head h2 {
-    font-size: 12px;
-    line-height: 1.1;
-  }
-
   /* Action btn + glass chrome: keep title on row 1, move btn-small to row 2 */
   .screen > .screen-head:has(> .btn-small) {
     flex-wrap: wrap;
@@ -7418,17 +7631,6 @@ html.is-proof-lightbox-open body {
     border-radius: 14px;
   }
 
-  .date-proxy {
-    min-height: var(--tap);
-    height: var(--tap);
-    border-radius: 14px;
-  }
-
-  .date-proxy-face {
-    min-height: 0;
-    height: 100%;
-  }
-
   .chip {
     min-height: 42px;
     padding: 9px 14px;
@@ -7439,7 +7641,7 @@ html.is-proof-lightbox-open body {
     grid-template-columns: 1fr;
   }
 
-  /* Pet form: keep gender/neuter and weight/date as side-by-side pairs */
+  /* Pet form: keep paired rows side-by-side on phone (match formal B / screenshot) */
   #pet-form .field-row,
   .screen[data-screen="add-pet"] .field-row {
     grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -7469,7 +7671,6 @@ html.is-proof-lightbox-open body {
     overflow-x: clip;
   }
 
-  /* Let focus ring on date-proxy paint outside the field clip */
   #pet-form .field-row .field:has(.date-proxy),
   .screen[data-screen="add-pet"] .field-row .field:has(.date-proxy),
   .vaccine-form .field-row .field:has(.date-proxy),
@@ -7511,6 +7712,17 @@ html.is-proof-lightbox-open body {
     box-sizing: border-box;
   }
 
+  .date-proxy {
+    min-height: var(--tap);
+    height: var(--tap);
+    border-radius: 14px;
+  }
+
+  .date-proxy-face {
+    min-height: 0;
+    height: 100%;
+  }
+
   .date-proxy-native {
     min-height: 0 !important;
     height: 100% !important;
@@ -7528,7 +7740,6 @@ html.is-proof-lightbox-open body {
     -webkit-min-logical-width: 0;
   }
 
-  /* Keep vaccine / parasite pairs side-by-side on phone */
   .vaccine-form .field-row,
   .screen[data-screen="vaccines"] .vaccine-form .field-row,
   .parasite-block .field-row,
@@ -7544,21 +7755,7 @@ html.is-proof-lightbox-open body {
     max-width: 100%;
   }
 
-  .form input[type="date"],
-  .form input[type="month"],
-  .form input[type="time"],
   .vaccine-form input[type="date"],
-  .screen[data-screen="add-visit"] input[type="date"],
-  .screen[data-screen="add-pet"] input[type="date"],
-  .screen[data-screen="labs"] input[type="date"],
-  .screen[data-screen="archive"] input[type="date"] {
-    width: 100%;
-    min-width: 0;
-    max-width: 100%;
-    box-sizing: border-box;
-    -webkit-min-logical-width: 0;
-  }
-
   .parasite-block .field-row input[type="number"],
   .parasite-block .field-row input[type="text"],
   .screen[data-screen="parasite"] .parasite-block .field-row input[type="number"],
@@ -7643,6 +7840,8 @@ html.is-proof-lightbox-open body {
     gap: 3px;
   }
 
+  html[lang="en"] .e-vaccine-label > .e-vax-title,
+  html[lang="ja"] .e-vaccine-label > .e-vax-title,
   html[lang="en"] .e-vaccine-label > span:first-child,
   html[lang="ja"] .e-vaccine-label > span:first-child {
     font-size: 11px;
@@ -7686,11 +7885,6 @@ html.is-proof-lightbox-open body {
   .e-pet-frame {
     width: 68px;
     height: 68px;
-  }
-
-  html[lang="en"] .e-card-top-main > .e-sub {
-    font-size: 0.78rem;
-    letter-spacing: -0.02em;
   }
 
   .e-block {
@@ -7846,9 +8040,6 @@ html.is-proof-lightbox-open body {
     padding: 16px 14px 18px;
     border: 1px solid var(--line);
     border-radius: 18px;
-    max-width: 100%;
-    min-width: 0;
-    overflow-x: clip;
     background:
       linear-gradient(
         160deg,
@@ -7909,6 +8100,7 @@ html.is-proof-lightbox-open body {
     bottom: max(14px, calc(14px + env(safe-area-inset-bottom)));
   }
 
+
   .lang-fab {
     width: 48px;
     height: 48px;
@@ -7918,6 +8110,42 @@ html.is-proof-lightbox-open body {
     bottom: calc(72px + env(safe-area-inset-bottom));
     font-size: 13px;
   }
+}
+
+/* =========================================================
+   38. C SURFACE LEFTOVERS
+   Former UI↔HTML dock rules were folded into §§18–24 / §36.
+   What remains is C-only chrome (not formal B):
+     • .surface-c-banner — discussion-surface pill
+     • #cloud-account-card — hide Drive account chrome on C
+   Do not re-append duplicate component overrides here.
+   ========================================================= */
+
+/* ---------- C discussion surface chrome ---------- */
+.surface-c-banner {
+  position: fixed;
+  top: max(8px, env(safe-area-inset-top, 0px));
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 80;
+  padding: 4px 10px;
+  border-radius: 999px;
+  border: 1px solid rgba(40, 36, 32, 0.14);
+  background: rgba(255, 252, 247, 0.92);
+  box-shadow: 0 1px 4px rgba(40, 36, 32, 0.08);
+  color: rgba(40, 36, 32, 0.72);
+  font-family: "Noto Sans TC", system-ui, sans-serif;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  line-height: 1.3;
+  pointer-events: none;
+  user-select: none;
+}
+
+/* Discussion surface: no Google Drive chrome */
+#cloud-account-card {
+  display: none !important;
 }
 
 /* =========================================================
