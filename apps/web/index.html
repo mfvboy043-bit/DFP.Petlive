@@ -11,11 +11,11 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,700&family=Noto+Sans+TC:wght@400;500;700&family=Noto+Serif+TC:wght@600;700&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="./styles.css?v=20260828-c-emergency-head" />
+  <link rel="stylesheet" href="./styles.css?v=20260829-pet-weight-scale-b" />
   <link rel="stylesheet" href="./shell/glass-dock.css?v=20260828-dock-smooth" />
   <link rel="stylesheet" href="./shell/screen-home-btn.css?v=20260827-screen-home-btn" />
   <link rel="stylesheet" href="./shell/feature-hub.css?v=20260827-vax-keep-card" />
-  <link rel="stylesheet" href="./shell/intro-stories.css?v=20260829-intro-stories-v3" />
+  <link rel="stylesheet" href="./shell/intro-stories.css?v=20260829-intro-stories-v4" />
   <link rel="stylesheet" href="./legal/legal.css?v=20260828-legal-v14" />
   <link rel="stylesheet" href="./shell/legal-consent-modal.css?v=20260829-legal-v17" />
 </head>
@@ -145,7 +145,7 @@
                 <ul class="story-list"><li>今天吃了什麼藥</li><li>打了什麼針</li></ul>
                 <p class="story-note">醫院如果不想寫名字，也可以不寫。</p>
                 <p>因為這張紙條<strong>不是用來找誰做錯事</strong>。<br />它只是上一位醫生，留給下一位醫生的一句話：</p>
-                <blockquote class="story-pull story-pull--closing"><p><strong>「我先照顧過牠了，<br />接下來，換你幫我照顧牠。」</strong></p></blockquote>
+                <blockquote class="story-pull story-pull--closing story-pull--oneliner"><p><strong>「我先照顧過牠了，接下來，換你幫我照顧牠。」</strong></p></blockquote>
               </div>
             </details>
           </article>
@@ -1790,6 +1790,117 @@
 
 
 
+    <!-- PET WEIGHT SCALE -->
+    <section
+      class="screen screen-pet-weight-scale"
+      data-screen="pet-weight-scale"
+      data-i18n-aria="petWeightScaleNav"
+      aria-label="寵物體重機"
+      hidden
+    >
+      <header class="screen-head light">
+        <button class="back" type="button" data-back data-i18n-aria="back" aria-label="返回">←</button>
+        <div>
+          <h2 data-i18n="petWeightScaleTitle">寵物體重機</h2>
+          <p id="pet-weight-scale-sub">米醬的體重紀錄</p>
+        </div>
+      </header>
+
+      <div class="pet-weight-scale-body" id="pet-weight-scale-body">
+        <section class="pws-chart-section" aria-labelledby="pws-chart-title">
+          <div class="pws-head-row">
+            <h3 class="pws-section-title" id="pws-chart-title" data-i18n="petWeightChartTitle">
+              體重趨勢
+            </h3>
+            <p class="pws-focus" id="pws-focus-label" hidden></p>
+          </div>
+          <div class="pws-toolbar">
+            <fieldset class="chip-field pws-granularity-field">
+              <legend data-i18n="petWeightGranularity">時間尺度</legend>
+              <div class="chips pws-granularity-chips" id="pws-granularity-chips">
+                <button type="button" class="chip is-on" data-pws-granularity="year" data-i18n="petWeightGranularityYear">
+                  年
+                </button>
+                <button type="button" class="chip" data-pws-granularity="month" data-i18n="petWeightGranularityMonth">
+                  月
+                </button>
+                <button type="button" class="chip" data-pws-granularity="day" data-i18n="petWeightGranularityDay">
+                  日
+                </button>
+              </div>
+            </fieldset>
+            <fieldset class="chip-field pws-unit-field">
+              <legend data-i18n="petWeightUnit">單位</legend>
+              <div class="chips" id="pws-display-unit-chips">
+                <button type="button" class="chip is-on" data-pws-display-unit="kg" data-i18n="petWeightUnitKg">
+                  公斤
+                </button>
+                <button type="button" class="chip" data-pws-display-unit="lb" data-i18n="petWeightUnitLb">
+                  磅
+                </button>
+              </div>
+            </fieldset>
+          </div>
+          <div class="pws-chart-wrap" id="pws-chart-wrap"></div>
+        </section>
+
+        <form class="form pws-form" id="pet-weight-log-form">
+          <h3 class="pws-section-title" data-i18n="petWeightAddTitle">新增體重紀錄</h3>
+          <div class="field-row pws-form-fields">
+            <label class="field">
+              <span data-i18n="petWeightRecordDate">記錄日期</span>
+              <span class="date-proxy">
+                <input
+                  type="text"
+                  class="date-proxy-face"
+                  readonly
+                  tabindex="-1"
+                  aria-hidden="true"
+                  placeholder="YYYY-MM-DD"
+                />
+                <input
+                  type="date"
+                  name="recordDate"
+                  id="pws-record-date"
+                  class="date-proxy-native"
+                  required
+                />
+              </span>
+            </label>
+            <label class="field">
+              <span data-i18n="petWeightValue">體重</span>
+              <input
+                type="number"
+                id="pws-weight-value"
+                name="weightValue"
+                min="0"
+                step="0.01"
+                inputmode="decimal"
+                required
+              />
+            </label>
+            <fieldset class="chip-field pws-form-unit-field">
+              <legend data-i18n="petWeightUnit">單位</legend>
+              <div class="chips" id="pws-form-unit-chips">
+                <button type="button" class="chip is-on" data-pws-form-unit="kg" data-i18n="petWeightUnitKg">
+                  公斤
+                </button>
+                <button type="button" class="chip" data-pws-form-unit="lb" data-i18n="petWeightUnitLb">
+                  磅
+                </button>
+              </div>
+            </fieldset>
+          </div>
+          <button type="submit" class="btn btn-primary" data-i18n="petWeightSave">儲存紀錄</button>
+        </form>
+
+        <section class="pws-list-section" aria-labelledby="pws-log-title">
+          <h3 class="pws-section-title" id="pws-log-title" data-i18n="petWeightLogTitle">紀錄列表</h3>
+          <ul class="pws-list" id="pws-log-list"></ul>
+        </section>
+      </div>
+    </section>
+
     <!-- FEATURE BUTTONS HUB -->
     <section class="screen screen-feature-buttons" data-screen="feature-buttons" data-i18n-aria="featureButtonsTitle" aria-label="功能按鈕" hidden>
       <header class="screen-head light">
@@ -1985,6 +2096,10 @@
         <span class="app-nav-item-label" data-i18n="featureButtonsTitle">功能按鈕</span>
         <span class="app-nav-item-hint" data-i18n="featureButtonsHint">常用功能捷徑</span>
       </button>
+      <button class="app-nav-item" type="button" role="menuitem" data-go="pet-weight-scale">
+        <span class="app-nav-item-label" data-i18n="petWeightScaleTitle">寵物體重機</span>
+        <span class="app-nav-item-hint" data-i18n="petWeightScaleNavHint">紀錄與追蹤體重</span>
+      </button>
 
     </div>
 
@@ -2100,7 +2215,7 @@
   <script defer src="./auth/google-drive.js?v=20260827-google-session"></script>
   <script type="module" src="./runtime/petlive.js?v=20260824-drug-seed-dedupe"></script>
   <script defer src="./runtime/safe-ui.js?v=20260812-local-first"></script>
-  <script defer src="./i18n.js?v=20260829-intro-stories-v3"></script>
+  <script defer src="./i18n.js?v=20260829-intro-stories-v4"></script>
   <script defer src="./breeds-database.js?v=20260825-breed-typeahead-adopt"></script>
   <script defer src="./domains/breed/selectors.js?v=20260827-small-brains"></script>
   <script defer src="./domains/breed/controller.js?v=20260827-tl-br-cover-b"></script>
@@ -2170,6 +2285,9 @@
   <script defer src="./domains/owner/controller.js?v=20260827-ow-st-cover"></script>
   <script defer src="./domains/cloud/selectors.js?v=20260827-cl-cover"></script>
   <script defer src="./domains/cloud/controller.js?v=20260827-modules-w4p1"></script>
-  <script defer src="./app.js?v=20260828-legal-v14"></script>
+  <script defer src="./domains/weight/selectors.js?v=20260829-pet-weight-scale"></script>
+  <script defer src="./domains/weight/controller.js?v=20260829-pet-weight-scale"></script>
+  <script defer src="./domains/weight/render.js?v=20260829-pet-weight-scale"></script>
+  <script defer src="./app.js?v=20260829-pet-weight-scale-b"></script>
 </body>
 </html>

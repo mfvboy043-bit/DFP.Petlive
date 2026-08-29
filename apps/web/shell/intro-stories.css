@@ -308,6 +308,21 @@
   margin-top: 2px;
 }
 
+.intro-story-body .story-pull--oneliner p,
+.intro-story-body .story-pull--oneliner strong {
+  font-size: clamp(10.5px, 2.85vw, 13px);
+  line-height: 1.42;
+  letter-spacing: -0.015em;
+}
+
+@media (min-width: 480px) {
+  .intro-story-body .story-pull--oneliner p,
+  .intro-story-body .story-pull--oneliner strong {
+    font-size: 13.5px;
+    letter-spacing: 0;
+  }
+}
+
 .intro-story-body hr.story-divider {
   margin: 4px 0;
   border: none;
