@@ -310,9 +310,9 @@
 
 .intro-story-body .story-pull--oneliner p,
 .intro-story-body .story-pull--oneliner strong {
-  font-size: clamp(10.5px, 2.85vw, 13px);
-  line-height: 1.42;
-  letter-spacing: -0.015em;
+  font-size: clamp(11px, 3.05vw, 13.5px);
+  line-height: 1.45;
+  letter-spacing: -0.01em;
 }
 
 @media (min-width: 480px) {
