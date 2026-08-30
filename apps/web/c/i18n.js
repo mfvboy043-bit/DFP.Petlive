@@ -3208,6 +3208,30 @@ function applyI18n() {
   });
 }
 
+function applyI18nInScope(root) {
+  if (!root || typeof root.querySelectorAll !== "function") return;
+  root.querySelectorAll("[data-i18n]").forEach((el) => {
+    const key = el.getAttribute("data-i18n");
+    if (key) el.textContent = t(key);
+  });
+  root.querySelectorAll("[data-i18n-html]").forEach((el) => {
+    const key = el.getAttribute("data-i18n-html");
+    if (key) el.innerHTML = t(key);
+  });
+  root.querySelectorAll("[data-i18n-placeholder]").forEach((el) => {
+    const key = el.getAttribute("data-i18n-placeholder");
+    if (key) el.setAttribute("placeholder", t(key));
+  });
+  root.querySelectorAll("[data-i18n-aria]").forEach((el) => {
+    const key = el.getAttribute("data-i18n-aria");
+    if (key) el.setAttribute("aria-label", t(key));
+  });
+  root.querySelectorAll("[data-i18n-title]").forEach((el) => {
+    const key = el.getAttribute("data-i18n-title");
+    if (key) el.setAttribute("title", t(key));
+  });
+}
+
 function setLanguage(lang) {
   if (!I18N[lang]) return;
   currentLang = lang;
@@ -3221,5 +3245,6 @@ function setLanguage(lang) {
 window.I18N = I18N;
 window.t = t;
 window.applyI18n = applyI18n;
+window.applyI18nInScope = applyI18nInScope;
 window.setLanguage = setLanguage;
 window.getCurrentLang = () => currentLang;

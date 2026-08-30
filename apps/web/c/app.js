@@ -2272,6 +2272,7 @@ function renderAllergyHelper(pet) {
   renderAllergyBrandResults(pet);
   renderAllergyPurchases(pet);
   paintAllergyCalcResult();
+  applyI18nInScope?.(document.querySelector('[data-screen="allergy-helper"]'));
 }
 
 function renderAllergyPurchases(pet) {
