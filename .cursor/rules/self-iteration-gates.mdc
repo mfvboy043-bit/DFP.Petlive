@@ -10,6 +10,8 @@ Two human gates are mandatory for product changes to `apps/web`, `contracts/`, o
 1. **Confirm before build** — After Planner proposal, stop. Do not edit mainline until Victor says confirm / 確認 / go build (or equivalent).
 2. **Confirm before merge** — After candidate_ready (reviews + Arbiter), stop. Do not merge until Victor says adopt / 採用.
 
+**Security constitution (always on, same tier as gates):** Every product change must comply with **`security.md`** and **security-constitution**. Auth, sync, storage, Drive, Supabase DB, or billing scope → read `security.md` before Gate A; run **security diff scan** on touched paths before Gate B. Never ship `service_role`, Client Secret, or billing authority to the browser.
+
 Between gates, AI may Builder → parallel Review → Arbiter → revise (max 3 iterations). AI must not choose *what* to build or *whether to adopt*.
 
 ## State
@@ -31,7 +33,7 @@ If halted at `max_iterations`: ask Victor to change the proposal, accept limits,
 
 ## Exceptions (no full loop)
 
-- Typos, comments, or explicitly requested tiny fixes Victor scoped in-chat.
+- Typos, comments, or explicitly requested tiny fixes Victor scoped in-chat — **except passport/shell work** (see **c-to-b-cover** Hotfix section: styles, passport `app.js` wiring, passport HTML, shell facade wiring are **never** tiny-fix on B).
 - Creating/updating Rules, Skills, Agents, or `proposals/` scaffolding itself.
 
 ## Roles

@@ -1,5 +1,18 @@
 # Petlive agents
 
+## Standing orders (always on)
+
+These rules apply to **every** session. Full text lives in `.cursor/rules/` unless noted.
+
+| Priority | Rule | Applies when |
+|----------|------|--------------|
+| 1 | **Self-iteration gates** — `self-iteration-gates.mdc` | Product changes to `apps/web`, `contracts/`, `packages/` |
+| 2 | **Security constitution** — `security-constitution.mdc` + **`security.md`** | **Always.** Mandatory read before auth, cloud sync, storage, Drive, Supabase DB, or billing. No change may violate invariants C/I/A/L. |
+| 3 | **Config secrets privacy** — `config-secrets-privacy.mdc` | Any config / Supabase / Google key work |
+| 4 | **C → B cover** — `c-to-b-cover.mdc` | Passport UI, shell, styles, facade wiring |
+| 5 | **Building blocks** — `web-building-blocks.mdc` | New product logic, chrome, domains, shell |
+| 6 | **Auto-publish Pages** — `auto-publish-pages.mdc` | Formal A/B deploy after confirmed cover |
+
 Product changes to `apps/web`, `contracts/`, or `packages/` use **Self-Iteration v2**:
 
 1. Read `.cursor/skills/petlive-orchestrator/SKILL.md`
@@ -18,7 +31,5 @@ Web product logic must follow **building blocks** (always-on rule `.cursor/rules
 3. Thin-wire facades + `index.html` script/link tags  
 
 Floating docks, glass chrome, account menus → `apps/web/shell/`. Pet record logic → `apps/web/domains/`.
-
-**Security:** Read `security.md` and follow `.cursor/rules/security-constitution.mdc` before auth, cloud sync, storage, Drive, or billing changes. Never ship secrets to the browser (see **config-secrets-privacy**).
 
 See `.cursor/SELF-ITERATION-V2.md`.
