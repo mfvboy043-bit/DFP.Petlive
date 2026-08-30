@@ -3451,6 +3451,7 @@ button.tl-med-summary.is-open {
 
 .screen-emergency,
 .screen[data-screen="timeline"],
+.screen[data-screen="allergy-helper"],
 .screen[data-screen="vaccines"],
 .screen[data-screen="alerts"],
 .screen[data-screen="parasite"],
@@ -6413,6 +6414,216 @@ html.is-photo-crop-open body {
   margin-left: auto;
   font-size: 12px;
   padding: 4px 8px;
+}
+
+/* Allergy helper — purchase log + unit-price calc */
+.allergy-helper-body {
+  display: grid;
+  gap: 16px;
+  padding: 0 var(--screen-padding) 28px;
+}
+
+.ah-section-title {
+  margin: 0 0 10px;
+  font-family: var(--font-serif);
+  font-size: 17px;
+  font-weight: 700;
+  color: var(--text);
+}
+
+.ah-calc,
+.ah-form,
+.ah-list-section {
+  padding: 14px 14px 16px;
+  border: 1px solid var(--line);
+  border-radius: var(--r-md);
+  background: color-mix(in srgb, #fff 92%, var(--paper-warm));
+  box-shadow:
+    0 1px 0 rgba(255, 255, 255, 0.85) inset,
+    0 4px 14px rgba(31, 46, 39, 0.04);
+}
+
+.ah-calc-grid,
+.ah-form-metrics {
+  display: grid;
+  gap: 10px;
+}
+
+.ah-calc-weight-row,
+.ah-calc-price-row,
+.ah-form-weight-row,
+.ah-form-price-row {
+  display: grid;
+  gap: 10px;
+  align-items: end;
+}
+
+.ah-calc-weight-row,
+.ah-form-weight-row {
+  grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr);
+}
+
+.ah-calc-price-row,
+.ah-form-price-row {
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1.1fr);
+}
+
+.ah-calc-inline {
+  margin: 0;
+  min-height: 50px;
+  display: flex;
+  align-items: center;
+  padding: 10px 12px;
+  border-radius: 12px;
+  background: rgba(127, 175, 160, 0.14);
+  color: var(--leaf-deep, #2f4f42);
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 1.4;
+}
+
+.ah-calc-inline[hidden] {
+  display: none !important;
+}
+
+.ah-unit-field {
+  margin: 0;
+  padding: 0;
+  border: 0;
+  min-width: 0;
+}
+
+.ah-unit-field legend,
+.ah-meat-field legend {
+  font-size: 13px;
+  color: var(--text-muted);
+  margin-bottom: 6px;
+}
+
+.ah-unit-field .chips,
+.ah-meat-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.ah-unit-field .chip {
+  flex: 1 1 0;
+  min-width: 0;
+}
+
+.ah-brand-results {
+  margin-top: 6px;
+}
+
+.ah-meat-field {
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+.ah-meat-custom-field {
+  margin-top: 10px;
+}
+
+.ah-item-meats {
+  margin: 4px 0;
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--text-muted);
+}
+
+.ah-form {
+  display: grid;
+  gap: 12px;
+}
+
+.ah-item-meta {
+  margin: 6px 0 0;
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--leaf-deep, #2f4f42);
+  font-weight: 500;
+}
+
+.ah-list {
+  display: grid;
+  gap: 10px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.ah-item {
+  padding: 12px 12px 12px 14px;
+  border: 1px solid var(--line);
+  border-radius: var(--r-sm);
+  background: rgba(255, 253, 250, 0.72);
+}
+
+.ah-item::before {
+  content: none;
+}
+
+.ah-item-empty {
+  border-style: dashed;
+  text-align: center;
+  color: var(--text-muted);
+}
+
+.ah-item-empty p {
+  margin: 0;
+  font-size: 14px;
+}
+
+.ah-item-head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.ah-item-kind {
+  display: inline-flex;
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: rgba(127, 175, 160, 0.18);
+  color: var(--leaf-deep, #2f4f42);
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.ah-item-head time {
+  margin-right: auto;
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+.ah-item-brand {
+  margin: 8px 0 4px;
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.ah-item-meta,
+.ah-item-perkg {
+  margin: 0;
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--text-muted);
+}
+
+.ah-item-perkg {
+  margin-top: 2px;
+  color: var(--leaf-deep, #2f4f42);
+  font-weight: 500;
+}
+
+.ah-item-remove {
+  margin-left: auto;
+  padding: 4px 8px;
+  font-size: 12px;
 }
 
 /* Timeline — same block language as .alert-section */

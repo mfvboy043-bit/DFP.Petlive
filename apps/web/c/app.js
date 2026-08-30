@@ -179,6 +179,8 @@ const archiveList = document.getElementById("archive-list");
 const archiveBtn = document.getElementById("archive-btn");
 const timelineSub = document.getElementById("timeline-sub");
 const timelineList = document.getElementById("timeline-list");
+const petWeightScaleSub = document.getElementById("pet-weight-scale-sub");
+const allergyHelperSub = document.getElementById("allergy-helper-sub");
 const alertList = document.getElementById("alert-list");
 const alertSections = document.getElementById("alert-sections");
 const alertForm = document.getElementById("alert-form");
@@ -193,6 +195,7 @@ let selectedAlertType = "drug_allergy";
 let selectedAlertSeverity = "critical";
 const vaccineList = document.getElementById("vaccine-list");
 const vaccineSub = document.getElementById("vaccine-sub");
+const eVaccineSub = document.getElementById("e-vaccine-sub");
 const vaccineForm = document.getElementById("vaccine-form");
 const vaccineChipsEl = document.getElementById("vaccine-chips");
 const vaccineCustomName = document.getElementById("vaccine-custom-name");
@@ -808,6 +811,26 @@ const parasiteLabels = PetLiveWeb.domains.parasite.createLabels({
   label: (key, params) => t(key, params),
 });
 
+const allergyController = PetLiveWeb.domains.allergy.createController();
+const selectedAllergyMeats = new Set();
+let selectedAllergyCalcUnit = "kg";
+let selectedAllergyFormUnit = "kg";
+
+const weightController = PetLiveWeb.domains.weight.createController();
+const PWS_UNIT_STORAGE_KEY = "petlive-c-weight-display-unit";
+let selectedPwsGranularity = "year";
+let selectedPwsFocus = { year: null, month: null };
+let selectedPwsDisplayUnit = (() => {
+  try {
+    const stored = localStorage.getItem(PWS_UNIT_STORAGE_KEY);
+    return stored === "lb" ? "lb" : "kg";
+  } catch {
+    return "kg";
+  }
+})();
+let selectedPwsFormUnit = "kg";
+let weightRenderer;
+
 const PARASITE_APPROACHING_DAYS = parasiteController.APPROACHING_DAYS;
 const PARASITE_KINDS = parasiteController.KINDS;
 const PARASITE_PRODUCT_CATALOG = parasiteController.PRODUCT_CATALOG;
@@ -1263,38 +1286,45 @@ function renderVaccineList(pet) {
   vaccineList.innerHTML = vaccineRenderer.buildVaccineListHtml(pet, pet.vaccines);
 }
 
-function syncVaccineNavLights(status) {
-  const lights = document.getElementById("e-vax-lights");
-  if (!lights) return;
+function syncVaccineNavLights(status, lightsEl) {
   const titleByStatus = {
     protected: t("vaxLightGreen"),
     approaching: t("vaxLightOrange"),
     expired: t("vaxLightRed"),
   };
-  lights.querySelectorAll(".e-vax-dot").forEach((dot) => {
-    const key = dot.dataset.status;
-    const on = status && key === status;
-    dot.classList.toggle("is-on", Boolean(on));
-    if (titleByStatus[key]) dot.title = titleByStatus[key];
+  const targets = lightsEl
+    ? [lightsEl]
+    : Array.from(document.querySelectorAll(".e-vax-lights"));
+  targets.forEach((lights) => {
+    if (!lights) return;
+    lights.querySelectorAll(".e-vax-dot").forEach((dot) => {
+      const key = dot.dataset.status;
+      const on = status && key === status;
+      dot.classList.toggle("is-on", Boolean(on));
+      if (titleByStatus[key]) dot.title = titleByStatus[key];
+    });
+    lights.setAttribute(
+      "aria-label",
+      status ? titleByStatus[status] : t("noVaccineNext")
+    );
   });
-  lights.setAttribute(
-    "aria-label",
-    status ? titleByStatus[status] : t("noVaccineNext")
-  );
 }
 
 function renderEmergencyVaccineNav(pet) {
-  const nextEl = document.getElementById("e-vaccine-next");
-  const vaccineBtn = document.getElementById("e-vaccine-btn");
-  if (!nextEl || !vaccineBtn) return;
-
-  vaccineBtn.classList.remove("is-protected", "is-approaching", "is-expired");
-
   const presentation = vaccineRenderer.buildEmergencyNavPresentation(getNextVaccine(pet));
-  nextEl.textContent = presentation.nextText;
-  nextEl.className = presentation.nextClassName;
-  vaccineBtn.classList.add(presentation.btnClass);
-  syncVaccineNavLights(presentation.lightStatus);
+  document.querySelectorAll('.e-vax-nav[data-go="vaccines"]').forEach((vaccineBtn) => {
+    vaccineBtn.classList.remove("is-protected", "is-approaching", "is-expired");
+    const nextEl = vaccineBtn.querySelector("#e-vaccine-next, #fh-vaccine-next");
+    if (nextEl) {
+      const keepId = nextEl.id;
+      nextEl.textContent = presentation.nextText;
+      nextEl.className = presentation.nextClassName || "";
+      if (keepId) nextEl.id = keepId;
+    }
+    vaccineBtn.classList.add(presentation.btnClass);
+    const lights = vaccineBtn.querySelector(".e-vax-lights");
+    if (lights) syncVaccineNavLights(presentation.lightStatus, lights);
+  });
 }
 
 function renderVaccines(pet) {
@@ -1933,6 +1963,443 @@ function safeRender(sectionName, fn, onError) {
   }
 }
 
+function paintPetWeightScaleHead(pet) {
+  if (!petWeightScaleSub) return;
+  if (!pet) {
+    petWeightScaleSub.textContent = t("petWeightScaleSub", { name: "—" });
+    return;
+  }
+  petWeightScaleSub.textContent = t("petWeightScaleSub", { name: pet.name || "—" });
+}
+
+function formatPetWeightDisplay(weightKg, unit) {
+  return PetLiveWeb.domains.weight.formatWeight(weightKg, unit);
+}
+
+function paintPwsGranularityChips() {
+  document.querySelectorAll("#pws-granularity-chips .chip").forEach((chip) => {
+    chip.classList.toggle(
+      "is-on",
+      chip.dataset.pwsGranularity === selectedPwsGranularity
+    );
+  });
+}
+
+function paintPwsDisplayUnitChips() {
+  document.querySelectorAll("#pws-display-unit-chips .chip").forEach((chip) => {
+    chip.classList.toggle("is-on", chip.dataset.pwsDisplayUnit === selectedPwsDisplayUnit);
+  });
+}
+
+function paintPwsFormUnitChips() {
+  document.querySelectorAll("#pws-form-unit-chips .chip").forEach((chip) => {
+    chip.classList.toggle("is-on", chip.dataset.pwsFormUnit === selectedPwsFormUnit);
+  });
+}
+
+function paintPwsFocusLabel() {
+  const el = document.getElementById("pws-focus-label");
+  if (!el) return;
+  if (selectedPwsGranularity === "month" && selectedPwsFocus.year) {
+    el.hidden = false;
+    el.textContent = t("petWeightFocusYear", { year: selectedPwsFocus.year });
+    return;
+  }
+  if (selectedPwsGranularity === "day" && selectedPwsFocus.year && selectedPwsFocus.month) {
+    el.hidden = false;
+    el.textContent = t("petWeightFocusMonth", {
+      year: selectedPwsFocus.year,
+      month: selectedPwsFocus.month,
+    });
+    return;
+  }
+  el.hidden = true;
+  el.textContent = "";
+}
+
+function renderPetWeightScale(pet) {
+  const chartWrap = document.getElementById("pws-chart-wrap");
+  const list = document.getElementById("pws-log-list");
+  if (!chartWrap || !weightRenderer) return;
+
+  paintPwsGranularityChips();
+  paintPwsDisplayUnitChips();
+  paintPwsFormUnitChips();
+  paintPwsFocusLabel();
+
+  const points = PetLiveWeb.domains.weight.collectWeightPoints(pet, visitWeightKg);
+  const series = PetLiveWeb.domains.weight.aggregateForChart(
+    points,
+    selectedPwsGranularity,
+    selectedPwsFocus
+  );
+  chartWrap.innerHTML = weightRenderer.buildChartHtml(series, {
+    unit: selectedPwsDisplayUnit,
+    granularity: selectedPwsGranularity,
+  });
+
+  if (list) {
+    list.innerHTML = weightRenderer.buildLogListHtml(points, selectedPwsDisplayUnit);
+  }
+}
+
+function savePetWeightFromForm(event) {
+  event.preventDefault();
+  const pet = getCurrentPet();
+  if (!pet) return false;
+
+  const date = document.getElementById("pws-record-date")?.value || "";
+  const weight = document.getElementById("pws-weight-value")?.value || "";
+  const result = weightController.addLog(pet, {
+    date,
+    weight,
+    unit: selectedPwsFormUnit,
+  });
+
+  if (!result.ok) {
+    if (result.reason === "needDate") showToast(t("toastPetWeightNeedDate"));
+    else showToast(t("toastPetWeightNeedWeight"));
+    return false;
+  }
+
+  schedulePetsGraphPersist();
+  renderPetWeightScale(pet);
+  showToast(t("toastPetWeightSaved"));
+  document.getElementById("pet-weight-log-form")?.reset();
+  paintPwsFormUnitChips();
+  syncDateProxies();
+  return true;
+}
+
+function wirePetWeightScale() {
+  document.getElementById("pws-granularity-chips")?.addEventListener("click", (event) => {
+    const chip = event.target.closest("[data-pws-granularity]");
+    if (!chip) return;
+    selectedPwsGranularity = chip.dataset.pwsGranularity || "year";
+    if (selectedPwsGranularity === "year") {
+      selectedPwsFocus = { year: null, month: null };
+    } else if (selectedPwsGranularity === "month") {
+      selectedPwsFocus = { ...selectedPwsFocus, month: null };
+    }
+    renderPetWeightScale(getCurrentPet());
+  });
+
+  document.getElementById("pws-display-unit-chips")?.addEventListener("click", (event) => {
+    const chip = event.target.closest("[data-pws-display-unit]");
+    if (!chip) return;
+    selectedPwsDisplayUnit = chip.dataset.pwsDisplayUnit === "lb" ? "lb" : "kg";
+    try {
+      localStorage.setItem(PWS_UNIT_STORAGE_KEY, selectedPwsDisplayUnit);
+    } catch {
+      /* ignore */
+    }
+    renderPetWeightScale(getCurrentPet());
+  });
+
+  document.getElementById("pws-form-unit-chips")?.addEventListener("click", (event) => {
+    const chip = event.target.closest("[data-pws-form-unit]");
+    if (!chip) return;
+    selectedPwsFormUnit = chip.dataset.pwsFormUnit === "lb" ? "lb" : "kg";
+    paintPwsFormUnitChips();
+  });
+
+  document.getElementById("pet-weight-log-form")?.addEventListener("submit", savePetWeightFromForm);
+
+  document.getElementById("pws-chart-wrap")?.addEventListener("click", (event) => {
+    const target = event.target.closest("[data-pws-drill-year]");
+    if (!target) return;
+    const year = Number(target.dataset.pwsDrillYear);
+    const month = Number(target.dataset.pwsDrillMonth);
+    if (!Number.isFinite(year)) return;
+
+    if (selectedPwsGranularity === "year") {
+      selectedPwsGranularity = "month";
+      selectedPwsFocus = { year, month: null };
+    } else if (selectedPwsGranularity === "month" && Number.isFinite(month)) {
+      selectedPwsGranularity = "day";
+      selectedPwsFocus = { year, month };
+    } else {
+      return;
+    }
+    renderPetWeightScale(getCurrentPet());
+  });
+
+  document.getElementById("pws-log-list")?.addEventListener("click", (event) => {
+    const btn = event.target.closest("[data-pws-remove]");
+    if (!btn) return;
+    const pet = getCurrentPet();
+    if (!pet) return;
+    const id = btn.getAttribute("data-pws-remove");
+    const result = weightController.removeLog(pet, id);
+    if (!result.ok) return;
+    schedulePetsGraphPersist();
+    renderPetWeightScale(pet);
+    showToast(t("toastPetWeightRemoved"));
+  });
+}
+
+function paintAllergyHelperHead(pet) {
+  if (!allergyHelperSub) return;
+  if (!pet) {
+    allergyHelperSub.textContent = t("allergyHelperSub", { name: "—" });
+    return;
+  }
+  allergyHelperSub.textContent = t("allergyHelperSub", { name: pet.name || "—" });
+}
+
+function formatAllergyMoney(value) {
+  const n = Number(value);
+  if (!Number.isFinite(n)) return "—";
+  return n.toLocaleString(undefined, { maximumFractionDigits: 2 });
+}
+
+function allergyMeatLabel(presetId) {
+  const map = {
+    chicken: "allergyMeatChicken",
+    duck: "allergyMeatDuck",
+    beef: "allergyMeatBeef",
+    lamb: "allergyMeatLamb",
+    pork: "allergyMeatPork",
+    fish: "allergyMeatFish",
+    venison: "allergyMeatVenison",
+    rabbit: "allergyMeatRabbit",
+  };
+  const key = map[String(presetId || "")];
+  return key ? t(key) : String(presetId || "");
+}
+
+function paintAllergyUnitChips() {
+  document.querySelectorAll("#allergy-calc-unit-chips .chip").forEach((chip) => {
+    chip.classList.toggle(
+      "is-on",
+      chip.dataset.allergyCalcUnit === selectedAllergyCalcUnit
+    );
+  });
+  document.querySelectorAll("#allergy-form-unit-chips .chip").forEach((chip) => {
+    chip.classList.toggle(
+      "is-on",
+      chip.dataset.allergyFormUnit === selectedAllergyFormUnit
+    );
+  });
+}
+
+function paintAllergyMeatChips() {
+  document.querySelectorAll("#allergy-meat-chips .chip").forEach((chip) => {
+    const id = chip.dataset.allergyMeat;
+    chip.classList.toggle("is-on", selectedAllergyMeats.has(id));
+  });
+}
+
+function getSelectedAllergyMeats() {
+  return Array.from(selectedAllergyMeats);
+}
+
+function fillAllergyRecordDateDefault() {
+  const dateEl = document.getElementById("allergy-record-date");
+  if (!dateEl || dateEl.value) return;
+  dateEl.value = todayIsoLocal();
+  syncDateProxies(document.getElementById("allergy-purchase-form") || document);
+}
+
+function renderAllergyBrandResults(pet) {
+  const results = document.getElementById("allergy-brand-results");
+  const search = document.getElementById("allergy-brand-search");
+  if (!results || !allergyRenderer || !search) return;
+  const brands = allergyController.searchBrands(search.value, pet);
+  const built = allergyRenderer.buildBrandResultsHtml(brands);
+  results.hidden = built.hidden;
+  results.innerHTML = built.html;
+}
+
+function formatAllergyPerUnitText(perUnit) {
+  if (!perUnit) return "";
+  const key = perUnit.unit === "lb" ? "allergyCalcResultLb" : "allergyCalcResultKg";
+  return t(key, { price: formatAllergyMoney(perUnit.value) });
+}
+
+function paintAllergyInlineResult(resultEl, weightEl, priceEl, unit) {
+  if (!resultEl) return;
+  const perUnit = allergyController.computePricePerUnit(
+    weightEl?.value,
+    unit,
+    priceEl?.value
+  );
+  if (!perUnit) {
+    resultEl.hidden = true;
+    resultEl.textContent = "";
+    return;
+  }
+  resultEl.hidden = false;
+  resultEl.textContent = formatAllergyPerUnitText(perUnit);
+}
+
+function paintAllergyCalcResult() {
+  paintAllergyInlineResult(
+    document.getElementById("allergy-calc-result"),
+    document.getElementById("allergy-calc-weight"),
+    document.getElementById("allergy-calc-price"),
+    selectedAllergyCalcUnit
+  );
+  paintAllergyFormResult();
+}
+
+function paintAllergyFormResult() {
+  paintAllergyInlineResult(
+    document.getElementById("allergy-form-result"),
+    document.getElementById("allergy-form-weight"),
+    document.getElementById("allergy-form-price"),
+    selectedAllergyFormUnit
+  );
+}
+
+function syncAllergyFormFromCalc() {
+  const calcWeight = document.getElementById("allergy-calc-weight");
+  const calcPrice = document.getElementById("allergy-calc-price");
+  const formWeight = document.getElementById("allergy-form-weight");
+  const formPrice = document.getElementById("allergy-form-price");
+  if (formWeight && calcWeight?.value) formWeight.value = calcWeight.value;
+  if (formPrice && calcPrice?.value) formPrice.value = calcPrice.value;
+  selectedAllergyFormUnit = selectedAllergyCalcUnit;
+  paintAllergyUnitChips();
+  paintAllergyFormResult();
+}
+
+function renderAllergyHelper(pet) {
+  paintAllergyHelperHead(pet);
+  fillAllergyRecordDateDefault();
+  paintAllergyUnitChips();
+  paintAllergyMeatChips();
+  renderAllergyBrandResults(pet);
+  renderAllergyPurchases(pet);
+  paintAllergyCalcResult();
+}
+
+function renderAllergyPurchases(pet) {
+  const list = document.getElementById("allergy-purchase-list");
+  if (!list || !allergyRenderer) return;
+  const purchases = pet ? allergyController.getPurchases(pet) : [];
+  list.innerHTML = allergyRenderer.buildPurchaseListHtml(purchases);
+}
+
+function resetAllergyPurchaseForm() {
+  selectedAllergyMeats.clear();
+  document.getElementById("allergy-purchase-form")?.reset();
+  selectedAllergyFormUnit = selectedAllergyCalcUnit;
+  fillAllergyRecordDateDefault();
+  paintAllergyMeatChips();
+  paintAllergyUnitChips();
+  const results = document.getElementById("allergy-brand-results");
+  if (results) {
+    results.hidden = true;
+    results.innerHTML = "";
+  }
+  syncDateProxies(document.getElementById("allergy-purchase-form") || document);
+  paintAllergyFormResult();
+}
+
+function saveAllergyPurchaseFromForm(event) {
+  event.preventDefault();
+  const pet = getCurrentPet();
+  if (!pet) return false;
+  const brand = document.getElementById("allergy-brand-search")?.value || "";
+  const recordDate = document.getElementById("allergy-record-date")?.value || "";
+  const weight = document.getElementById("allergy-form-weight")?.value || "";
+  const price = document.getElementById("allergy-form-price")?.value || "";
+  const customMeat = document.getElementById("allergy-meat-custom")?.value || "";
+  const result = allergyController.addPurchase(pet, {
+    brand,
+    recordDate,
+    meats: getSelectedAllergyMeats(),
+    customMeat,
+    weight,
+    weightUnit: selectedAllergyFormUnit,
+    price,
+  });
+  if (!result.ok) {
+    if (result.reason === "needDate") showToast(t("toastAllergyNeedDate"));
+    else if (result.reason === "needBrand") showToast(t("toastAllergyNeedBrand"));
+    else showToast(t("toastAllergyNeedWeightPrice"));
+    return false;
+  }
+  schedulePetsGraphPersist();
+  renderAllergyHelper(pet);
+  showToast(t("toastAllergySaved"));
+  resetAllergyPurchaseForm();
+  return true;
+}
+
+function wireAllergyHelper() {
+  const calcWeight = document.getElementById("allergy-calc-weight");
+  const calcPrice = document.getElementById("allergy-calc-price");
+  [calcWeight, calcPrice].forEach((el) => {
+    el?.addEventListener("input", () => {
+      paintAllergyCalcResult();
+      syncAllergyFormFromCalc();
+    });
+  });
+
+  document.getElementById("allergy-calc-unit-chips")?.addEventListener("click", (event) => {
+    const chip = event.target.closest("[data-allergy-calc-unit]");
+    if (!chip) return;
+    selectedAllergyCalcUnit = chip.dataset.allergyCalcUnit === "lb" ? "lb" : "kg";
+    paintAllergyUnitChips();
+    paintAllergyCalcResult();
+    syncAllergyFormFromCalc();
+  });
+
+  document.getElementById("allergy-form-unit-chips")?.addEventListener("click", (event) => {
+    const chip = event.target.closest("[data-allergy-form-unit]");
+    if (!chip) return;
+    selectedAllergyFormUnit = chip.dataset.allergyFormUnit === "lb" ? "lb" : "kg";
+    paintAllergyUnitChips();
+    paintAllergyFormResult();
+  });
+
+  const formWeight = document.getElementById("allergy-form-weight");
+  const formPrice = document.getElementById("allergy-form-price");
+  [formWeight, formPrice].forEach((el) => {
+    el?.addEventListener("input", paintAllergyFormResult);
+  });
+
+  document.getElementById("allergy-meat-chips")?.addEventListener("click", (event) => {
+    const chip = event.target.closest("[data-allergy-meat]");
+    if (!chip) return;
+    const id = chip.dataset.allergyMeat;
+    if (selectedAllergyMeats.has(id)) selectedAllergyMeats.delete(id);
+    else selectedAllergyMeats.add(id);
+    paintAllergyMeatChips();
+  });
+
+  const brandSearch = document.getElementById("allergy-brand-search");
+  brandSearch?.addEventListener("input", () => {
+    renderAllergyBrandResults(getCurrentPet());
+  });
+
+  document.getElementById("allergy-brand-results")?.addEventListener("click", (event) => {
+    const btn = event.target.closest("[data-allergy-brand]");
+    if (!btn || !brandSearch) return;
+    brandSearch.value = btn.getAttribute("data-allergy-brand") || "";
+    renderAllergyBrandResults(getCurrentPet());
+    document.getElementById("allergy-brand-results").hidden = true;
+  });
+
+  document
+    .getElementById("allergy-purchase-form")
+    ?.addEventListener("submit", saveAllergyPurchaseFromForm);
+
+  document.getElementById("allergy-purchase-list")?.addEventListener("click", (event) => {
+    const btn = event.target.closest("[data-allergy-remove]");
+    if (!btn) return;
+    const activePet = getCurrentPet();
+    if (!activePet) return;
+    const id = btn.getAttribute("data-allergy-remove");
+    const result = allergyController.removePurchase(activePet, id);
+    if (!result.ok) return;
+    schedulePetsGraphPersist();
+    renderAllergyPurchases(activePet);
+  });
+}
+
 function renderPetHeader(pet) {
   petCurrentEl.classList.remove("is-updating");
   void petCurrentEl.offsetWidth;
@@ -1949,6 +2416,9 @@ function renderPetHeader(pet) {
     if (timelineSub) timelineSub.textContent = copy.timelineSub;
     if (visitFormSub) visitFormSub.textContent = copy.visitFormSub;
     if (vaccineSub) vaccineSub.textContent = copy.vaccineSub;
+    if (eVaccineSub) eVaccineSub.textContent = copy.vaccineSub;
+    paintPetWeightScaleHead(null);
+    paintAllergyHelperHead(null);
     return;
   }
 
@@ -1957,6 +2427,9 @@ function renderPetHeader(pet) {
   timelineSub.textContent = copy.timelineSub;
   visitFormSub.textContent = copy.visitFormSub;
   vaccineSub.textContent = copy.vaccineSub;
+  if (eVaccineSub) eVaccineSub.textContent = copy.vaccineSub;
+  paintPetWeightScaleHead(pet);
+  paintAllergyHelperHead(pet);
 }
 
 function syncAlertNavTone(alerts) {
@@ -2340,6 +2813,13 @@ renderCoordinator.register(
     )}</p></div></li>`;
   }
 );
+renderCoordinator.register("pet-weight-scale", "petWeightScale", (pet) => {
+  paintPetWeightScaleHead(pet);
+  renderPetWeightScale(pet);
+});
+renderCoordinator.register("allergy-helper", "allergyHelper", (pet) => {
+  renderAllergyHelper(pet);
+});
 renderCoordinator.register(
   "alerts",
   "alerts",
@@ -2726,6 +3206,9 @@ const petsController = PetLiveWeb.domains.pets.createController({
 const visitsController = PetLiveWeb.domains.visits.createController({
   clinicLabelOf: (visit) => visitClinicLabel(visit),
 });
+pets.forEach((pet) => {
+  if (pet?.visits) visitsController.sortVisitsNewestFirst(pet.visits);
+});
 const imagingController = PetLiveWeb.domains.imaging.createController();
 const drugsAdapter = PetLiveWeb.domains.drugs.createAdapter({
   searchDrugsApi: (query) => window.PetLive?.drug?.searchDrugs?.(query),
@@ -2781,6 +3264,7 @@ let timelineRenderer;
 let emergencyRenderer;
 let vaccineRenderer;
 let parasiteRenderer;
+let allergyRenderer;
 let labsRenderer;
 let imagingRenderer;
 let alertsRenderer;
@@ -2953,10 +3437,14 @@ const shellNavigation = PetLiveWeb.shell.createNavigation({
 function go(screen, options = {}) {
   closeAppNavMenu();
   const changed = shellNavigation.go(screen, options);
-  if (!changed) return false;
+  if (!changed) {
+    paintGlassDock({ animateJump: false });
+    return false;
+  }
   // Instant jump — smooth scroll made every screen change feel delayed on phone.
   window.scrollTo(0, 0);
   resetViewportZoom();
+  paintGlassDock({ animateJump: true });
   return true;
 }
 
@@ -2971,11 +3459,43 @@ function goBack() {
     window.scrollTo(0, 0);
     resetViewportZoom();
   }
+  paintGlassDock({ animateJump: Boolean(changed) });
   return changed;
 }
 
 function clearNavigationHistory() {
   shellNavigation.clearHistory();
+}
+
+/** Bottom glass dock — shell brain; facade only wires active screen. */
+let glassDockApi = null;
+
+function paintGlassDock({ animateJump } = {}) {
+  if (glassDockApi?.paint) {
+    glassDockApi.paint(Boolean(animateJump));
+    return;
+  }
+  PetLiveWeb.shell.paintGlassDock?.(document, {
+    getActiveScreen: () =>
+      app.querySelector(".screen.is-active")?.dataset.screen || "home",
+    animateJump: Boolean(animateJump),
+    hideOnScreens: ["home"],
+  });
+}
+
+function initGlassDock() {
+  glassDockApi = PetLiveWeb.shell.initGlassDock(document, {
+    win: window,
+    getActiveScreen: () =>
+      app.querySelector(".screen.is-active")?.dataset.screen || "home",
+    hideOnScreens: ["home"],
+    passportGo: "emergency",
+    startHidden: false,
+    onGo: (screen) => go(screen),
+    onMounted: () => {
+      if (typeof applyI18n === "function") applyI18n();
+    },
+  });
 }
 
 function glassChromeNavAccountMarkup() {
@@ -2999,6 +3519,23 @@ function enhanceGlassScreenHeads() {
       }
       head.insertAdjacentHTML("beforeend", glassChromeActionsMarkup());
     });
+  PetLiveWeb.shell.ensureScreenHomeBtns?.(document, {
+    onGo: (screen) => go(screen),
+  });
+  PetLiveWeb.shell.ensureFeatureHub?.(document, {
+    onGo: (screen) => go(screen),
+    onMounted: () => {
+      wireFeatureHubVaxHelp();
+      const pet = typeof currentPet === "function" ? currentPet() : null;
+      if (pet) {
+        if (typeof renderEmergencyVaccineNav === "function") renderEmergencyVaccineNav(pet);
+        if (typeof renderAlertBadge === "function") renderAlertBadge(pet);
+        if (typeof renderLabNav === "function") renderLabNav(pet);
+        if (typeof renderImagingNav === "function") renderImagingNav(pet);
+      }
+    },
+  });
+  if (typeof applyI18n === "function") applyI18n();
 }
 
 function syncAppNavBtnIcons(open) {
@@ -3042,6 +3579,26 @@ document.querySelectorAll("[data-go]").forEach((btn) => {
   }
 });
 
+
+function wireFeatureHubVaxHelp() {
+  const helpBtn = document.getElementById("fh-vax-help");
+  const pop = document.getElementById("fh-vax-help-pop");
+  if (!helpBtn || !pop || helpBtn.getAttribute("data-vax-help-wired") === "1") return;
+  helpBtn.setAttribute("data-vax-help-wired", "1");
+  helpBtn.addEventListener("click", (event) => {
+    event.preventDefault();
+    event.stopPropagation();
+    const willOpen = Boolean(pop.hidden);
+    pop.hidden = !willOpen;
+    helpBtn.setAttribute("aria-expanded", willOpen ? "true" : "false");
+    // Close the card legend if the hub one opens.
+    if (willOpen) setVaxHelpOpen(false);
+  });
+  pop.addEventListener("click", (event) => {
+    event.stopPropagation();
+  });
+}
+
 function setVaxHelpOpen(open) {
   const helpBtn = document.getElementById("e-vax-help");
   const pop = document.getElementById("e-vax-help-pop");
@@ -3062,8 +3619,12 @@ document.getElementById("e-vax-help-pop")?.addEventListener("click", (event) => 
 });
 
 document.addEventListener("click", (event) => {
-  if (event.target.closest("#e-vax-help, #e-vax-help-pop")) return;
+  if (event.target.closest("#e-vax-help, #e-vax-help-pop, #fh-vax-help, #fh-vax-help-pop")) return;
   setVaxHelpOpen(false);
+  const fhHelp = document.getElementById("fh-vax-help");
+  const fhPop = document.getElementById("fh-vax-help-pop");
+  if (fhPop) fhPop.hidden = true;
+  if (fhHelp) fhHelp.setAttribute("aria-expanded", "false");
 });
 
 document.addEventListener("keydown", (event) => {
@@ -3830,6 +4391,20 @@ parasiteRenderer = PetLiveWeb.domains.parasite.createRenderer({
   isDualProduct: isParasiteDualProduct,
 });
 
+allergyRenderer = PetLiveWeb.domains.allergy.createRenderer({
+  label: (key, params) => t(key, params),
+  escapeHtml: escapeAlertHtml,
+  formatMoney: formatAllergyMoney,
+  meatLabelOf: allergyMeatLabel,
+});
+
+weightRenderer = PetLiveWeb.domains.weight.createRenderer({
+  label: (key, params) => t(key, params),
+  escapeHtml: escapeAlertHtml,
+  formatWeight: formatPetWeightDisplay,
+  locale: typeof getCurrentLang === "function" ? getCurrentLang() : "zh-Hant",
+});
+
 labsRenderer = PetLiveWeb.domains.labs.createRenderer({
   label: (key, params) => t(key, params),
   escapeHtml: escapeAlertHtml,
@@ -3923,6 +4498,7 @@ function applyMorphTimelinePatches(patches) {
 }
 
 function renderTimeline(pet) {
+  if (pet?.visits) visitsController.sortVisitsNewestFirst(pet.visits);
   const lang =
     (typeof getCurrentLang === "function" && getCurrentLang()) || "zh-Hant";
   const nextVisits = pet?.visits || [];
@@ -4132,6 +4708,7 @@ function getOrCreateVisitForMedSave() {
       medications: [],
     };
     pet.visits.unshift(visit);
+    visitsController.sortVisitsNewestFirst(pet.visits);
   }
   if (weightValue != null) {
     medicationsController.applyVisitWeightOnMedSave(pet, visit, weightValue);
@@ -5527,6 +6104,12 @@ function paintCloudChrome() {
     session
   );
 
+  // C: consent on home hero — not tied to design-preview signedIn chrome.
+  PetLiveWeb.shell.paintLegalConsent?.(document, {
+    signedIn: false,
+    authBusy: false,
+  });
+
   const originHint = document.getElementById("intro-origin-hint");
   if (originHint) {
     const hint = PetLiveWeb.shell.resolveOriginHint(
@@ -5750,6 +6333,9 @@ setMedFreqChip("unrecorded");
 enhanceGlassScreenHeads();
 applyI18n();
 initAppNavMenu();
+initGlassDock();
+wireAllergyHelper();
+wirePetWeightScale();
 initIntroAndCloud();
 syncDateProxies();
 

@@ -11,7 +11,10 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,700&family=Noto+Sans+TC:wght@400;500;700&family=Noto+Serif+TC:wght@600;700&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="./styles.css?v=20260827-css-consolidate" />
+  <link rel="stylesheet" href="./styles.css?v=20260829-allergy-v3-fix" />
+  <link rel="stylesheet" href="../shell/glass-dock.css?v=20260828-dock-smooth" />
+  <link rel="stylesheet" href="../shell/screen-home-btn.css?v=20260827-screen-home-btn" />
+  <link rel="stylesheet" href="../shell/feature-hub.css?v=20260827-vax-keep-card" />
 </head>
 <body>
   <div
@@ -477,6 +480,274 @@
       </header>
 
       <ol class="timeline" id="timeline-list"></ol>
+    </section>
+
+    <!-- ALLERGY HELPER -->
+    <section
+      class="screen screen-allergy-helper"
+      data-screen="allergy-helper"
+      data-i18n-aria="allergyHelperNav"
+      aria-label="過敏好幫手"
+      hidden
+    >
+      <header class="screen-head light">
+        <button class="back" type="button" data-back data-i18n-aria="back" aria-label="返回">←</button>
+        <div>
+          <h2 data-i18n="allergyHelperTitle">過敏好幫手</h2>
+          <p id="allergy-helper-sub">米醬的過敏紀錄</p>
+        </div>
+      </header>
+
+      <div class="allergy-helper-body" id="allergy-helper-body">
+        <section class="ah-calc" aria-labelledby="allergy-calc-title">
+          <h3 class="ah-section-title" id="allergy-calc-title" data-i18n="allergyCalcTitle">單價換算</h3>
+          <div class="ah-calc-grid">
+            <div class="field-row ah-calc-weight-row">
+              <label class="field">
+                <span data-i18n="allergyWeight">重量</span>
+                <input
+                  type="number"
+                  id="allergy-calc-weight"
+                  min="0"
+                  step="0.01"
+                  inputmode="decimal"
+                  placeholder="7.5"
+                />
+              </label>
+              <fieldset class="chip-field ah-unit-field">
+                <legend data-i18n="allergyUnit">單位</legend>
+                <div class="chips" id="allergy-calc-unit-chips">
+                  <button type="button" class="chip is-on" data-allergy-calc-unit="kg" data-i18n="allergyUnitKg">公斤</button>
+                  <button type="button" class="chip" data-allergy-calc-unit="lb" data-i18n="allergyUnitLb">磅</button>
+                </div>
+              </fieldset>
+            </div>
+            <div class="field-row ah-calc-price-row">
+              <label class="field">
+                <span data-i18n="allergyPrice">價格（元）</span>
+                <input
+                  type="number"
+                  id="allergy-calc-price"
+                  min="0"
+                  step="1"
+                  inputmode="numeric"
+                  placeholder="1990"
+                />
+              </label>
+              <p class="ah-calc-inline" id="allergy-calc-result" hidden aria-live="polite"></p>
+            </div>
+          </div>
+        </section>
+
+        <form class="form ah-form" id="allergy-purchase-form">
+          <h3 class="ah-section-title" data-i18n="allergyAddTitle">新增購買紀錄</h3>
+          <label class="field">
+            <span data-i18n="allergyRecordDate">記錄日期</span>
+            <span class="date-proxy">
+              <input
+                type="text"
+                class="date-proxy-face"
+                readonly
+                tabindex="-1"
+                aria-hidden="true"
+                placeholder="YYYY-MM-DD"
+              />
+              <input
+                type="date"
+                name="recordDate"
+                id="allergy-record-date"
+                class="date-proxy-native"
+                required
+              />
+            </span>
+          </label>
+          <label class="field">
+            <span data-i18n="allergyFoodBrand">飼料品牌</span>
+            <input
+              type="text"
+              id="allergy-brand-search"
+              autocomplete="off"
+              data-i18n-placeholder="allergyFoodPlaceholder"
+              placeholder="例如：品牌名稱"
+            />
+            <small class="field-hint" data-i18n="allergyFoodHint">選單沒有的品牌可直接輸入</small>
+            <ul class="drug-results ah-brand-results" id="allergy-brand-results" hidden></ul>
+          </label>
+          <fieldset class="chip-field ah-meat-field">
+            <legend data-i18n="allergyMeats">肉類</legend>
+            <div class="chips ah-meat-chips" id="allergy-meat-chips">
+              <button type="button" class="chip" data-allergy-meat="chicken" data-i18n="allergyMeatChicken">雞</button>
+              <button type="button" class="chip" data-allergy-meat="duck" data-i18n="allergyMeatDuck">鴨</button>
+              <button type="button" class="chip" data-allergy-meat="beef" data-i18n="allergyMeatBeef">牛</button>
+              <button type="button" class="chip" data-allergy-meat="lamb" data-i18n="allergyMeatLamb">羊</button>
+              <button type="button" class="chip" data-allergy-meat="pork" data-i18n="allergyMeatPork">豬</button>
+              <button type="button" class="chip" data-allergy-meat="fish" data-i18n="allergyMeatFish">魚</button>
+              <button type="button" class="chip" data-allergy-meat="venison" data-i18n="allergyMeatVenison">鹿</button>
+              <button type="button" class="chip" data-allergy-meat="rabbit" data-i18n="allergyMeatRabbit">兔</button>
+            </div>
+            <label class="field ah-meat-custom-field">
+              <span data-i18n="allergyMeatCustom">其他肉類</span>
+              <input
+                type="text"
+                id="allergy-meat-custom"
+                data-i18n-placeholder="allergyMeatPlaceholder"
+                placeholder="例如：火雞、鵪鶉"
+              />
+            </label>
+          </fieldset>
+          <div class="ah-form-metrics">
+            <div class="field-row ah-form-weight-row">
+              <label class="field">
+                <span data-i18n="allergyWeight">重量</span>
+                <input
+                  type="number"
+                  id="allergy-form-weight"
+                  min="0"
+                  step="0.01"
+                  inputmode="decimal"
+                />
+              </label>
+              <fieldset class="chip-field ah-unit-field">
+                <legend data-i18n="allergyUnit">單位</legend>
+                <div class="chips" id="allergy-form-unit-chips">
+                  <button type="button" class="chip is-on" data-allergy-form-unit="kg" data-i18n="allergyUnitKg">公斤</button>
+                  <button type="button" class="chip" data-allergy-form-unit="lb" data-i18n="allergyUnitLb">磅</button>
+                </div>
+              </fieldset>
+            </div>
+            <div class="field-row ah-form-price-row">
+              <label class="field">
+                <span data-i18n="allergyPrice">價格（元）</span>
+                <input
+                  type="number"
+                  id="allergy-form-price"
+                  min="0"
+                  step="1"
+                  inputmode="numeric"
+                />
+              </label>
+              <p class="ah-calc-inline" id="allergy-form-result" hidden aria-live="polite"></p>
+            </div>
+          </div>
+          <button type="submit" class="btn" data-i18n="allergySave">儲存紀錄</button>
+        </form>
+
+        <section class="ah-list-section" aria-labelledby="allergy-history-title">
+          <h3 class="ah-section-title" id="allergy-history-title" data-i18n="allergyHistory">購買紀錄</h3>
+          <ul class="ah-list" id="allergy-purchase-list"></ul>
+        </section>
+      </div>
+    </section>
+
+    <!-- PET WEIGHT SCALE -->
+    <section
+      class="screen screen-pet-weight-scale"
+      data-screen="pet-weight-scale"
+      data-i18n-aria="petWeightScaleNav"
+      aria-label="寵物體重機"
+      hidden
+    >
+      <header class="screen-head light">
+        <button class="back" type="button" data-back data-i18n-aria="back" aria-label="返回">←</button>
+        <div>
+          <h2 data-i18n="petWeightScaleTitle">寵物體重機</h2>
+          <p id="pet-weight-scale-sub">米醬的體重紀錄</p>
+        </div>
+      </header>
+
+      <div class="pet-weight-scale-body" id="pet-weight-scale-body">
+        <section class="pws-chart-section" aria-labelledby="pws-chart-title">
+          <div class="pws-head-row">
+            <h3 class="pws-section-title" id="pws-chart-title" data-i18n="petWeightChartTitle">
+              體重趨勢
+            </h3>
+            <p class="pws-focus" id="pws-focus-label" hidden></p>
+          </div>
+          <div class="pws-toolbar">
+            <fieldset class="chip-field pws-granularity-field">
+              <legend data-i18n="petWeightGranularity">時間尺度</legend>
+              <div class="chips pws-granularity-chips" id="pws-granularity-chips">
+                <button type="button" class="chip is-on" data-pws-granularity="year" data-i18n="petWeightGranularityYear">
+                  年
+                </button>
+                <button type="button" class="chip" data-pws-granularity="month" data-i18n="petWeightGranularityMonth">
+                  月
+                </button>
+                <button type="button" class="chip" data-pws-granularity="day" data-i18n="petWeightGranularityDay">
+                  日
+                </button>
+              </div>
+            </fieldset>
+            <fieldset class="chip-field pws-unit-field">
+              <legend data-i18n="petWeightUnit">單位</legend>
+              <div class="chips" id="pws-display-unit-chips">
+                <button type="button" class="chip is-on" data-pws-display-unit="kg" data-i18n="petWeightUnitKg">
+                  公斤
+                </button>
+                <button type="button" class="chip" data-pws-display-unit="lb" data-i18n="petWeightUnitLb">
+                  磅
+                </button>
+              </div>
+            </fieldset>
+          </div>
+          <div class="pws-chart-wrap" id="pws-chart-wrap"></div>
+        </section>
+
+        <form class="form pws-form" id="pet-weight-log-form">
+          <h3 class="pws-section-title" data-i18n="petWeightAddTitle">新增體重紀錄</h3>
+          <div class="field-row pws-form-fields">
+            <label class="field">
+              <span data-i18n="petWeightRecordDate">記錄日期</span>
+              <span class="date-proxy">
+                <input
+                  type="text"
+                  class="date-proxy-face"
+                  readonly
+                  tabindex="-1"
+                  aria-hidden="true"
+                  placeholder="YYYY-MM-DD"
+                />
+                <input
+                  type="date"
+                  name="recordDate"
+                  id="pws-record-date"
+                  class="date-proxy-native"
+                  required
+                />
+              </span>
+            </label>
+            <label class="field">
+              <span data-i18n="petWeightValue">體重</span>
+              <input
+                type="number"
+                id="pws-weight-value"
+                name="weightValue"
+                min="0"
+                step="0.01"
+                inputmode="decimal"
+                required
+              />
+            </label>
+            <fieldset class="chip-field pws-form-unit-field">
+              <legend data-i18n="petWeightUnit">單位</legend>
+              <div class="chips" id="pws-form-unit-chips">
+                <button type="button" class="chip is-on" data-pws-form-unit="kg" data-i18n="petWeightUnitKg">
+                  公斤
+                </button>
+                <button type="button" class="chip" data-pws-form-unit="lb" data-i18n="petWeightUnitLb">
+                  磅
+                </button>
+              </div>
+            </fieldset>
+          </div>
+          <button type="submit" class="btn btn-primary" data-i18n="petWeightSave">儲存紀錄</button>
+        </form>
+
+        <section class="pws-list-section" aria-labelledby="pws-log-title">
+          <h3 class="pws-section-title" id="pws-log-title" data-i18n="petWeightLogTitle">紀錄列表</h3>
+          <ul class="pws-list" id="pws-log-list"></ul>
+        </section>
+      </div>
     </section>
 
     <!-- ADD VISIT -->
@@ -1284,8 +1555,17 @@
           </h2>
         </div>
         <div class="screen-head-actions" data-glass-chrome>
-          <button class="btn btn-small e-copy-summary" type="button" id="copy-card" data-i18n="copySummary">
-            複製摘要
+          <button
+            class="btn btn-small e-copy-summary"
+            type="button"
+            id="copy-card"
+            data-i18n-aria="copySummary"
+            data-i18n-title="copySummary"
+          >
+            <span class="e-copy-summary-stack" aria-hidden="true">
+              <span data-i18n="copySummaryLine1">複製摘要</span>
+              <span data-i18n="copySummaryLine2"></span>
+            </span>
           </button>
         </div>
       </header>
@@ -1325,9 +1605,6 @@
                 </span>
               </button>
               <div class="e-name-aside">
-                <button class="btn btn-small e-copy-summary" type="button" id="copy-card" data-i18n="copySummary">
-                  複製摘要
-                </button>
                 <p class="e-chip-meta" id="e-chip-line">晶片號碼：未填寫</p>
               </div>
             </div>
@@ -1359,32 +1636,7 @@
           <ul id="e-alerts"></ul>
         </section>
 
-        <section class="e-block">
-          <h4 data-i18n="currentMeds">目前用藥（未到期）</h4>
-          <ul id="e-meds"></ul>
-        </section>
-
-        <section class="e-block" id="e-owner-block">
-          <h4 data-i18n="ownerContact">飼主聯絡</h4>
-          <div id="e-owner" class="e-owner"></div>
-        </section>
-
-        <footer class="e-foot">
-          <p class="e-foot-role" data-i18n="emergencySub">給獸醫師快速參考 · 非電子病歷</p>
-          <p data-i18n="eFoot">僅供參考，不取代獸醫師診斷。產生時間 2026-08-09 15:00</p>
-        </footer>
-      </article>
-
-      <nav class="e-quick-nav" data-i18n-aria="detailNav" aria-label="此寵物的詳細紀錄">
-        <button type="button" data-go="timeline">
-          <span data-i18n="timelineNav">時間軸</span>
-          <small data-i18n="timelineNavSub">就診與用藥</small>
-        </button>
-        <button type="button" class="e-nav-alerts" data-go="alerts">
-          <span data-i18n="alertsTitle">醫療警示</span>
-          <small data-i18n="alertsNavSub">過敏／慢性病</small>
-        </button>
-        <div
+<div
           class="e-vax-nav"
           id="e-vaccine-btn"
           data-go="vaccines"
@@ -1392,7 +1644,7 @@
           tabindex="0"
         >
           <span class="e-vaccine-label">
-            <span data-i18n="vaccine">疫苗</span>
+            <span class="e-vax-title" data-i18n="vaccinesTitle">疫苗紀錄</span>
             <span class="e-vax-lights" id="e-vax-lights" role="img" aria-label="">
               <i class="e-vax-dot is-green" data-status="protected" title="薄荷：防護中"></i>
               <i class="e-vax-dot is-orange" data-status="approaching" title="暖橘：即將到期"></i>
@@ -1412,6 +1664,7 @@
               ?
             </button>
           </span>
+          <p class="e-vax-note" id="e-vaccine-sub">自行記錄施打項目與日期</p>
           <small id="e-vaccine-next" data-i18n="nextDueDash">下次 —</small>
           <div
             class="e-vax-help-pop"
@@ -1439,19 +1692,37 @@
             </ul>
           </div>
         </div>
-      </nav>
 
-      <nav class="e-docs-nav" data-i18n-aria="eDocsNav" aria-label="影像與檢驗資料">
-        <button type="button" class="e-docs-btn" data-e-doc="xray" data-go="imaging" id="e-xray-btn">
-          <span data-i18n="eXrayTitle">X-Ray&超音波 影像</span>
-          <small id="e-xray-sub" data-i18n="eXraySubEmpty">尚未存檔</small>
-        </button>
-        <button type="button" class="e-docs-btn" data-e-doc="labs" data-go="labs" id="e-lab-btn">
-          <span data-i18n="eLabTitle">血檢報告／檢驗報告</span>
-          <small id="e-lab-sub" data-i18n="eLabSubEmpty">尚未存檔</small>
-        </button>
-      </nav>
+        <section class="e-block">
+          <h4 data-i18n="currentMeds">目前用藥（未到期）</h4>
+          <ul id="e-meds"></ul>
+        </section>
+
+        <section class="e-block" id="e-owner-block">
+          <h4 data-i18n="ownerContact">飼主聯絡</h4>
+          <div id="e-owner" class="e-owner"></div>
+        </section>
+
+        <footer class="e-foot">
+          <p class="e-foot-role" data-i18n="emergencySub">給獸醫師快速參考 · 非電子病歷</p>
+          <p data-i18n="eFoot">僅供參考，不取代獸醫師診斷。產生時間 2026-08-09 15:00</p>
+        </footer>
+      </article>
     </section>
+
+    <!-- FEATURE BUTTONS HUB -->
+    <section class="screen screen-feature-buttons" data-screen="feature-buttons" data-i18n-aria="featureButtonsTitle" aria-label="功能按鈕" hidden>
+      <header class="screen-head light">
+        <button class="back" type="button" data-go="home" data-i18n-aria="back" aria-label="返回">←</button>
+        <div>
+          <h2 data-i18n="featureButtonsTitle">功能按鈕</h2>
+          <p data-i18n="featureButtonsSub">常用功能捷徑</p>
+        </div>
+      </header>
+
+      <div class="feature-hub" id="feature-hub"></div>
+    </section>
+
   </div>
 
   <div class="proof-lightbox" id="proof-lightbox" hidden>
@@ -1605,6 +1876,20 @@
         <span class="app-nav-item-label" data-i18n="manualTitle">說明書</span>
         <span class="app-nav-item-hint" data-i18n="manualNavHint">操作示範與說明</span>
       </button>
+
+      <button class="app-nav-item" type="button" role="menuitem" data-go="feature-buttons">
+        <span class="app-nav-item-label" data-i18n="featureButtonsTitle">功能按鈕</span>
+        <span class="app-nav-item-hint" data-i18n="featureButtonsHint">常用功能捷徑</span>
+      </button>
+      <button class="app-nav-item" type="button" role="menuitem" data-go="pet-weight-scale">
+        <span class="app-nav-item-label" data-i18n="petWeightScaleTitle">寵物體重機</span>
+        <span class="app-nav-item-hint" data-i18n="petWeightScaleNavHint">紀錄與追蹤體重</span>
+      </button>
+      <button class="app-nav-item" type="button" role="menuitem" data-go="allergy-helper">
+        <span class="app-nav-item-label" data-i18n="allergyHelperTitle">過敏好幫手</span>
+        <span class="app-nav-item-hint" data-i18n="allergyHelperNavHint">追蹤過敏與反應</span>
+      </button>
+
     </div>
 
     <div
@@ -1715,7 +2000,7 @@
   <!-- module + defer share parse-order: PetLive is ready before app.js -->
   <script type="module" src="../runtime/petlive.js?v=20260824-drug-seed-dedupe"></script>
   <script defer src="../runtime/safe-ui.js?v=20260812-local-first"></script>
-  <script defer src="./i18n.js?v=20260827-lang-detect"></script>
+  <script defer src="./i18n.js?v=20260829-allergy-v3-fix"></script>
   <script defer src="../breeds-database.js?v=20260825-breed-typeahead-adopt"></script>
   <script defer src="../domains/breed/selectors.js?v=20260827-small-brains"></script>
   <script defer src="../domains/breed/controller.js?v=20260827-tl-br-ctrl"></script>
@@ -1727,12 +2012,15 @@
   <script defer src="../core/pets-graph.js?v=20260827-modules-w4p1"></script>
   <script defer src="../shell/navigation.js?v=20260813-layered-adopted"></script>
   <script defer src="../shell/app-nav.js?v=20260827-wire-bundles"></script>
+  <script defer src="../shell/glass-dock.js?v=20260828-dock-smooth"></script>
+  <script defer src="../shell/screen-home-btn.js?v=20260827-screen-home-btn"></script>
+  <script defer src="../shell/feature-hub.js?v=20260827-vax-keep-card"></script>
   <script defer src="../shell/render-coordinator.js?v=20260824-perf-adopt"></script>
   <script defer src="../shell/photo-crop.js?v=20260827-wire-bundles"></script>
   <script defer src="../shell/calendar-chooser.js?v=20260827-abcd"></script>
   <script defer src="../shell/proof-preview.js?v=20260827-fo-render"></script>
   <script defer src="../shell/account-chrome.js?v=20260827-wire-bundles"></script>
-  <script defer src="../shell/intro-cloud.js?v=20260827-wire-bundles"></script>
+  <script defer src="../shell/intro-cloud.js?v=20260828-c-no-legal"></script>
   <script defer src="../shell/alert-form.js?v=20260827-wire-thin-forms"></script>
   <script defer src="../shell/parasite-form.js?v=20260827-wire-thin-forms"></script>
   <script defer src="../shell/breed-form.js?v=20260827-wire-thin-forms"></script>
@@ -1746,7 +2034,7 @@
   <script defer src="../domains/pets/render.js?v=20260827-sh-06"></script>
   <script defer src="../domains/clinics/catalog.js?v=20260827-leftover-17"></script>
   <script defer src="../domains/visits/labels.js?v=20260827-leftover-cleanup"></script>
-  <script defer src="../domains/visits/controller.js?v=20260827-leftover-17"></script>
+  <script defer src="../domains/visits/controller.js?v=20260827-tl-date-sort"></script>
   <script defer src="../domains/imaging/controller.js?v=20260827-im-cleanup"></script>
   <script defer src="../domains/imaging/render.js?v=20260827-fo-render"></script>
   <script defer src="../domains/drugs/adapter.js?v=20260827-drug-catalog"></script>
@@ -1780,8 +2068,14 @@
   <script defer src="../domains/owner/controller.js?v=20260827-ow-st-adopt"></script>
   <script defer src="../domains/cloud/selectors.js?v=20260827-cl-adopt"></script>
   <script defer src="../domains/cloud/controller.js?v=20260827-modules-w4p1"></script>
+  <script defer src="../domains/allergy/catalog.js?v=20260829-allergy-v3-fix"></script>
+  <script defer src="../domains/allergy/controller.js?v=20260829-allergy-v3-fix"></script>
+  <script defer src="../domains/allergy/render.js?v=20260829-allergy-v3-fix"></script>
+  <script defer src="../domains/weight/selectors.js?v=20260829-pet-weight-scale"></script>
+  <script defer src="../domains/weight/controller.js?v=20260829-pet-weight-scale"></script>
+  <script defer src="../domains/weight/render.js?v=20260829-pet-weight-scale"></script>
   <!-- IDB opt-in (C only): data-petlive-storage-backend="idb"|"auto" on <html> and
        storage-boot.js before app.js. Default local = no change; markBootComplete at app end. -->
-  <script defer src="./app.js?v=20260827-modules-w4p1"></script>
+  <script defer src="./app.js?v=20260829-allergy-v3-fix"></script>
 </body>
 </html>

@@ -11,11 +11,11 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,700&family=Noto+Sans+TC:wght@400;500;700&family=Noto+Serif+TC:wght@600;700&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="./styles.css?v=20260829-pet-weight-scale-b" />
+  <link rel="stylesheet" href="./styles.css?v=20260829-allergy-v3-b" />
   <link rel="stylesheet" href="./shell/glass-dock.css?v=20260828-dock-smooth" />
   <link rel="stylesheet" href="./shell/screen-home-btn.css?v=20260827-screen-home-btn" />
   <link rel="stylesheet" href="./shell/feature-hub.css?v=20260827-vax-keep-card" />
-  <link rel="stylesheet" href="./shell/intro-stories.css?v=20260829-intro-stories-v3" />
+  <link rel="stylesheet" href="./shell/intro-stories.css?v=20260829-intro-stories-v5" />
   <link rel="stylesheet" href="./legal/legal.css?v=20260828-legal-v14" />
   <link rel="stylesheet" href="./shell/legal-consent-modal.css?v=20260829-legal-v17" />
 </head>
@@ -132,6 +132,7 @@
                 <span class="intro-story-chevron" aria-hidden="true"></span>
               </summary>
               <div class="intro-story-body" data-i18n-html="introStory3Body">
+                <p class="story-epigraph">✉️ <em>給全天下獸醫師的一封信</em></p>
                 <p>半夜，謎豆子突然一直吐，連站都站不穩。<br />主人趕快抱著牠去醫院。</p>
                 <p>醫生一邊救謎豆子，一邊問：</p>
                 <blockquote><p>「牠今天吃過什麼藥？」</p><p>「有打過什麼針嗎？」</p></blockquote>
@@ -142,10 +143,10 @@
                 <blockquote class="story-pull"><p><strong>「如果我早一點知道，就好了。」</strong></p></blockquote>
                 <hr class="story-divider" />
                 <p>所以，我們想替謎豆子留下一張<strong>小小的紙條</strong>：</p>
-                <ul class="story-list"><li>今天吃了什麼藥</li><li>打了什麼針</li></ul>
+                <ul class="story-list"><li>今天吃了什麼藥</li><li>打了什麼針</li><li>醫生幫牠做了什麼</li></ul>
                 <p class="story-note">醫院如果不想寫名字，也可以不寫。</p>
                 <p>因為這張紙條<strong>不是用來找誰做錯事</strong>。<br />它只是上一位醫生，留給下一位醫生的一句話：</p>
-                <blockquote class="story-pull story-pull--closing"><p><strong>「我先照顧過牠了，<br />接下來，換你幫我照顧牠。」</strong></p></blockquote>
+                <blockquote class="story-pull story-pull--closing story-pull--oneliner"><p><strong>「我先照顧過牠了，接下來，換你幫我照顧牠。」</strong></p></blockquote>
               </div>
             </details>
           </article>
@@ -1790,6 +1791,163 @@
 
 
 
+    <!-- ALLERGY HELPER -->
+    <section
+      class="screen screen-allergy-helper"
+      data-screen="allergy-helper"
+      data-i18n-aria="allergyHelperNav"
+      aria-label="過敏好幫手"
+      hidden
+    >
+      <header class="screen-head light">
+        <button class="back" type="button" data-back data-i18n-aria="back" aria-label="返回">←</button>
+        <div>
+          <h2 data-i18n="allergyHelperTitle">過敏好幫手</h2>
+          <p id="allergy-helper-sub">米醬的過敏紀錄</p>
+        </div>
+      </header>
+
+      <div class="allergy-helper-body" id="allergy-helper-body">
+        <section class="ah-calc" aria-labelledby="allergy-calc-title">
+          <h3 class="ah-section-title" id="allergy-calc-title" data-i18n="allergyCalcTitle">單價換算</h3>
+          <div class="ah-calc-grid">
+            <div class="field-row ah-calc-weight-row">
+              <label class="field">
+                <span data-i18n="allergyWeight">重量</span>
+                <input
+                  type="number"
+                  id="allergy-calc-weight"
+                  min="0"
+                  step="0.01"
+                  inputmode="decimal"
+                  placeholder="7.5"
+                />
+              </label>
+              <fieldset class="chip-field ah-unit-field">
+                <legend data-i18n="allergyUnit">單位</legend>
+                <div class="chips" id="allergy-calc-unit-chips">
+                  <button type="button" class="chip is-on" data-allergy-calc-unit="kg" data-i18n="allergyUnitKg">公斤</button>
+                  <button type="button" class="chip" data-allergy-calc-unit="lb" data-i18n="allergyUnitLb">磅</button>
+                </div>
+              </fieldset>
+            </div>
+            <div class="field-row ah-calc-price-row">
+              <label class="field">
+                <span data-i18n="allergyPrice">價格（元）</span>
+                <input
+                  type="number"
+                  id="allergy-calc-price"
+                  min="0"
+                  step="1"
+                  inputmode="numeric"
+                  placeholder="1990"
+                />
+              </label>
+              <p class="ah-calc-inline" id="allergy-calc-result" hidden aria-live="polite"></p>
+            </div>
+          </div>
+        </section>
+
+        <form class="form ah-form" id="allergy-purchase-form">
+          <h3 class="ah-section-title" data-i18n="allergyAddTitle">新增購買紀錄</h3>
+          <label class="field">
+            <span data-i18n="allergyRecordDate">記錄日期</span>
+            <span class="date-proxy">
+              <input
+                type="text"
+                class="date-proxy-face"
+                readonly
+                tabindex="-1"
+                aria-hidden="true"
+                placeholder="YYYY-MM-DD"
+              />
+              <input
+                type="date"
+                name="recordDate"
+                id="allergy-record-date"
+                class="date-proxy-native"
+                required
+              />
+            </span>
+          </label>
+          <label class="field">
+            <span data-i18n="allergyFoodBrand">飼料品牌</span>
+            <input
+              type="text"
+              id="allergy-brand-search"
+              autocomplete="off"
+              data-i18n-placeholder="allergyFoodPlaceholder"
+              placeholder="例如：品牌名稱"
+            />
+            <small class="field-hint" data-i18n="allergyFoodHint">選單沒有的品牌可直接輸入</small>
+            <ul class="drug-results ah-brand-results" id="allergy-brand-results" hidden></ul>
+          </label>
+          <fieldset class="chip-field ah-meat-field">
+            <legend data-i18n="allergyMeats">肉類</legend>
+            <div class="chips ah-meat-chips" id="allergy-meat-chips">
+              <button type="button" class="chip" data-allergy-meat="chicken" data-i18n="allergyMeatChicken">雞</button>
+              <button type="button" class="chip" data-allergy-meat="duck" data-i18n="allergyMeatDuck">鴨</button>
+              <button type="button" class="chip" data-allergy-meat="beef" data-i18n="allergyMeatBeef">牛</button>
+              <button type="button" class="chip" data-allergy-meat="lamb" data-i18n="allergyMeatLamb">羊</button>
+              <button type="button" class="chip" data-allergy-meat="pork" data-i18n="allergyMeatPork">豬</button>
+              <button type="button" class="chip" data-allergy-meat="fish" data-i18n="allergyMeatFish">魚</button>
+              <button type="button" class="chip" data-allergy-meat="venison" data-i18n="allergyMeatVenison">鹿</button>
+              <button type="button" class="chip" data-allergy-meat="rabbit" data-i18n="allergyMeatRabbit">兔</button>
+            </div>
+            <label class="field ah-meat-custom-field">
+              <span data-i18n="allergyMeatCustom">其他肉類</span>
+              <input
+                type="text"
+                id="allergy-meat-custom"
+                data-i18n-placeholder="allergyMeatPlaceholder"
+                placeholder="例如：火雞、鵪鶉"
+              />
+            </label>
+          </fieldset>
+          <div class="ah-form-metrics">
+            <div class="field-row ah-form-weight-row">
+              <label class="field">
+                <span data-i18n="allergyWeight">重量</span>
+                <input
+                  type="number"
+                  id="allergy-form-weight"
+                  min="0"
+                  step="0.01"
+                  inputmode="decimal"
+                />
+              </label>
+              <fieldset class="chip-field ah-unit-field">
+                <legend data-i18n="allergyUnit">單位</legend>
+                <div class="chips" id="allergy-form-unit-chips">
+                  <button type="button" class="chip is-on" data-allergy-form-unit="kg" data-i18n="allergyUnitKg">公斤</button>
+                  <button type="button" class="chip" data-allergy-form-unit="lb" data-i18n="allergyUnitLb">磅</button>
+                </div>
+              </fieldset>
+            </div>
+            <div class="field-row ah-form-price-row">
+              <label class="field">
+                <span data-i18n="allergyPrice">價格（元）</span>
+                <input
+                  type="number"
+                  id="allergy-form-price"
+                  min="0"
+                  step="1"
+                  inputmode="numeric"
+                />
+              </label>
+              <p class="ah-calc-inline" id="allergy-form-result" hidden aria-live="polite"></p>
+            </div>
+          </div>
+          <button type="submit" class="btn" data-i18n="allergySave">儲存紀錄</button>
+        </form>
+
+        <section class="ah-list-section" aria-labelledby="allergy-history-title">
+          <h3 class="ah-section-title" id="allergy-history-title" data-i18n="allergyHistory">購買紀錄</h3>
+          <ul class="ah-list" id="allergy-purchase-list"></ul>
+        </section>
+      </div>
+    </section>
+
     <!-- PET WEIGHT SCALE -->
     <section
       class="screen screen-pet-weight-scale"
@@ -2100,6 +2258,10 @@
         <span class="app-nav-item-label" data-i18n="petWeightScaleTitle">寵物體重機</span>
         <span class="app-nav-item-hint" data-i18n="petWeightScaleNavHint">紀錄與追蹤體重</span>
       </button>
+      <button class="app-nav-item" type="button" role="menuitem" data-go="allergy-helper">
+        <span class="app-nav-item-label" data-i18n="allergyHelperTitle">過敏好幫手</span>
+        <span class="app-nav-item-hint" data-i18n="allergyHelperNavHint">追蹤過敏與反應</span>
+      </button>
 
     </div>
 
@@ -2215,7 +2377,7 @@
   <script defer src="./auth/google-drive.js?v=20260827-google-session"></script>
   <script type="module" src="./runtime/petlive.js?v=20260824-drug-seed-dedupe"></script>
   <script defer src="./runtime/safe-ui.js?v=20260812-local-first"></script>
-  <script defer src="./i18n.js?v=20260829-pet-weight-scale-b"></script>
+  <script defer src="./i18n.js?v=20260829-allergy-v3-b"></script>
   <script defer src="./breeds-database.js?v=20260825-breed-typeahead-adopt"></script>
   <script defer src="./domains/breed/selectors.js?v=20260827-small-brains"></script>
   <script defer src="./domains/breed/controller.js?v=20260827-tl-br-cover-b"></script>
@@ -2285,9 +2447,12 @@
   <script defer src="./domains/owner/controller.js?v=20260827-ow-st-cover"></script>
   <script defer src="./domains/cloud/selectors.js?v=20260827-cl-cover"></script>
   <script defer src="./domains/cloud/controller.js?v=20260827-modules-w4p1"></script>
+  <script defer src="./domains/allergy/catalog.js?v=20260829-allergy-v3-b"></script>
+  <script defer src="./domains/allergy/controller.js?v=20260829-allergy-v3-b"></script>
+  <script defer src="./domains/allergy/render.js?v=20260829-allergy-v3-b"></script>
   <script defer src="./domains/weight/selectors.js?v=20260829-pet-weight-scale"></script>
   <script defer src="./domains/weight/controller.js?v=20260829-pet-weight-scale"></script>
   <script defer src="./domains/weight/render.js?v=20260829-pet-weight-scale"></script>
-  <script defer src="./app.js?v=20260829-pet-weight-scale-b"></script>
+  <script defer src="./app.js?v=20260829-allergy-v3-b"></script>
 </body>
 </html>

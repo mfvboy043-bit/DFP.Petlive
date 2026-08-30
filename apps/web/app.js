@@ -295,6 +295,7 @@ const archiveBtn = document.getElementById("archive-btn");
 const timelineSub = document.getElementById("timeline-sub");
 const timelineList = document.getElementById("timeline-list");
 const petWeightScaleSub = document.getElementById("pet-weight-scale-sub");
+const allergyHelperSub = document.getElementById("allergy-helper-sub");
 const alertList = document.getElementById("alert-list");
 const alertSections = document.getElementById("alert-sections");
 const alertForm = document.getElementById("alert-form");
@@ -962,6 +963,11 @@ const parasiteSelectors = PetLiveWeb.domains.parasite.createSelectors({
 const parasiteLabels = PetLiveWeb.domains.parasite.createLabels({
   label: (key, params) => t(key, params),
 });
+
+const allergyController = PetLiveWeb.domains.allergy.createController();
+const selectedAllergyMeats = new Set();
+let selectedAllergyCalcUnit = "kg";
+let selectedAllergyFormUnit = "kg";
 
 const weightController = PetLiveWeb.domains.weight.createController();
 const PWS_UNIT_STORAGE_KEY = "petlive-weight-display-unit";
@@ -2314,6 +2320,268 @@ function wirePetWeightScale() {
   });
 }
 
+function paintAllergyHelperHead(pet) {
+  if (!allergyHelperSub) return;
+  if (!pet) {
+    allergyHelperSub.textContent = t("allergyHelperSub", { name: "—" });
+    return;
+  }
+  allergyHelperSub.textContent = t("allergyHelperSub", { name: pet.name || "—" });
+}
+
+function formatAllergyMoney(value) {
+  const n = Number(value);
+  if (!Number.isFinite(n)) return "—";
+  return n.toLocaleString(undefined, { maximumFractionDigits: 2 });
+}
+
+function allergyMeatLabel(presetId) {
+  const map = {
+    chicken: "allergyMeatChicken",
+    duck: "allergyMeatDuck",
+    beef: "allergyMeatBeef",
+    lamb: "allergyMeatLamb",
+    pork: "allergyMeatPork",
+    fish: "allergyMeatFish",
+    venison: "allergyMeatVenison",
+    rabbit: "allergyMeatRabbit",
+  };
+  const key = map[String(presetId || "")];
+  return key ? t(key) : String(presetId || "");
+}
+
+function paintAllergyUnitChips() {
+  document.querySelectorAll("#allergy-calc-unit-chips .chip").forEach((chip) => {
+    chip.classList.toggle(
+      "is-on",
+      chip.dataset.allergyCalcUnit === selectedAllergyCalcUnit
+    );
+  });
+  document.querySelectorAll("#allergy-form-unit-chips .chip").forEach((chip) => {
+    chip.classList.toggle(
+      "is-on",
+      chip.dataset.allergyFormUnit === selectedAllergyFormUnit
+    );
+  });
+}
+
+function paintAllergyMeatChips() {
+  document.querySelectorAll("#allergy-meat-chips .chip").forEach((chip) => {
+    const id = chip.dataset.allergyMeat;
+    chip.classList.toggle("is-on", selectedAllergyMeats.has(id));
+  });
+}
+
+function getSelectedAllergyMeats() {
+  return Array.from(selectedAllergyMeats);
+}
+
+function fillAllergyRecordDateDefault() {
+  const dateEl = document.getElementById("allergy-record-date");
+  if (!dateEl || dateEl.value) return;
+  dateEl.value = todayIsoLocal();
+  syncDateProxies(document.getElementById("allergy-purchase-form") || document);
+}
+
+function renderAllergyBrandResults(pet) {
+  const results = document.getElementById("allergy-brand-results");
+  const search = document.getElementById("allergy-brand-search");
+  if (!results || !allergyRenderer || !search) return;
+  const brands = allergyController.searchBrands(search.value, pet);
+  const built = allergyRenderer.buildBrandResultsHtml(brands);
+  results.hidden = built.hidden;
+  results.innerHTML = built.html;
+}
+
+function formatAllergyPerUnitText(perUnit) {
+  if (!perUnit) return "";
+  const key = perUnit.unit === "lb" ? "allergyCalcResultLb" : "allergyCalcResultKg";
+  return t(key, { price: formatAllergyMoney(perUnit.value) });
+}
+
+function paintAllergyInlineResult(resultEl, weightEl, priceEl, unit) {
+  if (!resultEl) return;
+  const perUnit = allergyController.computePricePerUnit(
+    weightEl?.value,
+    unit,
+    priceEl?.value
+  );
+  if (!perUnit) {
+    resultEl.hidden = true;
+    resultEl.textContent = "";
+    return;
+  }
+  resultEl.hidden = false;
+  resultEl.textContent = formatAllergyPerUnitText(perUnit);
+}
+
+function paintAllergyCalcResult() {
+  paintAllergyInlineResult(
+    document.getElementById("allergy-calc-result"),
+    document.getElementById("allergy-calc-weight"),
+    document.getElementById("allergy-calc-price"),
+    selectedAllergyCalcUnit
+  );
+  paintAllergyFormResult();
+}
+
+function paintAllergyFormResult() {
+  paintAllergyInlineResult(
+    document.getElementById("allergy-form-result"),
+    document.getElementById("allergy-form-weight"),
+    document.getElementById("allergy-form-price"),
+    selectedAllergyFormUnit
+  );
+}
+
+function syncAllergyFormFromCalc() {
+  const calcWeight = document.getElementById("allergy-calc-weight");
+  const calcPrice = document.getElementById("allergy-calc-price");
+  const formWeight = document.getElementById("allergy-form-weight");
+  const formPrice = document.getElementById("allergy-form-price");
+  if (formWeight && calcWeight?.value) formWeight.value = calcWeight.value;
+  if (formPrice && calcPrice?.value) formPrice.value = calcPrice.value;
+  selectedAllergyFormUnit = selectedAllergyCalcUnit;
+  paintAllergyUnitChips();
+  paintAllergyFormResult();
+}
+
+function renderAllergyHelper(pet) {
+  paintAllergyHelperHead(pet);
+  fillAllergyRecordDateDefault();
+  paintAllergyUnitChips();
+  paintAllergyMeatChips();
+  renderAllergyBrandResults(pet);
+  renderAllergyPurchases(pet);
+  paintAllergyCalcResult();
+}
+
+function renderAllergyPurchases(pet) {
+  const list = document.getElementById("allergy-purchase-list");
+  if (!list || !allergyRenderer) return;
+  const purchases = pet ? allergyController.getPurchases(pet) : [];
+  list.innerHTML = allergyRenderer.buildPurchaseListHtml(purchases);
+}
+
+function resetAllergyPurchaseForm() {
+  selectedAllergyMeats.clear();
+  document.getElementById("allergy-purchase-form")?.reset();
+  selectedAllergyFormUnit = selectedAllergyCalcUnit;
+  fillAllergyRecordDateDefault();
+  paintAllergyMeatChips();
+  paintAllergyUnitChips();
+  const results = document.getElementById("allergy-brand-results");
+  if (results) {
+    results.hidden = true;
+    results.innerHTML = "";
+  }
+  syncDateProxies(document.getElementById("allergy-purchase-form") || document);
+  paintAllergyFormResult();
+}
+
+function saveAllergyPurchaseFromForm(event) {
+  event.preventDefault();
+  const pet = getCurrentPet();
+  if (!pet) return false;
+  const brand = document.getElementById("allergy-brand-search")?.value || "";
+  const recordDate = document.getElementById("allergy-record-date")?.value || "";
+  const weight = document.getElementById("allergy-form-weight")?.value || "";
+  const price = document.getElementById("allergy-form-price")?.value || "";
+  const customMeat = document.getElementById("allergy-meat-custom")?.value || "";
+  const result = allergyController.addPurchase(pet, {
+    brand,
+    recordDate,
+    meats: getSelectedAllergyMeats(),
+    customMeat,
+    weight,
+    weightUnit: selectedAllergyFormUnit,
+    price,
+  });
+  if (!result.ok) {
+    if (result.reason === "needDate") showToast(t("toastAllergyNeedDate"));
+    else if (result.reason === "needBrand") showToast(t("toastAllergyNeedBrand"));
+    else showToast(t("toastAllergyNeedWeightPrice"));
+    return false;
+  }
+  schedulePetsGraphPersist();
+  renderAllergyHelper(pet);
+  showToast(t("toastAllergySaved"));
+  resetAllergyPurchaseForm();
+  return true;
+}
+
+function wireAllergyHelper() {
+  const calcWeight = document.getElementById("allergy-calc-weight");
+  const calcPrice = document.getElementById("allergy-calc-price");
+  [calcWeight, calcPrice].forEach((el) => {
+    el?.addEventListener("input", () => {
+      paintAllergyCalcResult();
+      syncAllergyFormFromCalc();
+    });
+  });
+
+  document.getElementById("allergy-calc-unit-chips")?.addEventListener("click", (event) => {
+    const chip = event.target.closest("[data-allergy-calc-unit]");
+    if (!chip) return;
+    selectedAllergyCalcUnit = chip.dataset.allergyCalcUnit === "lb" ? "lb" : "kg";
+    paintAllergyUnitChips();
+    paintAllergyCalcResult();
+    syncAllergyFormFromCalc();
+  });
+
+  document.getElementById("allergy-form-unit-chips")?.addEventListener("click", (event) => {
+    const chip = event.target.closest("[data-allergy-form-unit]");
+    if (!chip) return;
+    selectedAllergyFormUnit = chip.dataset.allergyFormUnit === "lb" ? "lb" : "kg";
+    paintAllergyUnitChips();
+    paintAllergyFormResult();
+  });
+
+  const formWeight = document.getElementById("allergy-form-weight");
+  const formPrice = document.getElementById("allergy-form-price");
+  [formWeight, formPrice].forEach((el) => {
+    el?.addEventListener("input", paintAllergyFormResult);
+  });
+
+  document.getElementById("allergy-meat-chips")?.addEventListener("click", (event) => {
+    const chip = event.target.closest("[data-allergy-meat]");
+    if (!chip) return;
+    const id = chip.dataset.allergyMeat;
+    if (selectedAllergyMeats.has(id)) selectedAllergyMeats.delete(id);
+    else selectedAllergyMeats.add(id);
+    paintAllergyMeatChips();
+  });
+
+  const brandSearch = document.getElementById("allergy-brand-search");
+  brandSearch?.addEventListener("input", () => {
+    renderAllergyBrandResults(getCurrentPet());
+  });
+
+  document.getElementById("allergy-brand-results")?.addEventListener("click", (event) => {
+    const btn = event.target.closest("[data-allergy-brand]");
+    if (!btn || !brandSearch) return;
+    brandSearch.value = btn.getAttribute("data-allergy-brand") || "";
+    renderAllergyBrandResults(getCurrentPet());
+    document.getElementById("allergy-brand-results").hidden = true;
+  });
+
+  document
+    .getElementById("allergy-purchase-form")
+    ?.addEventListener("submit", saveAllergyPurchaseFromForm);
+
+  document.getElementById("allergy-purchase-list")?.addEventListener("click", (event) => {
+    const btn = event.target.closest("[data-allergy-remove]");
+    if (!btn) return;
+    const activePet = getCurrentPet();
+    if (!activePet) return;
+    const id = btn.getAttribute("data-allergy-remove");
+    const result = allergyController.removePurchase(activePet, id);
+    if (!result.ok) return;
+    schedulePetsGraphPersist();
+    renderAllergyPurchases(activePet);
+  });
+}
+
 function renderPetHeader(pet) {
   petCurrentEl.classList.remove("is-updating");
   void petCurrentEl.offsetWidth;
@@ -2702,6 +2970,9 @@ renderCoordinator.register("feature-buttons", "featureHubNav", (pet) => {
 renderCoordinator.register("pet-weight-scale", "petWeightScale", (pet) => {
   paintPetWeightScaleHead(pet);
   renderPetWeightScale(pet);
+});
+renderCoordinator.register("allergy-helper", "allergyHelper", (pet) => {
+  renderAllergyHelper(pet);
 });
 renderCoordinator.register(
   "labs",
@@ -4359,6 +4630,7 @@ function hasLinkedLabsForVisit(visit) {
 let emergencyRenderer;
 let vaccineRenderer;
 let parasiteRenderer;
+let allergyRenderer;
 let labsRenderer;
 let imagingRenderer;
 let alertsRenderer;
@@ -4429,6 +4701,13 @@ imagingRenderer = PetLiveWeb.domains.imaging.createRenderer({
   escapeHtml: escapeAlertHtml,
   visitClinicLabel,
   formatImagingTypes,
+});
+
+allergyRenderer = PetLiveWeb.domains.allergy.createRenderer({
+  label: (key, params) => t(key, params),
+  escapeHtml: escapeAlertHtml,
+  formatMoney: formatAllergyMoney,
+  meatLabelOf: allergyMeatLabel,
 });
 
 weightRenderer = PetLiveWeb.domains.weight.createRenderer({
@@ -6951,6 +7230,7 @@ applyI18n();
 initGlassDock();
 initAppNavMenu();
 wirePetWeightScale();
+wireAllergyHelper();
 initIntroAndCloud();
 initDemoMode();
 
