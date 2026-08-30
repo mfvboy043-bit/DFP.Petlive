@@ -103,7 +103,7 @@ describe("core/pets-graph write door", () => {
     assert.equal(stored.pets[1].name, "Mochi");
   });
 
-  it("schedulePersist strips inline data-URL photos from the graph slot", () => {
+  it("schedulePersist strips avatar photo only; keeps visit proof media (SEC-1)", () => {
     const { api, timers } = loadPetsGraph();
     const pets = [];
     const archivedPets = [];
@@ -111,12 +111,21 @@ describe("core/pets-graph write door", () => {
     const { graph, slot } = makeGraph(api, pets, archivedPets, timers, bumpedRef);
     graph.hydrate();
     pets[0].photo = "data:image/jpeg;base64," + "A".repeat(9000);
-    pets[0].visits = [{ id: "v1", rxPhoto: "data:image/jpeg;base64," + "B".repeat(9000) }];
+    pets[0].visits = [
+      {
+        id: "v1",
+        rxPhoto: "data:image/jpeg;base64," + "B".repeat(9000),
+        bagPhoto: "data:image/jpeg;base64," + "C".repeat(9000),
+        imaging: { xrayPhotos: ["data:image/jpeg;base64," + "D".repeat(9000)] },
+      },
+    ];
     graph.schedulePersist();
     timers.forEach((entry) => entry.fn());
     const stored = slot.read();
     assert.equal(stored.pets[0].photo, undefined);
-    assert.equal(stored.pets[0].visits[0].rxPhoto, undefined);
+    assert.equal(stored.pets[0].visits[0].rxPhoto.startsWith("data:image"), true);
+    assert.equal(stored.pets[0].visits[0].bagPhoto.startsWith("data:image"), true);
+    assert.ok(stored.pets[0].visits[0].imaging?.xrayPhotos?.[0]);
     assert.equal(pets[0].photo.startsWith("data:image"), true);
   });
 

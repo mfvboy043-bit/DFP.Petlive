@@ -110,6 +110,7 @@ function clearLocalPetliveData() {
     "petlive-pet-photos",
     "petlive-lab-reports",
     "petlive-owner-profile",
+    "petlive-current-pet",
   ];
   for (const key of keys) {
     try {

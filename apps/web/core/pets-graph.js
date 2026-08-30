@@ -4,33 +4,27 @@
   const root = (global.PetLiveWeb = global.PetLiveWeb || {});
   root.core = root.core || {};
 
-  const HEAVY_MEDIA_KEYS = new Set([
-    "photo",
-    "bagPhoto",
-    "rxPhoto",
-    "drugPhoto",
-    "xrayPhotos",
-    "usPhotos",
-    "imaging",
-    "attachmentUrl",
-  ]);
+  /**
+   * Local graph lean write: strip only avatar `photo` (lives in pet-photos slot).
+   * Visit/Rx/imaging proofs stay in pets[] — no alternate durable store yet (SEC-1).
+   * Drive/cloud keep their own broader strip in domains/cloud/controller.js.
+   */
+  const LOCAL_STRIP_MEDIA_KEYS = new Set(["photo"]);
 
-  function stripHeavyMedia(value) {
-    if (Array.isArray(value)) return value.map(stripHeavyMedia);
+  function stripAvatarPhotoForLocalPersist(value) {
+    if (Array.isArray(value)) return value.map(stripAvatarPhotoForLocalPersist);
     if (!value || typeof value !== "object") return value;
     const out = {};
     for (const [key, val] of Object.entries(value)) {
-      if (HEAVY_MEDIA_KEYS.has(key)) continue;
-      if (
-        typeof val === "string" &&
-        val.startsWith("data:image") &&
-        val.length > 8000
-      ) {
-        continue;
-      }
-      out[key] = stripHeavyMedia(val);
+      if (LOCAL_STRIP_MEDIA_KEYS.has(key)) continue;
+      out[key] = stripAvatarPhotoForLocalPersist(val);
     }
     return out;
+  }
+
+  /** @deprecated alias — cloud should use domains/cloud strip; local uses avatar-only. */
+  function stripHeavyMedia(value) {
+    return stripAvatarPhotoForLocalPersist(value);
   }
 
   /**
@@ -105,8 +99,8 @@
       const id = currentId();
       slot.scheduleWrite({
         version: 1,
-        pets: stripHeavyMedia(pets),
-        archivedPets: stripHeavyMedia(archivedPets),
+        pets: stripAvatarPhotoForLocalPersist(pets),
+        archivedPets: stripAvatarPhotoForLocalPersist(archivedPets),
         currentPetId: id || null,
       });
       if (selectionSlot && typeof selectionSlot.scheduleWrite === "function") {
@@ -150,5 +144,6 @@
   }
 
   root.core.createPetsGraph = createPetsGraph;
+  root.core.stripAvatarPhotoForLocalPersist = stripAvatarPhotoForLocalPersist;
   root.core.stripHeavyMedia = stripHeavyMedia;
 })(typeof window !== "undefined" ? window : globalThis);
