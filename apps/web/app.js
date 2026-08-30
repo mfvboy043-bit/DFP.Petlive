@@ -5969,6 +5969,7 @@ vaccineForm.addEventListener("submit", (event) => {
   }
 
   upsertPetVaccines(pet, saveResult.entries);
+  schedulePetsGraphPersist();
 
   const calPayload = buildVaccineCalendarPayload(pet, {
     vaccines: selected,
