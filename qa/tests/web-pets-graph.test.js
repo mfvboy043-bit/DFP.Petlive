@@ -103,6 +103,64 @@ describe("core/pets-graph write door", () => {
     assert.equal(stored.pets[1].name, "Mochi");
   });
 
+  it("schedulePersist strips inline data-URL photos from the graph slot", () => {
+    const { api, timers } = loadPetsGraph();
+    const pets = [];
+    const archivedPets = [];
+    const bumpedRef = { n: 0 };
+    const { graph, slot } = makeGraph(api, pets, archivedPets, timers, bumpedRef);
+    graph.hydrate();
+    pets[0].photo = "data:image/jpeg;base64," + "A".repeat(9000);
+    pets[0].visits = [{ id: "v1", rxPhoto: "data:image/jpeg;base64," + "B".repeat(9000) }];
+    graph.schedulePersist();
+    timers.forEach((entry) => entry.fn());
+    const stored = slot.read();
+    assert.equal(stored.pets[0].photo, undefined);
+    assert.equal(stored.pets[0].visits[0].rxPhoto, undefined);
+    assert.equal(pets[0].photo.startsWith("data:image"), true);
+  });
+
+  it("scheduleSelectionPersist writes only the tiny selection slot", () => {
+    const { api, timers } = loadPetsGraph();
+    const pets = [{ id: "p1", name: "Seed" }];
+    const archivedPets = [];
+    const selection = api.storage.createJsonSlot({
+      key: "test-current-pet",
+      fallback: () => ({ currentPetId: null }),
+      validate: (value) => Boolean(value && typeof value === "object"),
+      coalesceMs: 0,
+    });
+    const graphSlot = api.storage.createJsonSlot({
+      key: "test-pets-graph",
+      fallback: () => ({
+        version: 1,
+        pets: [{ id: "p1", name: "Seed" }],
+        archivedPets: [],
+        currentPetId: "p1",
+      }),
+      validate: (value) =>
+        value && Array.isArray(value.pets) && Array.isArray(value.archivedPets),
+      coalesceMs: 0,
+    });
+    let current = "p1";
+    const graph = api.core.createPetsGraph({
+      pets,
+      archivedPets,
+      slot: graphSlot,
+      selectionSlot: selection,
+      getCurrentPetId: () => current,
+      cloneSeedPets: () => [{ id: "seed", name: "Seed" }],
+    });
+    graph.hydrate();
+    current = "p1";
+    pets[0].photo = "data:image/jpeg;base64," + "C".repeat(9000);
+    graph.scheduleSelectionPersist();
+    timers.forEach((entry) => entry.fn());
+    assert.equal(selection.read().currentPetId, "p1");
+    const graphRaw = graphSlot.read();
+    assert.equal(graphRaw.pets[0].photo, undefined);
+  });
+
   it("replaceGraph and clearGraph rewrite arrays in place", () => {
     const { api, timers } = loadPetsGraph();
     const pets = [];

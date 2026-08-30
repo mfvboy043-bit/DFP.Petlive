@@ -9,7 +9,7 @@ const I18N = {
     navMenuAria: "頁面選單",
     navMenuLabel: "選單",
     manualTitle: "說明書",
-    manualNavHint: "操作示範與說明",
+    manualNavHint: "使用說明",
     featureButtonsTitle: "功能按鈕",
     featureButtonsHint: "常用功能捷徑",
     featureButtonsSub: "常用功能捷徑",
@@ -3171,64 +3171,46 @@ function t(key, vars = {}) {
   );
 }
 
-function applyI18n() {
+function paintI18n(options) {
+  const paint = window.PetLiveWeb?.shell?.applyI18nPaint;
+  if (typeof paint === "function") {
+    paint(document, t, {
+      currentLang,
+      full: Boolean(options && options.full),
+    });
+    return;
+  }
+  const scoped = window.PetLiveWeb?.shell?.applyI18nInScope;
   document.documentElement.lang = t("htmlLang");
   document.title = t("docTitle");
-
+  if (typeof scoped === "function") {
+    scoped(document, t);
+    return;
+  }
   document.querySelectorAll("[data-i18n]").forEach((el) => {
     const key = el.getAttribute("data-i18n");
     if (key) el.textContent = t(key);
   });
+}
 
-  document.querySelectorAll("[data-i18n-html]").forEach((el) => {
-    const key = el.getAttribute("data-i18n-html");
-    if (key) el.innerHTML = t(key);
-  });
+function applyI18n() {
+  paintI18n({ full: false });
+}
 
-  document.querySelectorAll("[data-i18n-placeholder]").forEach((el) => {
-    const key = el.getAttribute("data-i18n-placeholder");
-    if (key) el.setAttribute("placeholder", t(key));
-  });
-
-  document.querySelectorAll("[data-i18n-aria]").forEach((el) => {
-    const key = el.getAttribute("data-i18n-aria");
-    if (key) el.setAttribute("aria-label", t(key));
-  });
-
-  document.querySelectorAll("[data-i18n-title]").forEach((el) => {
-    const key = el.getAttribute("data-i18n-title");
-    if (key) el.setAttribute("title", t(key));
-  });
-
-  const fab = document.getElementById("lang-fab");
-  if (fab) fab.textContent = t("langFab");
-
-  document.querySelectorAll("#lang-menu [data-lang]").forEach((btn) => {
-    btn.classList.toggle("is-active", btn.dataset.lang === currentLang);
-  });
+function applyI18nAll() {
+  paintI18n({ full: true });
 }
 
 function applyI18nInScope(root) {
+  const scoped = window.PetLiveWeb?.shell?.applyI18nInScope;
+  if (typeof scoped === "function") {
+    scoped(root, t);
+    return;
+  }
   if (!root || typeof root.querySelectorAll !== "function") return;
   root.querySelectorAll("[data-i18n]").forEach((el) => {
     const key = el.getAttribute("data-i18n");
     if (key) el.textContent = t(key);
-  });
-  root.querySelectorAll("[data-i18n-html]").forEach((el) => {
-    const key = el.getAttribute("data-i18n-html");
-    if (key) el.innerHTML = t(key);
-  });
-  root.querySelectorAll("[data-i18n-placeholder]").forEach((el) => {
-    const key = el.getAttribute("data-i18n-placeholder");
-    if (key) el.setAttribute("placeholder", t(key));
-  });
-  root.querySelectorAll("[data-i18n-aria]").forEach((el) => {
-    const key = el.getAttribute("data-i18n-aria");
-    if (key) el.setAttribute("aria-label", t(key));
-  });
-  root.querySelectorAll("[data-i18n-title]").forEach((el) => {
-    const key = el.getAttribute("data-i18n-title");
-    if (key) el.setAttribute("title", t(key));
   });
 }
 
@@ -3236,7 +3218,7 @@ function setLanguage(lang) {
   if (!I18N[lang]) return;
   currentLang = lang;
   localStorage.setItem("petlive-c-lang", lang);
-  applyI18n();
+  applyI18nAll();
   if (typeof window.onLanguageChange === "function") {
     window.onLanguageChange(lang);
   }
@@ -3245,6 +3227,7 @@ function setLanguage(lang) {
 window.I18N = I18N;
 window.t = t;
 window.applyI18n = applyI18n;
+window.applyI18nAll = applyI18nAll;
 window.applyI18nInScope = applyI18nInScope;
 window.setLanguage = setLanguage;
 window.getCurrentLang = () => currentLang;

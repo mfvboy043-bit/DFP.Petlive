@@ -122,6 +122,14 @@ const petsGraphSlot = PetLiveWeb.storage.createJsonSlot({
   coalesceMs: 220,
 });
 
+const currentPetSlot = PetLiveWeb.storage.createJsonSlot({
+  key: "petlive-c-current-pet",
+  fallback: () => ({ currentPetId: null }),
+  validate: (value) =>
+    Boolean(value && typeof value === "object" && !Array.isArray(value)),
+  coalesceMs: 80,
+});
+
 const syncMetaSlot = PetLiveWeb.storage.createJsonSlot({
   key: SYNC_META_KEY,
   fallback: () => ({
@@ -136,6 +144,7 @@ const petsGraph = PetLiveWeb.core.createPetsGraph({
   pets,
   archivedPets,
   slot: petsGraphSlot,
+  selectionSlot: currentPetSlot,
   getCurrentPetId: () =>
     typeof appState !== "undefined" && appState?.getCurrentPetId
       ? appState.getCurrentPetId()
@@ -160,6 +169,14 @@ function hydratePetsGraphFromStorage() {
 
 function schedulePetsGraphPersist() {
   petsGraph.schedulePersist();
+}
+
+function scheduleSelectionPersist() {
+  if (typeof petsGraph.scheduleSelectionPersist === "function") {
+    petsGraph.scheduleSelectionPersist();
+    return;
+  }
+  schedulePetsGraphPersist();
 }
 
 hydratePetsGraphFromStorage();
@@ -1350,7 +1367,7 @@ function setManageMode(on) {
 }
 
 const PET_PHOTOS_KEY = "petlive-c-pet-photos";
-const PET_PHOTOS_COALESCE_MS = 80;
+const PET_PHOTOS_COALESCE_MS = 400;
 const petPhotosSlot = PetLiveWeb.storage.createJsonSlot({
   key: PET_PHOTOS_KEY,
   fallback: () => ({}),
@@ -1596,10 +1613,7 @@ function getPetPhoto(petId) {
 }
 
 function setPetPhoto(petId, dataUrl) {
-  const ok = petsMedia.setPetPhoto(petId, dataUrl);
-  // Local graph + Drive backup (schedulePetsGraphPersist → scheduleCloudBackup).
-  if (ok) schedulePetsGraphPersist();
-  return ok;
+  return petsMedia.setPetPhoto(petId, dataUrl);
 }
 
 function flushPetPhotosOrToast() {
@@ -2485,10 +2499,6 @@ const OWNER_PROFILE_KEY = "petlive-c-owner-profile";
 
 const ownerSelectors = PetLiveWeb.domains.owner.createSelectors();
 
-function demoOwnerProfile() {
-  return ownerSelectors.demoProfile();
-}
-
 function emptyOwnerProfile() {
   return ownerSelectors.emptyProfile();
 }
@@ -2738,7 +2748,7 @@ function renderEmergencyCard(pet) {
 function applySelectedPet() {
   latestRxUserCollapsed = false;
   renderCoordinator.refreshSelection();
-  schedulePetsGraphPersist();
+  scheduleSelectionPersist();
 }
 
 const renderCoordinator = PetLiveWeb.shell.createRenderCoordinator({
@@ -3444,6 +3454,8 @@ const shellNavigation = PetLiveWeb.shell.createNavigation({
     }
   },
   onEnter: (screen) => {
+    const next = app.querySelector(`[data-screen="${screen}"]`);
+    applyI18nInScope?.(next);
     renderCoordinator.flush(screen);
     if (screen === "parasite") {
       const pet = getCurrentPet();
@@ -3512,7 +3524,7 @@ function initGlassDock() {
     startHidden: false,
     onGo: (screen) => go(screen),
     onMounted: () => {
-      if (typeof applyI18n === "function") applyI18n();
+      applyI18nInScope?.(document.querySelector(".glass-dock"));
     },
   });
 }
@@ -3545,16 +3557,20 @@ function enhanceGlassScreenHeads() {
     onGo: (screen) => go(screen),
     onMounted: () => {
       wireFeatureHubVaxHelp();
-      const pet = typeof currentPet === "function" ? currentPet() : null;
+      const pet = getCurrentPet();
       if (pet) {
-        if (typeof renderEmergencyVaccineNav === "function") renderEmergencyVaccineNav(pet);
-        if (typeof renderAlertBadge === "function") renderAlertBadge(pet);
-        if (typeof renderLabNav === "function") renderLabNav(pet);
-        if (typeof renderImagingNav === "function") renderImagingNav(pet);
+        renderEmergencyVaccineNav(pet);
+        renderAlertBadge(pet);
+        renderEmergencyLabNav(pet);
+        renderEmergencyImagingNav(pet);
       }
     },
   });
-  if (typeof applyI18n === "function") applyI18n();
+  if (typeof applyI18nInScope === "function") {
+    document
+      .querySelectorAll("[data-glass-chrome], .screen-home-btn, .feature-hub")
+      .forEach((el) => applyI18nInScope(el));
+  }
 }
 
 function syncAppNavBtnIcons(open) {
@@ -3570,12 +3586,11 @@ function setAppNavMenuOpen(open, anchorBtn) {
 }
 
 function initAppNavMenu() {
-  // C has no demo shell; open formal B 說明書 / 操作示範.
   PetLiveWeb.shell.initAppNavMenu(document, {
     win: window,
     closeAccountMenu,
     onManualNav: () => {
-      window.location.assign("../?demo=1");
+      window.location.assign("../?app=1&screen=manual");
     },
   });
 }
@@ -6343,7 +6358,7 @@ function initIntroAndCloud() {
   // Auth omitted on C — skip cloud restore even if a stub were present.
 }
 
-applyI18n();
+applyI18nAll();
 syncAlertSubmitLabel();
 syncBreedFields();
 hydratePetPhotos();
