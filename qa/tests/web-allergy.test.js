@@ -32,6 +32,8 @@ describe("allergy controller", () => {
   it("searches catalog and custom brands", () => {
     const allergy = loadAllergy();
     const pet = { allergyFoodBrands: ["小農場"] };
+    assert.deepEqual(allergy.searchBrands("", pet), []);
+    assert.deepEqual(allergy.searchBrands("   ", pet), []);
     const hits = allergy.searchBrands("皇家", pet);
     assert.ok(hits.some((row) => row.name === "皇家"));
     const customHits = allergy.searchBrands("農", pet);
