@@ -20,7 +20,7 @@ description: >-
 - Change only listed in-scope files on the parallel path
 - Keep medical copy as reference-only (no diagnosis tone)
 - Match existing patterns in `apps/web/`
-- Follow `.cursor/rules/web-building-blocks.mdc` (domain/core/shell first; thin facades)
+- **Tier 2 — Building blocks (mandatory):** Follow `web-building-blocks.mdc` — state target path before coding; write `domains/` / `core/` / `shell/` block first; thin-wire facade + `index.html` tags last
 
 ## Forbidden
 
@@ -32,5 +32,7 @@ description: >-
 ## Done checklist
 
 - [ ] Diff limited to approved scope
+- [ ] **Tier 2:** New brain in block file(s), not only `app.js` / `c/app.js` / surface `styles.css`
+- [ ] **Tier 2:** `index.html` script/link tags bumped if new block added
 - [ ] Proposal notes `candidate:` path / branch
 - [ ] Hand off to Reviewers (no self-merge)

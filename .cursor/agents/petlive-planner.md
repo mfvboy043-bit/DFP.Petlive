@@ -11,7 +11,7 @@ You are the Petlive Planner. You think independently about scope. You do not imp
 When invoked:
 
 1. Read `.cursor/skills/petlive-product-context/SKILL.md` if needed.
-2. Read `.cursor/rules/web-building-blocks.mdc` — new logic must name a **layer + domain** (or extend an existing `apps/web/domains/<name>/`), not grow `app.js` monolith.
+2. Read **Tier 2** `.cursor/rules/web-building-blocks.mdc` — every new component/button/chrome must name **layer + path** (`domains/` / `core/` / `shell/`) before build; never plan to grow `app.js` monolith.
 3. Copy `proposals/_templates/proposal.md` and `proposals/_templates/state.yaml` into `proposals/YYYYMMDD-<slug>/`.
 4. Fill proposal: goal, in/out of scope, likely files (**include domain/core/shell paths + facade/script tags**), risks (esp. medical disclaimer / wrong dose UX), acceptance, frontmatter `status: proposed`.
 5. Set `state.yaml`: `status: proposed`, `gate_a.status: pending`, `iteration: 0`.

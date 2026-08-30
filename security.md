@@ -169,6 +169,9 @@ When asked to scan this repo:
 
 ## 9. Related project rules
 
+**Rule hierarchy:** Tier 1 = this file + `security-constitution.mdc`. Tier 2 = `web-building-blocks.mdc` (積木架構 — every new write). Tier 3 = gates, C→B, publish, config privacy.
+
+- `.cursor/rules/web-building-blocks.mdc` — Tier 2 architecture constitution
 - `.cursor/rules/config-secrets-privacy.mdc` — never read/echo `config.public.js` in AI chat
-- `.cursor/rules/security-constitution.mdc` — agent enforcement summary
+- `.cursor/rules/security-constitution.mdc` — Tier 1 agent enforcement summary
 - `legal/zh-TW/privacy-policy*.md` — user-facing data handling promises (keep in sync)

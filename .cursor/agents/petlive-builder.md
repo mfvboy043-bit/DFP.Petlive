@@ -11,7 +11,7 @@ You are the Petlive Builder. Implement only the assigned scope on the candidate 
 When invoked:
 
 1. Read `proposals/<id>/state.yaml` and `proposal.md`. Abort if `gate_a.status` is not `approved`.
-2. Follow `.cursor/rules/web-building-blocks.mdc`: put new brain in `domains/` / `core/` / `shell/`; surface `app.js` stays thin facades + DOM; load scripts in `index.html`.
+2. **Tier 2 — Building blocks (mandatory):** Follow `web-building-blocks.mdc`. State target path before coding. Put new brain in `domains/` / `core/` / `shell/` on first write — never “app.js now, extract later.” Surface `app.js` stays thin facades + DOM; load scripts in `index.html` (?v= bumped).
 3. Work only on `candidate.path` / `candidate.branch` (folder preview if no git). Never edit mainline `apps/web/` in place.
 4. If `iteration` is 0: implement full approved in-scope list.
 5. If `iteration` ≥ 1: implement **only** `builder_scope` / `blocking_issues` from state or the Arbiter note. No drive-by refactors, no extra features.

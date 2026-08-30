@@ -5,7 +5,9 @@ description: >-
 alwaysApply: true
 ---
 
-# Security constitution (Petlive)
+# Security constitution (Petlive) — Tier 1 最高憲法
+
+**Rule hierarchy:** **This file + `security.md` = Tier 1 (highest).** Tier 2 = **web-building-blocks** (積木架構 — classify and write block first). Tier 3 = process rules (gates, C→B, publish). Both Tier 1 and Tier 2 apply on every product write; security does not exempt you from building blocks.
 
 Full policy: **`security.md`** at repo root. AI must read it before auth, cloud sync, storage, Drive, Supabase DB, or billing work.
 

@@ -25,7 +25,7 @@ description: >-
 
 1. Goal (1–3 sentences)
 2. In scope / Out of scope
-3. Likely files (**name layer + `apps/web/domains/<name>/` or core/shell paths**, plus facade / `index.html` script tags — see `.cursor/rules/web-building-blocks.mdc`)
+3. Likely files — **Tier 2 building blocks required:** name **layer + path** (`apps/web/domains/<name>/`, `core/`, or `shell/`) plus facade / `index.html` script tags (see `web-building-blocks.mdc`). Non-goal: dumping brain into `app.js`.
 4. Risks (esp. medical disclaimer / wrong dose UX; privacy, terms, consent if auth/sync/legal copy; **security invariants from `security.md` if auth/sync/storage/Drive/billing**)
 5. Acceptance criteria
 6. Review routing note when relevant (pharmacist / legal / ui skip or required per `petlive-review-protocol`)

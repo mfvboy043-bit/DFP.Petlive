@@ -27,9 +27,13 @@ description: >-
 
 If unsure, run QA + the domain reviewer (pharmacist for med, UI for visual, **legal** for privacy/terms/disclaimer/auth/sync).
 
-## Security (always on)
+## Tier 1 — Security (always on)
 
 All candidates must not violate **`security.md`** invariants (C/I/A/L). For auth, sync, storage, Drive, Supabase DB, or billing: orchestrator runs **security diff scan** before Gate B; map findings to invariant IDs (e.g. `C1`, `I4`). High = blocking (same weight as Arbiter P1).
+
+## Tier 2 — Building blocks (always on)
+
+New product logic, chrome, components, or shared styles must live under `domains/` / `core/` / `shell/` per **web-building-blocks**. QA flags **BB-n** when new brain is pasted only into `app.js`, `c/app.js`, or surface `styles.css` without a block file. BB high = blocking (same as P1 — creates cleanup debt while codebase is still being organized).
 
 ## Independence
 
@@ -40,7 +44,8 @@ Launch assigned reviewers in parallel. Do not include other `reviews/*.md` in a 
 - Pharmacist `MED-n`
 - QA `QA-n`
 - UI `UI-n`
-- Legal `LEGAL-n`  
+- Legal `LEGAL-n`
+- Building blocks `BB-n` (Tier 2 — brain in wrong layer / app.js dump)
 Keep IDs stable across iterations (same bug = same ID).
 
 ## Snapshots

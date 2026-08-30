@@ -13,7 +13,9 @@ Parent agent only. Delegate; do not impersonate all roles in one pass.
 Read `proposals/<id>/state.yaml` as source of truth (not chat memory).
 Stop at every human gate. Reviewers never see each other’s reports before they write.
 
-**Security (standing order):** Comply with `security.md` + `.cursor/rules/security-constitution.mdc` on every product loop. Auth/sync/storage/Drive/billing scope → Planner must cite relevant invariants; before Gate B run **security diff scan** on candidate paths.
+**Tier 1 — Security:** Comply with `security.md` + `security-constitution` on every product loop. Auth/sync/storage/Drive/billing scope → Planner cites invariants; before Gate B run **security diff scan** on candidate paths.
+
+**Tier 2 — Building blocks:** Every new `apps/web` write follows **web-building-blocks** — Planner names layer + path; Builder implements block first, facade last. Reject candidates that dump new brain only into `app.js` / `c/app.js` / surface `styles.css`.
 
 ## Sequence
 

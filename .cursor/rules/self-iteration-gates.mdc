@@ -10,7 +10,9 @@ Two human gates are mandatory for product changes to `apps/web`, `contracts/`, o
 1. **Confirm before build** — After Planner proposal, stop. Do not edit mainline until Victor says confirm / 確認 / go build (or equivalent).
 2. **Confirm before merge** — After candidate_ready (reviews + Arbiter), stop. Do not merge until Victor says adopt / 採用.
 
-**Security constitution (always on, same tier as gates):** Every product change must comply with **`security.md`** and **security-constitution**. Auth, sync, storage, Drive, Supabase DB, or billing scope → read `security.md` before Gate A; run **security diff scan** on touched paths before Gate B. Never ship `service_role`, Client Secret, or billing authority to the browser.
+**Tier 1 — Security constitution:** Every product change must comply with **`security.md`** and **security-constitution**. Auth, sync, storage, Drive, Supabase DB, or billing scope → read `security.md` before Gate A; run **security diff scan** on touched paths before Gate B. Never ship `service_role`, Client Secret, or billing authority to the browser.
+
+**Tier 2 — Building blocks (積木規則):** Every new write in `apps/web` must follow **web-building-blocks** — classify layer, write `domains/` / `core/` / `shell/` block first, thin-wire facade last. Builder must state target path before coding. No “paste in app.js now, extract later.” QA/Arbiter treat Tier 2 violations as blocking when new brain lands only in `app.js` / `c/app.js` / surface `styles.css`.
 
 Between gates, AI may Builder → parallel Review → Arbiter → revise (max 3 iterations). AI must not choose *what* to build or *whether to adopt*.
 

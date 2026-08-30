@@ -2,6 +2,14 @@
 
 Human sets direction (Gate A) and adoption (Gate B). Between gates, agents may build, review in parallel, and revise up to 3 times.
 
+## Rule hierarchy (always on)
+
+```text
+Tier 1 — 最高憲法     security-constitution.mdc + security.md
+Tier 2 — 架構憲法     web-building-blocks.mdc (積木規則 — every new write)
+Tier 3 — Process      self-iteration-gates, config-secrets-privacy, c-to-b-cover, auto-publish-pages
+```
+
 ## Layout
 
 ```text
@@ -22,10 +30,11 @@ Human sets direction (Gate A) and adoption (Gate B). Between gates, agents may b
 │   ├── petlive-legal-advisor/
 │   └── petlive-* (v1 backups)
 └── rules/
-    ├── self-iteration-gates.mdc
-    ├── security-constitution.mdc   # always on — CIA, trust boundary, invariants
+    ├── security-constitution.mdc   # Tier 1
+    ├── web-building-blocks.mdc     # Tier 2
+    ├── self-iteration-gates.mdc    # Tier 3
     └── config-secrets-privacy.mdc
-security.md                           # repo root — full threat model + scan protocol
+security.md                           # repo root — Tier 1 full threat model
 ```
 
 ## Not in this cut
