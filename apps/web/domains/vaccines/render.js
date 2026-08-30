@@ -83,6 +83,7 @@
           rowClass: "is-unprotected",
           metaText: label("vaccineNotSet"),
           statusText: label("parasiteUnprotected"),
+          lightStatus: "expired",
         };
       }
 
@@ -95,6 +96,7 @@
             date: nextVaccine.next,
           }),
           statusText: label("parasiteUnprotected"),
+          lightStatus: "expired",
         };
       }
       if (status === "approaching") {
@@ -105,6 +107,7 @@
             date: nextVaccine.next,
           }),
           statusText: label("parasiteApproaching"),
+          lightStatus: "approaching",
         };
       }
       return {
@@ -114,6 +117,7 @@
           date: nextVaccine.next,
         }),
         statusText: label("parasiteProtected"),
+        lightStatus: "protected",
       };
     }
 

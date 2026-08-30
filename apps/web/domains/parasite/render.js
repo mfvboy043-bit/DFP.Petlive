@@ -40,12 +40,19 @@
         .join("")}</div>`;
     }
 
+    function stripLightStatusFor(status) {
+      if (!status || status === "optional") return null;
+      if (status === "unprotected") return "expired";
+      return status;
+    }
+
     function buildKindStripPresentation({ record, status, productLabel }) {
       if (status === "optional") {
         return {
           rowClass: "is-optional",
           metaText: label("parasiteHeartwormOptional"),
           statusText: parasiteStatusLabel("optional"),
+          lightStatus: null,
         };
       }
 
@@ -62,6 +69,7 @@
         rowClass,
         metaText,
         statusText: parasiteStatusLabel(status),
+        lightStatus: stripLightStatusFor(status),
       };
     }
 
@@ -70,6 +78,7 @@
         rowClass: "is-unprotected",
         metaText: kind === "vaccine" ? label("vaccineNotSet") : label("parasiteNotSet"),
         statusText: label("parasiteUnprotected"),
+        lightStatus: "expired",
       };
     }
 
