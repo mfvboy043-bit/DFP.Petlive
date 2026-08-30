@@ -3450,6 +3450,7 @@ button.tl-med-summary.is-open {
 
 .screen-emergency,
 .screen[data-screen="timeline"],
+.screen[data-screen="allergy-helper"],
 .screen[data-screen="vaccines"],
 .screen[data-screen="alerts"],
 .screen[data-screen="parasite"],
@@ -6159,6 +6160,469 @@ html.is-photo-crop-open body {
 .e-alert-source {
   font-size: 0.85em;
   color: var(--text-muted);
+}
+
+/* Pet weight scale — L-axis chart + manual log */
+.pet-weight-scale-body {
+  display: grid;
+  gap: 16px;
+  padding: 0 var(--screen-padding) 28px;
+}
+
+.pws-section-title {
+  margin: 0;
+  font-family: var(--font-serif);
+  font-size: 17px;
+  font-weight: 700;
+  color: var(--text);
+}
+
+.pws-head-row {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 10px;
+}
+
+.pws-focus {
+  margin: 0;
+  font-size: 13px;
+  color: var(--text-muted);
+}
+
+.pws-chart-section,
+.pws-form,
+.pws-list-section {
+  padding: 16px;
+  border-radius: 18px;
+  background: rgba(255, 253, 250, 0.78);
+  border: 1px solid rgba(47, 79, 66, 0.1);
+}
+
+.pws-toolbar {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px 12px;
+  margin-bottom: 12px;
+  align-items: start;
+}
+
+.pws-granularity-field,
+.pws-unit-field {
+  margin: 0;
+  padding: 0;
+  border: 0;
+  min-width: 0;
+}
+
+.pws-granularity-field legend,
+.pws-unit-field legend {
+  font-size: 13px;
+  color: var(--text-muted);
+  margin-bottom: 6px;
+}
+
+.pws-granularity-chips,
+.pws-unit-field .chips,
+.pws-form .chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.pws-granularity-chips .chip,
+.pws-unit-field .chip,
+.pws-form-unit-field .chip {
+  min-width: 0;
+  flex: 1 1 auto;
+}
+
+.pws-chart-wrap {
+  min-height: 200px;
+  border-radius: 14px;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.72), rgba(247, 244, 238, 0.55));
+  border: 1px solid rgba(47, 79, 66, 0.08);
+  padding: 8px 4px 4px;
+}
+
+.pws-chart {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+.pws-axis {
+  stroke: rgba(47, 79, 66, 0.35);
+  stroke-width: 1.5;
+}
+
+.pws-grid-line {
+  stroke: rgba(47, 79, 66, 0.08);
+  stroke-width: 1;
+}
+
+.pws-month-band {
+  fill: rgba(53, 95, 84, 0.05);
+}
+
+.pws-line {
+  fill: none;
+  stroke: rgba(53, 95, 84, 0.55);
+  stroke-width: 2;
+  stroke-linejoin: round;
+  stroke-linecap: round;
+}
+
+.pws-point {
+  stroke: #fff;
+  stroke-width: 1.5;
+}
+
+.pws-point.is-manual {
+  fill: #355f54;
+}
+
+.pws-point.is-visit {
+  fill: #3a5166;
+}
+
+.pws-point.is-profile {
+  fill: #8a5a2b;
+}
+
+.pws-point[data-pws-drill-year],
+.pws-drill-target[data-pws-drill-year] {
+  cursor: pointer;
+}
+
+.pws-axis-label {
+  fill: var(--text-muted);
+  font-size: 10px;
+}
+
+.pws-unit-tag {
+  fill: var(--text-muted);
+  font-size: 10px;
+  font-weight: 600;
+}
+
+.pws-chart-empty {
+  margin: 0;
+  padding: 48px 16px;
+  text-align: center;
+  color: var(--text-muted);
+  font-size: 14px;
+  line-height: 1.55;
+}
+
+.pws-form .pws-form-fields {
+  display: grid;
+  grid-template-columns: minmax(0, 1.15fr) minmax(0, 0.85fr) minmax(0, 1fr);
+  gap: 10px;
+  align-items: end;
+}
+
+.pws-form-unit-field {
+  margin: 0;
+  padding: 0;
+  border: 0;
+  min-width: 0;
+}
+
+.pws-form-unit-field legend {
+  font-size: 13px;
+  color: var(--text-muted);
+  margin-bottom: 6px;
+}
+
+.pws-form-unit-field .chips {
+  flex-wrap: nowrap;
+}
+
+.pws-form-unit-field .chip {
+  flex: 1 1 0;
+  min-width: 0;
+  padding-left: 10px;
+  padding-right: 10px;
+}
+
+.pws-list {
+  display: grid;
+  gap: 10px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.pws-item {
+  padding: 12px 14px;
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.72);
+  border: 1px solid rgba(47, 79, 66, 0.08);
+}
+
+.pws-item.is-manual {
+  border-left: 3px solid #355f54;
+}
+
+.pws-item.is-visit {
+  border-left: 3px solid #3a5166;
+}
+
+.pws-item.is-profile {
+  border-left: 3px solid #8a5a2b;
+}
+
+.pws-item-empty {
+  text-align: center;
+  border-style: dashed;
+}
+
+.pws-item-empty p {
+  margin: 0;
+  color: var(--text-muted);
+}
+
+.pws-item-head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.pws-item-source {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.pws-item-head time {
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+.pws-item-weight {
+  margin: 6px 0 0;
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--text);
+}
+
+.pws-item-remove {
+  margin-left: auto;
+  font-size: 12px;
+  padding: 4px 8px;
+}
+
+/* Allergy helper — purchase log + unit-price calc */
+.allergy-helper-body {
+  display: grid;
+  gap: 16px;
+  padding: 0 var(--screen-padding) 28px;
+}
+
+.ah-section-title {
+  margin: 0 0 10px;
+  font-family: var(--font-serif);
+  font-size: 17px;
+  font-weight: 700;
+  color: var(--text);
+}
+
+.ah-calc,
+.ah-form,
+.ah-list-section {
+  padding: 14px 14px 16px;
+  border: 1px solid var(--line);
+  border-radius: var(--r-md);
+  background: color-mix(in srgb, #fff 92%, var(--paper-warm));
+  box-shadow:
+    0 1px 0 rgba(255, 255, 255, 0.85) inset,
+    0 4px 14px rgba(31, 46, 39, 0.04);
+}
+
+.ah-calc-grid,
+.ah-form-metrics {
+  display: grid;
+  gap: 10px;
+}
+
+.ah-calc-weight-row,
+.ah-calc-price-row,
+.ah-form-weight-row,
+.ah-form-price-row {
+  display: grid;
+  gap: 10px;
+  align-items: end;
+}
+
+.ah-calc-weight-row,
+.ah-form-weight-row {
+  grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr);
+}
+
+.ah-calc-price-row,
+.ah-form-price-row {
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1.1fr);
+}
+
+.ah-calc-inline {
+  margin: 0;
+  min-height: 50px;
+  display: flex;
+  align-items: center;
+  padding: 10px 12px;
+  border-radius: 12px;
+  background: rgba(127, 175, 160, 0.14);
+  color: var(--leaf-deep, #2f4f42);
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 1.4;
+}
+
+.ah-calc-inline[hidden] {
+  display: none !important;
+}
+
+.ah-unit-field {
+  margin: 0;
+  padding: 0;
+  border: 0;
+  min-width: 0;
+}
+
+.ah-unit-field legend,
+.ah-meat-field legend {
+  font-size: 13px;
+  color: var(--text-muted);
+  margin-bottom: 6px;
+}
+
+.ah-unit-field .chips,
+.ah-meat-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.ah-unit-field .chip {
+  flex: 1 1 0;
+  min-width: 0;
+}
+
+.ah-brand-results {
+  margin-top: 6px;
+}
+
+.ah-meat-field {
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+.ah-meat-custom-field {
+  margin-top: 10px;
+}
+
+.ah-item-meats {
+  margin: 4px 0;
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--text-muted);
+}
+
+.ah-form {
+  display: grid;
+  gap: 12px;
+}
+
+.ah-item-meta {
+  margin: 6px 0 0;
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--leaf-deep, #2f4f42);
+  font-weight: 500;
+}
+
+.ah-list {
+  display: grid;
+  gap: 10px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.ah-item {
+  padding: 12px 12px 12px 14px;
+  border: 1px solid var(--line);
+  border-radius: var(--r-sm);
+  background: rgba(255, 253, 250, 0.72);
+}
+
+.ah-item::before {
+  content: none;
+}
+
+.ah-item-empty {
+  border-style: dashed;
+  text-align: center;
+  color: var(--text-muted);
+}
+
+.ah-item-empty p {
+  margin: 0;
+  font-size: 14px;
+}
+
+.ah-item-head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.ah-item-kind {
+  display: inline-flex;
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: rgba(127, 175, 160, 0.18);
+  color: var(--leaf-deep, #2f4f42);
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.ah-item-head time {
+  margin-right: auto;
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+.ah-item-brand {
+  margin: 8px 0 4px;
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.ah-item-meta,
+.ah-item-perkg {
+  margin: 0;
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--text-muted);
+}
+
+.ah-item-perkg {
+  margin-top: 2px;
+  color: var(--leaf-deep, #2f4f42);
+  font-weight: 500;
+}
+
+.ah-item-remove {
+  margin-left: auto;
+  padding: 4px 8px;
+  font-size: 12px;
 }
 
 /* Timeline — same block language as .alert-section */
