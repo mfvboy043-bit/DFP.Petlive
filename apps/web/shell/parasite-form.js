@@ -90,7 +90,7 @@
     if (typeof renderParasiteStrip === "function") {
       renderParasiteStrip(pet);
     }
-    // Preserve pre-extract persist pattern: no applySelectedPet / schedulePetsGraphPersist here.
+    // Facade calls schedulePetsGraphPersist after this returns true (same as vaccine submit).
     if (!quiet && typeof showToast === "function" && typeof t === "function") {
       const saved = result.draft || draft;
       const dual =

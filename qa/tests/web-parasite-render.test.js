@@ -48,6 +48,7 @@ describe("PA-05 parasite render builders", () => {
     assert.equal(row.rowClass, "is-optional");
     assert.equal(row.metaText, "parasiteHeartwormOptional");
     assert.equal(row.statusText, "status:optional");
+    assert.equal(row.lightStatus, null);
   });
 
   it("buildKindStripPresentation unset and protected with meta", () => {
@@ -60,6 +61,7 @@ describe("PA-05 parasite render builders", () => {
     assert.equal(unset.rowClass, "is-unprotected");
     assert.equal(unset.metaText, "parasiteNotSet");
     assert.equal(unset.statusText, "status:unprotected");
+    assert.equal(unset.lightStatus, "expired");
 
     const protectedRow = renderer.buildKindStripPresentation({
       record: { productKey: "ppFrontline", nextDue: "2026-12-01" },
@@ -69,6 +71,7 @@ describe("PA-05 parasite render builders", () => {
     assert.equal(protectedRow.rowClass, "is-protected");
     assert.match(protectedRow.metaText, /parasiteStripMeta/);
     assert.equal(protectedRow.statusText, "status:protected");
+    assert.equal(protectedRow.lightStatus, "protected");
   });
 
   it("buildKindStripPresentation approaching tone", () => {
@@ -80,6 +83,7 @@ describe("PA-05 parasite render builders", () => {
     });
     assert.equal(row.rowClass, "is-approaching");
     assert.equal(row.statusText, "status:approaching");
+    assert.equal(row.lightStatus, "approaching");
   });
 
   it("buildProductChipsHtml splits dual row", () => {
@@ -104,6 +108,7 @@ describe("PA-05 parasite render builders", () => {
     assert.equal(external.rowClass, "is-unprotected");
     assert.equal(external.metaText, "parasiteNotSet");
     assert.equal(external.statusText, "parasiteUnprotected");
+    assert.equal(external.lightStatus, "expired");
     const vaccine = renderer.buildEmptyStripRowPresentation("vaccine");
     assert.equal(vaccine.metaText, "vaccineNotSet");
   });

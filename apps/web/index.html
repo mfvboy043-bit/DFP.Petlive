@@ -15,6 +15,7 @@
   <link rel="stylesheet" href="./shell/glass-dock.css?v=20260828-dock-smooth" />
   <link rel="stylesheet" href="./shell/screen-home-btn.css?v=20260827-screen-home-btn" />
   <link rel="stylesheet" href="./shell/feature-hub.css?v=20260827-vax-keep-card" />
+  <link rel="stylesheet" href="./shell/parasite-strip.css?v=20260830-strip-lights" />
   <link rel="stylesheet" href="./shell/intro-stories.css?v=20260829-intro-stories-v5" />
   <link rel="stylesheet" href="./legal/legal.css?v=20260828-legal-v14" />
   <link rel="stylesheet" href="./shell/legal-consent-modal.css?v=20260829-legal-v17" />
@@ -378,7 +379,14 @@
                 id="parasite-row-vaccine"
                 data-go="vaccines"
               >
-                <span class="parasite-row-label" data-i18n="vaccinePrevention">疫苗預防</span>
+                <span class="parasite-row-label">
+                  <span class="parasite-row-title" data-i18n="vaccinePrevention">疫苗預防</span>
+                  <span class="e-vax-lights parasite-strip-lights" id="parasite-lights-vaccine" role="img" aria-label="">
+                    <i class="e-vax-dot is-green" data-status="protected"></i>
+                    <i class="e-vax-dot is-orange" data-status="approaching"></i>
+                    <i class="e-vax-dot is-red" data-status="expired"></i>
+                  </span>
+                </span>
                 <span class="parasite-row-meta" id="parasite-meta-vaccine" translate="no">—</span>
                 <span class="parasite-row-status" id="parasite-status-vaccine" translate="no"></span>
               </button>
@@ -389,7 +397,14 @@
                 data-go="parasite"
                 data-parasite-kind="external"
               >
-                <span class="parasite-row-label" data-i18n="parasiteExternal" translate="no">體外驅蟲</span>
+                <span class="parasite-row-label">
+                  <span class="parasite-row-title" data-i18n="parasiteExternal" translate="no">體外驅蟲</span>
+                  <span class="e-vax-lights parasite-strip-lights" id="parasite-lights-external" role="img" aria-label="">
+                    <i class="e-vax-dot is-green" data-status="protected"></i>
+                    <i class="e-vax-dot is-orange" data-status="approaching"></i>
+                    <i class="e-vax-dot is-red" data-status="expired"></i>
+                  </span>
+                </span>
                 <span class="parasite-row-meta" id="parasite-meta-external" translate="no">—</span>
                 <span class="parasite-row-status" id="parasite-status-external" translate="no"></span>
               </button>
@@ -400,7 +415,14 @@
                 data-go="parasite"
                 data-parasite-kind="heartworm"
               >
-                <span class="parasite-row-label" data-i18n="parasiteHeartworm" translate="no">心絲蟲預防</span>
+                <span class="parasite-row-label">
+                  <span class="parasite-row-title" data-i18n="parasiteHeartworm" translate="no">心絲蟲預防</span>
+                  <span class="e-vax-lights parasite-strip-lights" id="parasite-lights-heartworm" role="img" aria-label="">
+                    <i class="e-vax-dot is-green" data-status="protected"></i>
+                    <i class="e-vax-dot is-orange" data-status="approaching"></i>
+                    <i class="e-vax-dot is-red" data-status="expired"></i>
+                  </span>
+                </span>
                 <span class="parasite-row-meta" id="parasite-meta-heartworm" translate="no">—</span>
                 <span class="parasite-row-status" id="parasite-status-heartworm" translate="no"></span>
               </button>
@@ -2402,6 +2424,7 @@
   <script defer src="./shell/intro-cloud.js?v=20260828-legal-v14"></script>
   <script defer src="./shell/alert-form.js?v=20260827-wire-thin-forms"></script>
   <script defer src="./shell/parasite-form.js?v=20260827-wire-thin-forms"></script>
+  <script defer src="./shell/parasite-strip.js?v=20260830-strip-lights"></script>
   <script defer src="./shell/breed-form.js?v=20260827-wire-thin-forms"></script>
   <script defer src="./shell/emergency-paint.js?v=20260827-wire-thin-forms"></script>
   <script defer src="./domains/pets/controller.js?v=20260813-layered-adopted"></script>
@@ -2453,6 +2476,6 @@
   <script defer src="./domains/weight/selectors.js?v=20260829-pet-weight-scale"></script>
   <script defer src="./domains/weight/controller.js?v=20260829-pet-weight-scale"></script>
   <script defer src="./domains/weight/render.js?v=20260829-pet-weight-scale"></script>
-  <script defer src="./app.js?v=20260830-brand-i18n-b"></script>
+  <script defer src="./app.js?v=20260830-strip-lights-b"></script>
 </body>
 </html>

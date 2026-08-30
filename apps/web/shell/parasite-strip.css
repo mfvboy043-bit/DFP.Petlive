@@ -1,0 +1,29 @@
+/* Home prevention strip — per-row traffic lights (reuses .e-vax-dot from emergency card). */
+
+.parasite-row-label {
+  display: inline-flex;
+  flex-wrap: nowrap;
+  align-items: center;
+  gap: 5px;
+  min-width: 0;
+  overflow: visible;
+  -webkit-line-clamp: unset;
+  -webkit-box-orient: unset;
+}
+
+.parasite-row-title {
+  flex: 0 0 auto;
+  font-size: 13px;
+  font-weight: 700;
+  line-height: 1.25;
+  white-space: nowrap;
+}
+
+.parasite-strip-lights {
+  flex-shrink: 0;
+}
+
+.parasite-row .parasite-row-status::before {
+  content: none;
+  display: none;
+}

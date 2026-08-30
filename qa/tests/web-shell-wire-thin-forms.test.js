@@ -159,6 +159,25 @@ describe("shell parasite-form", () => {
   });
 });
 
+describe("shell parasite-strip", () => {
+  it("mapStripLightStatus maps unprotected to expired", () => {
+    const shell = loadShell(["shell/parasite-strip.js"]);
+    assert.equal(shell.mapStripLightStatus("protected"), "protected");
+    assert.equal(shell.mapStripLightStatus("approaching"), "approaching");
+    assert.equal(shell.mapStripLightStatus("unprotected"), "expired");
+    assert.equal(shell.mapStripLightStatus("optional"), null);
+  });
+
+  it("stripLightsMarkup emits three traffic-light dots", () => {
+    const shell = loadShell(["shell/parasite-strip.js"]);
+    const html = shell.stripLightsMarkup("parasite-lights-external");
+    assert.match(html, /id="parasite-lights-external"/);
+    assert.match(html, /data-status="protected"/);
+    assert.match(html, /data-status="approaching"/);
+    assert.match(html, /data-status="expired"/);
+  });
+});
+
 describe("shell breed-form", () => {
   it("other species sets custom sentinel and clears chips", () => {
     const shell = loadShell(["shell/breed-form.js"]);

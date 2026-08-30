@@ -949,42 +949,28 @@ function fillParasiteScreen(pet) {
   }
 }
 
-function renderParasiteStrip(pet) {
-  ensureParasitePrevention(pet);
-  PARASITE_KINDS.forEach((kind) => {
-    const row = document.getElementById(`parasite-row-${kind}`);
-    const meta = document.getElementById(`parasite-meta-${kind}`);
-    const statusEl = document.getElementById(`parasite-status-${kind}`);
-    if (!row || !meta || !statusEl) return;
-
-    const record = getParasiteRecord(pet, kind);
-    row.classList.remove(
-      "is-protected",
-      "is-approaching",
-      "is-unprotected",
-      "is-optional"
-    );
-
-    const status = getParasiteSlotStatus(pet, kind);
-    const productLabel = record?.productKey
-      ? t(record.productKey)
-      : record?.product || t("parasiteProductFallback");
-    const presentation = parasiteRenderer.buildKindStripPresentation({
-      record,
-      status,
-      productLabel,
-    });
-    row.classList.add(presentation.rowClass);
-    meta.textContent = presentation.metaText;
-    statusEl.textContent = presentation.statusText;
-  });
-  renderVaccineStrip(pet);
+function stripLightTitles() {
+  return {
+    protected: t("vaxLightGreen"),
+    approaching: t("vaxLightOrange"),
+    expired: t("vaxLightRed"),
+  };
 }
 
-function renderVaccineStrip(pet) {
-  const row = document.getElementById("parasite-row-vaccine");
-  const meta = document.getElementById("parasite-meta-vaccine");
-  const statusEl = document.getElementById("parasite-status-vaccine");
+function syncParasiteStripLights(lightsEl, lightStatus) {
+  PetLiveWeb.shell.syncStripLights({
+    lightsEl,
+    lightStatus,
+    titleByStatus: stripLightTitles(),
+    emptyLabel: t("parasiteNotSet"),
+  });
+}
+
+function paintParasiteStripRow(kind, presentation) {
+  const row = document.getElementById(`parasite-row-${kind}`);
+  const meta = document.getElementById(`parasite-meta-${kind}`);
+  const statusEl = document.getElementById(`parasite-status-${kind}`);
+  const lightsEl = document.getElementById(`parasite-lights-${kind}`);
   if (!row || !meta || !statusEl) return;
 
   row.classList.remove(
@@ -993,11 +979,41 @@ function renderVaccineStrip(pet) {
     "is-unprotected",
     "is-optional"
   );
-
-  const presentation = vaccineRenderer.buildStripPresentation(getNextVaccine(pet));
   row.classList.add(presentation.rowClass);
   meta.textContent = presentation.metaText;
   statusEl.textContent = presentation.statusText;
+  syncParasiteStripLights(lightsEl, presentation.lightStatus ?? null);
+}
+
+function paintParasiteStripRowEmpty(kind) {
+  paintParasiteStripRow(kind, parasiteRenderer.buildEmptyStripRowPresentation(kind));
+}
+
+function renderParasiteStrip(pet) {
+  ensureParasitePrevention(pet);
+  PARASITE_KINDS.forEach((kind) => {
+    const record = getParasiteRecord(pet, kind);
+    const status = getParasiteSlotStatus(pet, kind);
+    const productLabel = record?.productKey
+      ? t(record.productKey)
+      : record?.product || t("parasiteProductFallback");
+    paintParasiteStripRow(
+      kind,
+      parasiteRenderer.buildKindStripPresentation({
+        record,
+        status,
+        productLabel,
+      })
+    );
+  });
+  renderVaccineStrip(pet);
+}
+
+function renderVaccineStrip(pet) {
+  paintParasiteStripRow(
+    "vaccine",
+    vaccineRenderer.buildStripPresentation(getNextVaccine(pet))
+  );
 }
 
 function readParasiteForm(kind) {
@@ -1017,7 +1033,7 @@ function readParasiteForm(kind) {
 }
 
 function saveParasiteKind(kind, { dosedToday = false, quiet = false } = {}) {
-  return PetLiveWeb.shell.saveParasiteKind({
+  const ok = PetLiveWeb.shell.saveParasiteKind({
     pet: getCurrentPet(),
     kind,
     dosedToday,
@@ -1040,6 +1056,8 @@ function saveParasiteKind(kind, { dosedToday = false, quiet = false } = {}) {
     parasiteKindTitle,
     parasiteTodayISODate,
   });
+  if (ok) schedulePetsGraphPersist();
+  return ok;
 }
 
 /** Recompute next due from last given + interval (does not mark dosed today). */
@@ -1287,26 +1305,16 @@ function renderVaccineList(pet) {
 }
 
 function syncVaccineNavLights(status, lightsEl) {
-  const titleByStatus = {
-    protected: t("vaxLightGreen"),
-    approaching: t("vaxLightOrange"),
-    expired: t("vaxLightRed"),
-  };
   const targets = lightsEl
     ? [lightsEl]
-    : Array.from(document.querySelectorAll(".e-vax-lights"));
+    : Array.from(document.querySelectorAll(".e-vax-nav .e-vax-lights"));
   targets.forEach((lights) => {
-    if (!lights) return;
-    lights.querySelectorAll(".e-vax-dot").forEach((dot) => {
-      const key = dot.dataset.status;
-      const on = status && key === status;
-      dot.classList.toggle("is-on", Boolean(on));
-      if (titleByStatus[key]) dot.title = titleByStatus[key];
+    PetLiveWeb.shell.syncStripLights({
+      lightsEl: lights,
+      lightStatus: status,
+      titleByStatus: stripLightTitles(),
+      emptyLabel: t("noVaccineNext"),
     });
-    lights.setAttribute(
-      "aria-label",
-      status ? titleByStatus[status] : t("noVaccineNext")
-    );
   });
 }
 
@@ -2750,12 +2758,7 @@ renderCoordinator.register("home", "petHeader", (pet) => {
 renderCoordinator.register("home", "parasiteStrip", (pet) => {
   if (pet) renderParasiteStrip(pet);
   else if (document.getElementById("parasite-strip")) {
-    ["vaccine", "external", "internal"].forEach((kind) => {
-      const meta = document.getElementById(`parasite-meta-${kind}`);
-      const status = document.getElementById(`parasite-status-${kind}`);
-      if (meta) meta.textContent = "—";
-      if (status) status.textContent = "";
-    });
+    ["vaccine", "external", "heartworm"].forEach((kind) => paintParasiteStripRowEmpty(kind));
   }
 });
 renderCoordinator.register(

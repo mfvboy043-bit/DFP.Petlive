@@ -96,6 +96,7 @@ describe("VA-05 vaccines render builders", () => {
     assert.equal(unset.rowClass, "is-unprotected");
     assert.equal(unset.metaText, "vaccineNotSet");
     assert.equal(unset.statusText, "parasiteUnprotected");
+    assert.equal(unset.lightStatus, "expired");
     const expired = renderer.buildStripPresentation({
       key: "vRabies",
       name: "Rabies",
@@ -103,6 +104,7 @@ describe("VA-05 vaccines render builders", () => {
     });
     assert.equal(expired.rowClass, "is-unprotected");
     assert.match(expired.metaText, /vaccineStripMeta/);
+    assert.equal(expired.lightStatus, "expired");
     const approaching = renderer.buildStripPresentation({
       key: "v5in1",
       name: "五合一",
@@ -110,6 +112,7 @@ describe("VA-05 vaccines render builders", () => {
     });
     assert.equal(approaching.rowClass, "is-approaching");
     assert.equal(approaching.statusText, "parasiteApproaching");
+    assert.equal(approaching.lightStatus, "approaching");
     const protectedRow = renderer.buildStripPresentation({
       key: "v5in1",
       name: "五合一",
@@ -117,6 +120,7 @@ describe("VA-05 vaccines render builders", () => {
     });
     assert.equal(protectedRow.rowClass, "is-protected");
     assert.equal(protectedRow.statusText, "parasiteProtected");
+    assert.equal(protectedRow.lightStatus, "protected");
   });
 
   it("buildEmergencyNavPresentation no-next and status tones", () => {
