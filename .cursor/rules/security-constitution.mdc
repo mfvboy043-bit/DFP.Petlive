@@ -1,0 +1,55 @@
+---
+description: >-
+  Petlive security constitution — CIA, trust boundary, invariants, and AI scan
+  protocol. Read security.md before auth/sync/billing changes.
+alwaysApply: true
+---
+
+# Security constitution (Petlive)
+
+Full policy: **`security.md`** at repo root. AI must read it before auth, cloud sync, storage, Drive, Supabase DB, or billing work.
+
+## CIA lens (quick)
+
+| Principle | Petlive today | Phase 2+ |
+|-----------|---------------|----------|
+| **Confidentiality** | Data on device; Drive token in sessionStorage | RLS on all user rows |
+| **Integrity** | Local `pets[]` truth; demo write block | Server-side authz + idempotent billing |
+| **Availability** | IDB/LS quota; CDN deps | Rate limits on costly ops |
+
+## Trust boundary (non-negotiable)
+
+- **Browser = untrusted.** UI gates and `localStorage` are not authorization.
+- **Never** ship `service_role`, Google Client Secret, or Stripe signing secret to client or repo.
+- **Phase 2+:** every cloud read/write enforced in **Supabase RLS** (or Edge Function), not only in `app.js`.
+- **Paid/API ops (future):** deduct/freeze **before** external call — no race window.
+
+## Security invariants (violations = High)
+
+Reference IDs in `security.md` when reporting findings.
+
+- **C1–C4:** No cross-user data leak; no secrets in git/chat/logs.
+- **I1–I4:** Demo cannot write; sync merge safe; billing idempotent; no post-hoc deduct.
+- **L1–L3:** Local-first truth preserved; sign-out clears auth tokens not pets; IDB migration safe.
+
+## AI must
+
+- Run mental **threat model** (assets → roles → boundary → invariants → attack surface) on auth/sync/storage changes.
+- Flag `innerHTML` + user/pet content, Drive token in `localStorage`, missing RLS (Phase 2+), debug URL hatches weakening gates.
+- Map scan results to invariant IDs; propose fix + verify for **High**.
+- Keep legal copy aligned when data flows change (delegate **petlive-legal-advisor** when needed).
+- Follow **config-secrets-privacy** — do not read/echo `config.public.js`.
+
+## AI must not
+
+- Add backend secrets to `config.public.js` or any `apps/web/` script.
+- Implement cloud multi-tenant storage without RLS policies in the same change.
+- Treat Supabase Google login alone as authorization for shared data.
+- Skip security review on “small” auth or sync tweaks.
+
+## Scan commands (Victor or agent)
+
+1. `security scan` — full pass using `security.md`
+2. `fix finding` — patch High/Medium with minimal diff
+3. `verify fix` — replay attack path
+4. `security diff scan` — changed files only
