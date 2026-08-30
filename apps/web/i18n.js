@@ -118,9 +118,8 @@ const I18N = {
     introStart: "開始使用",
     introTryLocal: "本機試用",
     introEnterApp: "進入護照",
-    demoEntry: "操作示範（無法儲存）",
     manualTitle: "說明書",
-    manualNavHint: "操作示範與說明",
+    manualNavHint: "使用說明",
     manualEyebrow: "GUIDE",
     manualPageTitle: "怎麼開始用火龍果護照",
     manualMisconception: "資料在你這邊，儲存在你的雲端帳戶",
@@ -149,29 +148,11 @@ const I18N = {
     manualFaqCloudQ: "資料存在哪裡？",
     manualFaqCloudA:
       "本機先寫入；登入後可備份到你自己的 Google 雲端硬碟「火龍果護照」資料夾。不是 Petlive 伺服器上的病歷庫。",
-    manualFaqDemoQ: "體驗範例護照會改到我的帳號嗎？",
-    manualFaqDemoA: "不會。示範模式唯讀、無法儲存，也不會寫入你的帳號或雲端。",
     manualCtaHome: "回到護照",
     manualCtaAddPet: "去新增寵物",
-    manualCtaDemo: "體驗範例護照（唯讀・不寫入帳號）",
     manualCtaTour: "開始導覽",
     manualCtaTourSoon: "即將開放",
     manualTourDisabledHint: "導覽功能即將開放",
-    demoBanner: "示範 · 無法儲存",
-    demoReset: "重置示範",
-    demoExit: "離開示範",
-    demoTourStart: "操作導覽",
-    demoTourSkip: "跳過",
-    demoTourNext: "下一步",
-    demoTourDone: "完成",
-    demoTourProgress: "{current} / {total}",
-    demoTourStepPet: "先點選寵物看板，切換要查看的毛孩。",
-    demoTourStepCard: "開啟醫療資訊卡，給急診／換院快速參考。",
-    demoTourStepTimeline: "時間軸可回看就診與用藥紀錄。",
-    demoTourStepVisit: "從這裡進入新增就診流程（示範模式無法儲存）。",
-    demoTourStepDone: "導覽結束。可自由點選瀏覽；資料不會寫入本機或雲端。",
-    demoReadOnlyToast: "示範模式無法儲存",
-    demoResetDone: "已重置示範資料",
     login: "登入",
     logout: "登出",
     accountChipAria: "帳號選單",
@@ -973,7 +954,6 @@ const I18N = {
     introStart: "Get started",
     introTryLocal: "Try offline",
     introEnterApp: "Enter passport",
-    demoEntry: "Try the demo (read-only)",
     manualTitle: "Manual",
     manualNavHint: "How to use",
     manualEyebrow: "GUIDE",
@@ -1004,29 +984,11 @@ const I18N = {
     manualFaqCloudQ: "Where is my data stored?",
     manualFaqCloudA:
       "Saved on this device first; after sign-in you can back up to your own Google Drive “Dragon Fruit Passport” folder—not a Petlive medical server.",
-    manualFaqDemoQ: "Will the demo passport change my account?",
-    manualFaqDemoA: "No. Demo is read-only, cannot save, and does not write to your account or cloud.",
     manualCtaHome: "Back to passport",
     manualCtaAddPet: "Add a pet",
-    manualCtaDemo: "Try demo passport (read-only · doesn’t write to your account)",
     manualCtaTour: "Start tour",
     manualCtaTourSoon: "Coming soon",
     manualTourDisabledHint: "Guided tour coming soon",
-    demoBanner: "Demo · cannot save",
-    demoReset: "Reset demo",
-    demoExit: "Exit demo",
-    demoTourStart: "Tour",
-    demoTourSkip: "Skip",
-    demoTourNext: "Next",
-    demoTourDone: "Done",
-    demoTourProgress: "{current} / {total}",
-    demoTourStepPet: "Pick a pet on the board to switch who you’re viewing.",
-    demoTourStepCard: "Open the medical info card for emergency / clinic handoff.",
-    demoTourStepTimeline: "Timeline shows past visits and medications.",
-    demoTourStepVisit: "Start an add-visit flow here (demo cannot save).",
-    demoTourStepDone: "Tour done. Browse freely—nothing writes to this device or cloud.",
-    demoReadOnlyToast: "Demo mode cannot save",
-    demoResetDone: "Demo data reset",
     login: "Sign in",
     logout: "Sign out",
     accountChipAria: "Account menu",
@@ -1829,7 +1791,6 @@ const I18N = {
     introStart: "はじめる",
     introTryLocal: "端末だけで試す",
     introEnterApp: "パスポートへ",
-    demoEntry: "操作デモ（保存できません）",
     manualTitle: "説明書",
     manualNavHint: "使い方の説明",
     manualEyebrow: "GUIDE",
@@ -1860,29 +1821,11 @@ const I18N = {
     manualFaqCloudQ: "データはどこに保存されますか？",
     manualFaqCloudA:
       "まずこの端末に保存。ログイン後はあなたの Google ドライブ「ドラゴンフルーツパスポート」フォルダへバックアップできます。Petlive の病歴サーバーではありません。",
-    manualFaqDemoQ: "デモパスポートは自分のアカウントを変更しますか？",
-    manualFaqDemoA: "いいえ。デモは読み取り専用で保存できず、アカウントやクラウドにも書き込みません。",
     manualCtaHome: "パスポートに戻る",
     manualCtaAddPet: "ペットを追加",
-    manualCtaDemo: "デモパスポートを体験（読み取り専用・アカウントに書き込まない）",
     manualCtaTour: "ガイドを開始",
     manualCtaTourSoon: "近日公開",
     manualTourDisabledHint: "操作ガイドは近日公開",
-    demoBanner: "デモ · 保存不可",
-    demoReset: "デモをリセット",
-    demoExit: "デモを終了",
-    demoTourStart: "操作ガイド",
-    demoTourSkip: "スキップ",
-    demoTourNext: "次へ",
-    demoTourDone: "完了",
-    demoTourProgress: "{current} / {total}",
-    demoTourStepPet: "ペットボードで見る子を選びます。",
-    demoTourStepCard: "医療情報カードを開き、救急・転院の参考にします。",
-    demoTourStepTimeline: "タイムラインで受診と投薬の履歴を確認します。",
-    demoTourStepVisit: "ここから受診追加へ（デモでは保存できません）。",
-    demoTourStepDone: "ガイド終了。自由に閲覧できます。端末やクラウドには書き込みません。",
-    demoReadOnlyToast: "デモモードでは保存できません",
-    demoResetDone: "デモデータをリセットしました",
     login: "ログイン",
     logout: "ログアウト",
     accountChipAria: "アカウントメニュー",
@@ -2690,7 +2633,6 @@ const I18N = {
     introStart: "시작하기",
     introTryLocal: "기기로만 체험",
     introEnterApp: "여권 열기",
-    demoEntry: "조작 데모（저장 불가）",
     manualTitle: "설명서",
     manualNavHint: "사용 안내",
     manualEyebrow: "GUIDE",
@@ -2721,29 +2663,11 @@ const I18N = {
     manualFaqCloudQ: "데이터는 어디에 저장되나요?",
     manualFaqCloudA:
       "먼저 이 기기에 저장됩니다. 로그인 후 본인 Google 드라이브 「용과 패스포트」 폴더로 백업할 수 있습니다. Petlive 의료 서버가 아닙니다.",
-    manualFaqDemoQ: "데모 패스포트가 내 계정을 바꾸나요?",
-    manualFaqDemoA: "아니요. 데모는 읽기 전용이며 저장되지 않고, 계정이나 클라우드에도 쓰지 않습니다.",
     manualCtaHome: "패스포트로 돌아가기",
     manualCtaAddPet: "반려동물 추가",
-    manualCtaDemo: "데모 패스포트 체험（읽기 전용 · 계정에 쓰지 않음）",
     manualCtaTour: "가이드 시작",
     manualCtaTourSoon: "곧 공개",
     manualTourDisabledHint: "조작 안내는 곧 공개됩니다",
-    demoBanner: "데모 · 저장 불가",
-    demoReset: "데모 초기화",
-    demoExit: "데모 종료",
-    demoTourStart: "조작 안내",
-    demoTourSkip: "건너뛰기",
-    demoTourNext: "다음",
-    demoTourDone: "완료",
-    demoTourProgress: "{current} / {total}",
-    demoTourStepPet: "펫 보드에서 볼 아이를 고르세요.",
-    demoTourStepCard: "의료 정보 카드를 열어 응급·전원을 빠르게 참고합니다.",
-    demoTourStepTimeline: "타임라인에서 진료·투약 기록을 봅니다.",
-    demoTourStepVisit: "여기서 진료 추가 흐름을 시작합니다（데모는 저장되지 않습니다）.",
-    demoTourStepDone: "안내 끝. 자유롭게 둘러보세요. 기기·클라우드에는 저장되지 않습니다.",
-    demoReadOnlyToast: "데모 모드에서는 저장할 수 없습니다",
-    demoResetDone: "데모 데이터를 초기화했습니다",
     login: "로그인",
     logout: "로그아웃",
     accountChipAria: "계정 메뉴",
@@ -3482,44 +3406,42 @@ function t(key, vars = {}) {
   );
 }
 
-function applyI18n() {
+function paintI18n(options) {
+  const paint = window.PetLiveWeb?.shell?.applyI18nPaint;
+  if (typeof paint === "function") {
+    paint(document, t, {
+      currentLang,
+      full: Boolean(options && options.full),
+    });
+    return;
+  }
+  const scoped = window.PetLiveWeb?.shell?.applyI18nInScope;
   document.documentElement.lang = t("htmlLang");
   document.title = t("docTitle");
-
+  if (typeof scoped === "function") {
+    scoped(document, t);
+    return;
+  }
   document.querySelectorAll("[data-i18n]").forEach((el) => {
     const key = el.getAttribute("data-i18n");
     if (key) el.textContent = t(key);
   });
+}
 
-  document.querySelectorAll("[data-i18n-html]").forEach((el) => {
-    const key = el.getAttribute("data-i18n-html");
-    if (key) el.innerHTML = t(key);
-  });
+function applyI18n() {
+  paintI18n({ full: false });
+}
 
-  document.querySelectorAll("[data-i18n-placeholder]").forEach((el) => {
-    const key = el.getAttribute("data-i18n-placeholder");
-    if (key) el.setAttribute("placeholder", t(key));
-  });
-
-  document.querySelectorAll("[data-i18n-aria]").forEach((el) => {
-    const key = el.getAttribute("data-i18n-aria");
-    if (key) el.setAttribute("aria-label", t(key));
-  });
-
-  document.querySelectorAll("[data-i18n-title]").forEach((el) => {
-    const key = el.getAttribute("data-i18n-title");
-    if (key) el.setAttribute("title", t(key));
-  });
-
-  const fab = document.getElementById("lang-fab");
-  if (fab) fab.textContent = t("langFab");
-
-  document.querySelectorAll("#lang-menu [data-lang]").forEach((btn) => {
-    btn.classList.toggle("is-active", btn.dataset.lang === currentLang);
-  });
+function applyI18nAll() {
+  paintI18n({ full: true });
 }
 
 function applyI18nInScope(root) {
+  const scoped = window.PetLiveWeb?.shell?.applyI18nInScope;
+  if (typeof scoped === "function") {
+    scoped(root, t);
+    return;
+  }
   if (!root || typeof root.querySelectorAll !== "function") return;
   root.querySelectorAll("[data-i18n]").forEach((el) => {
     const key = el.getAttribute("data-i18n");
@@ -3547,7 +3469,7 @@ function setLanguage(lang) {
   if (!I18N[lang]) return;
   currentLang = lang;
   localStorage.setItem("petlive-lang", lang);
-  applyI18n();
+  applyI18nAll();
   if (typeof window.onLanguageChange === "function") {
     window.onLanguageChange(lang);
   }
@@ -3556,6 +3478,7 @@ function setLanguage(lang) {
 window.I18N = I18N;
 window.t = t;
 window.applyI18n = applyI18n;
+window.applyI18nAll = applyI18nAll;
 window.applyI18nInScope = applyI18nInScope;
 window.setLanguage = setLanguage;
 window.getCurrentLang = () => currentLang;

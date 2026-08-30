@@ -77,6 +77,26 @@
     }
 
     /**
+     * Keep pet.visits newest-first by visit.date (ISO).
+     * Same-day ties: lower pre-sort index stays nearer the top (newer).
+     * Mutates the array in place so visitIndex 0 stays the top timeline row.
+     */
+    function sortVisitsNewestFirst(visits) {
+      if (!Array.isArray(visits) || visits.length < 2) return visits || [];
+      const indexed = visits.map((visit, index) => ({ visit, index }));
+      indexed.sort((a, b) => {
+        const da = String(a.visit.date || "");
+        const db = String(b.visit.date || "");
+        if (da !== db) return da > db ? -1 : 1;
+        return a.index - b.index;
+      });
+      for (let i = 0; i < indexed.length; i++) {
+        visits[i] = indexed[i].visit;
+      }
+      return visits;
+    }
+
+    /**
      * Previous visit = immediately prior in chronological order.
      * Newest-first display list: same-day ties use higher index as older.
      */
@@ -168,6 +188,7 @@
     return {
       visitWeightKg,
       calendarDaysBetween,
+      sortVisitsNewestFirst,
       buildPreviousVisitByIndex,
       formatWeightDeltaKg,
       collectVisitProofPhotos,

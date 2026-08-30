@@ -1,0 +1,53 @@
+/* ---------------------------------------------------------
+   Shell — screen-head home icon (jump to passport home)
+   Shared by A/B and C. Lives in .screen-head-actions (leftmost).
+   Keep compact so emergency title (醫療資訊卡) is not squeezed.
+   --------------------------------------------------------- */
+
+.screen-home-btn {
+  flex: 0 0 auto;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+  width: 28px;
+  height: 28px;
+  margin: 0;
+  padding: 0;
+  border: 1px solid rgba(255, 255, 255, 0.5);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.55);
+  color: var(--leaf-deep, #2f4f42);
+  box-shadow: none;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  transition: background 160ms ease, color 160ms ease, border-color 160ms ease;
+}
+
+.screen-home-btn:hover {
+  background: rgba(255, 255, 255, 0.78);
+  color: var(--leaf-deep, #2f4f42);
+}
+
+.screen-home-btn:focus-visible {
+  outline: 2px solid rgba(61, 107, 87, 0.45);
+  outline-offset: 2px;
+}
+
+.screen-home-btn-ico {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 0;
+}
+
+.screen-home-btn-ico svg {
+  display: block;
+  width: 14px;
+  height: 14px;
+}
+
+.screen > .screen-head .screen-home-btn {
+  background: rgba(255, 255, 255, 0.55);
+  border-color: rgba(255, 255, 255, 0.5);
+}

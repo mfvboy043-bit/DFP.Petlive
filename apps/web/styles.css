@@ -19,7 +19,7 @@
    Tails (do not restyle lightly)
      36 JS hook compat — legacy token aliases + app.js class hooks
      37 Mobile polish — phone overrides on v2 tokens
-     38 B surface leftovers — demo banner/tour + manual guide
+     38 B surface leftovers — manual guide
    ========================================================= */
 
 /* ---------------------------------------------------------
@@ -7430,9 +7430,9 @@ html.is-proof-lightbox-open body {
         rgba(232, 244, 239, 0.72) 100%
       );
     border-color: rgba(255, 255, 255, 0.78);
-    /* Lighter blur — full 18–20px glass is costly while pet cards lift */
-    backdrop-filter: blur(10px) saturate(1.1);
-    -webkit-backdrop-filter: blur(10px) saturate(1.1);
+    /* Pet switcher: skip extra backdrop-filter — gradient already frosts */
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
     box-shadow:
       0 1px 0 rgba(255, 255, 255, 0.92) inset,
       0 -1px 0 rgba(41, 77, 61, 0.06) inset,
@@ -7451,8 +7451,8 @@ html.is-proof-lightbox-open body {
   }
 
   .screen-head {
-    backdrop-filter: blur(8px);
-    -webkit-backdrop-filter: blur(8px);
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
   }
 
   .e-card {
@@ -7473,9 +7473,8 @@ html.is-proof-lightbox-open body {
     gap: 8px;
     padding: 7px 8px 7px 14px;
     border-radius: 22px;
-    /* Slightly lighter blur on phone — same glass language as pet-switcher */
-    backdrop-filter: blur(14px) saturate(1.15);
-    -webkit-backdrop-filter: blur(14px) saturate(1.15);
+    backdrop-filter: blur(6px) saturate(1.08);
+    -webkit-backdrop-filter: blur(6px) saturate(1.08);
   }
 
   .screen[data-screen="home"] {
@@ -8363,169 +8362,9 @@ html.is-proof-lightbox-open body {
    38. B SURFACE LEFTOVERS
    Former UI↔HTML dock rules were folded into §§18–24 / §36.
    What remains is formal-B chrome (not surface C):
-     • .demo-banner / .demo-tour — ?demo=1 tour chrome
      • MANUAL / GUIDE — screen-manual layout
    Do not re-append duplicate component overrides here.
    ========================================================= */
-
-/* —— Demo mode banner + tour (?demo=1) —— */
-.demo-banner {
-  position: sticky;
-  top: 0;
-  z-index: 80;
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  justify-content: space-between;
-  gap: 8px 12px;
-  padding: 8px max(14px, env(safe-area-inset-right))
-    8px max(14px, env(safe-area-inset-left));
-  padding-top: calc(8px + env(safe-area-inset-top, 0px));
-  background: color-mix(in srgb, #1a3a2f 92%, transparent);
-  color: #f4faf6;
-  font-family: "Noto Sans TC", system-ui, sans-serif;
-  font-size: 13px;
-  line-height: 1.35;
-  backdrop-filter: blur(10px);
-}
-
-.demo-banner[hidden] {
-  display: none !important;
-}
-
-.demo-banner-label {
-  font-weight: 600;
-  letter-spacing: 0.02em;
-}
-
-.demo-banner-actions {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 6px 10px;
-}
-
-.demo-banner-btn {
-  appearance: none;
-  border: 1px solid color-mix(in srgb, #fff 35%, transparent);
-  background: color-mix(in srgb, #fff 12%, transparent);
-  color: inherit;
-  border-radius: 8px;
-  padding: 5px 10px;
-  font: inherit;
-  font-size: 12px;
-  font-weight: 500;
-  cursor: pointer;
-}
-
-.demo-banner-btn:hover {
-  background: color-mix(in srgb, #fff 20%, transparent);
-}
-
-.demo-banner-exit {
-  color: inherit;
-  text-decoration: underline;
-  text-underline-offset: 2px;
-  font-size: 12px;
-  font-weight: 500;
-}
-
-.intro-demo-entry {
-  margin: 18px 0 0;
-}
-
-.intro-demo-link {
-  color: color-mix(in srgb, var(--ink, #1a2e24) 78%, transparent);
-  font-size: 14px;
-  font-weight: 500;
-  text-decoration: underline;
-  text-underline-offset: 3px;
-}
-
-.intro-demo-link:hover {
-  color: var(--ink, #1a2e24);
-}
-
-.demo-tour {
-  position: fixed;
-  inset: 0;
-  z-index: 90;
-  pointer-events: none;
-}
-
-.demo-tour[hidden] {
-  display: none !important;
-}
-
-.demo-tour-backdrop {
-  position: absolute;
-  inset: 0;
-  background: color-mix(in srgb, #0b1a14 55%, transparent);
-  pointer-events: auto;
-  opacity: 1;
-  transition: opacity 0.15s ease;
-}
-
-.demo-tour:has(#demo-tour-spot:not([hidden])) .demo-tour-backdrop {
-  opacity: 0;
-  pointer-events: none;
-}
-
-.demo-tour-spot {
-  position: fixed;
-  z-index: 1;
-  border-radius: 14px;
-  box-shadow:
-    0 0 0 9999px color-mix(in srgb, #0b1a14 55%, transparent),
-    0 0 0 2px color-mix(in srgb, #e8f5ee 80%, transparent);
-  pointer-events: none;
-  transition: top 0.2s ease, left 0.2s ease, width 0.2s ease, height 0.2s ease;
-}
-
-.demo-tour-card {
-  position: absolute;
-  left: 50%;
-  bottom: max(24px, calc(24px + env(safe-area-inset-bottom)));
-  transform: translateX(-50%);
-  width: min(420px, calc(100% - 28px));
-  padding: 16px 18px;
-  border-radius: 16px;
-  background: #f7faf8;
-  color: #1a2e24;
-  box-shadow: 0 12px 40px color-mix(in srgb, #0b1a14 28%, transparent);
-  pointer-events: auto;
-  font-family: "Noto Sans TC", system-ui, sans-serif;
-}
-
-.demo-tour-step {
-  margin: 0 0 6px;
-  font-size: 12px;
-  font-weight: 600;
-  letter-spacing: 0.04em;
-  color: color-mix(in srgb, #1a2e24 55%, transparent);
-}
-
-.demo-tour-text {
-  margin: 0 0 14px;
-  font-size: 15px;
-  line-height: 1.45;
-}
-
-.demo-tour-actions {
-  display: flex;
-  justify-content: flex-end;
-  gap: 8px;
-}
-
-.demo-tour-target {
-  position: relative;
-  z-index: 91;
-  pointer-events: auto !important;
-}
-
-body.demo-tour-active .demo-tour-target {
-  isolation: isolate;
-}
 
 /* ---------------------------------------------------------
    MANUAL / GUIDE
@@ -8701,18 +8540,11 @@ body.demo-tour-active .demo-tour-target {
   padding-top: 4px;
 }
 
-.manual-cta .btn,
-.manual-cta-demo {
+.manual-cta .btn {
   width: 100%;
   text-align: center;
   text-decoration: none;
   box-sizing: border-box;
-}
-
-.manual-cta-demo {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
 }
 
 .manual-cta-tour {
