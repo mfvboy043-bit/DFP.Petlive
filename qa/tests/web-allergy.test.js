@@ -17,31 +17,51 @@ function loadAllergy() {
       filename: path,
     });
   }
-  return context.PetLiveWeb.domains.allergy.createController();
+  return context.PetLiveWeb.domains.allergy;
 }
 
 describe("allergy controller", () => {
   it("computes price per kg and lb", () => {
-    const allergy = loadAllergy();
+    const allergy = loadAllergy().createController();
     assert.equal(allergy.computePricePerKg(7.5, 1990), 265.33);
     assert.equal(allergy.computePricePerUnit(7.5, "kg", 1990)?.value, 265.33);
     assert.equal(allergy.computePricePerUnit(10, "lb", 300)?.unit, "lb");
     assert.equal(allergy.computePricePerUnit(0, 100)?.value ?? null, null);
   });
 
-  it("searches catalog and custom brands", () => {
+  it("searches catalog and custom brands with localized labels", () => {
     const allergy = loadAllergy();
+    const controller = allergy.createController();
     const pet = { allergyFoodBrands: ["小農場"] };
-    assert.deepEqual(allergy.searchBrands("", pet), []);
-    assert.deepEqual(allergy.searchBrands("   ", pet), []);
-    const hits = allergy.searchBrands("皇家", pet);
-    assert.ok(hits.some((row) => row.name === "皇家"));
-    const customHits = allergy.searchBrands("農", pet);
+    assert.deepEqual(controller.searchBrands("", pet), []);
+    assert.deepEqual(controller.searchBrands("   ", pet), []);
+    const hits = controller.searchBrands("皇家", pet, undefined, "zh");
+    assert.ok(hits.some((row) => row.name === "Royal Canin"));
+    assert.ok(hits.some((row) => row.label === "皇家 Royal Canin"));
+    const enHits = controller.searchBrands("royal", pet, undefined, "en");
+    assert.ok(enHits.some((row) => row.label === "Royal Canin"));
+    const customHits = controller.searchBrands("農", pet);
     assert.ok(customHits.some((row) => row.name === "小農場"));
   });
 
-  it("adds purchase with meats, date, and unit", () => {
+  it("formats brand labels per locale", () => {
     const allergy = loadAllergy();
+    const entry = allergy.FOOD_BRAND_CATALOG.find((row) => row.id === "royal-canin");
+    assert.equal(allergy.formatBrandLabel(entry, "zh"), "皇家 Royal Canin");
+    assert.equal(allergy.formatBrandLabel(entry, "en"), "Royal Canin");
+    assert.equal(allergy.formatBrandLabel(entry, "ja"), "ロイヤルカナン Royal Canin");
+    assert.equal(allergy.formatBrandLabel(entry, "ko"), "로얄캐닌 Royal Canin");
+  });
+
+  it("resolves legacy zh brand names to canonical english", () => {
+    const allergy = loadAllergy();
+    assert.equal(allergy.resolveBrandToCanonical("皇家"), "Royal Canin");
+    assert.equal(allergy.resolveBrandDisplay("皇家", "en"), "Royal Canin");
+    assert.equal(allergy.resolveBrandDisplay("皇家", "zh"), "皇家 Royal Canin");
+  });
+
+  it("adds purchase with meats, date, and unit", () => {
+    const allergy = loadAllergy().createController();
     const pet = { id: "p1", allergyPurchases: [], allergyFoodBrands: [] };
     const added = allergy.addPurchase(pet, {
       brand: "皇家",
@@ -55,7 +75,8 @@ describe("allergy controller", () => {
     assert.equal(added.ok, true);
     assert.equal(pet.allergyPurchases.length, 1);
     assert.deepEqual(pet.allergyPurchases[0].meats, ["chicken", "beef", "火雞"]);
-    assert.equal(pet.allergyFoodBrands[0], "皇家");
+    assert.equal(pet.allergyPurchases[0].brand, "Royal Canin");
+    assert.equal(pet.allergyFoodBrands[0], "Royal Canin");
 
     const removed = allergy.removePurchase(pet, pet.allergyPurchases[0].id);
     assert.equal(removed.ok, true);
@@ -63,7 +84,7 @@ describe("allergy controller", () => {
   });
 
   it("rejects invalid drafts", () => {
-    const allergy = loadAllergy();
+    const allergy = loadAllergy().createController();
     const pet = { id: "p1" };
     assert.equal(
       allergy.addPurchase(pet, {

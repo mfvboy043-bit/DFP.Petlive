@@ -6,7 +6,7 @@
   root.domains.allergy = root.domains.allergy || {};
 
   function createRenderer(deps = {}) {
-    const { label, escapeHtml, formatMoney, meatLabelOf } = deps;
+    const { label, escapeHtml, formatMoney, meatLabelOf, brandLabelOf } = deps;
 
     if (typeof label !== "function") {
       throw new TypeError("createRenderer requires label(key, params?)");
@@ -19,6 +19,9 @@
     }
     if (typeof meatLabelOf !== "function") {
       throw new TypeError("createRenderer requires meatLabelOf(presetId)");
+    }
+    if (typeof brandLabelOf !== "function") {
+      throw new TypeError("createRenderer requires brandLabelOf(brandName)");
     }
 
     function formatMeats(meats) {
@@ -37,9 +40,10 @@
       return {
         hidden: false,
         html: brands
-          .map(
-            (row) => `<li><button type="button" data-allergy-brand="${escapeHtml(row.name)}">${escapeHtml(row.name)}</button></li>`
-          )
+          .map((row) => {
+            const display = row.label || row.name;
+            return `<li><button type="button" data-allergy-brand="${escapeHtml(row.name)}" data-allergy-brand-label="${escapeHtml(display)}">${escapeHtml(display)}</button></li>`;
+          })
           .join(""),
       };
     }
@@ -72,7 +76,7 @@
             data-allergy-remove="${escapeHtml(row.id)}"
           >${label("allergyRemove")}</button>
         </div>
-        <p class="ah-item-brand">${escapeHtml(row.brand || "")}</p>
+        <p class="ah-item-brand">${escapeHtml(brandLabelOf(row.brand || ""))}</p>
         <p class="ah-item-meats">${escapeHtml(formatMeats(row.meats))}</p>
         <p class="ah-item-meta">${escapeHtml(summary)}</p>
       </li>`;

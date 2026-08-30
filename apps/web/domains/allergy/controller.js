@@ -31,17 +31,77 @@
     return String(name || "").trim();
   }
 
-  function catalogEntrySearchText(entry) {
-    return [entry.name, ...(entry.aliases || [])].join(" ").toLowerCase();
+  function brandLangKey(explicitLang) {
+    const lang =
+      explicitLang ||
+      (typeof global.getCurrentLang === "function" && global.getCurrentLang()) ||
+      "zh-Hant";
+    if (lang === "zh-Hant" || lang === "zh-TW" || lang === "zh") return "zh";
+    if (lang === "ja" || lang === "ko" || lang === "en") return lang;
+    return "zh";
   }
 
-  function searchBrands(query, pet, catalog = FOOD_BRAND_CATALOG) {
+  function getCanonicalBrandName(entry) {
+    return entry?.labels?.en || entry?.name || "";
+  }
+
+  function formatBrandLabel(entry, langKey) {
+    const key = langKey || brandLangKey();
+    const labels = entry?.labels || {};
+    const original = getCanonicalBrandName(entry);
+    const local = labels[key] || labels.zh || original;
+
+    if (key === "en") return original;
+    if (!local || local.toLowerCase() === original.toLowerCase()) return original;
+    return `${local} ${original}`;
+  }
+
+  function catalogEntrySearchText(entry) {
+    const labels = entry?.labels ? Object.values(entry.labels) : [];
+    const legacyName = entry?.name ? [entry.name] : [];
+    return [...labels, ...legacyName, ...(entry.aliases || [])].join(" ").toLowerCase();
+  }
+
+  function matchCatalogEntry(brandName, catalog = FOOD_BRAND_CATALOG) {
+    const q = normalizeBrandName(brandName);
+    if (!q) return null;
+    const needle = q.toLowerCase();
+
+    for (const entry of catalog) {
+      const canonical = getCanonicalBrandName(entry);
+      if (canonical.toLowerCase() === needle) return entry;
+      const labels = entry.labels ? Object.values(entry.labels) : [];
+      if (labels.some((label) => String(label).toLowerCase() === needle)) return entry;
+      if (entry.id && String(entry.id).toLowerCase() === needle) return entry;
+    }
+
+    for (const entry of catalog) {
+      const hay = catalogEntrySearchText(entry);
+      if (hay.includes(needle)) return entry;
+    }
+
+    return null;
+  }
+
+  function resolveBrandDisplay(brandName, langKey) {
+    const entry = matchCatalogEntry(brandName);
+    if (entry) return formatBrandLabel(entry, langKey);
+    return normalizeBrandName(brandName);
+  }
+
+  function resolveBrandToCanonical(brandName, catalog = FOOD_BRAND_CATALOG) {
+    const entry = matchCatalogEntry(brandName, catalog);
+    return entry ? getCanonicalBrandName(entry) : normalizeBrandName(brandName);
+  }
+
+  function searchBrands(query, pet, catalog = FOOD_BRAND_CATALOG, langKey) {
     const q = String(query || "").trim().toLowerCase();
     if (!q) return [];
 
     const custom = ensureCustomBrands(pet || { allergyFoodBrands: [] });
     const hits = [];
     const seen = new Set();
+    const displayKey = langKey || brandLangKey();
 
     const push = (item) => {
       const key = `${item.source}:${item.name}`.toLowerCase();
@@ -53,7 +113,12 @@
     for (const entry of catalog) {
       const hay = catalogEntrySearchText(entry);
       if (hay.includes(q)) {
-        push({ id: entry.id, name: entry.name, source: "catalog" });
+        push({
+          id: entry.id,
+          name: getCanonicalBrandName(entry),
+          label: formatBrandLabel(entry, displayKey),
+          source: "catalog",
+        });
       }
     }
 
@@ -61,7 +126,12 @@
       const trimmed = normalizeBrandName(name);
       if (!trimmed) continue;
       if (trimmed.toLowerCase().includes(q)) {
-        push({ id: `custom:${trimmed}`, name: trimmed, source: "custom" });
+        push({
+          id: `custom:${trimmed}`,
+          name: resolveBrandToCanonical(trimmed, catalog),
+          label: resolveBrandDisplay(trimmed, displayKey),
+          source: "custom",
+        });
       }
     }
 
@@ -125,7 +195,7 @@
 
   function normalizeDraft(draft) {
     const raw = draft || {};
-    const brand = normalizeBrandName(raw.brand);
+    const brand = resolveBrandToCanonical(raw.brand);
     const recordDate = normalizeDateKey(raw.recordDate);
     const weight = Number(raw.weight ?? raw.kg);
     const weightUnit = raw.weightUnit === "lb" ? "lb" : "kg";
@@ -239,6 +309,12 @@
       normalizeDateKey,
       ensureAllergyPurchases,
       ensureCustomBrands,
+      brandLangKey,
+      getCanonicalBrandName,
+      formatBrandLabel,
+      matchCatalogEntry,
+      resolveBrandDisplay,
+      resolveBrandToCanonical,
       searchBrands,
       addCustomBrand,
       removeCustomBrand,
@@ -260,6 +336,12 @@
   root.domains.allergy.normalizeDateKey = normalizeDateKey;
   root.domains.allergy.ensureAllergyPurchases = ensureAllergyPurchases;
   root.domains.allergy.ensureCustomBrands = ensureCustomBrands;
+  root.domains.allergy.brandLangKey = brandLangKey;
+  root.domains.allergy.getCanonicalBrandName = getCanonicalBrandName;
+  root.domains.allergy.formatBrandLabel = formatBrandLabel;
+  root.domains.allergy.matchCatalogEntry = matchCatalogEntry;
+  root.domains.allergy.resolveBrandDisplay = resolveBrandDisplay;
+  root.domains.allergy.resolveBrandToCanonical = resolveBrandToCanonical;
   root.domains.allergy.searchBrands = searchBrands;
   root.domains.allergy.addCustomBrand = addCustomBrand;
   root.domains.allergy.removeCustomBrand = removeCustomBrand;
