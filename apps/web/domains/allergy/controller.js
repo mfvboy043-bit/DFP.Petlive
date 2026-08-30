@@ -37,6 +37,8 @@
 
   function searchBrands(query, pet, catalog = FOOD_BRAND_CATALOG) {
     const q = String(query || "").trim().toLowerCase();
+    if (!q) return [];
+
     const custom = ensureCustomBrands(pet || { allergyFoodBrands: [] });
     const hits = [];
     const seen = new Set();
@@ -50,7 +52,7 @@
 
     for (const entry of catalog) {
       const hay = catalogEntrySearchText(entry);
-      if (!q || hay.includes(q)) {
+      if (hay.includes(q)) {
         push({ id: entry.id, name: entry.name, source: "catalog" });
       }
     }
@@ -58,7 +60,7 @@
     for (const name of custom) {
       const trimmed = normalizeBrandName(name);
       if (!trimmed) continue;
-      if (!q || trimmed.toLowerCase().includes(q)) {
+      if (trimmed.toLowerCase().includes(q)) {
         push({ id: `custom:${trimmed}`, name: trimmed, source: "custom" });
       }
     }
