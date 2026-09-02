@@ -2021,6 +2021,7 @@ function confirmArchivePet(event) {
     currentPetId = result.nextCurrentPetId;
     appState.setCurrentPetId(currentPetId);
   }
+  schedulePetsGraphPersist();
   applySelectedPet();
   renderArchiveList();
   showToast(t("toastArchived", { name: result.archived.name }));
@@ -2098,6 +2099,7 @@ function confirmRemovePet() {
     currentPetId = result.nextCurrentPetId;
     appState.setCurrentPetId(currentPetId);
   }
+  schedulePetsGraphPersist();
   applySelectedPet();
   showToast(t("toastRemoved", { name: removedName }));
   clearNavigationHistory();
@@ -4416,6 +4418,7 @@ document.getElementById("pet-form").addEventListener("submit", (event) => {
       return;
     }
     applyPetFromForm(current, form);
+    schedulePetsGraphPersist();
     editingPetId = null;
     paintPetFormMode();
     selectPetForced(current.id);
@@ -4425,6 +4428,7 @@ document.getElementById("pet-form").addEventListener("submit", (event) => {
   }
 
   petsGraph.pushPet(pet);
+  schedulePetsGraphPersist();
   selectPetForced(pet.id);
   showToast(t("toastPetAdded", { name: pet.name }));
   clearNavigationHistory();
@@ -5048,6 +5052,7 @@ function finishMedFlowAfterSave(pet, toastKey, toastVars) {
   setSelectedClinic(null);
   if (clinicSearch) clinicSearch.value = "";
   showToast(t(toastKey, toastVars));
+  schedulePetsGraphPersist();
   applySelectedPet();
   go("timeline");
 }
@@ -5452,6 +5457,7 @@ function saveVisitWeightAtIndex(visitIndex) {
     return false;
   }
   showToast(t("toastVisitWeightSaved", { weight }));
+  schedulePetsGraphPersist();
   applySelectedPet();
   return true;
 }
@@ -5502,6 +5508,7 @@ timelineList.addEventListener("click", (event) => {
     if (!visit || !slot) return;
     clearVisitProofSlot(visit, slot);
     showToast(t("toastProofCleared"));
+    schedulePetsGraphPersist();
     applySelectedPet();
     const toggle = document.querySelector(
       `[data-visit-rx-toggle][aria-controls="visit-rx-${visitIndex}"]`
@@ -5519,6 +5526,7 @@ timelineList.addEventListener("click", (event) => {
     if (!visit || !slot) return;
     clearVisitImagingPhoto(visit, slot, photoIndex);
     showToast(t("toastImagingCleared"));
+    schedulePetsGraphPersist();
     applySelectedPet();
     const toggle = document.querySelector(
       `[data-visit-imaging-toggle][aria-controls="visit-imaging-${visitIndex}"]`
@@ -5626,6 +5634,7 @@ document.getElementById("med-proof-form").addEventListener("submit", (event) => 
   pendingDrugPhoto = null;
 
   showToast(t("toastProofSaved"));
+  schedulePetsGraphPersist();
   applySelectedPet();
   go("timeline");
 });
@@ -5685,6 +5694,7 @@ document.getElementById("imaging-proof-form")?.addEventListener("submit", (event
   pendingUsPhotos = [];
 
   showToast(t("toastImagingSaved"));
+  schedulePetsGraphPersist();
   applySelectedPet();
   goTimelineWithImaging(visitIndex);
 });
