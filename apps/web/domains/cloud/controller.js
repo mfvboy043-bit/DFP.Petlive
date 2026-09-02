@@ -109,9 +109,11 @@
     function buildCloudPayload() {
       const pets = getPets() || [];
       const archivedPets = getArchivedPets() || [];
+      const meta = readSyncMeta();
       return {
         version: 1,
         updatedAt: new Date().toISOString(),
+        localRevision: meta.localRevision,
         pets: stripHeavyMedia(pets),
         archivedPets: stripHeavyMedia(archivedPets),
         currentPetId:

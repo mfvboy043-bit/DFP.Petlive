@@ -5,7 +5,11 @@ import vm from "node:vm";
 
 const WEB_ROOT = new URL("../../apps/web/", import.meta.url);
 
-function loadCloud({ seedIds = ["p1", "p2", "p3"], demo = false } = {}) {
+function loadCloud({
+  seedIds = ["p1", "p2", "p3"],
+  seedSnapshot = null,
+  demo = false,
+} = {}) {
   const context = vm.createContext({ console });
   context.globalThis = context;
   context.window = context;
@@ -30,8 +34,11 @@ function loadCloud({ seedIds = ["p1", "p2", "p3"], demo = false } = {}) {
   });
 
   const cloud = context.PetLiveWeb.domains.cloud;
+  const defaultSeedSnapshot =
+    seedSnapshot || seedIds.map((id) => ({ id }));
   const selectors = cloud.createSelectors({
     getSeedPetIds: () => seedIds.slice(),
+    getSeedPetsSnapshot: () => JSON.parse(JSON.stringify(defaultSeedSnapshot)),
   });
 
   const pets = [];
@@ -168,6 +175,36 @@ describe("CL-04 cloud selectors + controller", () => {
       true
     );
     assert.equal(
+      selectors.isSeedOnlyCloudPayload({
+        pets: [
+          {
+            id: "p1",
+            parasitePrevention: {
+              external: {
+                product: "Frontline",
+                lastGiven: "2026-08-01",
+                nextDue: "2026-09-01",
+                intervalDays: 30,
+              },
+              heartworm: null,
+            },
+          },
+          { id: "p2" },
+          { id: "p3" },
+        ],
+      }),
+      false,
+      "edited seed pets with parasite data are real cloud backups"
+    );
+    assert.equal(
+      selectors.isSeedOnlyCloudPayload({
+        localRevision: 2,
+        pets: [{ id: "p1" }, { id: "p2" }, { id: "p3" }],
+      }),
+      false,
+      "localRevision marker opts out of seed-only discard"
+    );
+    assert.equal(
       selectors.isSeedOnlyCloudPayload({ pets: [{ id: "real-1" }] }),
       false
     );
@@ -229,6 +266,7 @@ describe("CL-04 cloud selectors + controller", () => {
     const { selectors, controller } = loadCloud();
     const empty = selectors.emptySyncMeta();
     assert.equal(selectors.isLocalDirty(empty), false);
+    assert.equal(selectors.hasLocalPendingChanges(empty), false);
     const bumped = selectors.nextBumpMeta(empty);
     assert.deepEqual(plain(bumped), {
       localRevision: 1,
@@ -236,6 +274,11 @@ describe("CL-04 cloud selectors + controller", () => {
       lastCloudUpdatedAt: null,
     });
     assert.equal(selectors.isLocalDirty(bumped), true);
+    assert.equal(
+      selectors.hasLocalPendingChanges(bumped),
+      false,
+      "legacy synthesized meta is not a pending edit"
+    );
     const synced = selectors.nextMarkSyncedMeta(bumped, "2026-08-27T00:00:00.000Z");
     assert.deepEqual(plain(synced), {
       localRevision: 1,
@@ -247,9 +290,63 @@ describe("CL-04 cloud selectors + controller", () => {
     controller.bumpLocalDataRevision();
     assert.equal(controller.readSyncMeta().localRevision, 1);
     assert.equal(selectors.isLocalDirty(controller.readSyncMeta()), true);
+    assert.equal(selectors.hasLocalPendingChanges(controller.readSyncMeta()), true);
     controller.markCloudSynced("2026-08-27T01:00:00.000Z");
     assert.equal(controller.readSyncMeta().lastSyncedRevision, 1);
     assert.equal(controller.readSyncMeta().lastCloudUpdatedAt, "2026-08-27T01:00:00.000Z");
+  });
+
+  it("shouldAutoPullCloud pulls when cloud newer or local empty/legacy", () => {
+    const { selectors } = loadCloud({ seedIds: ["p1", "p2", "p3"] });
+    const payload = {
+      updatedAt: "2026-08-27T02:00:00.000Z",
+      pets: [{ id: "cloud-1" }],
+    };
+    const legacyMeta = {
+      localRevision: 1,
+      lastSyncedRevision: 0,
+      lastCloudUpdatedAt: null,
+    };
+    assert.equal(
+      selectors.shouldAutoPullCloud({
+        meta: legacyMeta,
+        payload,
+        cloudNewer: true,
+        localPets: [{ id: "p1" }],
+        hasStoredGraph: true,
+        hasRealLocal: false,
+      }),
+      true
+    );
+    assert.equal(
+      selectors.shouldAutoPullCloud({
+        meta: legacyMeta,
+        payload,
+        cloudNewer: false,
+        localPets: [],
+        hasStoredGraph: false,
+        hasRealLocal: false,
+      }),
+      true,
+      "empty local should pull even when cloud timestamp is not newer"
+    );
+    const dirtyMeta = {
+      localRevision: 2,
+      lastSyncedRevision: 1,
+      lastCloudUpdatedAt: "2026-08-01T00:00:00.000Z",
+    };
+    assert.equal(
+      selectors.shouldAutoPullCloud({
+        meta: dirtyMeta,
+        payload,
+        cloudNewer: true,
+        localPets: [{ id: "local-1" }],
+        hasStoredGraph: true,
+        hasRealLocal: true,
+      }),
+      false,
+      "pending local edits block silent auto-pull"
+    );
   });
 
   it("stripHeavyMedia drops heavy keys and large data-URLs", () => {
@@ -285,6 +382,7 @@ describe("CL-04 cloud selectors + controller", () => {
     const payload = env.controller.buildCloudPayload();
     assert.equal(payload.version, 1);
     assert.ok(typeof payload.updatedAt === "string");
+    assert.equal(payload.localRevision, 0);
     assert.equal(payload.pets.length, 1);
     assert.equal(payload.pets[0].id, "real-1");
     assert.equal(payload.pets[0].bagPhoto, undefined);
@@ -299,6 +397,29 @@ describe("CL-04 cloud selectors + controller", () => {
       false
     );
     assert.equal(env.pets[0].id, "real-1");
+
+    const modifiedSeedOk = env.controller.applyCloudPayload({
+      localRevision: 1,
+      pets: [
+        {
+          id: "p1",
+          name: "Mochi",
+          parasitePrevention: {
+            external: {
+              product: "Frontline",
+              lastGiven: "2026-08-01",
+              nextDue: "2026-09-01",
+              intervalDays: 30,
+            },
+            heartworm: null,
+          },
+        },
+        { id: "p2" },
+        { id: "p3" },
+      ],
+    });
+    assert.equal(modifiedSeedOk, true);
+    assert.equal(env.pets[0].parasitePrevention.external.product, "Frontline");
 
     assert.equal(env.controller.applyCloudPayload(null), false);
     assert.equal(env.controller.applyCloudPayload({ pets: "bad" }), false);

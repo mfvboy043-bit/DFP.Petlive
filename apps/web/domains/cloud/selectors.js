@@ -7,12 +7,40 @@
 
   function createSelectors({
     getSeedPetIds,
+    getSeedPetsSnapshot,
     hasStoredPetsGraph,
     readPetsGraphSnapshot,
     readSyncMeta,
   } = {}) {
     if (typeof getSeedPetIds !== "function") {
       throw new TypeError("createSelectors requires getSeedPetIds");
+    }
+
+    function normalizePetsForSeedCompare(petList) {
+      return (petList || [])
+        .slice()
+        .sort((a, b) => String(a?.id || "").localeCompare(String(b?.id || "")))
+        .map((pet) => {
+          if (!pet || typeof pet !== "object") return pet;
+          const copy = { ...pet };
+          delete copy.photo;
+          return copy;
+        });
+    }
+
+    function matchesSeedSnapshot(petList) {
+      if (typeof getSeedPetsSnapshot !== "function") return false;
+      const seed = getSeedPetsSnapshot();
+      if (!seed?.length || !petList?.length) return false;
+      if (!isSeedOnlyPets(petList)) return false;
+      try {
+        return (
+          JSON.stringify(normalizePetsForSeedCompare(petList)) ===
+          JSON.stringify(normalizePetsForSeedCompare(seed))
+        );
+      } catch {
+        return false;
+      }
     }
 
     function emptySyncMeta() {
@@ -42,8 +70,16 @@
       return true;
     }
 
+    /** True when cloud backup is still the untouched demo graph (same seed ids + content). */
     function isSeedOnlyCloudPayload(payload) {
-      return isSeedOnlyPets(payload?.pets);
+      const list = payload?.pets;
+      if (!list?.length) return true;
+      if (!isSeedOnlyPets(list)) return false;
+      if (Number(payload?.localRevision) > 0) return false;
+      if (typeof getSeedPetsSnapshot === "function") {
+        return matchesSeedSnapshot(list);
+      }
+      return true;
     }
 
     function isFreshDevice({ meta, hasStoredGraph } = {}) {
@@ -83,9 +119,25 @@
           petsFromGraph = null;
         }
       }
-      if (petsFromGraph?.length && !isSeedOnlyPets(petsFromGraph)) return true;
+      if (petsFromGraph?.length) {
+        if (!isSeedOnlyPets(petsFromGraph)) return true;
+        if (
+          typeof getSeedPetsSnapshot === "function" &&
+          !matchesSeedSnapshot(petsFromGraph)
+        ) {
+          return true;
+        }
+      }
 
-      if (memoryPets?.length && !isSeedOnlyPets(memoryPets)) return true;
+      if (memoryPets?.length) {
+        if (!isSeedOnlyPets(memoryPets)) return true;
+        if (
+          typeof getSeedPetsSnapshot === "function" &&
+          !matchesSeedSnapshot(memoryPets)
+        ) {
+          return true;
+        }
+      }
       return false;
     }
 
@@ -135,6 +187,46 @@
       return m.localRevision !== m.lastSyncedRevision;
     }
 
+    /**
+     * True only when the user has local edits not yet backed up to cloud.
+     * Legacy graphs without sync-meta synthesize localRevision=1 / lastSynced=0 —
+     * that is not a pending edit and must not block auto-restore after login.
+     */
+    function hasLocalPendingChanges(meta) {
+      const m = normalizeSyncMeta(meta);
+      if (m.localRevision === m.lastSyncedRevision) return false;
+      if (
+        m.localRevision === 1 &&
+        m.lastSyncedRevision === 0 &&
+        !m.lastCloudUpdatedAt
+      ) {
+        return false;
+      }
+      return true;
+    }
+
+    /**
+     * Whether boot/login reconcile should pull cloud payload without a confirm.
+     * Facade still handles conflict UI when pull is skipped.
+     */
+    function shouldAutoPullCloud({
+      meta,
+      payload,
+      cloudNewer,
+      localPets,
+      hasStoredGraph,
+      hasRealLocal,
+    } = {}) {
+      if (!payload || isSeedOnlyCloudPayload(payload)) return false;
+      if (hasLocalPendingChanges(meta)) return false;
+      if (cloudNewer) return true;
+      if (isFreshDevice({ meta, hasStoredGraph })) return true;
+      if (!hasRealLocal || isSeedOnlyPets(localPets)) return true;
+      const m = normalizeSyncMeta(meta);
+      if (!m.lastCloudUpdatedAt) return true;
+      return false;
+    }
+
     function nextBumpMeta(meta) {
       const m = normalizeSyncMeta(meta);
       return {
@@ -176,7 +268,7 @@
       }
       if (reconcileState === "error") return "accountSyncError";
       if (conflict) return "accountSyncConflict";
-      if (isLocalDirty(meta)) return "accountSyncDirty";
+      if (hasLocalPendingChanges(meta)) return "accountSyncDirty";
       if (normalizeSyncMeta(meta).lastCloudUpdatedAt || lastBackupAt) {
         return "accountSyncOk";
       }
@@ -195,6 +287,8 @@
       emptySyncMeta,
       normalizeSyncMeta,
       isLocalDirty,
+      hasLocalPendingChanges,
+      shouldAutoPullCloud,
       nextBumpMeta,
       nextMarkSyncedMeta,
       accountSyncStatusKey,
