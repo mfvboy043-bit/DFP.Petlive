@@ -87,8 +87,26 @@
           : () => ({});
 
       if (provider === "chrome" && platform === "android") {
+        const secure = root.shell.isSecureInstallContext?.() === true;
+        if (!secure) {
+          if (typeof onToast === "function" && typeof label === "function") {
+            onToast(label("a2hsNeedHttps"));
+          }
+          if (global.navigator?.share) {
+            const payload = getSharePayload(provider) || {};
+            const shared = await triggerShareSheet(payload);
+            if (shared === true) {
+              if (typeof onToast === "function" && typeof label === "function") {
+                onToast(label("a2hsShareHintAndroid"));
+              }
+              return "share";
+            }
+            if (shared === null) return "cancel";
+          }
+          return "fail";
+        }
         await root.shell.registerServiceWorker?.();
-        let promptEvent = getDeferredPrompt() || (await waitForInstallPrompt(1200));
+        let promptEvent = getDeferredPrompt() || (await waitForInstallPrompt(2500));
         if (promptEvent) {
           if (typeof root.shell.takeDeferredInstallPrompt === "function") {
             promptEvent = root.shell.takeDeferredInstallPrompt() || promptEvent;

@@ -26,6 +26,10 @@
     return "other";
   }
 
+  function isSecureInstallContext() {
+    return global.isSecureContext === true;
+  }
+
   function isLikelyMobile() {
     const ua = String(global.navigator?.userAgent || "");
     if (/iPad|iPhone|iPod|Android/i.test(ua)) return true;
@@ -46,4 +50,5 @@
   root.shell.isBrowserTab = isBrowserTab;
   root.shell.detectPlatform = detectPlatform;
   root.shell.isLikelyMobile = isLikelyMobile;
+  root.shell.isSecureInstallContext = isSecureInstallContext;
 })(typeof window !== "undefined" ? window : globalThis);
