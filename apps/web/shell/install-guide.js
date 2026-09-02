@@ -5,29 +5,50 @@
   root.shell = root.shell || {};
 
   function createInstallGuide() {
-    let deferredPrompt = null;
+    function getDeferredPrompt() {
+      return root.shell.getDeferredInstallPrompt?.() || null;
+    }
+
+    function takeDeferredPrompt() {
+      if (typeof root.shell.takeDeferredInstallPrompt === "function") {
+        return root.shell.takeDeferredInstallPrompt();
+      }
+      const snap = getDeferredPrompt();
+      return snap;
+    }
 
     function showChooser({ overlay, chooserEl } = {}) {
       if (!overlay) return false;
       if (chooserEl) chooserEl.hidden = false;
       overlay.hidden = false;
+      paintChromeInstallReady(chooserEl);
       return true;
+    }
+
+    function paintChromeInstallReady(chooserEl) {
+      if (!chooserEl) return;
+      const chromeBtn = chooserEl.querySelector(
+        '[data-install-guide-provider="chrome"]'
+      );
+      if (!chromeBtn) return;
+      const platform = root.shell.detectPlatform?.() || "other";
+      const ready = platform === "android" && Boolean(getDeferredPrompt());
+      chromeBtn.disabled = false;
+      chromeBtn.classList.toggle("is-install-ready", ready);
     }
 
     function close({ overlay } = {}) {
       if (overlay) overlay.hidden = true;
     }
 
-    async function triggerInstallPrompt() {
-      if (!deferredPrompt) return false;
+    async function triggerInstallPrompt(event) {
+      if (!event?.prompt) return false;
       try {
-        deferredPrompt.prompt();
-        const choice = await deferredPrompt.userChoice;
+        await event.prompt();
+        const choice = await event.userChoice;
         return choice?.outcome === "accepted";
       } catch {
         return false;
-      } finally {
-        deferredPrompt = null;
       }
     }
 
@@ -46,11 +67,16 @@
       }
     }
 
-    /**
-     * Direct native action (no text steps):
-     * - Android Chrome + beforeinstallprompt → system install / add-to-home dialog
-     * - iOS Safari / Chrome → Web Share sheet (user picks「加入主畫面」)
-     */
+    async function waitForInstallPrompt(ms) {
+      const deadline = Date.now() + ms;
+      while (Date.now() < deadline) {
+        const prompt = getDeferredPrompt();
+        if (prompt) return prompt;
+        await new Promise((resolve) => setTimeout(resolve, 100));
+      }
+      return getDeferredPrompt();
+    }
+
     async function runProviderAction(provider, hooks = {}) {
       const platform = root.shell.detectPlatform?.() || "other";
       const label = hooks.label;
@@ -60,20 +86,49 @@
           ? hooks.getSharePayload
           : () => ({});
 
-      if (provider === "chrome" && platform === "android" && deferredPrompt) {
-        const ok = await triggerInstallPrompt();
-        if (ok) return "install";
-        if (typeof onToast === "function" && typeof label === "function") {
-          onToast(label("a2hsInstallDeclined"));
+      if (provider === "chrome" && platform === "android") {
+        await root.shell.registerServiceWorker?.();
+        let promptEvent = getDeferredPrompt() || (await waitForInstallPrompt(1200));
+        if (promptEvent) {
+          if (typeof root.shell.takeDeferredInstallPrompt === "function") {
+            promptEvent = root.shell.takeDeferredInstallPrompt() || promptEvent;
+          }
+          const ok = await triggerInstallPrompt(promptEvent);
+          if (ok) return "install";
+          if (typeof onToast === "function" && typeof label === "function") {
+            onToast(label("a2hsInstallDeclined"));
+          }
+          return "declined";
         }
-        return "declined";
+        if (global.navigator?.share) {
+          const payload = getSharePayload(provider) || {};
+          const shared = await triggerShareSheet(payload);
+          if (shared === true) {
+            if (typeof onToast === "function" && typeof label === "function") {
+              onToast(label("a2hsShareHintAndroid"));
+            }
+            return "share";
+          }
+          if (shared === null) return "cancel";
+        }
+        if (typeof onToast === "function" && typeof label === "function") {
+          onToast(label("a2hsChromeInstallUnavailable"));
+        }
+        return "fail";
       }
 
-      if (platform === "ios" || global.navigator?.share) {
+      if (provider === "safari" && platform === "android") {
+        if (typeof onToast === "function" && typeof label === "function") {
+          onToast(label("a2hsSafariUseChromeAndroid"));
+        }
+        return "fail";
+      }
+
+      if (platform === "ios" && global.navigator?.share) {
         const payload = getSharePayload(provider) || {};
         const shared = await triggerShareSheet(payload);
         if (shared === true) {
-          if (platform === "ios" && typeof onToast === "function" && typeof label === "function") {
+          if (typeof onToast === "function" && typeof label === "function") {
             onToast(label("a2hsShareHintIos"));
           }
           return "share";
@@ -82,13 +137,7 @@
       }
 
       if (typeof onToast === "function" && typeof label === "function") {
-        if (provider === "safari" && platform === "android") {
-          onToast(label("a2hsSafariUseChromeAndroid"));
-        } else if (provider === "chrome" && platform === "android") {
-          onToast(label("a2hsChromeInstallUnavailable"));
-        } else {
-          onToast(label("a2hsInstallUnavailable"));
-        }
+        onToast(label("a2hsInstallUnavailable"));
       }
       return "fail";
     }
@@ -110,7 +159,9 @@
       };
 
       openBtn?.addEventListener("click", () => {
-        showChooser({ overlay, chooserEl });
+        void root.shell.registerServiceWorker?.().then(() => {
+          showChooser({ overlay, chooserEl });
+        });
       });
 
       overlay.addEventListener("click", (event) => {
@@ -135,12 +186,8 @@
       });
 
       if (global.window && typeof global.window.addEventListener === "function") {
-        global.window.addEventListener("beforeinstallprompt", (event) => {
-          event.preventDefault();
-          deferredPrompt = event;
-        });
-        global.window.addEventListener("appinstalled", () => {
-          deferredPrompt = null;
+        global.window.addEventListener("beforeinstallprompt", () => {
+          paintChromeInstallReady(chooserEl);
         });
       }
 
