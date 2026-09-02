@@ -200,19 +200,7 @@
     }
   }
 
-  /**
-   * Topbar: hide「桌面APP登入」when signed-in or already standalone; login via applyIntroCloudVisibility.
-   */
-  function paintIntroA2hsChrome(doc, { standalone, signedIn } = {}) {
-    if (!doc) return;
-    const a2hsBtn = doc.getElementById("intro-a2hs-btn");
-    if (!a2hsBtn) return;
-    a2hsBtn.hidden = Boolean(signedIn || standalone);
-  }
-
   root.shell.toggleAccountMenuFromChip = toggleAccountMenuFromChip;
   root.shell.bindIntroCloudListeners = bindIntroCloudListeners;
   root.shell.bootSurfaceToHome = bootSurfaceToHome;
-  root.shell.paintIntroA2hsChrome = paintIntroA2hsChrome;
-  root.shell.paintIntroA2hsCta = paintIntroA2hsChrome;
 })(typeof window !== "undefined" ? window : globalThis);
