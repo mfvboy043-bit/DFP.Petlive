@@ -3462,6 +3462,14 @@ const shellNavigation = PetLiveWeb.shell.createNavigation({
       if (pet) safeRender("parasiteScreen", () => fillParasiteScreen(pet));
     }
     if (screen === "owner-settings") fillOwnerSettingsForm();
+    if (screen === "why-stories") {
+      const root = document.getElementById("why-stories-mount");
+      PetLiveWeb.shell.syncIntroStoryDisclosures?.(document, window, {
+        t,
+        root,
+        vetLetterFirst: true,
+      });
+    }
   },
 });
 
@@ -3583,6 +3591,15 @@ function closeAppNavMenu() {
 
 function setAppNavMenuOpen(open, anchorBtn) {
   PetLiveWeb.shell.setAppNavMenuOpen(document, window, open, anchorBtn);
+}
+
+function mountIntroStoriesShell() {
+  const whyMount = document.getElementById("why-stories-mount");
+  if (whyMount && whyMount.dataset.introStoriesMounted !== "1") {
+    whyMount.dataset.introStoriesMounted = "1";
+    PetLiveWeb.shell.mountIntroStories?.(document, whyMount, { includeHeader: false });
+  }
+  PetLiveWeb.shell.initIntroStories?.(document, window, { t });
 }
 
 function initAppNavMenu() {
@@ -6367,6 +6384,7 @@ applySelectedPet();
 setMedEntryMode("photo");
 setMedUnitChip("unrecorded");
 setMedFreqChip("unrecorded");
+mountIntroStoriesShell();
 enhanceGlassScreenHeads();
 applyI18n();
 initAppNavMenu();
