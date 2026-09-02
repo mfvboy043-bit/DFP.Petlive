@@ -5947,6 +5947,7 @@ let cloudSyncConflict = false;
 
 const cloudSelectors = PetLiveWeb.domains.cloud.createSelectors({
   getSeedPetIds: () => PetLiveWeb.domains.pets.SEED_PETS.map((pet) => pet.id),
+  getSeedPetsSnapshot: () => cloneSeedPets(),
   hasStoredPetsGraph,
   readPetsGraphSnapshot: () => petsGraphSlot.read(),
   readSyncMeta: () => syncMetaSlot.read(),

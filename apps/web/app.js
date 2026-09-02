@@ -193,6 +193,7 @@ const syncMetaSlot = PetLiveWeb.storage.createJsonSlot({
 
 const cloudSelectors = PetLiveWeb.domains.cloud.createSelectors({
   getSeedPetIds: () => PetLiveWeb.domains.pets.SEED_PETS.map((pet) => pet.id),
+  getSeedPetsSnapshot: () => cloneSeedPets(),
   hasStoredPetsGraph,
   readPetsGraphSnapshot: () => petsGraphSlot.read(),
   readSyncMeta: () => syncMetaSlot.read(),
@@ -6208,6 +6209,22 @@ let cloudReconcileState = "idle";
 let cloudReconcilePhase = "";
 let cloudSyncConflict = false;
 let cloudReconcileTimeout = null;
+let cloudSessionWasSignedIn = false;
+let cloudReconcileAfterLoginTimer = null;
+
+function scheduleCloudReconcileAfterLogin({ silent = true } = {}) {
+  if (cloudReconcileAfterLoginTimer) {
+    clearTimeout(cloudReconcileAfterLoginTimer);
+  }
+  cloudReconcileAfterLoginTimer = window.setTimeout(() => {
+    cloudReconcileAfterLoginTimer = null;
+    Promise.resolve()
+      .then(() => reconcileCloudOnBoot({ silent, skipAutoPull: FRESH_BOOT }))
+      .catch(() => {
+        paintCloudChrome();
+      });
+  }, 400);
+}
 
 cloudController = PetLiveWeb.domains.cloud.createController({
   selectors: cloudSelectors,
@@ -6301,6 +6318,21 @@ function hasCloudGraphConflict(payload) {
 
 function isLocalDirty() {
   return cloudSelectors.isLocalDirty(cloudController.readSyncMeta());
+}
+
+function hasLocalPendingChanges() {
+  return cloudSelectors.hasLocalPendingChanges(cloudController.readSyncMeta());
+}
+
+function shouldAutoPullCloud(payload, cloudNewer) {
+  return cloudSelectors.shouldAutoPullCloud({
+    meta: cloudController.readSyncMeta(),
+    payload,
+    cloudNewer,
+    localPets: pets,
+    hasStoredGraph: hasStoredPetsGraph(),
+    hasRealLocal: hasRealLocalData(),
+  });
 }
 
 function readSyncMeta() {
@@ -6405,7 +6437,7 @@ async function reconcileCloudOnBoot({ silent, skipAutoPull } = {}) {
       return;
     }
 
-    if (isLocalDirty()) {
+    if (hasLocalPendingChanges()) {
       setCloudReconcileState("done");
       return;
     }
@@ -6420,7 +6452,7 @@ async function reconcileCloudOnBoot({ silent, skipAutoPull } = {}) {
       return;
     }
 
-    if (cloudNewer) {
+    if (shouldAutoPullCloud(payload, cloudNewer)) {
       setCloudReconcileState("running", { phase: "restoring" });
       paintCloudChrome();
       suppressSyncMetaBump = true;
@@ -6710,24 +6742,8 @@ async function handleGoogleSignIn({ enterApp } = {}) {
     if (enterApp !== false) {
       enterAppFromIntro();
     }
-    // Silent backup only — never opens another Google popup.
-    window.setTimeout(() => {
-      Promise.resolve()
-        .then(async () => {
-          try {
-            if (isFreshDevice() || isSeedOnlyPets(pets)) {
-              clearSeedPetsFromMemory();
-            }
-            await reconcileCloudOnBoot({ silent: true, skipAutoPull: FRESH_BOOT });
-          } catch {
-            /* Drive may need explicit Sync later; do not re-prompt here */
-          }
-          paintCloudChrome();
-        })
-        .catch(() => {
-          paintCloudChrome();
-        });
-    }, 400);
+    // Silent reconcile — never opens another Google popup.
+    scheduleCloudReconcileAfterLogin({ silent: true });
   } catch (err) {
     const msg = String(err?.message || err);
     if (msg === "missing_client_id") {
@@ -6912,8 +6928,21 @@ function initIntroAndCloud() {
       PetLiveWeb.shell.positionAccountPopover(doc, win, chip);
     },
     registerSessionChange: (paintFn) => {
-      supabaseAuth?.onSessionChange?.(paintFn);
-      googleDriveAuth?.onSessionChange?.(paintFn);
+      const onSession = (session) => {
+        const nowSignedIn = Boolean(session?.signedIn);
+        paintFn();
+        if (
+          !cloudSessionWasSignedIn &&
+          nowSignedIn &&
+          googleDriveAuth?.getSession?.().signedIn
+        ) {
+          scheduleCloudReconcileAfterLogin({ silent: true });
+        }
+        cloudSessionWasSignedIn = nowSignedIn;
+      };
+      cloudSessionWasSignedIn = livePassportSignedIn();
+      supabaseAuth?.onSessionChange?.(onSession);
+      googleDriveAuth?.onSessionChange?.(onSession);
     },
   });
 
@@ -6993,6 +7022,9 @@ if (typeof PetLiveWeb?.storage?.markBootComplete === "function") {
       appState.setCurrentPetId(nextId);
     }
     applySelectedPet();
+    if (googleDriveAuth?.getSession?.().signedIn) {
+      scheduleCloudReconcileAfterLogin({ silent: true });
+    }
   });
 }
 
