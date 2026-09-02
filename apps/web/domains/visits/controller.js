@@ -212,13 +212,10 @@
   } = {}) {
     const name = String(clinicName || "").trim();
     const search = String(clinicSearch || "").trim();
-    if (!selectedClinic && !name) {
-      return { ok: false, reason: "pick_clinic" };
-    }
-    if (!selectedClinic && search) {
-      return { ok: false, reason: "pick_clinic_list" };
-    }
-    return { ok: true };
+    if (selectedClinic) return { ok: true };
+    if (name) return { ok: true };
+    if (search) return { ok: true, freeTextName: search };
+    return { ok: false, reason: "pick_clinic" };
   }
 
   function validateSymptomGate(selectedTags) {

@@ -1,0 +1,40 @@
+/* Clinic / lab picker — saved list + delete control */
+
+.clinic-results .clinic-result-item.has-delete {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 4px;
+  align-items: stretch;
+}
+
+.clinic-results .clinic-result-delete {
+  align-self: center;
+  width: 36px;
+  min-height: 36px;
+  margin: 0;
+  padding: 0;
+
+  border: 1px solid color-mix(in srgb, var(--line) 80%, transparent);
+  border-radius: 10px;
+
+  font-size: 20px;
+  line-height: 1;
+  color: var(--text-muted, #5c6b64);
+  background: color-mix(in srgb, #fff 88%, var(--paper-warm));
+  cursor: pointer;
+}
+
+.clinic-results .clinic-result-delete:hover,
+.clinic-results .clinic-result-delete:focus-visible {
+  color: #b33a3a;
+  border-color: color-mix(in srgb, #b33a3a 35%, var(--line));
+  background: color-mix(in srgb, #fff4f4 70%, #fff);
+}
+
+.clinic-results button.is-add-suggestion strong {
+  color: var(--leaf-deep, #3d6b57);
+}
+
+.clinic-results button.is-add-suggestion small {
+  font-weight: 600;
+}

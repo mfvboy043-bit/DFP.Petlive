@@ -5,22 +5,17 @@
   root.domains = root.domains || {};
   root.domains.clinics = root.domains.clinics || {};
 
-  const CLINIC_PRESETS = [
-    { id: "c1", name: "幸福動物醫院", noteKey: "clinicGeneral", anonymous: false },
-    { id: "c2", name: "夜間急診動物醫院", noteKey: "clinicEmergency", anonymous: false },
-    { id: "c3", name: "綠葉動物醫院", noteKey: "clinicGeneral", anonymous: false },
-    { id: "c4", name: "忠孝動物醫院", noteKey: "clinicGeneral", anonymous: false },
-    { id: "c5", name: "城市寵物診所", noteKey: "clinicGeneral", anonymous: false },
-    { id: "c6", name: "喵星人專科醫院", noteKey: "clinicCat", anonymous: false },
-  ];
+  const CLINIC_PRESETS = [];
 
-  function createCatalog({ label, locField } = {}) {
+  function createCatalog({ label, locField, getSavedClinics } = {}) {
     if (typeof label !== "function") {
       throw new TypeError("createCatalog requires label(key)");
     }
     if (typeof locField !== "function") {
       throw new TypeError("createCatalog requires locField(value)");
     }
+    const readSaved =
+      typeof getSavedClinics === "function" ? getSavedClinics : () => [];
 
     function clinicNameOf(clinic) {
       if (!clinic) return "";
@@ -36,54 +31,100 @@
       };
     }
 
+    function savedClinicEntries() {
+      return readSaved().map((clinic) => ({
+        id: clinic.id,
+        name: clinic.name,
+        note: label("clinicSavedNote"),
+        anonymous: false,
+        saved: true,
+        deletable: true,
+      }));
+    }
+
+    function resolveSavedClinicName(clinicId) {
+      const saved = readSaved().find((item) => item.id === clinicId);
+      return saved?.name || "";
+    }
+
     function visitClinicLabel(visit) {
       if (!visit) return "";
+      if (visit.clinicId === "anonymous") return label("anonymousClinic");
       if (visit.clinicId) {
         const preset = CLINIC_PRESETS.find((clinic) => clinic.id === visit.clinicId);
         if (preset) return clinicNameOf(preset);
-        if (visit.clinicId === "anonymous") return label("anonymousClinic");
+        const savedName = resolveSavedClinicName(visit.clinicId);
+        if (savedName) return savedName;
       }
       return locField(visit.clinic);
     }
 
-    function getClinicDirectory(pets) {
+    function getClinicDirectory(pets, savedOverride) {
       const anonymous = getAnonymousClinic();
-      const presets = CLINIC_PRESETS.map((clinic) => ({
-        ...clinic,
-        name: clinicNameOf(clinic),
-        note: label(clinic.noteKey),
-      }));
+      const saved =
+        Array.isArray(savedOverride) && savedOverride.length
+          ? savedOverride.map((clinic) => ({
+              id: clinic.id,
+              name: clinic.name,
+              note: label("clinicSavedNote"),
+              anonymous: false,
+              saved: true,
+              deletable: true,
+            }))
+          : savedClinicEntries();
+      const names = new Set(saved.map((clinic) => clinic.name));
       const fromVisits = (pets || []).flatMap((pet) =>
         (pet.visits || []).map((visit) => visitClinicLabel(visit)).filter(Boolean)
       );
-      const names = new Set(presets.map((clinic) => clinic.name));
       const extra = fromVisits
         .filter((name) => !names.has(name) && name !== anonymous.name)
         .filter((name, index, arr) => arr.indexOf(name) === index)
         .map((name, index) => ({
-          id: `extra-${index}`,
+          id: `history-${index}`,
           name,
           note: label("clinicFromHistory"),
           anonymous: false,
+          deletable: false,
         }));
-      // Pin anonymous first so clinics that prefer not to be named see it immediately.
-      return [anonymous, ...presets, ...extra];
+      return [anonymous, ...saved, ...extra];
+    }
+
+    function buildAddSuggestion(query, directory) {
+      const trimmed = String(query || "").trim();
+      if (!trimmed) return null;
+      const q = trimmed.toLowerCase();
+      const exists = directory.some(
+        (clinic) => clinic.id !== "anonymous" && clinic.name.toLowerCase() === q
+      );
+      if (exists) return null;
+      return {
+        id: "__add__",
+        name: trimmed,
+        note: label("clinicAddSuggestion", { name: trimmed }),
+        anonymous: false,
+        isAddSuggestion: true,
+      };
     }
 
     /** Filter directory; anonymous stays pinned first while searching. */
-    function searchClinics(query, pets) {
+    function searchClinics(query, pets, savedOverride) {
       const q = String(query || "")
         .trim()
         .toLowerCase();
-      const directory = getClinicDirectory(pets);
+      const directory = getClinicDirectory(pets, savedOverride);
       const anonymous = getAnonymousClinic();
       const rest = directory.filter((clinic) => clinic.id !== "anonymous");
-      if (!q) return [anonymous, ...rest];
+      const addSuggestion = buildAddSuggestion(query, directory);
+      if (!q) {
+        return addSuggestion ? [anonymous, ...rest, addSuggestion] : [anonymous, ...rest];
+      }
       const matched = rest.filter((clinic) => {
         const hay = `${clinic.name} ${clinic.note}`.toLowerCase();
         return hay.includes(q);
       });
-      return [anonymous, ...matched];
+      const list = [anonymous, ...matched];
+      if (addSuggestion) list.push(addSuggestion);
+      return list;
     }
 
     return {
@@ -93,6 +134,7 @@
       visitClinicLabel,
       getClinicDirectory,
       searchClinics,
+      buildAddSuggestion,
     };
   }
 
