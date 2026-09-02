@@ -6955,12 +6955,14 @@ function initIntroAndCloud() {
   installGuideShell?.bind?.({
     overlay: document.getElementById("install-guide"),
     chooserEl: document.getElementById("install-guide-chooser"),
-    stepsPanelEl: document.getElementById("install-guide-steps-panel"),
-    stepsEl: document.getElementById("install-guide-steps"),
-    stepsTitleEl: document.getElementById("install-guide-steps-title"),
-    installBtn: document.getElementById("install-guide-android-install"),
     openBtn: document.getElementById("intro-a2hs-btn"),
     label: (key) => t(key),
+    onToast: (msg) => showToast(msg),
+    getSharePayload: () => ({
+      title: t("brand"),
+      text: t("a2hsShareText"),
+      url: window.location.href,
+    }),
   });
 
   // Boot: A (intro) by default → Supabase Google login enters B.
