@@ -6595,11 +6595,6 @@ function paintCloudChrome() {
     session
   );
 
-  PetLiveWeb.shell.paintIntroA2hsChrome?.(document, {
-    standalone: Boolean(PetLiveWeb.shell.isStandalone?.()),
-    signedIn: session.signedIn,
-  });
-
   PetLiveWeb.shell.applyAuthBusyState?.(document, busy);
 
   PetLiveWeb.shell.paintLegalConsent?.(document, {
@@ -6971,20 +6966,6 @@ function initIntroAndCloud() {
       supabaseAuth?.onSessionChange?.(onSession);
       googleDriveAuth?.onSessionChange?.(onSession);
     },
-  });
-
-  const installGuideShell = PetLiveWeb.shell.createInstallGuide?.();
-  installGuideShell?.bind?.({
-    overlay: document.getElementById("install-guide"),
-    chooserEl: document.getElementById("install-guide-chooser"),
-    openBtn: document.getElementById("intro-a2hs-btn"),
-    label: (key) => t(key),
-    onToast: (msg) => showToast(msg),
-    getSharePayload: () => ({
-      title: t("brand"),
-      text: t("a2hsShareText"),
-      url: window.location.href,
-    }),
   });
 
   // Boot: A (intro) by default → Supabase Google login enters B.
