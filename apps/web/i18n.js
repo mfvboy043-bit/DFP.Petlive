@@ -141,7 +141,7 @@ const I18N = {
     introStoriesBridge:
       "換院、急診、換醫生時，<br />把「試過什麼、吃過什麼」帶著走。",
     introStoriesNote: "以上為理解情境之示意，不取代獸醫診斷。",
-    introStoriesNavTitle: "四則故事",
+    introStoriesNavTitle: "關於我們",
     introStoriesNavHint: "給醫師與飼主的理解情境",
     whyStoriesPageTitle: "換院、急診時，紀錄有跟著走嗎？",
     introStoryExpand: "展開故事",
@@ -1015,7 +1015,7 @@ const I18N = {
     introStoriesBridge:
       "At every new clinic, ER visit, or new vet,<br />bring what was tried and what was given.",
     introStoriesNote: "Illustrative scenarios for context only—not a veterinary diagnosis.",
-    introStoriesNavTitle: "Four stories",
+    introStoriesNavTitle: "About us",
     introStoriesNavHint: "Context for vets and pet owners",
     whyStoriesPageTitle: "When you switch clinics, does the record travel with you?",
     introStoryExpand: "Expand story",
@@ -1889,7 +1889,7 @@ const I18N = {
     introStoriesBridge:
       "病院が替わるたびに、<br />「試した薬・飲ませた薬」を一緒に持っていきましょう。",
     introStoriesNote: "理解のための示意です。診断の代わりではありません。",
-    introStoriesNavTitle: "4つのストーリー",
+    introStoriesNavTitle: "私たちについて",
     introStoriesNavHint: "獣医師と飼い主のための理解の場面",
     whyStoriesPageTitle: "病院を替えるとき、記録は一緒に行きますか？",
     introStoryExpand: "ストーリーを開く",
@@ -2768,7 +2768,7 @@ const I18N = {
     introStoriesBridge:
       "병원·응급·담당 수의사가 바뀔 때마다<br />‘무엇을 써 봤는지’를 함께 가져가세요.",
     introStoriesNote: "상황 이해를 위한 예시이며, 수의사 진단을 대체하지 않습니다.",
-    introStoriesNavTitle: "네 가지 이야기",
+    introStoriesNavTitle: "소개",
     introStoriesNavHint: "수의사와 보호자를 위한 이해 상황",
     whyStoriesPageTitle: "병원을 바꿀 때, 기록도 함께 가나요?",
     introStoryExpand: "이야기 펼치기",
