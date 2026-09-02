@@ -1,92 +1,12 @@
-/* Install guide sheet — shared A-page overlay (browser tab → add to home screen) */
+/* Install guide — reuses parasite-cal-chooser sheet layout */
 
-.intro-cta {
-  display: grid;
-  gap: 10px;
-  margin-top: 22px;
-  max-width: 22rem;
-}
-
-.intro-cta[hidden] {
-  display: none !important;
-}
-
-.intro-cta-browser {
-  display: grid;
-  gap: 10px;
-}
-
-.intro-cta-browser[hidden],
-.intro-cta-standalone[hidden] {
-  display: none !important;
-}
-
-.intro-add-home-btn {
-  min-height: 46px;
-  font-size: 15px;
-  font-weight: 700;
-  border-radius: 999px;
-}
-
-.intro-a2hs-done-btn {
-  min-height: 40px;
-  font-size: 14px;
-  border-radius: 999px;
-}
-
-.intro-a2hs-done-hint {
-  margin: 2px 0 0;
-  font-size: 13px;
-  line-height: 1.55;
-  color: var(--text-muted, #5a6b62);
-}
-
-.intro-a2hs-done-hint[hidden] {
-  display: none !important;
-}
-
-.intro-standalone-badge {
-  margin: 0;
-  padding: 8px 14px;
-  width: fit-content;
-  border-radius: 999px;
-  font-size: 13px;
-  font-weight: 600;
-  color: var(--leaf-deep, #2f5a48);
-  background: rgba(232, 244, 239, 0.92);
-  border: 1px solid rgba(61, 107, 87, 0.18);
-}
-
-.install-guide {
-  position: fixed;
+.install-guide.parasite-cal-chooser {
   z-index: 990;
-  inset: 0;
-  display: grid;
-  align-items: end;
-  padding: 16px;
-  padding-bottom: max(16px, env(safe-area-inset-bottom));
-  background: rgba(20, 28, 24, 0.58);
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
 }
 
-.install-guide[hidden] {
+.install-guide-steps-panel[hidden],
+.install-guide-chooser[hidden] {
   display: none !important;
-}
-
-.install-guide-sheet {
-  width: min(100%, 420px);
-  margin: 0 auto;
-  padding: 20px 19px 18px;
-  border-radius: 23px;
-  background: #fff;
-  box-shadow: var(--shadow-md, 0 12px 40px rgba(26, 52, 45, 0.14));
-}
-
-.install-guide-sheet h3 {
-  margin: 0 0 14px;
-  font-family: "Noto Serif TC", serif;
-  font-size: 1.15rem;
 }
 
 .install-guide-steps {
@@ -123,16 +43,32 @@
   padding-top: 3px;
 }
 
-.install-guide-actions {
-  display: grid;
-  gap: 8px;
-}
-
-.install-guide-actions .btn {
-  min-height: 44px;
-  border-radius: 999px;
-}
-
 .install-guide-install-btn[hidden] {
   display: none !important;
+}
+
+.intro-a2hs-btn[hidden] {
+  display: none !important;
+}
+
+.intro-topbar-actions {
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+
+.intro-topbar-actions .intro-login-btn {
+  max-width: 100%;
+}
+
+.intro-a2hs-label,
+.intro-login-label {
+  white-space: nowrap;
+}
+
+@media (max-width: 380px) {
+  .intro-topbar-actions .intro-login-btn {
+    font-size: 12px;
+    padding: 0 10px 0 9px;
+    min-height: 38px;
+  }
 }
