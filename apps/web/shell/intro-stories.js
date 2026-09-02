@@ -27,7 +27,6 @@
                 <span class="intro-story-chevron" aria-hidden="true"></span>
               </summary>
               <div class="intro-story-body" data-i18n-html="introStory3Body">
-                <p class="story-epigraph">✉️ <em>給全天下獸醫師的一封信</em></p>
                 <p>半夜，謎豆子突然一直吐，連站都站不穩。<br />主人趕快抱著牠去醫院。</p>
                 <p>醫生一邊救謎豆子，一邊問：</p>
                 <blockquote><p>「牠今天吃過什麼藥？」</p><p>「有打過什麼針嗎？」</p></blockquote>
