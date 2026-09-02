@@ -200,7 +200,67 @@
     }
   }
 
+  /**
+   * A-page CTA: browser tab → add-to-home only; standalone → login in topbar.
+   * Facade supplies standalone flag + signedIn; optional label(key) for lede swap.
+   */
+  function paintIntroA2hsCta(doc, { standalone, signedIn, label } = {}) {
+    if (!doc) return;
+    const cta = doc.getElementById("intro-cta");
+    const browserCta = doc.getElementById("intro-cta-browser");
+    const standaloneCta = doc.getElementById("intro-cta-standalone");
+    const loginBtn = doc.getElementById("intro-login-btn");
+    const lede = doc.querySelector(".intro-lede");
+    const doneHint = doc.getElementById("intro-a2hs-done-hint");
+
+    if (doneHint) doneHint.hidden = true;
+
+    if (signedIn) {
+      if (cta) cta.hidden = true;
+      if (loginBtn) loginBtn.hidden = true;
+      return;
+    }
+
+    const shell = global.PetLiveWeb?.shell;
+    const mobileBrowser = !standalone && Boolean(shell?.isLikelyMobile?.());
+
+    if (cta) cta.hidden = !mobileBrowser && !standalone;
+
+    if (standalone || !mobileBrowser) {
+      if (browserCta) browserCta.hidden = true;
+      if (standaloneCta) standaloneCta.hidden = !standalone;
+      if (loginBtn) loginBtn.hidden = false;
+      if (lede && typeof label === "function") {
+        lede.innerHTML = label(
+          standalone ? "introLedeStandalone" : "introLedeStandalone"
+        );
+      }
+      return;
+    }
+
+    if (browserCta) browserCta.hidden = false;
+    if (standaloneCta) standaloneCta.hidden = true;
+    if (loginBtn) loginBtn.hidden = true;
+    if (lede && typeof label === "function") {
+      lede.innerHTML = label("introLedeBrowser");
+    }
+  }
+
+  function bindIntroA2hsDone(doc, hooks = {}) {
+    const btn = doc?.getElementById?.("intro-a2hs-done-btn");
+    const hint = doc?.getElementById?.("intro-a2hs-done-hint");
+    if (!btn || !hint) return false;
+    btn.addEventListener("click", () => {
+      hint.hidden = false;
+      hint.focus?.();
+      if (typeof hooks.onShowHint === "function") hooks.onShowHint();
+    });
+    return true;
+  }
+
   root.shell.toggleAccountMenuFromChip = toggleAccountMenuFromChip;
   root.shell.bindIntroCloudListeners = bindIntroCloudListeners;
   root.shell.bootSurfaceToHome = bootSurfaceToHome;
+  root.shell.paintIntroA2hsCta = paintIntroA2hsCta;
+  root.shell.bindIntroA2hsDone = bindIntroA2hsDone;
 })(typeof window !== "undefined" ? window : globalThis);
