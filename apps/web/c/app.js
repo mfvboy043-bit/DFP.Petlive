@@ -47,9 +47,19 @@ function locField(value) {
   return String(value);
 }
 
+const SAVED_CLINICS_KEY = "petlive-c-saved-clinics";
+const clinicStore = PetLiveWeb.domains.clinics.createStore({
+  storageKey: SAVED_CLINICS_KEY,
+});
+let savedClinics = clinicStore.load();
+
 const clinicsCatalog = PetLiveWeb.domains.clinics.createCatalog({
-  label: (key) => t(key),
+  label: (key, vars) => t(key, vars),
   locField,
+  getSavedClinics: () => savedClinics,
+});
+const clinicsRenderer = PetLiveWeb.domains.clinics.createRenderer({
+  label: (key, vars) => t(key, vars),
 });
 const visitLabels = PetLiveWeb.domains.visits.createLabels({
   label: (key) => t(key),
@@ -62,7 +72,44 @@ function getAnonymousClinic() {
   return clinicsCatalog.getAnonymousClinic();
 }
 function getClinicDirectory() {
-  return clinicsCatalog.getClinicDirectory(pets);
+  return clinicsCatalog.getClinicDirectory(pets, savedClinics);
+}
+function searchClinicsForPicker(query) {
+  return clinicsCatalog.searchClinics(query, pets, savedClinics);
+}
+function addSavedClinic(name) {
+  savedClinics = clinicStore.add(name);
+  return savedClinics;
+}
+function removeSavedClinic(id) {
+  savedClinics = clinicStore.remove(id);
+  if (selectedClinic?.id === id) setSelectedClinic(null);
+  if (selectedLabClinic?.id === id) setSelectedLabClinic(null);
+  return savedClinics;
+}
+function clinicEntryFromSavedName(name) {
+  const trimmed = String(name || "").trim();
+  if (!trimmed) return null;
+  const saved = savedClinics.find((item) => item.name === trimmed);
+  if (!saved) return null;
+  return {
+    id: saved.id,
+    name: saved.name,
+    note: t("clinicSavedNote"),
+    saved: true,
+    deletable: true,
+  };
+}
+function applyFreeTextClinic(name, { selectLab = false } = {}) {
+  const trimmed = String(name || "").trim();
+  if (!trimmed) return null;
+  addSavedClinic(trimmed);
+  const clinic =
+    clinicEntryFromSavedName(trimmed) ||
+    ({ id: "", name: trimmed, note: t("clinicSavedNote") });
+  if (selectLab) setSelectedLabClinic(clinic);
+  else setSelectedClinic(clinic);
+  return clinic;
 }
 function visitClinicLabel(visit) {
   return clinicsCatalog.visitClinicLabel(visit);
@@ -1526,8 +1573,8 @@ function setSelectedLabClinic(clinic) {
 
 function renderLabClinicResults(list) {
   const results = document.getElementById("lab-clinic-results");
-  if (!results || !labsRenderer) return;
-  const built = labsRenderer.buildClinicResultsHtml(list);
+  if (!results || !clinicsRenderer) return;
+  const built = clinicsRenderer.buildLabClinicResultsHtml(list);
   results.hidden = built.hidden;
   results.innerHTML = built.html;
 }
@@ -3867,12 +3914,12 @@ const clinicNameInput = document.getElementById("clinic-name");
 const clinicAnonymousInput = document.getElementById("clinic-anonymous");
 
 function searchClinics(query) {
-  return clinicsCatalog.searchClinics(query, pets);
+  return searchClinicsForPicker(query);
 }
 
 function renderClinicResults(list) {
-  if (!medicationsRenderer) return;
-  const built = medicationsRenderer.buildClinicResultsHtml(list);
+  if (!clinicsRenderer) return;
+  const built = clinicsRenderer.buildClinicResultsHtml(list);
   clinicResults.hidden = built.hidden;
   clinicResults.innerHTML = built.html;
 }
@@ -3915,8 +3962,22 @@ clinicSearch.addEventListener("input", () => {
 });
 
 clinicResults.addEventListener("click", (event) => {
+  const deleteBtn = event.target.closest("[data-clinic-delete]");
+  if (deleteBtn) {
+    event.preventDefault();
+    event.stopPropagation();
+    removeSavedClinic(deleteBtn.dataset.clinicDelete);
+    renderClinicResults(searchClinics(clinicSearch.value));
+    showToast(t("toastClinicRemoved"));
+    return;
+  }
   const btn = event.target.closest("[data-clinic-id]");
   if (!btn) return;
+  if (btn.dataset.clinicId === "__add__") {
+    const name = btn.dataset.clinicAddName || clinicSearch.value.trim();
+    applyFreeTextClinic(name);
+    return;
+  }
   const clinic = getClinicDirectory().find((item) => item.id === btn.dataset.clinicId);
   if (!clinic) return;
   setSelectedClinic(clinic);
@@ -4007,11 +4068,11 @@ document.getElementById("visit-form").addEventListener("submit", (event) => {
       showToast(t("toastPickClinic"));
       renderClinicResults(searchClinics(clinicSearch.value));
       clinicSearch.focus();
-    } else if (clinicGate.reason === "pick_clinic_list") {
-      showToast(t("toastPickClinicList"));
-      renderClinicResults(searchClinics(clinicSearch.value));
     }
     return;
+  }
+  if (clinicGate.freeTextName) {
+    applyFreeTextClinic(clinicGate.freeTextName);
   }
   const symptomGate = PetLiveWeb.domains.visits.validateSymptomGate(selectedTags);
   if (!symptomGate.ok) {
@@ -5501,8 +5562,24 @@ document.getElementById("lab-clinic-search")?.addEventListener("input", (event) 
 });
 
 document.getElementById("lab-clinic-results")?.addEventListener("click", (event) => {
+  const deleteBtn = event.target.closest("[data-lab-clinic-delete]");
+  if (deleteBtn) {
+    event.preventDefault();
+    event.stopPropagation();
+    removeSavedClinic(deleteBtn.dataset.labClinicDelete);
+    const search = document.getElementById("lab-clinic-search");
+    renderLabClinicResults(searchClinics(search?.value || ""));
+    showToast(t("toastClinicRemoved"));
+    return;
+  }
   const btn = event.target.closest("[data-lab-clinic-id]");
   if (!btn) return;
+  if (btn.dataset.labClinicId === "__add__") {
+    const search = document.getElementById("lab-clinic-search");
+    const name = btn.dataset.labClinicAddName || search?.value?.trim() || "";
+    applyFreeTextClinic(name, { selectLab: true });
+    return;
+  }
   const clinic = getClinicDirectory().find(
     (item) => item.id === btn.dataset.labClinicId
   );
@@ -5554,6 +5631,9 @@ document.getElementById("lab-add-form")?.addEventListener("submit", (event) => {
   const typedClinic = (
     document.getElementById("lab-clinic-search")?.value || ""
   ).trim();
+  if (!selectedLabClinic && typedClinic) {
+    applyFreeTextClinic(typedClinic, { selectLab: true });
+  }
   const clinicName = selectedLabClinic
     ? clinicNameOf(selectedLabClinic)
     : document.getElementById("lab-clinic-name")?.value.trim() || typedClinic;
