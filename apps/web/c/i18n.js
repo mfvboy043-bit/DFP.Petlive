@@ -10,6 +10,29 @@ const I18N = {
     navMenuLabel: "選單",
     manualTitle: "說明書",
     manualNavHint: "使用說明",
+    introStoriesEyebrow: "四則故事",
+    introStoriesTitle: "換院、急診時，紀錄有跟著走嗎？",
+    introStory1Title: "半夜急診那張空白紙",
+    introStory1Body:
+      "<p>豆豆在 A 醫院吃了很強的藥，爸爸只記得「有吃」，<strong>沒記名字</strong>。</p><p>幾天後<strong>半夜</strong>，豆豆突然沒精神、開始吐，爸爸抱著衝去 B 醫院急診。</p><p>醫生驗血：</p><blockquote class=\"story-pull\"><p><strong>肝臟數字像紅燈狂閃。</strong></p></blockquote><p>可 B 醫院不知道——豆豆前幾天已經吃過<strong>類固醇</strong>。</p><p>醫生不敢亂加藥，只能一項一項查。<br />豆豆在等，爸爸在急，<strong>最好的黃金時間，就這樣溜走</strong>。</p>",
+    introStory2Title: "為什麼看了很多醫生都沒用",
+    introStory2Body:
+      "<p>米米在 A 醫院吃過 A 抗生素，好一點又復發。</p><p>爸爸帶去 C 醫院，新醫生問：</p><blockquote><p>「之前吃過什麼？」</p></blockquote><p>爸爸也說不清。醫生只好再開<strong>同一種 A 抗生素</strong>。米米還是咳、還是癢。</p><p>爸爸心裡想：</p><blockquote class=\"story-pull\"><p>「是不是看了很多醫生都沒用？」</p></blockquote><p>其實不是。是沒有一張小紙，告訴下一位醫生：</p><blockquote class=\"story-pull story-pull--closing\"><p><strong>「這個藥試過了，沒效。」</strong></p></blockquote>",
+    introStory3Title:
+      "謎豆子的第二次機會<br /><span class=\"intro-story-subtitle\">（ ✉️ 給全天下獸醫師的一封信 ）</span>",
+    introStory3Body:
+      "<p class=\"story-epigraph\">✉️ <em>給全天下獸醫師的一封信</em></p><p>半夜，謎豆子突然一直吐，連站都站不穩。<br />主人趕快抱著牠去醫院。</p><p>醫生一邊救謎豆子，一邊問：</p><blockquote><p>「牠今天吃過什麼藥？」</p><p>「有打過什麼針嗎？」</p></blockquote><p>主人搖搖頭：</p><blockquote><p>「我不知道，只知道下午看過醫生。」</p></blockquote><p>醫生很著急。因為寵物不會說話，<br />沒有人能告訴他，牠的身體今天發生過什麼事。<br />他只能<strong>一邊救，一邊猜</strong>。</p><p>還好，最後慢慢好起來了。醫生摸摸牠的頭，心裡想：</p><blockquote class=\"story-pull\"><p><strong>「如果我早一點知道，就好了。」</strong></p></blockquote><hr class=\"story-divider\" /><p>所以，我們想替謎豆子留下一張<strong>小小的紙條</strong>：</p><ul class=\"story-list\"><li>今天吃了什麼藥</li><li>打了什麼針</li><li>醫生幫牠做了什麼</li></ul><p class=\"story-note\">醫院如果不想寫名字，也可以不寫。</p><p>因為這張紙條<strong>不是用來找誰做錯事</strong>。<br />它只是上一位醫生，留給下一位醫生的一句話：</p><blockquote class=\"story-pull story-pull--closing story-pull--oneliner\"><p><strong>「我先照顧過牠了，接下來，換你幫我照顧牠。」</strong></p></blockquote>",
+    introStory4Title: "我為什麼會做這個網頁？",
+    introStory4Body:
+      "<p>身為飼主，我想很多人都曾經有過這樣的念頭：</p><blockquote class=\"story-pull\"><p><strong>「如果我早一點知道呢？」</strong></p><p><strong>「如果當時手上再多一點資訊呢？」</strong></p></blockquote><p>也許，有些事情就會不一樣。這樣的遺憾，也曾經發生在我身上。</p><hr class=\"story-divider\" /><p>當我們帶著寵物換一家醫院看診時，新的醫師常常不知道牠之前做過什麼檢查、吃過什麼藥、接受過什麼治療。醫師只能重新詢問、重新判斷，有時甚至必須重新檢查。</p><p>不是因為前一位醫師做得不夠好。而是因為那些重要的資訊，<strong>沒有一起跟著牠來到下一間醫院。</strong></p><p>對人來說，我們有健保與醫療資訊系統。換了一位醫師，過去的檢查、用藥與醫療紀錄，仍有機會成為下一次判斷的重要參考。</p><p>可是寵物沒有自己的「健康存摺」。牠不會說話，也無法告訴下一位醫師：</p><ul class=\"story-list\"><li><strong>「我之前吃過什麼藥。」</strong></li><li><strong>「我曾經做過什麼檢查。」</strong></li><li><strong>「我的身體以前發生過什麼事。」</strong></li></ul><hr class=\"story-divider\" /><p>所以，我想替牠們留下一份可以帶著走的醫療紀錄。讓每一次看診，不再只是一次結束後就散落的記憶；而是一塊一塊被保存下來，陪著牠走到下一位醫師面前的資訊。</p><p>我不知道這份紀錄有一天能不能真的救下一條生命。但我希望，當那個最關鍵的時刻來臨時，飼主可以少說一次：</p><blockquote class=\"story-pull\"><p><strong>「如果我早一點知道就好了。」</strong></p></blockquote><p>而醫師，也可以多一點資訊，去做下一個重要的決定。</p><p>這就是我想做這個網頁的原因。</p><blockquote class=\"story-pull story-pull--closing\"><p><strong>讓重要的醫療資訊，跟著牠一起走。</strong></p></blockquote>",
+    introStoriesBridge:
+      "換院、急診、換醫生時，<br />把「試過什麼、吃過什麼」帶著走。",
+    introStoriesNote: "以上為理解情境之示意，不取代獸醫診斷。",
+    introStoriesNavTitle: "四則故事",
+    introStoriesNavHint: "給醫師與飼主的理解情境",
+    whyStoriesPageTitle: "換院、急診時，紀錄有跟著走嗎？",
+    introStoryExpand: "展開故事",
+    introStoryCollapse: "收合故事",
     featureButtonsTitle: "功能按鈕",
     featureButtonsHint: "常用功能捷徑",
     featureButtonsSub: "常用功能捷徑",
@@ -788,6 +811,29 @@ const I18N = {
     navMenuLabel: "Menu",
     manualTitle: "Manual",
     manualNavHint: "How to use",
+    introStoriesEyebrow: "Four stories",
+    introStoriesTitle: "When you switch clinics, does the record travel with you?",
+    introStory1Title: "The blank chart at midnight ER",
+    introStory1Body:
+      "<p>At Hospital A, DouDou got strong medicine. Dad only remembered “he took something,” <strong>not the name</strong>.</p><p>One <strong>midnight</strong>, DouDou got weak and started vomiting. Dad rushed to Hospital B.</p><p>The blood test showed:</p><blockquote class=\"story-pull\"><p><strong>Liver numbers flashing like red lights.</strong></p></blockquote><p>But Hospital B didn’t know—DouDou had already taken <strong>steroids</strong> days before.</p><p>The vet couldn’t add medicine safely and had to check step by step.<br />DouDou waited. Dad panicked. <strong>Precious minutes slipped away.</strong></p>",
+    introStory2Title: "Why it feels like no vet can help",
+    introStory2Body:
+      "<p>At Hospital A, Mimi tried Antibiotic A and felt a bit better, then got sick again.</p><p>At Hospital C, the new vet asked:</p><blockquote><p>“What had she tried before?”</p></blockquote><p>Dad couldn’t say clearly. So the vet prescribed the <strong>same Antibiotic A</strong> again. Mimi still coughed and itched.</p><p>Dad thought:</p><blockquote class=\"story-pull\"><p>“We’ve seen so many vets—nothing works.”</p></blockquote><p>That’s not really true. There was just no little note telling the next vet:</p><blockquote class=\"story-pull story-pull--closing\"><p><strong>“We already tried this—it didn’t work.”</strong></p></blockquote>",
+    introStory3Title:
+      "Mystery Bean’s second chance<br /><span class=\"intro-story-subtitle\">(✉️ A letter to vets everywhere)</span>",
+    introStory3Body:
+      "<p class=\"story-epigraph\">✉️ <em>A letter to vets everywhere</em></p><p>At midnight, Mystery Bean kept vomiting and could barely stand.<br />Her owner rushed to the hospital.</p><p>While treating her, the vet asked:</p><blockquote><p>“What medicine did she take today?”</p><p>“Any shots?”</p></blockquote><p>The owner shook their head:</p><blockquote><p>“I don’t know—I only know we saw a vet this afternoon.”</p></blockquote><p>The vet was worried. Pets can’t talk.<br />No one could say what had happened to her body today.<br />They had to <strong>save her while guessing</strong>.</p><p>Luckily, she slowly got better. The vet stroked her head and thought:</p><blockquote class=\"story-pull\"><p><strong>“If only I had known sooner.”</strong></p></blockquote><hr class=\"story-divider\" /><p>So we want to leave a <strong>small note</strong> for Mystery Bean:</p><ul class=\"story-list\"><li>What she took today</li><li>What shots she got</li><li>What the vet did for her</li></ul><p class=\"story-note\">Clinics don’t have to write their name if they prefer.</p><p>This note is <strong>not for blaming anyone</strong>.<br />It’s one vet leaving the next vet a line:</p><blockquote class=\"story-pull story-pull--closing story-pull--oneliner\"><p><strong>“I’ve cared for her—now please help me care for her.”</strong></p></blockquote>",
+    introStory4Title: "Why I built this site",
+    introStory4Body:
+      "<p>As a pet owner, I think many of us have had this thought:</p><blockquote class=\"story-pull\"><p><strong>“What if I had known sooner?”</strong></p><p><strong>“What if I had had a little more information then?”</strong></p></blockquote><p>Maybe some things would have turned out differently. That regret has happened to me too.</p><hr class=\"story-divider\" /><p>When we take our pet to a new clinic, the new vet often doesn’t know what tests she had, what medicine she took, or what treatment she received. The vet has to ask again, judge again, and sometimes test again.</p><p>Not because the previous vet didn’t do enough. But because that important information <strong>didn’t travel with her to the next clinic.</strong></p><p>For people, we have health insurance and medical records systems. When we see a new doctor, past tests, medicines, and records can still guide the next decision.</p><p>But pets don’t have their own “health passbook.” They can’t speak, and they can’t tell the next vet:</p><ul class=\"story-list\"><li><strong>“What medicine I took before.”</strong></li><li><strong>“What tests I had.”</strong></li><li><strong>“What happened to my body before.”</strong></li></ul><hr class=\"story-divider\" /><p>So I wanted to leave them a medical record they can carry. So each visit isn’t just a memory that scatters when it’s over—but pieces saved, walking with them to the next vet.</p><p>I don’t know if this record will ever save a life. But I hope that when the most critical moment comes, an owner can say one fewer time:</p><blockquote class=\"story-pull\"><p><strong>“If only I had known sooner.”</strong></p></blockquote><p>And a vet can have a little more information for the next important decision.</p><p>That’s why I built this site.</p><blockquote class=\"story-pull story-pull--closing\"><p><strong>Let important medical information travel with them.</strong></p></blockquote>",
+    introStoriesBridge:
+      "At every new clinic, ER visit, or new vet,<br />bring what was tried and what was given.",
+    introStoriesNote: "Illustrative scenarios for context only—not a veterinary diagnosis.",
+    introStoriesNavTitle: "Four stories",
+    introStoriesNavHint: "Context for vets and pet owners",
+    whyStoriesPageTitle: "When you switch clinics, does the record travel with you?",
+    introStoryExpand: "Expand story",
+    introStoryCollapse: "Collapse story",
     featureButtonsTitle: "Features",
     featureButtonsHint: "Quick shortcuts",
     featureButtonsSub: "Quick shortcuts",
@@ -1566,6 +1612,29 @@ const I18N = {
     navMenuLabel: "メニュー",
     manualTitle: "説明書",
     manualNavHint: "使い方の説明",
+    introStoriesEyebrow: "4つのストーリー",
+    introStoriesTitle: "病院を替えるとき、記録は一緒に行きますか？",
+    introStory1Title: "真夜中の救急、その空白の紙",
+    introStory1Body:
+      "<p>トトはA病院で強いお薬を飲みました。パパは「飲んだ」とだけ覚えていて、<strong>名前は覚えていません</strong>。</p><p>数日後の<strong>真夜中</strong>、トトはぐったりして吐き始め、パパはB病院の救急へ抱えて駆け込みました。</p><p>血液検査では：</p><blockquote class=\"story-pull\"><p><strong>肝臓の数字が赤信号のように光りました。</strong></p></blockquote><p>でもB病院は知りません——トトは数日前に<strong>ステロイド</strong>を飲んでいたこと。</p><p>獣医さんは安全のため、すぐに薬を足せず一つずつ確認。<br />トトは待ち、パパは焦り、<strong>大切な時間だけが過ぎていきました</strong>。</p>",
+    introStory2Title: "なぜ「どの先生もダメ」に感じるのか",
+    introStory2Body:
+      "<p>ミミはA病院でA抗生物質を試し、少し良くなったあとまた悪化しました。</p><p>パパがC病院へ連れて行くと、新しい獣医さんが聞きます：</p><blockquote><p>「前に何を飲みましたか？」</p></blockquote><p>パパははっきり答えられず、<strong>同じA抗生物質</strong>がまた出されました。ミミはまだ咳き、痒がります。</p><p>パパは思います：</p><blockquote class=\"story-pull\"><p>「いろんな先生に見てもダメなの？」</p></blockquote><p>本当は違います。次の先生に伝える小さな紙がなかっただけです：</p><blockquote class=\"story-pull story-pull--closing\"><p><strong>「この薬は試したが、効かなかった。」</strong></p></blockquote>",
+    introStory3Title:
+      "ナゾマメの二度目のチャンス<br /><span class=\"intro-story-subtitle\">（ ✉️ 獣医師の皆さまへ ）</span>",
+    introStory3Body:
+      "<p class=\"story-epigraph\">✉️ <em>獣医師の皆さまへ</em></p><p>真夜中、ナゾマメが吐き続け、立つこともおぼつかなくなりました。<br />飼い主さんは抱えて病院へ駆け込みました。</p><p>獣医さんは治療しながら聞きます：</p><blockquote><p>「今日、何の薬を飲みましたか？」</p><p>「注射はしましたか？」</p></blockquote><p>飼い主さんは首を振ります：</p><blockquote><p>「わかりません。午後に病院に行っただけです。」</p></blockquote><p>獣医さんは焦ります。ペットは話せない。<br />今日、体に何が起きたか、誰も教えてくれない。<br /><strong>救いながら、当てずっぽう</strong>で進むしかない。</p><p>幸い、少しずつ良くなりました。獣医さんは頭をなでり、心の中で思います：</p><blockquote class=\"story-pull\"><p><strong>「もっと早く知れていたら。」</strong></p></blockquote><hr class=\"story-divider\" /><p>だから、ナゾマメのために<strong>小さなメモ</strong>を残したい：</p><ul class=\"story-list\"><li>今日飲んだ薬</li><li>打った針</li><li>してもらった処置</li></ul><p class=\"story-note\">病院名を書きたくなければ、書かなくてもいい。</p><p>このメモは<strong>誰かを責めるためではありません</strong>。<br />前の獣医さんが、次の獣医さんへ残す一言です：</p><blockquote class=\"story-pull story-pull--closing story-pull--oneliner\"><p><strong>「私が先に世話をした。次は、あなたも一緒に世話をしてください。」</strong></p></blockquote>",
+    introStory4Title: "なぜこのサイトを作ったのか",
+    introStory4Body:
+      "<p>飼い主として、こんなふうに思ったことはないでしょうか。</p><blockquote class=\"story-pull\"><p><strong>「もっと早く知っていたら。」</strong></p><p><strong>「あのとき、もう少し情報があれば。」</strong></p></blockquote><p>きっと、何かが変わっていたかもしれません。そんな後悔は、私にもありました。</p><hr class=\"story-divider\" /><p>別の病院に連れて行くと、新しい獣医さんは、これまでの検査・お薬・治療を知らないことがよくあります。もう一度聞き、もう一度判断し、時にはもう一度検査することもあります。</p><p>前の先生が不十分だったからではありません。大切な情報が、<strong>次の病院まで一緒について行かなかった</strong>からです。</p><p>人には、健保や医療情報の仕組みがあります。担当医が替わっても、過去の記録が次の判断の参考になることがあります。</p><p>でもペットには、自分の「健康通帳」がありません。話せないので、次の獣医さんにこうは言えません。</p><ul class=\"story-list\"><li><strong>「前に飲んだ薬。」</strong></li><li><strong>「受けた検査。」</strong></li><li><strong>「これまで体に起きたこと。」</strong></li></ul><hr class=\"story-divider\" /><p>だから、持ち歩ける医療記録を残したい。診察が終われば消える記憶ではなく、次の先生の前まで一緒に歩く情報として。</p><p>この記録が本当に命を救う日が来るかはわかりません。でも、いちばん大切な瞬間に、飼い主が言う回数が、ひとつでも減ればいい。</p><blockquote class=\"story-pull\"><p><strong>「もっと早く知っていれば。」</strong></p></blockquote><p>獣医さんにも、次の大切な決断のための情報が、少しでも増えればいい。</p><p>それが、このサイトを作った理由です。</p><blockquote class=\"story-pull story-pull--closing\"><p><strong>大切な医療情報を、一緒に歩かせたい。</strong></p></blockquote>",
+    introStoriesBridge:
+      "病院が替わるたびに、<br />「試した薬・飲ませた薬」を一緒に持っていきましょう。",
+    introStoriesNote: "理解のための示意です。診断の代わりではありません。",
+    introStoriesNavTitle: "4つのストーリー",
+    introStoriesNavHint: "獣医師と飼い主のための理解の場面",
+    whyStoriesPageTitle: "病院を替えるとき、記録は一緒に行きますか？",
+    introStoryExpand: "ストーリーを開く",
+    introStoryCollapse: "ストーリーを閉じる",
     featureButtonsTitle: "機能ボタン",
     featureButtonsHint: "よく使う機能",
     featureButtonsSub: "よく使う機能",
@@ -2349,6 +2418,29 @@ const I18N = {
     navMenuLabel: "메뉴",
     manualTitle: "설명서",
     manualNavHint: "사용 안내",
+    introStoriesEyebrow: "네 가지 이야기",
+    introStoriesTitle: "병원을 바꿀 때, 기록도 함께 가나요?",
+    introStory1Title: "한밤중 응급실, 그 빈 종이",
+    introStory1Body:
+      "<p>토토는 A병원에서 강한 약을 먹었습니다. 아빠는 ‘먹었다’만 기억하고, <strong>이름은 몰랐습니다</strong>.</p><p>며칠 뒤 <strong>한밤중</strong>, 토토가 힘없이 토하기 시작했고, 아빠는 B병원 응급실로 달려갔습니다.</p><p>혈액 검사 결과:</p><blockquote class=\"story-pull\"><p><strong>간 수치가 빨간불처럼 올라갔습니다.</strong></p></blockquote><p>하지만 B병원은 몰랐습니다—토토가 며칠 전 <strong>스테로이드</strong>를 먹었다는 것.</p><p>수의사는 안전하게 바로 약을 더할 수 없어 하나씩 확인해야 했습니다.<br />토토는 기다리고, 아빠는 조급해졌고, <strong>소중한 시간만 흘러갔습니다</strong>.</p>",
+    introStory2Title: "왜 ‘여러 병원을 다녀도 소용없다’고 느낄까",
+    introStory2Body:
+      "<p>미미는 A병원에서 A항생제를 써 보고 조금 나아졌다가 다시 아팠습니다.</p><p>아빠가 C병원에 가자 새 수의사가 묻습니다.</p><blockquote><p>“전에 뭘 드셨나요?”</p></blockquote><p>아빠는 분명히 말하지 못했고, <strong>같은 A항생제</strong>가 다시 처방되었습니다. 미미는 여전히 기침하고 가렵습니다.</p><p>아빠는 생각합니다.</p><blockquote class=\"story-pull\"><p>“병원을 많이 다녀도 소용없나?”</p></blockquote><p>사실은 그렇지 않습니다. 다음 수의사에게 알려줄 작은 종이가 없었을 뿐입니다.</p><blockquote class=\"story-pull story-pull--closing\"><p><strong>“이 약은 이미 써 봤는데, 효과 없었다.”</strong></p></blockquote>",
+    introStory3Title:
+      "수수께끼콩의 두 번째 기회<br /><span class=\"intro-story-subtitle\">( ✉️ 전 세계 수의사에게 )</span>",
+    introStory3Body:
+      "<p class=\"story-epigraph\">✉️ <em>전 세계 수의사에게</em></p><p>한밤중, 수수께끼콩이 계속 토하고 서 있기도 힘들어했습니다.<br />보호자는 안고 병원으로 달려갔습니다.</p><p>수의사는 치료하면서 묻습니다.</p><blockquote><p>“오늘 무슨 약을 먹었나요?”</p><p>“주사는 맞았나요?”</p></blockquote><p>보호자는 고개를 저었습니다.</p><blockquote><p>“모르겠어요. 오후에 병원에 갔다는 것만 알아요.”</p></blockquote><p>수의사는 조급해합니다. 반려동물은 말을 못 합니다.<br />오늘 몸에 무슨 일이 있었는지 아무도 알려줄 수 없습니다.<br /><strong>구하면서 추측</strong>할 수밖에 없습니다.</p><p>다행히, 천천히 나아졌습니다. 수의사는 머리를 쓰다듬으며 생각합니다.</p><blockquote class=\"story-pull\"><p><strong>“조금만 더 일찍 알았더라면.”</strong></p></blockquote><hr class=\"story-divider\" /><p>그래서 수수께끼콩을 위해 <strong>작은 쪽지</strong>를 남기고 싶습니다.</p><ul class=\"story-list\"><li>오늘 먹은 약</li><li>맞은 주사</li><li>받은 처치</li></ul><p class=\"story-note\">병원 이름을 쓰기 싫으면, 안 써도 됩니다.</p><p>이 쪽지는 <strong>누굴 탓하기 위한 것이 아닙니다</strong>.<br />앞 수의사가 다음 수의사에게 남기는 한마디입니다.</p><blockquote class=\"story-pull story-pull--closing story-pull--oneliner\"><p><strong>“내가 먼저 돌봤어. 이제 당신도 함께 돌봐 주세요.”</strong></p></blockquote>",
+    introStory4Title: "왜 이 웹사이트를 만들었나",
+    introStory4Body:
+      "<p>보호자라면, 이런 생각을 해 본 적이 있을 겁니다.</p><blockquote class=\"story-pull\"><p><strong>“조금만 더 일찍 알았더라면.”</strong></p><p><strong>“그때 정보가 조금만 더 있었더라면.”</strong></p></blockquote><p>어쩌면 달라졌을지도 모릅니다. 그런 아쉬움은 저에게도 있었습니다.</p><hr class=\"story-divider\" /><p>다른 병원에 가면, 새 수의사는 이전 검사·약·치료를 모르는 경우가 많습니다. 다시 묻고, 다시 판단하고, 때로는 다시 검사해야 합니다.</p><p>앞선 선생님이 부족해서가 아닙니다. 중요한 정보가 <strong>다음 병원까지 함께 가지 못했기</strong> 때문입니다.</p><p>사람에게는 건강보험과 의료정보 시스템이 있습니다. 담당 의사가 바뀌어도, 과거 기록이 다음 판단의 참고가 될 수 있습니다.</p><p>하지만 반려동물에게는 ‘건강 통장’이 없습니다. 말을 못 하니, 다음 수의사에게 이렇게 말할 수 없습니다.</p><ul class=\"story-list\"><li><strong>“전에 먹은 약.”</strong></li><li><strong>“받은 검사.”</strong></li><li><strong>“몸에 일어났던 일.”</strong></li></ul><hr class=\"story-divider\" /><p>그래서, 들고 다닐 수 있는 의료 기록을 남기고 싶었습니다. 진료가 끝나면 흩어지는 기억이 아니라, 다음 선생님 앞까지 함께 가는 정보로.</p><p>이 기록이 정말 생명을 구할지는 모릅니다. 하지만 가장 중요한 순간에, 보호자가 말하는 횟수가 하나라도 줄면 좋겠습니다.</p><blockquote class=\"story-pull\"><p><strong>“조금만 더 일찍 알았더라.”</strong></p></blockquote><p>수의사에게도, 다음 중요한 결정을 위한 정보가 조금 더 있으면 좋겠습니다.</p><p>그것이 이 웹사이트를 만든 이유입니다.</p><blockquote class=\"story-pull story-pull--closing\"><p><strong>중요한 의료 정보가, 함께 걸어가게.</strong></p></blockquote>",
+    introStoriesBridge:
+      "병원·응급·담당 수의사가 바뀔 때마다<br />‘무엇을 써 봤는지’를 함께 가져가세요.",
+    introStoriesNote: "상황 이해를 위한 예시이며, 수의사 진단을 대체하지 않습니다.",
+    introStoriesNavTitle: "네 가지 이야기",
+    introStoriesNavHint: "수의사와 보호자를 위한 이해 상황",
+    whyStoriesPageTitle: "병원을 바꿀 때, 기록도 함께 가나요?",
+    introStoryExpand: "이야기 펼치기",
+    introStoryCollapse: "이야기 접기",
     featureButtonsTitle: "기능 버튼",
     featureButtonsHint: "자주 쓰는 기능",
     featureButtonsSub: "자주 쓰는 기능",

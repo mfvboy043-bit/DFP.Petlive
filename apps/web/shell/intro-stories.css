@@ -477,6 +477,40 @@ html[lang="ko"] .intro-story-body {
   }
 }
 
+/* B — why-stories full screen (for vet / owner context) */
+.screen-why-stories .why-stories-eyebrow {
+  margin: 0 0 4px;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--leaf-mid, #6a8b7a);
+}
+
+.screen-why-stories .screen-head h2 {
+  max-width: 18em;
+  line-height: 1.35;
+}
+
+.screen-why-stories .why-stories-body {
+  padding: 8px 16px calc(24px + env(safe-area-inset-bottom));
+  max-width: 42em;
+  min-width: 0;
+}
+
+.screen-why-stories .why-stories-body .intro-stories {
+  margin: 0;
+  max-width: none;
+}
+
+@media (min-width: 760px) {
+  .screen-why-stories .why-stories-body {
+    padding-left: 20px;
+    padding-right: 20px;
+    max-width: 44em;
+  }
+}
+
 @media (prefers-reduced-motion: no-preference) {
   .intro-story-card {
     transition: box-shadow 180ms ease;

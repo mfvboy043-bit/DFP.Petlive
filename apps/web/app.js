@@ -3642,6 +3642,14 @@ const shellNavigation = PetLiveWeb.shell.createNavigation({
     }
     if (screen === "owner-settings") fillOwnerSettingsForm();
     if (screen === "manual") paintManualScreen();
+    if (screen === "why-stories") {
+      const root = document.getElementById("why-stories-mount");
+      PetLiveWeb.shell.syncIntroStoryDisclosures?.(document, window, {
+        t,
+        root,
+        vetLetterFirst: true,
+      });
+    }
   },
 });
 
@@ -3652,7 +3660,8 @@ function isDebugAppHatch() {
     return (
       params.get("app") === "1" ||
       screen === "home" ||
-      screen === "manual"
+      screen === "manual" ||
+      screen === "why-stories"
     );
   } catch {
     return false;
@@ -3817,6 +3826,20 @@ function closeAppNavMenu() {
 
 function setAppNavMenuOpen(open, anchorBtn) {
   PetLiveWeb.shell.setAppNavMenuOpen(document, window, open, anchorBtn);
+}
+
+function mountIntroStoriesShell() {
+  const introMount = document.getElementById("intro-stories");
+  if (introMount && introMount.dataset.introStoriesMounted !== "1") {
+    introMount.dataset.introStoriesMounted = "1";
+    PetLiveWeb.shell.mountIntroStories?.(document, introMount, { includeHeader: true });
+  }
+  const whyMount = document.getElementById("why-stories-mount");
+  if (whyMount && whyMount.dataset.introStoriesMounted !== "1") {
+    whyMount.dataset.introStoriesMounted = "1";
+    PetLiveWeb.shell.mountIntroStories?.(document, whyMount, { includeHeader: false });
+  }
+  PetLiveWeb.shell.initIntroStories?.(document, window, { t });
 }
 
 function paintManualScreen() {
@@ -6862,7 +6885,6 @@ function initIntroAndCloud() {
 
   PetLiveWeb.shell.mountLegalConsentModal?.(document);
   applyI18n();
-  PetLiveWeb.shell.initIntroStories?.(document, window, { t });
 
   PetLiveWeb.shell.bindLegalConsent(document, {
     onPaint: paintCloudChrome,
@@ -6978,12 +7000,14 @@ function initIntroAndCloud() {
       const forceApp =
         params.get("app") === "1" ||
         screenParam === "home" ||
-        screenParam === "manual";
+        screenParam === "manual" ||
+        screenParam === "why-stories";
 
       if (forceApp) {
         showIntroSurface(true);
         paintCloudChrome();
         if (screenParam === "manual") go("manual", { replace: true });
+        if (screenParam === "why-stories") go("why-stories", { replace: true });
         return;
       }
 
@@ -7023,6 +7047,7 @@ applySelectedPet();
 setMedEntryMode("photo");
 setMedUnitChip("unrecorded");
 setMedFreqChip("unrecorded");
+mountIntroStoriesShell();
 enhanceGlassScreenHeads();
 applyI18n();
 initGlassDock();
