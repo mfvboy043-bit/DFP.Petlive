@@ -1519,6 +1519,13 @@ function renderEmergencyVaccineNav(pet) {
     const nextEl = vaccineBtn.querySelector("#e-vaccine-next, #fh-vaccine-next");
     if (nextEl) {
       const keepId = nextEl.id;
+      // Dynamic "下次 {date}" must drop data-i18n; idle applyI18nAll otherwise
+      // restores nextDueDash ("下次 —") and the painted date disappears.
+      if (presentation.i18nMode === "empty") {
+        nextEl.setAttribute("data-i18n", presentation.i18nKey || "noVaccineNext");
+      } else {
+        nextEl.removeAttribute("data-i18n");
+      }
       nextEl.textContent = presentation.nextText;
       nextEl.className = presentation.nextClassName || "";
       if (keepId) nextEl.id = keepId;
@@ -3863,6 +3870,9 @@ function enhanceGlassScreenHeads() {
       .querySelectorAll("[data-glass-chrome], .screen-home-btn, .feature-hub")
       .forEach((el) => applyI18nInScope(el));
   }
+  // Idle injects fresh .js-account-chip into non-home heads (e.g. emergency).
+  // Re-paint so Google / session avatars are not left as the "?" fallback.
+  paintCloudChrome();
 }
 
 function syncAppNavBtnIcons(open) {
