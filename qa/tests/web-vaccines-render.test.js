@@ -126,6 +126,8 @@ describe("VA-05 vaccines render builders", () => {
   it("buildEmergencyNavPresentation no-next and status tones", () => {
     const { renderer } = loadVaccinesRenderer();
     const unset = renderer.buildEmergencyNavPresentation(null);
+    assert.equal(unset.i18nMode, "empty");
+    assert.equal(unset.i18nKey, "noVaccineNext");
     assert.equal(unset.nextText, "noVaccineNext");
     assert.equal(unset.nextClassName, "");
     assert.equal(unset.btnClass, "is-protected");

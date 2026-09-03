@@ -1389,6 +1389,13 @@ function renderEmergencyVaccineNav(pet) {
     const nextEl = vaccineBtn.querySelector("#e-vaccine-next, #fh-vaccine-next");
     if (nextEl) {
       const keepId = nextEl.id;
+      // Dynamic "下次 {date}" must drop data-i18n; idle applyI18nAll otherwise
+      // restores nextDueDash ("下次 —") and the painted date disappears.
+      if (presentation.i18nMode === "empty") {
+        nextEl.setAttribute("data-i18n", presentation.i18nKey || "noVaccineNext");
+      } else {
+        nextEl.removeAttribute("data-i18n");
+      }
       nextEl.textContent = presentation.nextText;
       nextEl.className = presentation.nextClassName || "";
       if (keepId) nextEl.id = keepId;
