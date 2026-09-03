@@ -1,0 +1,83 @@
+id: "20260903-global-privacy-policy"
+title: "Global privacy policy and 18+ self-attestation"
+version: 3
+status: candidate_ready
+
+gate_a:
+  status: approved
+  note: "Victor confirmed Gate A in chat on 2026-09-03."
+
+gate_b:
+  status: adopted
+  note: "2026-09-03 Victor confirmed formal legal text update (privacy + terms, four languages, 18+). Mainline apps/web/legal/* published as draft v1.3 — still counsel-pending, not child-compliance claim. Preview controls remain separate / not covered to passport UI."
+
+iteration: 3
+max_iterations: 3
+
+candidate:
+  branch: ""
+  path: "proposals/20260903-global-privacy-policy/preview"
+  worktree: ""
+  notes:
+    - "Iteration 3 candidate_ready with launch restrictions. No mainline product files."
+    - "18+ self-attestation + under-18 non-direction/discovery-deletion; AGE-001..003; viewer under-18."
+    - "Tests 22/22 pass on privacy-candidate.test.js."
+    - "Publication and counsel sign-off remain blocked."
+
+reviews:
+  pharmacist: skipped
+  qa: conditional
+  ui: conditional
+  legal: conditional
+  security: conditional
+
+rerun: []
+
+blocking_issues:
+  - LEGAL-1
+  - LEGAL-2
+  - LEGAL-3
+  - LEGAL-4
+  - LEGAL-5
+  - LEGAL-6
+  - LEGAL-7
+  - LEGAL-8
+  - LEGAL-9
+  - LEGAL-10
+  - LEGAL-13
+  - LEGAL-17
+  - QA-3
+
+non_blocking:
+  - LEGAL-11
+  - LEGAL-12
+  - LEGAL-14
+  - LEGAL-15
+  - LEGAL-16
+  - LEGAL-18
+  - LEGAL-19
+  - LEGAL-20
+  - LEGAL-21
+  - LEGAL-22
+  - LEGAL-23
+  - LEGAL-24
+  - QA-1
+  - QA-2
+  - QA-4
+  - QA-5
+  - QA-6
+  - QA-7
+  - QA-8
+  - QA-9
+  - UI-2
+  - UI-6
+  - UI-7
+  - UI-8
+  - UI-9
+  - UI-10
+  - SEC-2
+  - SEC-3
+  - SEC-4
+
+builder_scope: []
+halt_reason: ""

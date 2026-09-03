@@ -3,17 +3,32 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="theme-color" content="#ffffff" />
     <title>隱私權政策 · 火龍果護照</title>
-    <link rel="stylesheet" href="./legal.css?v=20260828-legal-v12" />
+    <link rel="icon" type="image/png" sizes="32x32" href="../assets/icons/icon-32.png?v=20260902-brand-icon" />
+    <link rel="icon" type="image/png" sizes="192x192" href="../assets/icons/icon-192.png?v=20260902-brand-icon" />
+    <link rel="apple-touch-icon" sizes="180x180" href="../assets/icons/icon-180.png?v=20260902-brand-icon" />
+    <link rel="stylesheet" href="./legal.css?v=20260903-legal-v13" />
   </head>
   <body class="legal-page" data-legal-doc="privacy">
     <header class="legal-topbar">
-      <a href="../index.html">← 返回火龍果護照</a>
-      <a href="./terms.html?v=20260828-legal-v12">使用條款</a>
+      <a data-legal-back href="../index.html">← 返回火龍果護照</a>
+      <div class="legal-topbar-actions">
+        <label class="legal-lang">
+          <span data-legal-lang-label>語言</span>
+          <select data-legal-lang aria-label="Language">
+            <option value="zh-Hant">繁中</option>
+            <option value="en">English</option>
+            <option value="ja">日本語</option>
+            <option value="ko">한국어</option>
+          </select>
+        </label>
+        <a data-legal-cross href="./terms.html?v=20260903-legal-v13&amp;lang=zh-Hant">使用條款</a>
+      </div>
     </header>
     <main class="legal-doc" id="legal-doc-body" aria-live="polite">
       <p class="legal-loading">載入中…</p>
     </main>
-    <script defer src="../shell/legal-doc-viewer.js?v=20260828-legal-v12"></script>
+    <script defer src="../shell/legal-doc-viewer.js?v=20260903-legal-v13"></script>
   </body>
 </html>
