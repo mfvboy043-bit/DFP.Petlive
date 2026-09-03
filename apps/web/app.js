@@ -3863,6 +3863,9 @@ function enhanceGlassScreenHeads() {
       .querySelectorAll("[data-glass-chrome], .screen-home-btn, .feature-hub")
       .forEach((el) => applyI18nInScope(el));
   }
+  // Idle injects fresh .js-account-chip into non-home heads (e.g. emergency).
+  // Re-paint so Google / session avatars are not left as the "?" fallback.
+  paintCloudChrome();
 }
 
 function syncAppNavBtnIcons(open) {
