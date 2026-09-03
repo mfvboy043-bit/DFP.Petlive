@@ -115,8 +115,11 @@
 
 .intro-legal-consent-label a {
   color: #0b57d0;
+  font-size: 0.95rem;
+  font-weight: 600;
   text-decoration: underline;
-  text-underline-offset: 2px;
+  text-decoration-thickness: 1.5px;
+  text-underline-offset: 3px;
 }
 
 .intro-login-btn:disabled {

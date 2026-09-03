@@ -114,9 +114,17 @@
 
 .legal-consent-modal-label-text a {
   color: #0b57d0;
+  font-family: "Noto Sans TC", system-ui, sans-serif;
+  font-size: 17px;
   font-weight: 600;
+  line-height: 1.55;
   text-decoration: underline;
+  text-decoration-thickness: 1.5px;
   text-underline-offset: 3px;
+}
+
+.legal-consent-modal-label-text a:hover {
+  color: #0842a0;
 }
 
 .legal-consent-modal-actions {
@@ -199,6 +207,10 @@ html.is-legal-consent-open {
   .legal-consent-modal-label-text {
     font-size: 15px;
     line-height: 1.82;
+  }
+
+  .legal-consent-modal-label-text a {
+    font-size: 17px;
   }
 
   .legal-consent-modal-confirm {
