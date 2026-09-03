@@ -1,0 +1,63 @@
+id: "20260903-building-blocks-audit"
+title: "Building-blocks architecture audit + ranked optimization waves"
+version: 2
+status: adopted
+
+gate_a:
+  status: approved
+  # pending | approved | modified | rejected
+  note: >-
+    Victor 2026-09-03 —「小違規 — 診所名單、法律同意還直接碰 localStorage；C 的四則故事少載一塊 CSS…
+    請幫我優化這一項」. Approved scope = BB-1 (clinics slot), BB-2 (legal consent slot, B-only),
+    BB-5 (C intro-stories.css). BB-3 (pets-graph archive/remove door) NOT quoted — deferred.
+
+gate_b:
+  status: adopted
+  note: >-
+    Victor 2026-09-03 —「可以，推上去」。Wave 1 (BB-1/BB-2/BB-5) adopted onto origin/main for Pages.
+
+iteration: 1
+max_iterations: 3
+
+candidate:
+  branch: ""
+  path: ""
+  worktree: ""
+
+reviews:
+  pharmacist: skipped
+  # no med/dose/frequency code touched
+  qa: pass
+  # 17/17 on new + adjacent suites; full run shows 0 new failures vs HEAD baseline
+  ui: pending
+  # BB-5 changes how C's why-stories screen looks — needs Victor's eyes on C
+  legal: pending
+  security: pass
+  # security diff scan 2026-09-03: no High/Medium; consent stays bare "v1.2", fails closed
+
+rerun: []
+blocking_issues: []
+non_blocking:
+  - "SEC-1 (fixed in build): clinics load() now re-reads storage, restoring pre-slot
+     read-through so a second tab cannot clobber saved clinics"
+  - "SEC-2 (L2): consent is memory-cached with no invalidation hook. Benign today —
+     clearLocalPetliveData does not wipe petlive-legal-consent. If a future reset adds
+     that key it must also call consentSlot(doc)?.invalidate() or the gate can skip."
+  - "SEC-3 (I1): setLegalConsentStorage is a console-reachable seam. No privilege gained
+     over localStorage.setItem; acceptable."
+  - "SEC-4 (C4): markLegalConsent still swallows a failed write, so a quota-exhausted
+     user is admitted without a consent record. Pre-existing behaviour, not a regression."
+  - "Informational: clinics slot inherits globalConfig.backend. Local on both surfaces
+     today; if IDB is switched on, clinic names would also land in IndexedDB — check
+     against privacy copy or pin backend: local."
+  - "Forward-looking: neither surface sets body.dataset.legalConsentKey. If C ever loads
+     shell/legal-consent.js it would silently share B's petlive-legal-consent key."
+  - "BB-3 / BB-4 / BB-6 from the audit remain open (not in Victor's quoted scope)."
+builder_scope: ["BB-1", "BB-2", "BB-5"]
+halt_reason: ""
+
+# 2026-09-03 second ask — Victor also asked to optimize the「app.js 太長」item (audit item 4).
+# That scope was measured (tiny wrappers = 7%; C is 96% byte-identical to B, 5444 duplicated
+# lines across 21 clusters) and split into its own proposal for independent gates/rollback:
+#   proposals/20260903-facade-slim-w2-c1  (Wave 2 dead code + Wave 3 cluster 1)
+# Do not fold that build into this proposal's Gate B.

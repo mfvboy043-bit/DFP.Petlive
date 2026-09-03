@@ -15,22 +15,31 @@
     return custom || "petlive-legal-consent";
   }
 
+  const slotCache = new Map();
+  let slotFactory = null;
+
+  /** Seam for tests and surfaces that supply their own storage port. */
+  function setLegalConsentStorage(factory) {
+    slotFactory = typeof factory === "function" ? factory : null;
+    slotCache.clear();
+  }
+
+  function consentSlot(doc) {
+    const key = consentStorageKey(doc || global.document);
+    if (slotCache.has(key)) return slotCache.get(key);
+    const create = slotFactory || root.storage?.createTextSlot;
+    if (typeof create !== "function") return null;
+    const slot = create({ key });
+    slotCache.set(key, slot);
+    return slot;
+  }
+
   function hasLegalConsent(doc) {
-    try {
-      const key = consentStorageKey(doc || global.document);
-      return global.localStorage.getItem(key) === CONSENT_VERSION;
-    } catch {
-      return false;
-    }
+    return consentSlot(doc)?.read() === CONSENT_VERSION;
   }
 
   function markLegalConsent(doc) {
-    try {
-      const key = consentStorageKey(doc || global.document);
-      global.localStorage.setItem(key, CONSENT_VERSION);
-    } catch {
-      /* ignore */
-    }
+    consentSlot(doc)?.write(CONSENT_VERSION);
   }
 
   function consentCheckbox(doc) {
@@ -171,6 +180,7 @@
     return true;
   }
 
+  root.shell.setLegalConsentStorage = setLegalConsentStorage;
   root.shell.hasLegalConsent = hasLegalConsent;
   root.shell.markLegalConsent = markLegalConsent;
   root.shell.isLegalConsentGranted = isConsentGranted;
