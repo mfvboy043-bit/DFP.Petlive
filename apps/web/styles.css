@@ -1709,16 +1709,26 @@ select:focus {
   grid-template-columns: minmax(0, 1.35fr) minmax(0, 0.85fr);
 }
 
-/* Visit: date + weight pair; align control tops when hint wraps under weight */
+/* Visit: date + weight pair — date-proxy avoids iOS half-column blowout */
 #visit-form .field-row--visit-date-weight {
   align-items: start;
 }
 
-#visit-form .field-row--visit-date-weight input[type="date"],
+#visit-form .field-row--visit-date-weight .date-proxy,
 #visit-form .field-row--visit-date-weight input[type="number"] {
   min-height: 50px;
   height: 50px;
   box-sizing: border-box;
+}
+
+#visit-form .field-row--visit-date-weight .date-proxy-face {
+  height: 100%;
+  min-height: 0;
+  box-sizing: border-box;
+}
+
+#visit-form .visit-weight-hint {
+  margin: -4px 0 0;
 }
 
 /* iOS/WebKit date controls have a large intrinsic min-width */
@@ -7876,6 +7886,8 @@ html.is-proof-lightbox-open body {
   /* overflow-x:clip forces overflow-y; keep date rings from losing the bottom edge */
   #pet-form .field-row:has(.date-proxy),
   .screen[data-screen="add-pet"] .field-row:has(.date-proxy),
+  #visit-form .field-row:has(.date-proxy),
+  .screen[data-screen="add-visit"] .field-row:has(.date-proxy),
   .vaccine-form .field-row:has(.date-proxy),
   .screen[data-screen="vaccines"] .vaccine-form .field-row:has(.date-proxy),
   .parasite-block .field-row:has(.date-proxy),
@@ -7899,6 +7911,8 @@ html.is-proof-lightbox-open body {
 
   #pet-form .field-row .field:has(.date-proxy),
   .screen[data-screen="add-pet"] .field-row .field:has(.date-proxy),
+  #visit-form .field-row .field:has(.date-proxy),
+  .screen[data-screen="add-visit"] .field-row .field:has(.date-proxy),
   .vaccine-form .field-row .field:has(.date-proxy),
   .screen[data-screen="vaccines"] .vaccine-form .field-row .field:has(.date-proxy),
   .parasite-block .field-row .field:has(.date-proxy),
@@ -7912,6 +7926,10 @@ html.is-proof-lightbox-open body {
   .screen[data-screen="add-pet"] .field-row select,
   .screen[data-screen="add-pet"] .field-row input:not(.date-proxy-face):not(.date-proxy-native),
   .screen[data-screen="add-pet"] .field-row .date-proxy,
+  #visit-form .field-row input:not(.date-proxy-face):not(.date-proxy-native),
+  #visit-form .field-row .date-proxy,
+  .screen[data-screen="add-visit"] .field-row input:not(.date-proxy-face):not(.date-proxy-native),
+  .screen[data-screen="add-visit"] .field-row .date-proxy,
   .vaccine-form .field-row .date-proxy,
   .screen[data-screen="vaccines"] .vaccine-form .field-row .date-proxy,
   .parasite-block .field-row .date-proxy,
@@ -7926,6 +7944,8 @@ html.is-proof-lightbox-open body {
 
   #pet-form .field-row .date-proxy-face,
   .screen[data-screen="add-pet"] .field-row .date-proxy-face,
+  #visit-form .field-row .date-proxy-face,
+  .screen[data-screen="add-visit"] .field-row .date-proxy-face,
   .vaccine-form .field-row .date-proxy-face,
   .screen[data-screen="vaccines"] .vaccine-form .field-row .date-proxy-face,
   .parasite-block .field-row .date-proxy-face,
