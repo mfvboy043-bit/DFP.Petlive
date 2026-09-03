@@ -5,48 +5,51 @@
   root.domains = root.domains || {};
   root.domains.clinics = root.domains.clinics || {};
 
-  function readList(storageKey) {
-    if (!storageKey || !global.localStorage) return [];
-    try {
-      const raw = global.localStorage.getItem(storageKey);
-      if (!raw) return [];
-      const parsed = JSON.parse(raw);
-      if (!Array.isArray(parsed)) return [];
-      return parsed
-        .map((item) => ({
-          id: String(item?.id || "").trim(),
-          name: String(item?.name || "").trim(),
-        }))
-        .filter((item) => item.id && item.name);
-    } catch {
-      return [];
-    }
+  function normalizeList(value) {
+    if (!Array.isArray(value)) return [];
+    return value
+      .map((item) => ({
+        id: String(item?.id || "").trim(),
+        name: String(item?.name || "").trim(),
+      }))
+      .filter((item) => item.id && item.name);
   }
 
-  function writeList(storageKey, list) {
-    if (!storageKey || !global.localStorage) return;
-    try {
-      global.localStorage.setItem(storageKey, JSON.stringify(list));
-    } catch {
-      /* quota */
+  function slotForKey(storageKey) {
+    const createJsonSlot = root.storage?.createJsonSlot;
+    if (typeof createJsonSlot !== "function") {
+      throw new TypeError("createStore requires core/storage.js to be loaded");
     }
+    return createJsonSlot({
+      key: storageKey,
+      fallback: () => [],
+      validate: (value) => Array.isArray(value),
+    });
   }
 
   /**
-   * @param {{ storageKey: string }} options
+   * @param {{ slot?: object, storageKey?: string }} options
+   *   `slot` is the preferred injection. `storageKey` builds a core JSON slot
+   *   on the same key and on-disk shape, so surfaces that still pass a key keep
+   *   reading the clinics they already saved.
    */
-  function createStore({ storageKey } = {}) {
-    if (!storageKey) {
-      throw new TypeError("createStore requires storageKey");
+  function createStore({ slot, storageKey } = {}) {
+    if (!slot && !storageKey) {
+      throw new TypeError("createStore requires slot or storageKey");
     }
 
+    const store = slot || slotForKey(storageKey);
+
     function load() {
-      return readList(storageKey);
+      // Read through on every load, as this store did before the slot layer:
+      // a second tab must not overwrite clinics saved by the first.
+      store.invalidate?.();
+      return normalizeList(store.read());
     }
 
     function save(list) {
       const next = Array.isArray(list) ? list : [];
-      writeList(storageKey, next);
+      store.write(next);
       return next;
     }
 

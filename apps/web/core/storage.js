@@ -547,6 +547,54 @@
     return createJsonSlot(options);
   }
 
+  /**
+   * Raw string slot — stores the value verbatim, with no JSON envelope.
+   *
+   * The legal-consent gate keeps a bare version string that predates the slot
+   * layer; re-encoding it as JSON would stop matching what consenting users
+   * already have on disk and would silently re-prompt them. It also has to be
+   * readable synchronously during boot, so this slot stays on localStorage
+   * rather than joining the IDB hydrate pipeline.
+   */
+  function createTextSlot({ key, fallback = "" }) {
+    if (!key || typeof key !== "string") {
+      throw new TypeError("createTextSlot requires a storage key");
+    }
+
+    let cached = false;
+    let cachedValue = fallback;
+
+    function read() {
+      if (cached) return cachedValue;
+      const raw = readLocalRaw(key);
+      cachedValue = raw == null ? fallback : raw;
+      cached = true;
+      return cachedValue;
+    }
+
+    function write(value) {
+      const next = String(value);
+      if (!writeLocalRaw(key, next)) return false;
+      cachedValue = next;
+      cached = true;
+      return true;
+    }
+
+    function clear() {
+      if (!removeLocalRaw(key)) return false;
+      cachedValue = fallback;
+      cached = true;
+      return true;
+    }
+
+    function invalidate() {
+      cached = false;
+      cachedValue = fallback;
+    }
+
+    return { read, write, clear, invalidate };
+  }
+
   root.storage = {
     ...(root.storage || {}),
     configure,
@@ -555,5 +603,6 @@
     getBackend,
     createJsonSlot,
     createPersistedMapSlot,
+    createTextSlot,
   };
 })(typeof window !== "undefined" ? window : globalThis);
