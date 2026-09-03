@@ -5,60 +5,104 @@
   root.shell = root.shell || {};
 
   /**
-   * Apply drug results list HTML to the results container.
+   * Apply drug-info card lists from a domain renderer build.
    */
-  function renderDrugResults(els, list, hooks = {}) {
-    const { drugResults } = els || {};
-    const { buildDrugResultsHtml } = hooks;
-    if (!drugResults || typeof buildDrugResultsHtml !== "function") return false;
-    const built = buildDrugResultsHtml(list);
-    drugResults.hidden = built.hidden;
-    drugResults.innerHTML = built.html;
-    return true;
+  function applyDrugInfoCard(els, built, hooks = {}) {
+    const {
+      card,
+      purposeEl,
+      sideEffectsEl,
+      precautionsEl,
+    } = els || {};
+    if (!card) return;
+    const { scrollIntoView = true } = hooks;
+
+    if (!built || !built.visible) {
+      card.hidden = true;
+      if (purposeEl) purposeEl.textContent = "";
+      if (sideEffectsEl) sideEffectsEl.innerHTML = "";
+      if (precautionsEl) precautionsEl.innerHTML = "";
+      return;
+    }
+
+    if (purposeEl) purposeEl.textContent = built.purposeText || "";
+    if (sideEffectsEl) sideEffectsEl.innerHTML = built.sideEffectsHtml || "";
+    if (precautionsEl) precautionsEl.innerHTML = built.precautionsHtml || "";
+    card.hidden = false;
+    card.removeAttribute("hidden");
+    card.classList.add("is-visible");
+    if (scrollIntoView && typeof card.scrollIntoView === "function") {
+      const raf =
+        typeof global.requestAnimationFrame === "function"
+          ? global.requestAnimationFrame.bind(global)
+          : (fn) => fn();
+      raf(() => {
+        card.scrollIntoView({ behavior: "smooth", block: "nearest" });
+      });
+    }
   }
 
   /**
-   * Drug search input + results click-select wire. Catalog/enrich stay injected.
+   * Apply drug search results list HTML.
    */
-  function bindDrugSearch(els = {}, hooks = {}) {
-    const { drugSearch, drugResults, selectedDrugEl } = els;
-    if (!drugSearch || !drugResults) return { getSuppress: () => false };
+  function applyDrugResults(resultsEl, built) {
+    if (!resultsEl || !built) return;
+    resultsEl.hidden = Boolean(built.hidden);
+    resultsEl.innerHTML = built.html || "";
+  }
+
+  /**
+   * Bind drug search input + results click.
+   * Preserves: suppress flag, module getDrugById fallback, manual mode on select.
+   */
+  function bindDrugSearch(els, hooks = {}) {
+    const { search, results, selectedEl } = els || {};
+    if (!search || !results) return null;
 
     const {
       searchDrugs,
       resolveEnrichedDrug,
+      buildResultsHtml,
+      buildInfoListsHtml,
       getDrugById,
-      renderDrugInfoCard,
-      setMedEntryMode,
-      getMedEntryMode,
       t,
-      onSelectedDrug,
-      buildDrugResultsHtml,
+      getMedEntryMode,
+      setMedEntryMode,
+      onSelectDrug,
+      infoEls,
     } = hooks;
 
-    let suppressDrugSearchInput = false;
+    let suppressInput = false;
 
-    function paintResults(list) {
-      renderDrugResults(
-        { drugResults },
-        list,
-        { buildDrugResultsHtml }
-      );
+    function paintInfo(drug) {
+      if (typeof buildInfoListsHtml !== "function") return;
+      const full =
+        drug && typeof resolveEnrichedDrug === "function"
+          ? resolveEnrichedDrug(drug)
+          : null;
+      applyDrugInfoCard(infoEls || {}, buildInfoListsHtml(full));
     }
 
-    drugSearch.addEventListener("input", () => {
-      if (suppressDrugSearchInput) return;
-      if (typeof onSelectedDrug === "function") onSelectedDrug(null);
-      if (selectedDrugEl) selectedDrugEl.hidden = true;
-      if (typeof renderDrugInfoCard === "function") renderDrugInfoCard(null);
-      const list =
-        typeof searchDrugs === "function"
-          ? searchDrugs(drugSearch.value)
-          : [];
-      paintResults(list);
+    function paintResults(query) {
+      if (typeof searchDrugs !== "function" || typeof buildResultsHtml !== "function") {
+        return;
+      }
+      applyDrugResults(results, buildResultsHtml(searchDrugs(query)));
+    }
+
+    function clearSelection() {
+      if (typeof onSelectDrug === "function") onSelectDrug(null);
+      if (selectedEl) selectedEl.hidden = true;
+      paintInfo(null);
+    }
+
+    search.addEventListener("input", () => {
+      if (suppressInput) return;
+      clearSelection();
+      paintResults(search.value);
     });
 
-    drugResults.addEventListener("click", (event) => {
+    results.addEventListener("click", (event) => {
       const btn = event.target.closest("[data-drug-id]");
       if (!btn) return;
       let selected =
@@ -75,38 +119,48 @@
         }
       }
       if (!selected) return;
-      drugResults.hidden = true;
-      suppressDrugSearchInput = true;
-      drugSearch.value = selected.genericName;
-      suppressDrugSearchInput = false;
-      if (selectedDrugEl) {
-        selectedDrugEl.hidden = false;
-        if (typeof t === "function") {
-          selectedDrugEl.textContent = t("selectedDrug", {
-            name: `${selected.genericName}${
-              selected.brandNameZh ? ` / ${selected.brandNameZh}` : ""
-            }`,
-          });
-        }
+
+      results.hidden = true;
+      suppressInput = true;
+      search.value = selected.genericName || "";
+      suppressInput = false;
+      if (selectedEl) {
+        selectedEl.hidden = false;
+        selectedEl.textContent =
+          typeof t === "function"
+            ? t("selectedDrug", {
+                name: `${selected.genericName || ""}${
+                  selected.brandNameZh ? ` / ${selected.brandNameZh}` : ""
+                }`,
+              })
+            : selected.genericName || "";
       }
       // Stay on manual entry so the safety card is visible
-      const mode =
-        typeof getMedEntryMode === "function" ? getMedEntryMode() : null;
-      if (mode !== "manual" && typeof setMedEntryMode === "function") {
+      if (
+        typeof getMedEntryMode === "function" &&
+        typeof setMedEntryMode === "function" &&
+        getMedEntryMode() !== "manual"
+      ) {
         setMedEntryMode("manual");
       }
-      if (typeof onSelectedDrug === "function") onSelectedDrug(selected);
-      if (typeof renderDrugInfoCard === "function") {
-        renderDrugInfoCard(selected);
-      }
+      if (typeof onSelectDrug === "function") onSelectDrug(selected);
+      paintInfo(selected);
     });
 
     return {
-      renderDrugResults: paintResults,
-      getSuppress: () => suppressDrugSearchInput,
+      paintResults,
+      paintInfo,
+      clearSelection,
+      setSuppressInput(value) {
+        suppressInput = Boolean(value);
+      },
+      getSuppressInput() {
+        return suppressInput;
+      },
     };
   }
 
-  root.shell.renderDrugResults = renderDrugResults;
+  root.shell.applyDrugInfoCard = applyDrugInfoCard;
+  root.shell.applyDrugResults = applyDrugResults;
   root.shell.bindDrugSearch = bindDrugSearch;
 })(typeof window !== "undefined" ? window : globalThis);

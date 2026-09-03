@@ -136,6 +136,109 @@
     return host;
   }
 
+  /**
+   * Emergency-card vaccine lights help popover (#e-vax-help).
+   * @param {Document} doc
+   * @param {boolean} open
+   */
+  function setVaxHelpOpen(doc, open) {
+    if (!doc || typeof doc.getElementById !== "function") return;
+    const helpBtn = doc.getElementById("e-vax-help");
+    const pop = doc.getElementById("e-vax-help-pop");
+    if (!helpBtn || !pop) return;
+    pop.hidden = !open;
+    helpBtn.setAttribute("aria-expanded", open ? "true" : "false");
+  }
+
+  /**
+   * Feature-hub vaccine lights help popover (#fh-vax-help).
+   * @param {Document} doc
+   * @param {boolean} open
+   */
+  function setFeatureHubVaxHelpOpen(doc, open) {
+    if (!doc || typeof doc.getElementById !== "function") return;
+    const helpBtn = doc.getElementById("fh-vax-help");
+    const pop = doc.getElementById("fh-vax-help-pop");
+    if (!helpBtn || !pop) return;
+    pop.hidden = !open;
+    helpBtn.setAttribute("aria-expanded", open ? "true" : "false");
+  }
+
+  function closeAllVaxHelp(doc) {
+    setVaxHelpOpen(doc, false);
+    setFeatureHubVaxHelpOpen(doc, false);
+  }
+
+  /**
+   * Wire feature-hub ? button (idempotent via data-vax-help-wired).
+   * Opening the hub popover closes the emergency-card popover.
+   */
+  function bindFeatureHubVaxHelp(doc) {
+    if (!doc || typeof doc.getElementById !== "function") return null;
+    const helpBtn = doc.getElementById("fh-vax-help");
+    const pop = doc.getElementById("fh-vax-help-pop");
+    if (!helpBtn || !pop || helpBtn.getAttribute("data-vax-help-wired") === "1") {
+      return null;
+    }
+    helpBtn.setAttribute("data-vax-help-wired", "1");
+    helpBtn.addEventListener("click", (event) => {
+      event.preventDefault();
+      event.stopPropagation();
+      const willOpen = Boolean(pop.hidden);
+      pop.hidden = !willOpen;
+      helpBtn.setAttribute("aria-expanded", willOpen ? "true" : "false");
+      if (willOpen) setVaxHelpOpen(doc, false);
+    });
+    pop.addEventListener("click", (event) => {
+      event.stopPropagation();
+    });
+    return helpBtn;
+  }
+
+  /**
+   * Wire emergency-card ? button + document outside-click dismiss for both
+   * popovers. Escape stays with the facade so it can also close the proof lightbox.
+   */
+  function bindEmergencyVaxHelp(doc) {
+    if (!doc || typeof doc.getElementById !== "function") return null;
+    const helpBtn = doc.getElementById("e-vax-help");
+    const pop = doc.getElementById("e-vax-help-pop");
+    if (helpBtn && helpBtn.getAttribute("data-vax-help-wired") !== "1") {
+      helpBtn.setAttribute("data-vax-help-wired", "1");
+      helpBtn.addEventListener("click", (event) => {
+        event.preventDefault();
+        event.stopPropagation();
+        const nextOpen = Boolean(pop?.hidden);
+        setVaxHelpOpen(doc, nextOpen);
+      });
+    }
+    if (pop && pop.getAttribute("data-vax-help-wired") !== "1") {
+      pop.setAttribute("data-vax-help-wired", "1");
+      pop.addEventListener("click", (event) => {
+        event.stopPropagation();
+      });
+    }
+    if (doc.documentElement?.getAttribute("data-vax-help-dismiss") !== "1") {
+      doc.documentElement?.setAttribute("data-vax-help-dismiss", "1");
+      doc.addEventListener("click", (event) => {
+        if (
+          event.target.closest?.(
+            "#e-vax-help, #e-vax-help-pop, #fh-vax-help, #fh-vax-help-pop"
+          )
+        ) {
+          return;
+        }
+        closeAllVaxHelp(doc);
+      });
+    }
+    return helpBtn;
+  }
+
   root.shell.featureHubBodyMarkup = featureHubBodyMarkup;
   root.shell.ensureFeatureHub = ensureFeatureHub;
+  root.shell.setVaxHelpOpen = setVaxHelpOpen;
+  root.shell.setFeatureHubVaxHelpOpen = setFeatureHubVaxHelpOpen;
+  root.shell.closeAllVaxHelp = closeAllVaxHelp;
+  root.shell.bindFeatureHubVaxHelp = bindFeatureHubVaxHelp;
+  root.shell.bindEmergencyVaxHelp = bindEmergencyVaxHelp;
 })(typeof window !== "undefined" ? window : globalThis);

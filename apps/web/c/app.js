@@ -27,24 +27,21 @@ function genderLabelOf(pet) {
   return pet.genderLabel || "";
 }
 
-/** Localized demo/content field: plain string or { "zh-Hant"|en|ja|ko: "..." }. */
-function locField(value) {
-  if (value == null) return "";
-  if (typeof value === "string") return value;
-  if (typeof value === "object") {
-    const lang =
-      (typeof getCurrentLang === "function" && getCurrentLang()) || "zh-Hant";
-    return (
-      value[lang] ||
-      value["zh-Hant"] ||
-      value.zh ||
-      value.en ||
-      value.ja ||
-      value.ko ||
-      ""
+/** Localized demo/content field — brain in core/loc-field.js. */
+const locField = PetLiveWeb.core.createLocField({
+  getCurrentLang: () =>
+    typeof getCurrentLang === "function" ? getCurrentLang() : "zh-Hant",
+});
+
+/** Hard dependency on shell block APIs — never silent-noop if a script 404s. */
+function requireShellFn(name) {
+  const fn = PetLiveWeb?.shell?.[name];
+  if (typeof fn !== "function") {
+    throw new Error(
+      `PetLiveWeb.shell.${name} is required — check script tags / load order`
     );
   }
-  return String(value);
+  return fn;
 }
 
 const SAVED_CLINICS_KEY = "petlive-c-saved-clinics";
@@ -74,13 +71,6 @@ function getAnonymousClinic() {
 function getClinicDirectory() {
   return clinicsCatalog.getClinicDirectory(pets, savedClinics);
 }
-function searchClinicsForPicker(query) {
-  return clinicsCatalog.searchClinics(query, pets, savedClinics);
-}
-function addSavedClinic(name) {
-  savedClinics = clinicStore.add(name);
-  return savedClinics;
-}
 function removeSavedClinic(id) {
   savedClinics = clinicStore.remove(id);
   if (selectedClinic?.id === id) setSelectedClinic(null);
@@ -103,7 +93,7 @@ function clinicEntryFromSavedName(name) {
 function applyFreeTextClinic(name, { selectLab = false } = {}) {
   const trimmed = String(name || "").trim();
   if (!trimmed) return null;
-  addSavedClinic(trimmed);
+  savedClinics = clinicStore.add(trimmed);
   const clinic =
     clinicEntryFromSavedName(trimmed) ||
     ({ id: "", name: trimmed, note: t("clinicSavedNote") });
@@ -412,11 +402,6 @@ function hydrateDrugNotesPanel(panel) {
   slot.innerHTML = slotSpec.html;
   panel.appendChild(slot);
   panel.dataset.drugNotesHydrated = "true";
-}
-
-function renderTimelineDrugNotes(med, notesId) {
-  drugNotesMedByPanelId.set(notesId, med);
-  return timelineRenderer.buildDrugNotesShellHtml(notesId);
 }
 
 function collectVisitProofPhotos(visit) {
@@ -945,10 +930,6 @@ function getParasiteRecord(pet, kind) {
   return parasiteController.getParasiteRecord(pet, kind);
 }
 
-function resolveParasiteProductName(kind, productKey, customValue) {
-  return parasiteController.resolveProductName({ productKey, customValue });
-}
-
 function syncParasiteNextFromLast(kind) {
   const lastEl = document.getElementById(`parasite-last-${kind}`);
   const intervalEl = document.getElementById(`parasite-interval-${kind}`);
@@ -1047,10 +1028,6 @@ function paintParasiteStripRow(kind, presentation) {
   meta.textContent = presentation.metaText;
   statusEl.textContent = presentation.statusText;
   syncParasiteStripLights(lightsEl, presentation.lightStatus ?? null);
-}
-
-function paintParasiteStripRowEmpty(kind) {
-  paintParasiteStripRow(kind, parasiteRenderer.buildEmptyStripRowPresentation(kind));
 }
 
 function renderParasiteStrip(pet) {
@@ -1210,12 +1187,6 @@ function saveParasitePastAndOfferCalendar(kind) {
   return showParasiteCalendarChooser(kind);
 }
 
-/** Dosed today: mark today in-app, then offer calendar for next due. */
-function saveParasiteDosedTodayAndOfferCalendar(kind) {
-  if (!saveParasiteKind(kind, { dosedToday: true, quiet: true })) return false;
-  return showParasiteCalendarChooser(kind);
-}
-
 function buildVaccineCalendarPayload(pet, { vaccines, given, next }) {
   const copy = vaccinesLabels.buildCalendarTitleDetails({
     pet,
@@ -1263,24 +1234,6 @@ function openAppleCalendar(payload) {
   link.click();
   link.remove();
   window.setTimeout(() => URL.revokeObjectURL(href), 2000);
-}
-
-function closeParasiteCalendarChooser() {
-  closeCalendarChooser();
-}
-
-function openParasiteGoogleCalendar(kind) {
-  const pet = getCurrentPet();
-  openGoogleCalendar(buildParasiteCalendarPayload(pet, kind));
-}
-
-function openParasiteAppleCalendar(kind) {
-  const pet = getCurrentPet();
-  const payload = buildParasiteCalendarPayload(pet, kind);
-  if (payload) {
-    payload.uid = `parasite-${kind}-${PetLiveWeb.domains.calendar.isoToCompactDate(payload.nextDue)}`;
-  }
-  openAppleCalendar(payload);
 }
 
 function vaccineLabelOf(vaccine) {
@@ -1470,14 +1423,12 @@ let labAddBoundPetId = null;
 let selectedLabClinic = null;
 const selectedLabTypes = new Set();
 
-function labTypeLabel(type) {
-  return t(LAB_TYPE_I18N[type] || "labTypeOther");
-}
-
 function formatLabTypes(types) {
   const list = labsSelectors.filterLabTypes(types);
   if (!list.length) return t("labNoTypes");
-  return list.map(labTypeLabel).join("／");
+  return list
+    .map((type) => t(LAB_TYPE_I18N[type] || "labTypeOther"))
+    .join("／");
 }
 
 function visitLinkValue(visit) {
@@ -1650,16 +1601,8 @@ function ensureLabAddForPet(pet) {
   else refreshLabAddChrome(pet);
 }
 
-function loadPetPhotosMap() {
-  return petsMedia.loadMap();
-}
-
 function savePetPhotosMap(map) {
   return petPhotosSlot.scheduleWrite(map);
-}
-
-function flushPetPhotosMap() {
-  return petsMedia.flush();
 }
 
 function getPetPhoto(petId) {
@@ -1672,7 +1615,7 @@ function setPetPhoto(petId, dataUrl) {
 
 function flushPetPhotosOrToast() {
   if (!petsMedia.hasPendingWrite()) return true;
-  if (flushPetPhotosMap()) return true;
+  if (petsMedia.flush()) return true;
   showPersistenceFailure();
   return false;
 }
@@ -2279,10 +2222,6 @@ function paintAllergyMeatChips() {
   });
 }
 
-function getSelectedAllergyMeats() {
-  return Array.from(selectedAllergyMeats);
-}
-
 function fillAllergyRecordDateDefault() {
   const dateEl = document.getElementById("allergy-record-date");
   if (!dateEl || dateEl.value) return;
@@ -2400,7 +2339,7 @@ function saveAllergyPurchaseFromForm(event) {
   const result = allergyController.addPurchase(pet, {
     brand,
     recordDate,
-    meats: getSelectedAllergyMeats(),
+    meats: Array.from(selectedAllergyMeats),
     customMeat,
     weight,
     weightUnit: selectedAllergyFormUnit,
@@ -2555,10 +2494,6 @@ const OWNER_PROFILE_KEY = "petlive-c-owner-profile";
 
 const ownerSelectors = PetLiveWeb.domains.owner.createSelectors();
 
-function emptyOwnerProfile() {
-  return ownerSelectors.emptyProfile();
-}
-
 const ownerProfileSlot = PetLiveWeb.storage.createJsonSlot({
   key: OWNER_PROFILE_KEY,
   fallback: () => ownerSelectors.demoProfile(),
@@ -2602,7 +2537,9 @@ function buildEmergencyCopyText(pet) {
     noneLabel: t("none"),
     lineTextOfAlert: alertLineText,
   });
-  const ownerLines = formatOwnerCopyLines(payload.owner);
+  const ownerLines = emergencyRenderer
+    ? emergencyRenderer.buildOwnerCopyLines(ownerSelectors.copyRows(payload.owner))
+    : [];
   return emergencyRenderer.buildCopyCardText({
     petLines: formatPetShareLines(pet),
     alertsText: payload.alertsText,
@@ -2625,11 +2562,6 @@ async function copyTextToClipboard(text) {
   const ok = document.execCommand("copy");
   ta.remove();
   if (!ok) throw new Error("copy failed");
-}
-
-function formatOwnerCopyLines(profile) {
-  if (!emergencyRenderer) return [];
-  return emergencyRenderer.buildOwnerCopyLines(ownerSelectors.copyRows(profile));
 }
 
 function fillOwnerSettingsForm(profile = loadOwnerProfile()) {
@@ -2824,7 +2756,9 @@ renderCoordinator.register("home", "petHeader", (pet) => {
 renderCoordinator.register("home", "parasiteStrip", (pet) => {
   if (pet) renderParasiteStrip(pet);
   else if (document.getElementById("parasite-strip")) {
-    ["vaccine", "external", "heartworm"].forEach((kind) => paintParasiteStripRowEmpty(kind));
+    ["vaccine", "external", "heartworm"].forEach((kind) =>
+      paintParasiteStripRow(kind, parasiteRenderer.buildEmptyStripRowPresentation(kind))
+    );
   }
 });
 renderCoordinator.register(
@@ -3175,10 +3109,6 @@ function syncDateProxies(root = document) {
   });
 }
 
-function createPetFromForm(form) {
-  return petsLifecycle.createPet(readPetIdentityFromForm(form));
-}
-
 let editingPetId = null;
 
 function paintPetFormMode() {
@@ -3220,10 +3150,6 @@ function fillPetFormFromPet(pet) {
       form.breedCustom.value = pet.breed;
     }
   }
-}
-
-function applyPetFromForm(pet, form) {
-  return petsLifecycle.updatePet(pet, readPetIdentityFromForm(form));
 }
 
 function openCreatePetForm() {
@@ -3493,7 +3419,7 @@ const shellNavigation = PetLiveWeb.shell.createNavigation({
     }
     closePetPhotoCrop();
     closeProofLightbox();
-    setVaxHelpOpen(false);
+    closeAllVaxHelp();
 
     if (currentScreen === "timeline" && nextScreen !== "timeline") {
       latestRxUserCollapsed = false;
@@ -3686,58 +3612,20 @@ document.querySelectorAll("[data-go]").forEach((btn) => {
   }
 });
 
-
 function wireFeatureHubVaxHelp() {
-  const helpBtn = document.getElementById("fh-vax-help");
-  const pop = document.getElementById("fh-vax-help-pop");
-  if (!helpBtn || !pop || helpBtn.getAttribute("data-vax-help-wired") === "1") return;
-  helpBtn.setAttribute("data-vax-help-wired", "1");
-  helpBtn.addEventListener("click", (event) => {
-    event.preventDefault();
-    event.stopPropagation();
-    const willOpen = Boolean(pop.hidden);
-    pop.hidden = !willOpen;
-    helpBtn.setAttribute("aria-expanded", willOpen ? "true" : "false");
-    // Close the card legend if the hub one opens.
-    if (willOpen) setVaxHelpOpen(false);
-  });
-  pop.addEventListener("click", (event) => {
-    event.stopPropagation();
-  });
+  requireShellFn("bindFeatureHubVaxHelp")(document);
 }
 
-function setVaxHelpOpen(open) {
-  const helpBtn = document.getElementById("e-vax-help");
-  const pop = document.getElementById("e-vax-help-pop");
-  if (!helpBtn || !pop) return;
-  pop.hidden = !open;
-  helpBtn.setAttribute("aria-expanded", open ? "true" : "false");
+function closeAllVaxHelp() {
+  requireShellFn("closeAllVaxHelp")(document);
 }
 
-document.getElementById("e-vax-help")?.addEventListener("click", (event) => {
-  event.preventDefault();
-  event.stopPropagation();
-  const pop = document.getElementById("e-vax-help-pop");
-  setVaxHelpOpen(Boolean(pop?.hidden));
-});
-
-document.getElementById("e-vax-help-pop")?.addEventListener("click", (event) => {
-  event.stopPropagation();
-});
-
-document.addEventListener("click", (event) => {
-  if (event.target.closest("#e-vax-help, #e-vax-help-pop, #fh-vax-help, #fh-vax-help-pop")) return;
-  setVaxHelpOpen(false);
-  const fhHelp = document.getElementById("fh-vax-help");
-  const fhPop = document.getElementById("fh-vax-help-pop");
-  if (fhPop) fhPop.hidden = true;
-  if (fhHelp) fhHelp.setAttribute("aria-expanded", "false");
-});
+requireShellFn("bindEmergencyVaxHelp")(document);
 
 document.addEventListener("keydown", (event) => {
   if (event.key === "Escape") {
     closeProofLightbox();
-    setVaxHelpOpen(false);
+    closeAllVaxHelp();
   }
 });
 
@@ -3921,74 +3809,52 @@ const clinicNameInput = document.getElementById("clinic-name");
 const clinicAnonymousInput = document.getElementById("clinic-anonymous");
 
 function searchClinics(query) {
-  return searchClinicsForPicker(query);
+  return clinicsCatalog.searchClinics(query, pets, savedClinics);
 }
 
 function renderClinicResults(list) {
   if (!clinicsRenderer) return;
-  const built = clinicsRenderer.buildClinicResultsHtml(list);
-  clinicResults.hidden = built.hidden;
-  clinicResults.innerHTML = built.html;
+  requireShellFn("applyClinicResults")(
+    clinicResults,
+    clinicsRenderer.buildClinicResultsHtml(list)
+  );
 }
 
 function setSelectedClinic(clinic) {
   selectedClinic = clinic;
-  if (!clinic) {
-    clinicNameInput.value = "";
-    clinicAnonymousInput.value = "false";
-    selectedClinicEl.hidden = true;
-    selectedClinicEl.textContent = "";
-    selectedClinicEl.classList.remove("is-anonymous");
-    return;
-  }
-
-  const name = clinicNameOf(clinic);
-  clinicSearch.value = name;
-  clinicNameInput.value = name;
-  clinicAnonymousInput.value = clinic.anonymous ? "true" : "false";
-  selectedClinicEl.hidden = false;
-  selectedClinicEl.classList.toggle("is-anonymous", clinic.anonymous);
-  selectedClinicEl.textContent = clinic.anonymous
-    ? t("selectedClinicAnon")
-    : t("selectedClinic", { name });
-  clinicResults.hidden = true;
+  requireShellFn("applySelectedClinic")(
+    clinic,
+    {
+      search: clinicSearch,
+      nameInput: clinicNameInput,
+      anonymousInput: clinicAnonymousInput,
+      selectedEl: selectedClinicEl,
+      results: clinicResults,
+    },
+    { clinicNameOf, t }
+  );
 }
 
-clinicSearch.addEventListener("focus", () => {
-  renderClinicResults(searchClinics(clinicSearch.value));
-});
-
-clinicSearch.addEventListener("input", () => {
-  const query = clinicSearch.value;
-  selectedClinic = null;
-  clinicNameInput.value = "";
-  clinicAnonymousInput.value = "false";
-  selectedClinicEl.hidden = true;
-  selectedClinicEl.classList.remove("is-anonymous");
-  renderClinicResults(searchClinics(query));
-});
-
-clinicResults.addEventListener("click", (event) => {
-  const deleteBtn = event.target.closest("[data-clinic-delete]");
-  if (deleteBtn) {
-    event.preventDefault();
-    event.stopPropagation();
-    removeSavedClinic(deleteBtn.dataset.clinicDelete);
-    renderClinicResults(searchClinics(clinicSearch.value));
-    showToast(t("toastClinicRemoved"));
-    return;
+requireShellFn("bindClinicPicker")(
+  { search: clinicSearch, results: clinicResults },
+  {
+    searchClinics,
+    buildResultsHtml: (list) => clinicsRenderer.buildClinicResultsHtml(list),
+    getClinicDirectory,
+    removeSavedClinic,
+    applyFreeTextClinic,
+    onSelectClinic: setSelectedClinic,
+    showToast,
+    t,
+    clearSelectionChrome: () => {
+      selectedClinic = null;
+      clinicNameInput.value = "";
+      clinicAnonymousInput.value = "false";
+      selectedClinicEl.hidden = true;
+      selectedClinicEl.classList.remove("is-anonymous");
+    },
   }
-  const btn = event.target.closest("[data-clinic-id]");
-  if (!btn) return;
-  if (btn.dataset.clinicId === "__add__") {
-    const name = btn.dataset.clinicAddName || clinicSearch.value.trim();
-    applyFreeTextClinic(name);
-    return;
-  }
-  const clinic = getClinicDirectory().find((item) => item.id === btn.dataset.clinicId);
-  if (!clinic) return;
-  setSelectedClinic(clinic);
-});
+);
 
 function searchDrugs(query) {
   return medicationsController.searchDrugs(query);
@@ -4002,66 +3868,51 @@ function resolveEnrichedDrug(drugOrId) {
 function renderDrugInfoCard(drug) {
   if (!drugInfoCard || !medicationsRenderer) return;
   const full = drug ? resolveEnrichedDrug(drug) : null;
-  const built = medicationsRenderer.buildDrugInfoListsHtml(full);
-  if (!built.visible) {
-    drugInfoCard.hidden = true;
-    if (drugInfoPurpose) drugInfoPurpose.textContent = "";
-    if (drugInfoSideEffects) drugInfoSideEffects.innerHTML = "";
-    if (drugInfoPrecautions) drugInfoPrecautions.innerHTML = "";
-    return;
-  }
-
-  drugInfoPurpose.textContent = built.purposeText;
-  drugInfoSideEffects.innerHTML = built.sideEffectsHtml;
-  drugInfoPrecautions.innerHTML = built.precautionsHtml;
-  drugInfoCard.hidden = false;
-  drugInfoCard.removeAttribute("hidden");
-  drugInfoCard.classList.add("is-visible");
-  requestAnimationFrame(() => {
-    drugInfoCard.scrollIntoView({ behavior: "smooth", block: "nearest" });
-  });
+  requireShellFn("applyDrugInfoCard")(
+    {
+      card: drugInfoCard,
+      purposeEl: drugInfoPurpose,
+      sideEffectsEl: drugInfoSideEffects,
+      precautionsEl: drugInfoPrecautions,
+    },
+    medicationsRenderer.buildDrugInfoListsHtml(full)
+  );
 }
 
 function renderDrugResults(list) {
   if (!medicationsRenderer) return;
-  const built = medicationsRenderer.buildDrugResultsHtml(list);
-  drugResults.hidden = built.hidden;
-  drugResults.innerHTML = built.html;
+  requireShellFn("applyDrugResults")(
+    drugResults,
+    medicationsRenderer.buildDrugResultsHtml(list)
+  );
 }
 
-let suppressDrugSearchInput = false;
-
-drugSearch.addEventListener("input", () => {
-  if (suppressDrugSearchInput) return;
-  selectedDrug = null;
-  selectedDrugEl.hidden = true;
-  renderDrugInfoCard(null);
-  renderDrugResults(searchDrugs(drugSearch.value));
-});
-
-drugResults.addEventListener("click", (event) => {
-  const btn = event.target.closest("[data-drug-id]");
-  if (!btn) return;
-  selectedDrug = resolveEnrichedDrug(btn.dataset.drugId);
-  if (!selectedDrug && window.PetLive?.drug?.getDrugById) {
-    const result = window.PetLive.drug.getDrugById(btn.dataset.drugId);
-    if (result?.ok) selectedDrug = resolveEnrichedDrug(result.data) || result.data;
+requireShellFn("bindDrugSearch")(
+  {
+    search: drugSearch,
+    results: drugResults,
+    selectedEl: selectedDrugEl,
+  },
+  {
+    searchDrugs,
+    resolveEnrichedDrug,
+    buildResultsHtml: (list) => medicationsRenderer.buildDrugResultsHtml(list),
+    buildInfoListsHtml: (drug) => medicationsRenderer.buildDrugInfoListsHtml(drug),
+    getDrugById: (id) => window.PetLive?.drug?.getDrugById?.(id),
+    t,
+    getMedEntryMode: () => medEntryMode,
+    setMedEntryMode,
+    onSelectDrug: (drug) => {
+      selectedDrug = drug;
+    },
+    infoEls: {
+      card: drugInfoCard,
+      purposeEl: drugInfoPurpose,
+      sideEffectsEl: drugInfoSideEffects,
+      precautionsEl: drugInfoPrecautions,
+    },
   }
-  if (!selectedDrug) return;
-  drugResults.hidden = true;
-  suppressDrugSearchInput = true;
-  drugSearch.value = selectedDrug.genericName;
-  suppressDrugSearchInput = false;
-  selectedDrugEl.hidden = false;
-  selectedDrugEl.textContent = t("selectedDrug", {
-    name: `${selectedDrug.genericName}${
-      selectedDrug.brandNameZh ? ` / ${selectedDrug.brandNameZh}` : ""
-    }`,
-  });
-  // Stay on manual entry so the safety card is visible
-  if (medEntryMode !== "manual") setMedEntryMode("manual");
-  renderDrugInfoCard(selectedDrug);
-});
+);
 
 document.getElementById("visit-form").addEventListener("submit", (event) => {
   event.preventDefault();
@@ -4222,7 +4073,7 @@ document.getElementById("pet-form").addEventListener("submit", (event) => {
     return;
   }
 
-  const pet = createPetFromForm(form);
+  const pet = petsLifecycle.createPet(readPetIdentityFromForm(form));
   if (editingPetId) {
     const current = pets.find((item) => item.id === editingPetId);
     if (!current) {
@@ -4231,7 +4082,7 @@ document.getElementById("pet-form").addEventListener("submit", (event) => {
       showToast(t("toastNeedPetName"));
       return;
     }
-    applyPetFromForm(current, form);
+    petsLifecycle.updatePet(current, readPetIdentityFromForm(form));
     schedulePetsGraphPersist();
     editingPetId = null;
     paintPetFormMode();
@@ -5902,7 +5753,9 @@ document.getElementById("parasite-form-heartworm")?.addEventListener("submit", (
 
 document.querySelectorAll("[data-parasite-dosed]").forEach((btn) => {
   btn.addEventListener("click", () => {
-    saveParasiteDosedTodayAndOfferCalendar(btn.dataset.parasiteDosed);
+    const kind = btn.dataset.parasiteDosed;
+    if (!saveParasiteKind(kind, { dosedToday: true, quiet: true })) return;
+    showParasiteCalendarChooser(kind);
   });
 });
 
@@ -6233,10 +6086,6 @@ function paintAccountMenu(session) {
     syncStatusText: view.signedIn ? accountSyncStatusText() : "",
     chipAriaLabel: t("accountChipAria"),
   });
-}
-
-function liveGoogleSignedIn() {
-  return Boolean(googleDriveAuth?.getSession?.().signedIn);
 }
 
 function paintCloudChrome() {
