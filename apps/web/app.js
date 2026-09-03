@@ -7109,23 +7109,32 @@ function initIntroAndCloud() {
   })();
 }
 
-applyI18nAll();
-syncAlertSubmitLabel();
-syncBreedFields();
-syncDateProxies();
-hydratePetPhotos();
-applySelectedPet();
-setMedEntryMode("photo");
-setMedUnitChip("unrecorded");
-setMedFreqChip("unrecorded");
-mountIntroStoriesShell();
-enhanceGlassScreenHeads();
-applyI18n();
-initGlassDock();
-initAppNavMenu();
-wirePetWeightScale();
-wireAllergyHelper();
-initIntroAndCloud();
+PetLiveWeb.shell.runBootPhases({
+  critical: [
+    () => applyI18n(),
+    () => hydratePetPhotos(),
+    () => applySelectedPet(),
+    () => initGlassDock(),
+    () => initAppNavMenu(),
+    () => initIntroAndCloud(),
+  ],
+  soon: [
+    () => syncAlertSubmitLabel(),
+    () => syncBreedFields(),
+    () => syncDateProxies(),
+    () => setMedEntryMode("photo"),
+    () => setMedUnitChip("unrecorded"),
+    () => setMedFreqChip("unrecorded"),
+    () => wirePetWeightScale(),
+    () => wireAllergyHelper(),
+  ],
+  idle: [
+    () => applyI18nAll(),
+    () => mountIntroStoriesShell(),
+    () => enhanceGlassScreenHeads(),
+  ],
+  idleTimeoutMs: 2000,
+});
 
 if (typeof PetLiveWeb?.storage?.markBootComplete === "function") {
   const storageBackend = PetLiveWeb.storage.getBackend?.();

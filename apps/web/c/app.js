@@ -6466,23 +6466,32 @@ function initIntroAndCloud() {
   // Auth omitted on C — skip cloud restore even if a stub were present.
 }
 
-applyI18nAll();
-syncAlertSubmitLabel();
-syncBreedFields();
-hydratePetPhotos();
-applySelectedPet();
-setMedEntryMode("photo");
-setMedUnitChip("unrecorded");
-setMedFreqChip("unrecorded");
-mountIntroStoriesShell();
-enhanceGlassScreenHeads();
-applyI18n();
-initAppNavMenu();
-initGlassDock();
-wireAllergyHelper();
-wirePetWeightScale();
-initIntroAndCloud();
-syncDateProxies();
+PetLiveWeb.shell.runBootPhases({
+  critical: [
+    () => applyI18n(),
+    () => hydratePetPhotos(),
+    () => applySelectedPet(),
+    () => initAppNavMenu(),
+    () => initGlassDock(),
+    () => initIntroAndCloud(),
+  ],
+  soon: [
+    () => syncAlertSubmitLabel(),
+    () => syncBreedFields(),
+    () => syncDateProxies(),
+    () => setMedEntryMode("photo"),
+    () => setMedUnitChip("unrecorded"),
+    () => setMedFreqChip("unrecorded"),
+    () => wireAllergyHelper(),
+    () => wirePetWeightScale(),
+  ],
+  idle: [
+    () => applyI18nAll(),
+    () => mountIntroStoriesShell(),
+    () => enhanceGlassScreenHeads(),
+  ],
+  idleTimeoutMs: 2000,
+});
 
 if (typeof PetLiveWeb?.storage?.markBootComplete === "function") {
   const storageBackend = PetLiveWeb.storage.getBackend?.();
