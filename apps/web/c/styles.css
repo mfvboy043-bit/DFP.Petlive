@@ -1708,6 +1708,18 @@ select:focus {
   grid-template-columns: minmax(0, 1.35fr) minmax(0, 0.85fr);
 }
 
+/* Visit: date + weight pair; align control tops when hint wraps under weight */
+#visit-form .field-row--visit-date-weight {
+  align-items: start;
+}
+
+#visit-form .field-row--visit-date-weight input[type="date"],
+#visit-form .field-row--visit-date-weight input[type="number"] {
+  min-height: 50px;
+  height: 50px;
+  box-sizing: border-box;
+}
+
 /* iOS/WebKit date controls have a large intrinsic min-width */
 input[type="date"],
 input[type="time"],
@@ -7852,7 +7864,9 @@ html.is-proof-lightbox-open body {
 
   /* Pet form: keep paired rows side-by-side on phone (match formal B / screenshot) */
   #pet-form .field-row,
-  .screen[data-screen="add-pet"] .field-row {
+  .screen[data-screen="add-pet"] .field-row,
+  #visit-form .field-row,
+  .screen[data-screen="add-visit"] .field-row {
     grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 10px;
     overflow-x: clip;
@@ -7874,7 +7888,9 @@ html.is-proof-lightbox-open body {
   }
 
   #pet-form .field-row .field,
-  .screen[data-screen="add-pet"] .field-row .field {
+  .screen[data-screen="add-pet"] .field-row .field,
+  #visit-form .field-row .field,
+  .screen[data-screen="add-visit"] .field-row .field {
     min-width: 0;
     max-width: 100%;
     overflow-x: clip;

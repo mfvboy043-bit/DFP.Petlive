@@ -16,7 +16,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,700&family=Noto+Sans+TC:wght@400;500;700&family=Noto+Serif+TC:wght@600;700&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="./styles.css?v=20260830-perf-click-c" />
+  <link rel="stylesheet" href="./styles.css?v=20260903-visit-date-weight-row" />
   <link rel="stylesheet" href="../shell/glass-dock.css?v=20260828-dock-smooth" />
   <link rel="stylesheet" href="../shell/glass-perf.css?v=20260830-perf-click-c" />
   <link rel="stylesheet" href="../shell/screen-home-btn.css?v=20260827-screen-home-btn" />
@@ -791,10 +791,17 @@
       </header>
 
       <form class="form" id="visit-form">
-        <label class="field">
-          <span data-i18n="visitDate">看診日期</span>
-          <input type="date" name="visitDate" value="2026-08-09" required />
-        </label>
+        <div class="field-row field-row--visit-date-weight">
+          <label class="field">
+            <span data-i18n="visitDate">看診日期</span>
+            <input type="date" name="visitDate" value="2026-08-09" required />
+          </label>
+          <label class="field">
+            <span data-i18n="weightAtVisit">當日體重（建議填，kg）</span>
+            <input type="number" name="weightAtVisit" step="0.1" min="0.1" placeholder="6.8" />
+            <small class="field-hint" data-i18n="weightAtVisitHint">可不填先下一步；稍後再補。有填較利急診與用藥參考。</small>
+          </label>
+        </div>
         <label class="field">
           <span data-i18n="clinicName">醫院名稱</span>
           <input
@@ -811,11 +818,6 @@
         <p class="selected-clinic" id="selected-clinic" hidden></p>
         <input type="hidden" name="clinicName" id="clinic-name" value="" />
         <input type="hidden" name="clinicAnonymous" id="clinic-anonymous" value="false" />
-        <label class="field">
-          <span data-i18n="weightAtVisit">當日體重（建議填，kg）</span>
-          <input type="number" name="weightAtVisit" step="0.1" min="0.1" placeholder="6.8" />
-          <small class="field-hint" data-i18n="weightAtVisitHint">可不填先下一步；稍後再補。有填較利急診與用藥參考。</small>
-        </label>
 
         <fieldset class="chip-field">
           <legend data-i18n="symptomTags">症狀標籤</legend>
