@@ -124,6 +124,8 @@
     function buildEmergencyNavPresentation(nextVaccine) {
       if (!nextVaccine) {
         return {
+          i18nMode: "empty",
+          i18nKey: "noVaccineNext",
           nextText: label("noVaccineNext"),
           nextClassName: "",
           btnClass: "is-protected",
@@ -133,6 +135,7 @@
 
       const status = getVaccineProtectionStatus(nextVaccine.next);
       return {
+        i18nMode: "dynamic",
         nextText: label("nextDue", { date: nextVaccine.next }),
         nextClassName:
           status === "expired"
