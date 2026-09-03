@@ -44,7 +44,7 @@ const I18N = {
     introLede:
       "紀錄先寫在你的裝置。Google 登入進入護照；備份可選擇 Google 雲端硬碟（詳見隱私說明）。<br />僅供參考，不取代獸醫診斷。",
     legalConsentLabel:
-      '我已閱讀並同意 <a href="../legal/privacy.html?v=20260828-legal-v13" target="_blank" rel="noopener">隱私權政策</a> 與 <a href="../legal/terms.html?v=20260828-legal-v13" target="_blank" rel="noopener">醫療免責與使用條款</a>',
+      '我已閱讀並同意 <a href="../legal/privacy.html?v=20260903-legal-v13&lang=zh-Hant" target="_blank" rel="noopener">隱私權政策</a> 與 <a href="../legal/terms.html?v=20260903-legal-v13&lang=zh-Hant" target="_blank" rel="noopener">醫療免責與使用條款</a>',
     legalConsentRequired: "請先勾選同意隱私權政策與使用條款",
     introStart: "開始使用",
     introTryLocal: "本機試用",
@@ -849,7 +849,7 @@ const I18N = {
     introLede:
       "Records stay on your device first. Sign in with Google to enter; optional backup to your Google Drive (see Privacy Policy).<br />Reference only—not a veterinary diagnosis.",
     legalConsentLabel:
-      'I have read and agree to the <a href="../legal/privacy.html?v=20260828-legal-v13" target="_blank" rel="noopener">Privacy Policy</a> and <a href="../legal/terms.html?v=20260828-legal-v13" target="_blank" rel="noopener">Medical Disclaimer &amp; Terms</a>',
+      'I have read and agree to the <a href="../legal/privacy.html?v=20260903-legal-v13&lang=en" target="_blank" rel="noopener">Privacy Policy</a> and <a href="../legal/terms.html?v=20260903-legal-v13&lang=en" target="_blank" rel="noopener">Medical Disclaimer &amp; Terms</a>',
     legalConsentRequired: "Please agree to the Privacy Policy and Terms first",
     introStart: "Get started",
     introTryLocal: "Try offline",
@@ -1654,7 +1654,7 @@ const I18N = {
     introLede:
       "記録は端末に保存されます。Googleログインでパスポートへ。バックアップはGoogleドライブへ任意（プライバシーポリシー参照）。<br />参考用であり、診断の代わりではありません。",
     legalConsentLabel:
-      '<a href="../legal/privacy.html?v=20260828-legal-v13" target="_blank" rel="noopener">プライバシーポリシー</a>と<a href="../legal/terms.html?v=20260828-legal-v13" target="_blank" rel="noopener">免責事項・利用規約</a>に同意します',
+      '<a href="../legal/privacy.html?v=20260903-legal-v13&lang=ja" target="_blank" rel="noopener">プライバシーポリシー</a>と<a href="../legal/terms.html?v=20260903-legal-v13&lang=ja" target="_blank" rel="noopener">免責事項・利用規約</a>に同意します',
     legalConsentRequired: "先にプライバシーポリシーと利用規約への同意にチェックを入れてください",
     introStart: "はじめる",
     introTryLocal: "端末だけで試す",
@@ -2464,7 +2464,7 @@ const I18N = {
     introLede:
       "기록은 기기에 먼저 저장됩니다. Google 로그인 후 여권 이용; Google Drive 백업은 선택(개인정보 처리방침 참고).<br />참고용이며 수의사 진단을 대체하지 않습니다.",
     legalConsentLabel:
-      '<a href="../legal/privacy.html?v=20260828-legal-v13" target="_blank" rel="noopener">개인정보 처리방침</a> 및 <a href="../legal/terms.html?v=20260828-legal-v13" target="_blank" rel="noopener">면책·이용약관</a>에 동의합니다',
+      '<a href="../legal/privacy.html?v=20260903-legal-v13&lang=ko" target="_blank" rel="noopener">개인정보 처리방침</a> 및 <a href="../legal/terms.html?v=20260903-legal-v13&lang=ko" target="_blank" rel="noopener">면책·이용약관</a>에 동의합니다',
     legalConsentRequired: "먼저 개인정보 처리방침과 이용약관에 동의해 주세요",
     introStart: "시작하기",
     introTryLocal: "기기로만 체험",
