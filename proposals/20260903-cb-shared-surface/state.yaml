@@ -1,0 +1,34 @@
+id: "20260903-cb-shared-surface"
+title: "C/B shared passport surface with thin adapters"
+version: 2
+status: adopted
+
+gate_a:
+  status: approved
+  scope: "Phase 1 only — C-first shared account/parasite CSS ownership pilot"
+  note: "Victor 2026-09-03 — 確認 Phase 1"
+
+gate_b:
+  status: adopted
+  note: "Victor 2026-09-03 — 採用 Phase 1（C CSS ownership only；非 Phase 2、不推 Pages）"
+
+iteration: 1
+max_iterations: 3
+
+candidate:
+  branch: "proposal/cb-shared-surface-p1"
+  path: "/private/tmp/petlive-cb-shared-surface-p1"
+  worktree: "/private/tmp/petlive-cb-shared-surface-p1"
+
+reviews:
+  pharmacist: skipped
+  qa: pass
+  ui: pass
+  legal: skipped
+  security_diff_scan: skipped
+
+rerun: []
+blocking_issues: []
+non_blocking: []
+builder_scope: []
+halt_reason: ""
