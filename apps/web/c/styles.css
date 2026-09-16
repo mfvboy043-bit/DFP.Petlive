@@ -968,6 +968,25 @@ html[lang="ja"] .screen-head-actions .e-copy-summary {
   text-align: center;
 }
 
+.screen-head-actions .account-menu {
+  position: static;
+}
+
+.screen-head-actions .account-chip {
+  max-width: min(34vw, 132px);
+}
+
+@media (max-width: 720px) {
+  .screen-head-actions .account-chip-name {
+    display: none;
+  }
+
+  .screen-head-actions .account-chip {
+    padding-right: 3px;
+    max-width: none;
+  }
+}
+
 .screen:has(> .screen-head) {
   --e-head-float-h: 60px;
   padding-top: calc(
@@ -1441,6 +1460,119 @@ html[lang="ko"] .hero-intro .brand-zh {
 /* ---------------------------------------------------------
    11. PREVENTION STATUS STRIP
    --------------------------------------------------------- */
+
+.parasite-strip {
+  display: grid;
+  gap: 7px;
+}
+
+.parasite-row {
+  display: grid;
+  grid-template-columns:
+    minmax(78px, auto)
+    1fr
+    auto;
+
+  align-items: center;
+  gap: 10px;
+
+  width: 100%;
+  padding: 10px 11px;
+
+  border: 1px solid color-mix(in srgb, var(--line) 82%, #9aaf9e);
+  border-radius: var(--r-sm);
+
+  text-align: left;
+
+  color: var(--text);
+  background:
+    linear-gradient(
+      168deg,
+      #ffffff 0%,
+      #fbfaf6 42%,
+      #f3f0e8 100%
+    );
+  box-shadow:
+    0 1px 0 rgba(255, 255, 255, 0.98) inset,
+    0 0 0 1px rgba(255, 255, 255, 0.55) inset,
+    0 -1px 0 rgba(70, 82, 72, 0.06) inset,
+    0 1px 2px rgba(50, 57, 53, 0.04),
+    0 6px 14px rgba(26, 52, 45, 0.08),
+    0 14px 28px rgba(26, 52, 45, 0.07);
+
+  transition:
+    transform var(--fast),
+    border-color var(--fast),
+    background var(--fast),
+    box-shadow var(--fast);
+}
+
+.parasite-row:hover {
+  border-color: #c4d0c5;
+  background:
+    linear-gradient(
+      168deg,
+      #ffffff 0%,
+      #fcfbf8 48%,
+      #f6f3eb 100%
+    );
+  box-shadow:
+    0 1px 0 rgba(255, 255, 255, 1) inset,
+    0 0 0 1px rgba(255, 255, 255, 0.65) inset,
+    0 -1px 0 rgba(70, 82, 72, 0.05) inset,
+    0 2px 4px rgba(50, 57, 53, 0.05),
+    0 10px 20px rgba(26, 52, 45, 0.1),
+    0 18px 34px rgba(26, 52, 45, 0.09);
+  transform: translateY(-2px);
+}
+
+.parasite-row:active {
+  transform: translateY(0) scale(0.99);
+  box-shadow:
+    0 1px 0 rgba(255, 255, 255, 0.88) inset,
+    0 0 0 1px rgba(255, 255, 255, 0.4) inset,
+    0 2px 3px rgba(50, 57, 53, 0.08) inset,
+    0 3px 8px rgba(26, 52, 45, 0.07);
+}
+
+.parasite-row-label {
+  font-size: 13px;
+  font-weight: 700;
+  line-height: 1.25;
+  overflow-wrap: break-word;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  overflow: hidden;
+}
+
+.parasite-row-meta {
+  min-width: 0;
+  font-size: 11px;
+  color: var(--text-muted);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.parasite-row-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.parasite-row-status::before {
+  content: "";
+
+  width: 7px;
+  height: 7px;
+
+  border-radius: 50%;
+  background: currentColor;
+}
 
 /* ---------------------------------------------------------
    12. CTA
@@ -1944,6 +2076,7 @@ input[type="week"] {
   line-height: 1.4;
   color: var(--text-muted);
 }
+
 
 .breed-results .breed-results-empty {
   margin: 0;
@@ -2695,8 +2828,67 @@ input[type="week"] {
 }
 
 .parasite-cal-chooser-providers .btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
   width: 100%;
   min-width: 0;
+  white-space: nowrap;
+  flex-wrap: nowrap;
+}
+
+/* Soft sage CTA — palette leaf tokens, lighter than default .btn-primary */
+.parasite-cal-google-btn.btn-primary {
+  color: var(--leaf-deep);
+  background: linear-gradient(
+    180deg,
+    #fbfcfb 0%,
+    var(--leaf-pale) 42%,
+    var(--leaf-soft) 100%
+  );
+  border: 1px solid color-mix(in srgb, var(--leaf) 26%, var(--line));
+  box-shadow:
+    0 1px 0 rgba(255, 255, 255, 0.92) inset,
+    0 -1px 0 rgba(90, 125, 108, 0.08) inset,
+    0 6px 14px rgba(63, 92, 78, 0.1),
+    0 2px 4px rgba(40, 55, 48, 0.05);
+}
+
+.parasite-cal-google-btn.btn-primary:hover {
+  background: linear-gradient(
+    180deg,
+    #ffffff 0%,
+    var(--leaf-soft) 55%,
+    #d8e3dc 100%
+  );
+}
+
+.parasite-cal-google-btn.btn-primary:active {
+  background: linear-gradient(180deg, var(--leaf-soft) 0%, #d2ddd6 100%);
+  box-shadow:
+    0 2px 4px rgba(90, 125, 108, 0.12) inset,
+    0 2px 6px rgba(40, 55, 48, 0.08);
+}
+
+/* Global svg{display:block;max-width:100%} would stretch icon to full button width */
+.parasite-cal-google-g,
+.parasite-cal-apple-g {
+  display: inline-flex;
+  flex: 0 0 auto;
+  align-items: center;
+  justify-content: center;
+  width: 18px;
+  height: 18px;
+  line-height: 0;
+}
+
+.parasite-cal-google-g svg,
+.parasite-cal-apple-g svg {
+  display: block;
+  width: 18px;
+  height: 18px;
+  max-width: none;
 }
 
 /* ---------------------------------------------------------
@@ -3330,6 +3522,7 @@ button.tl-med-summary.is-open {
 .tl-ingredient:last-child {
   border-bottom: 0;
 }
+
 
 /* ---------------------------------------------------------
    21. PASSPORT PLATE WASH
@@ -4603,6 +4796,7 @@ html[lang="en"] .e-owner-k::after {
   bottom: max(18px, calc(18px + env(safe-area-inset-bottom)));
 }
 
+
 .lang-fab {
   display: grid;
   place-items: center;
@@ -4661,6 +4855,7 @@ html[lang="en"] .e-owner-k::after {
 .lang-menu button:hover {
   background: var(--leaf-pale);
 }
+
 
 /* ---------------------------------------------------------
    31. COMPLETION / STATES
@@ -4779,11 +4974,20 @@ html[lang="en"] .e-owner-k::after {
     grid-template-columns: 1fr;
   }
 
-  
+  .parasite-strip {
+    grid-template-columns: repeat(3, 1fr);
+  }
 
-  
+  .parasite-row {
+    grid-template-columns: 1fr;
+    align-content: space-between;
 
-  
+    min-height: 102px;
+  }
+
+  .parasite-row-status {
+    margin-top: auto;
+  }
 
   .form {
     max-width: 720px;
@@ -4883,7 +5087,9 @@ html[lang="en"] .e-owner-k::after {
     margin-bottom: 4px;
   }
 
-  
+  .parasite-strip {
+    margin-top: 6px;
+  }
 }
 
 /* ---------------------------------------------------------
@@ -5218,6 +5424,72 @@ html.is-photo-crop-open body {
   display: none !important;
 }
 
+.account-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  max-width: min(46vw, 180px);
+  min-height: 38px;
+  padding: 3px 12px 3px 3px;
+  border: 1px solid rgba(20, 20, 20, 0.88);
+  border-radius: 999px;
+  background: #1a1a1a;
+  color: #fff;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.12);
+  cursor: pointer;
+}
+
+.account-chip:hover,
+.account-chip[aria-expanded="true"] {
+  background: #111;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.18);
+}
+
+.account-chip-avatar,
+.account-chip-fallback {
+  flex: 0 0 auto;
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+}
+
+.account-chip-avatar {
+  object-fit: cover;
+  border: 0;
+}
+
+.account-chip-avatar[hidden],
+.account-popover-avatar[hidden] {
+  display: none !important;
+}
+
+.account-chip-fallback,
+.account-popover-fallback {
+  display: grid;
+  place-items: center;
+  background: #3d6b57;
+  color: #fff;
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 1;
+}
+
+.account-chip-fallback[hidden],
+.account-popover-fallback[hidden] {
+  display: none !important;
+}
+
+.account-chip-name {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  color: #fff;
+}
+
 .account-popover {
   position: fixed;
   top: 0;
@@ -5432,6 +5704,105 @@ html.is-photo-crop-open body {
 }
 
 /* Parasite / vaccine status rows (JS: is-protected|approaching|unprotected) */
+.parasite-row.is-protected {
+  border-color: var(--safe-border);
+  background:
+    linear-gradient(
+      168deg,
+      #ffffff 0%,
+      #f8fcf9 40%,
+      var(--safe-soft) 100%
+    );
+  box-shadow:
+    0 1px 0 rgba(255, 255, 255, 0.98) inset,
+    0 0 0 1px rgba(255, 255, 255, 0.55) inset,
+    0 -1px 0 rgba(52, 116, 86, 0.08) inset,
+    0 1px 2px rgba(52, 116, 86, 0.05),
+    0 8px 16px rgba(52, 116, 86, 0.12),
+    0 16px 30px rgba(26, 52, 45, 0.07);
+}
+
+.parasite-row.is-protected:hover {
+  box-shadow:
+    0 1px 0 rgba(255, 255, 255, 1) inset,
+    0 0 0 1px rgba(255, 255, 255, 0.65) inset,
+    0 -1px 0 rgba(52, 116, 86, 0.06) inset,
+    0 2px 4px rgba(52, 116, 86, 0.06),
+    0 12px 22px rgba(52, 116, 86, 0.14),
+    0 20px 36px rgba(26, 52, 45, 0.08);
+}
+
+.parasite-row.is-protected .parasite-row-status {
+  color: var(--status-mint);
+}
+
+.parasite-row.is-approaching {
+  border-color: var(--attention-border);
+  background:
+    linear-gradient(
+      168deg,
+      #ffffff 0%,
+      #fffaf3 40%,
+      var(--attention-soft) 100%
+    );
+  box-shadow:
+    0 1px 0 rgba(255, 255, 255, 0.98) inset,
+    0 0 0 1px rgba(255, 255, 255, 0.55) inset,
+    0 -1px 0 rgba(185, 143, 94, 0.1) inset,
+    0 1px 2px rgba(185, 143, 94, 0.06),
+    0 8px 16px rgba(185, 143, 94, 0.14),
+    0 16px 30px rgba(26, 52, 45, 0.07);
+}
+
+.parasite-row.is-approaching:hover {
+  box-shadow:
+    0 1px 0 rgba(255, 255, 255, 1) inset,
+    0 0 0 1px rgba(255, 255, 255, 0.65) inset,
+    0 -1px 0 rgba(185, 143, 94, 0.08) inset,
+    0 2px 4px rgba(185, 143, 94, 0.07),
+    0 12px 22px rgba(185, 143, 94, 0.16),
+    0 20px 36px rgba(26, 52, 45, 0.08);
+}
+
+.parasite-row.is-approaching .parasite-row-status {
+  color: var(--status-apricot);
+}
+
+.parasite-row.is-unprotected {
+  border-color: color-mix(in srgb, var(--status-rose) 55%, transparent);
+  background:
+    linear-gradient(
+      168deg,
+      #ffffff 0%,
+      #fff8f7 40%,
+      var(--status-rose-soft) 100%
+    );
+  box-shadow:
+    0 1px 0 rgba(255, 255, 255, 0.96) inset,
+    0 0 0 1px rgba(255, 255, 255, 0.5) inset,
+    0 -1px 0 rgba(176, 74, 74, 0.08) inset,
+    0 1px 2px rgba(176, 74, 74, 0.05),
+    0 8px 16px rgba(176, 74, 74, 0.12),
+    0 16px 30px rgba(26, 52, 45, 0.07);
+}
+
+.parasite-row.is-unprotected:hover {
+  box-shadow:
+    0 1px 0 rgba(255, 255, 255, 1) inset,
+    0 0 0 1px rgba(255, 255, 255, 0.6) inset,
+    0 -1px 0 rgba(176, 74, 74, 0.06) inset,
+    0 2px 4px rgba(176, 74, 74, 0.06),
+    0 12px 22px rgba(176, 74, 74, 0.14),
+    0 20px 36px rgba(26, 52, 45, 0.08);
+}
+
+.parasite-row.is-unprotected .parasite-row-status {
+  color: color-mix(in srgb, var(--status-rose) 45%, var(--text));
+}
+
+.parasite-row.is-optional {
+  opacity: 0.72;
+}
 
 /* Alert section plates — same tokens as .tl-item / .vaccine-item */
 .alert-item,
@@ -7328,15 +7699,32 @@ html.is-proof-lightbox-open body {
     line-height: 1.45;
   }
 
-  
+  .parasite-strip {
+    gap: 6px;
+  }
 
-  
+  .parasite-row {
+    min-height: 44px;
+    padding: 10px 11px;
+    border-radius: 14px;
+    gap: 8px;
+    grid-template-columns: minmax(72px, auto) 1fr auto;
+  }
 
-  
+  .parasite-row-label {
+    font-size: 12.5px;
+  }
 
-  
+  .parasite-row-meta {
+    font-size: 11px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
 
-  
+  .parasite-row-status {
+    font-size: 11px;
+  }
 
   .cta-row {
     display: grid;
@@ -7410,9 +7798,16 @@ html.is-proof-lightbox-open body {
     min-height: 40px;
   }
 
-  
+  .account-chip {
+    min-height: 40px;
+    max-width: min(38vw, 148px);
+    padding: 4px 10px 4px 4px;
+    gap: 6px;
+  }
 
-  
+  .account-chip-name {
+    font-size: 12.5px;
+  }
 
 .screen-head {
     position: sticky;
@@ -8009,6 +8404,7 @@ html.is-proof-lightbox-open body {
     right: max(14px, env(safe-area-inset-right));
     bottom: max(14px, calc(14px + env(safe-area-inset-bottom)));
   }
+
 
   .lang-fab {
     width: 48px;
