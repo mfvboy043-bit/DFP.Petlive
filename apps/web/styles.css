@@ -2829,8 +2829,67 @@ input[type="week"] {
 }
 
 .parasite-cal-chooser-providers .btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
   width: 100%;
   min-width: 0;
+  white-space: nowrap;
+  flex-wrap: nowrap;
+}
+
+/* Soft sage CTA — palette leaf tokens, lighter than default .btn-primary */
+.parasite-cal-google-btn.btn-primary {
+  color: var(--leaf-deep);
+  background: linear-gradient(
+    180deg,
+    #fbfcfb 0%,
+    var(--leaf-pale) 42%,
+    var(--leaf-soft) 100%
+  );
+  border: 1px solid color-mix(in srgb, var(--leaf) 26%, var(--line));
+  box-shadow:
+    0 1px 0 rgba(255, 255, 255, 0.92) inset,
+    0 -1px 0 rgba(90, 125, 108, 0.08) inset,
+    0 6px 14px rgba(63, 92, 78, 0.1),
+    0 2px 4px rgba(40, 55, 48, 0.05);
+}
+
+.parasite-cal-google-btn.btn-primary:hover {
+  background: linear-gradient(
+    180deg,
+    #ffffff 0%,
+    var(--leaf-soft) 55%,
+    #d8e3dc 100%
+  );
+}
+
+.parasite-cal-google-btn.btn-primary:active {
+  background: linear-gradient(180deg, var(--leaf-soft) 0%, #d2ddd6 100%);
+  box-shadow:
+    0 2px 4px rgba(90, 125, 108, 0.12) inset,
+    0 2px 6px rgba(40, 55, 48, 0.08);
+}
+
+/* Global svg{display:block;max-width:100%} would stretch icon to full button width */
+.parasite-cal-google-g,
+.parasite-cal-apple-g {
+  display: inline-flex;
+  flex: 0 0 auto;
+  align-items: center;
+  justify-content: center;
+  width: 18px;
+  height: 18px;
+  line-height: 0;
+}
+
+.parasite-cal-google-g svg,
+.parasite-cal-apple-g svg {
+  display: block;
+  width: 18px;
+  height: 18px;
+  max-width: none;
 }
 
 /* ---------------------------------------------------------
