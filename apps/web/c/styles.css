@@ -2689,7 +2689,8 @@ input[type="week"] {
 
 .parasite-cal-chooser-providers {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  /* ARCHIVE 2026-09-16: was 1fr 1fr while Apple + Google both showed */
+  grid-template-columns: 1fr;
   gap: 8px;
 }
 

@@ -16,7 +16,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,700&family=Noto+Sans+TC:wght@400;500;700&family=Noto+Serif+TC:wght@600;700&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="./styles.css?v=20260903-visit-date-proxy" />
+  <link rel="stylesheet" href="./styles.css?v=20260916-archive-apple-cal" />
   <link rel="stylesheet" href="./shell/glass-dock.css?v=20260828-dock-smooth" />
   <link rel="stylesheet" href="./shell/glass-perf.css?v=20260830-perf-click-c" />
   <link rel="stylesheet" href="./shell/screen-home-btn.css?v=20260827-screen-home-btn" />
@@ -2061,6 +2061,7 @@
       <p class="parasite-cal-chooser-meta" id="parasite-cal-chooser-meta"></p>
       <div class="parasite-cal-chooser-actions">
         <div class="parasite-cal-chooser-providers">
+          <!-- ARCHIVE 2026-09-16: Apple Calendar UI parked (low usage). Restore with JS openAppleCalendar + styles 1fr 1fr.
           <button class="btn btn-primary parasite-cal-apple-btn" type="button" data-parasite-cal-provider="apple">
             <span class="parasite-cal-apple-g" aria-hidden="true">
               <svg viewBox="0 0 24 24" width="18" height="18" focusable="false" aria-hidden="true">
@@ -2087,7 +2088,8 @@
             </span>
             <span data-i18n="parasiteCalApple">Apple 行事曆</span>
           </button>
-          <button class="btn btn-ghost parasite-cal-google-btn" type="button" data-parasite-cal-provider="google">
+          -->
+          <button class="btn btn-primary parasite-cal-google-btn" type="button" data-parasite-cal-provider="google">
             <span class="parasite-cal-google-g" aria-hidden="true">
               <svg viewBox="0 0 24 24" width="18" height="18" focusable="false" aria-hidden="true">
                 <path

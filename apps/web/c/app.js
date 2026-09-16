@@ -1212,6 +1212,7 @@ function openGoogleCalendar(payload) {
   if (url) window.open(url, "_blank", "noopener,noreferrer");
 }
 
+/* ARCHIVE 2026-09-16: Apple Calendar UI parked; keep ICS path for restore. */
 function openAppleCalendar(payload) {
   if (!payload?.nextDue) {
     showToast(t("toastParasiteNeedNext"));
