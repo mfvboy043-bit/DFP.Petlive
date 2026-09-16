@@ -4646,6 +4646,13 @@ html[lang="en"] .e-owner-k::after {
   display: none !important;
 }
 
+/* Calendar chooser sheets sit low; park toast at top so it doesn't cover Google CTA */
+body:has(#parasite-cal-chooser:not([hidden])) .toast {
+  top: calc(14px + env(safe-area-inset-top, 0px));
+  bottom: auto;
+  z-index: 1100;
+}
+
 /* ---------------------------------------------------------
    30. LANGUAGE SWITCHER
    --------------------------------------------------------- */
