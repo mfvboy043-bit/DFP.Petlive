@@ -94,3 +94,45 @@
     font-size: 12.5px;
   }
 }
+
+/* Account popover — plan status + legal docs entry */
+.account-popover-plan-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 6px;
+}
+
+.account-popover-plan-row .account-popover-plan-value {
+  margin: 0;
+  min-width: 0;
+  flex: 1 1 auto;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+a.account-popover-legal {
+  flex: 0 0 auto;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  text-decoration: none;
+  box-sizing: border-box;
+  margin: 0;
+  padding: 6px 10px;
+  border: 1px solid rgba(40, 36, 32, 0.16);
+  border-radius: 8px;
+  background: #fff;
+  color: #141414;
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 1.2;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+a.account-popover-legal:hover {
+  background: rgba(40, 36, 32, 0.04);
+}
+
