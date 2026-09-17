@@ -1,9 +1,9 @@
 # Dragon Fruit Passport｜Privacy Policy
 
 **Operator / Service name:** Dragon Fruit Passport (火龍果護照)  
-**Contact:** mfvboy043@gmail.com  
-**Last updated:** 3 September 2026  
-**Version:** Draft v1.3 (2026-09-03: 18+ age posture; four-language draft; pending licensed counsel review)
+**Contact:** dragondog2026@gmail.com  
+**Last updated:** 17 September 2026  
+**Version:** Draft v1.4 (2026-09-17: operator contact email → dragondog2026@gmail.com; 18+ posture; pending licensed counsel review)
 
 ---
 
@@ -13,7 +13,7 @@ Welcome to Dragon Fruit Passport (the "**Service**" or "**we**").
 
 By using the Service, signing in with Google, or enabling cloud backup, you acknowledge that you have read, understood, and agree to this Privacy Policy. If you disagree with any part of this Policy, do not use features that require sign-in or cloud backup.
 
-This Policy explains how we collect, use, store, share, and protect personal data. Medical disclaimers and general terms of use are in the *[Medical Disclaimer & Terms](./terms.html?v=20260903-legal-v13&lang=en)*.
+This Policy explains how we collect, use, store, share, and protect personal data. Medical disclaimers and general terms of use are in the *[Medical Disclaimer & Terms](./terms.html?v=20260917-legal-v14&lang=en)*.
 
 > **Important:** The Service is **not** an electronic health record (EHR/EMR). Pet health records are entered and kept by you for personal reference and visit memory only.
 
@@ -218,7 +218,7 @@ Under Taiwan's Personal Data Protection Act, you may:
 
 ### 8.2 How to exercise
 
-Email **mfvboy043@gmail.com** with:
+Email **dragondog2026@gmail.com** with:
 
 - Your request
 - Information sufficient to verify identity (e.g. sign-in email)
@@ -233,7 +233,7 @@ You may refuse or withdraw consent. Doing so may disable sign-in, cloud backup, 
 
 1. **Sign out** in the app to stop new cloud operations (if enabled)
 2. **Delete Google Drive backups** in your Drive
-3. **Request Supabase account deletion** via mfvboy043@gmail.com (or in-app delete, if provided)
+3. **Request Supabase account deletion** via dragondog2026@gmail.com (or in-app delete, if provided)
 4. **From Phase 2:** delete Supabase cloud copies per in-app guidance or email
 5. **Clear on-device data** in browser settings for this site
 6. Changes may take time; third-party copies must be deleted via each platform's process
@@ -262,7 +262,7 @@ You may refuse or withdraw consent. Doing so may disable sign-in, cloud backup, 
 - **Operator (controller):** Dragon Fruit Passport (火龍果護照)
 - **Legal form:** Individual
 - **Business registration number:** None
-- **Email:** mfvboy043@gmail.com
+- **Email:** dragondog2026@gmail.com
 - **Address:** Individually operated; no physical business address. Use email for rights requests or complaints; we aim to reply within the §8.2 target period.
 
 ---

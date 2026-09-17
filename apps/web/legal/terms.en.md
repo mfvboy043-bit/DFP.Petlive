@@ -1,9 +1,9 @@
 # Dragon Fruit Passport｜Medical Disclaimer & Terms of Use
 
 **Operator / Service name:** Dragon Fruit Passport (火龍果護照)  
-**Contact:** mfvboy043@gmail.com  
-**Last updated:** 3 September 2026  
-**Version:** Draft v1.3 (2026-09-03: 18+ age posture; four-language draft; pending licensed counsel review)
+**Contact:** dragondog2026@gmail.com  
+**Last updated:** 17 September 2026  
+**Version:** Draft v1.4 (2026-09-17: operator contact email → dragondog2026@gmail.com; 18+ posture; pending licensed counsel review)
 
 ---
 
@@ -13,7 +13,7 @@ Welcome to Dragon Fruit Passport (the "**Service**" or "**we**").
 
 By using the Service, you agree to these Terms. If you disagree, stop using the Service.
 
-Personal data collection and protection are described in the *[Privacy Policy](./privacy.html?v=20260903-legal-v13&lang=en)*.
+Personal data collection and protection are described in the *[Privacy Policy](./privacy.html?v=20260917-legal-v14&lang=en)*.
 
 ---
 
@@ -194,7 +194,7 @@ These Terms and the Privacy Policy are the entire agreement between you and Drag
 - **Operator (controller):** Dragon Fruit Passport (火龍果護照)
 - **Legal form:** Individual
 - **Business registration number:** None
-- **Email:** mfvboy043@gmail.com
+- **Email:** dragondog2026@gmail.com
 - **Address:** Individually operated; no physical business address. Contact by email.
 
 ---
