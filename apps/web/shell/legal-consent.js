@@ -4,11 +4,15 @@
   const root = (global.PetLiveWeb = global.PetLiveWeb || {});
   root.shell = root.shell || {};
 
-  const CONSENT_VERSION = "v1.2";
+  // v1.3 = privacy/terms ack + 18+ self-attestation (same modal, both required).
+  const CONSENT_VERSION = "v1.3";
   const MODAL_ID = "legal-consent-modal";
   const MODAL_CB_ID = "legal-consent-modal-cb";
+  const MODAL_ADULT_CB_ID = "legal-consent-modal-adult-cb";
   const MODAL_CONFIRM_ID = "legal-consent-modal-confirm";
   const INLINE_CB_ID = "intro-legal-consent-cb";
+  const INLINE_ADULT_CB_ID = "intro-legal-adult-cb";
+  const BIND_FLAG = "legalConsentBound";
 
   function consentStorageKey(doc) {
     const custom = doc?.body?.dataset?.legalConsentKey;
@@ -49,6 +53,20 @@
     );
   }
 
+  function adultCheckbox(doc) {
+    if (!doc) return null;
+    return (
+      doc.getElementById(MODAL_ADULT_CB_ID) || doc.getElementById(INLINE_ADULT_CB_ID)
+    );
+  }
+
+  function areEntryChecksComplete(doc) {
+    const legal = consentCheckbox(doc);
+    const adult = adultCheckbox(doc);
+    if (!legal || !adult) return false;
+    return Boolean(legal.checked && adult.checked);
+  }
+
   function isConsentGranted(doc) {
     return hasLegalConsent(doc);
   }
@@ -70,6 +88,10 @@
         <input type="checkbox" id="${MODAL_CB_ID}" />
         <span class="legal-consent-modal-label-text" data-i18n-html="legalConsentLabel">我已閱讀並同意隱私權政策與使用條款</span>
       </label>
+      <label class="legal-consent-modal-label" for="${MODAL_ADULT_CB_ID}">
+        <input type="checkbox" id="${MODAL_ADULT_CB_ID}" />
+        <span class="legal-consent-modal-label-text" data-i18n="legalAdultAttestLabel">我確認自己已滿 18 歲</span>
+      </label>
     </div>
     <div class="legal-consent-modal-actions">
       <button type="button" class="legal-consent-modal-confirm" id="${MODAL_CONFIRM_ID}" data-i18n="legalConsentModalConfirm" disabled>同意並繼續</button>
@@ -80,7 +102,8 @@
 
   function mountLegalConsentModal(doc) {
     if (!doc || !usesIntroModal(doc)) return null;
-    if (doc.getElementById(MODAL_ID)) return doc.getElementById(MODAL_ID);
+    const existing = doc.getElementById(MODAL_ID);
+    if (existing) return existing;
     doc.body.insertAdjacentHTML("beforeend", legalConsentModalMarkup());
     return doc.getElementById(MODAL_ID);
   }
@@ -97,18 +120,19 @@
   }
 
   function syncModalConfirmState(doc) {
-    const cb = doc?.getElementById?.(MODAL_CB_ID);
     const confirm = doc?.getElementById?.(MODAL_CONFIRM_ID);
-    if (confirm) confirm.disabled = !cb?.checked;
+    if (confirm) confirm.disabled = !areEntryChecksComplete(doc);
   }
 
   function paintLegalConsent(doc, { signedIn, authBusy } = {}) {
     if (!doc) return;
     const wrap = doc.getElementById("intro-legal-consent");
     const inlineCb = doc.getElementById(INLINE_CB_ID);
+    const inlineAdult = doc.getElementById(INLINE_ADULT_CB_ID);
     const loginBtn = doc.getElementById("intro-login-btn");
     const modal = mountLegalConsentModal(doc);
     const modalCb = doc.getElementById(MODAL_CB_ID);
+    const modalAdult = doc.getElementById(MODAL_ADULT_CB_ID);
 
     if (signedIn) {
       if (wrap) wrap.hidden = true;
@@ -121,25 +145,36 @@
 
     if (hasLegalConsent(doc)) {
       if (modalCb && !modalCb.checked) modalCb.checked = true;
+      if (modalAdult && !modalAdult.checked) modalAdult.checked = true;
       if (inlineCb && !inlineCb.checked) inlineCb.checked = true;
+      if (inlineAdult && !inlineAdult.checked) inlineAdult.checked = true;
     }
 
     if (loginBtn && modal) {
       if (wrap) wrap.hidden = true;
       loginBtn.disabled = Boolean(authBusy);
       syncModalConfirmState(doc);
-      // Intro A: keep modal closed until login (promptLegalConsent).
-      setLegalConsentModalOpen(doc, false);
+      // Keep closed on routine paint; never auto-open here.
+      // If the login prompt already opened the modal, leave it open so
+      // checkbox → onPaint does not dismiss it (duplicate/close flicker).
+      if (hasLegalConsent(doc)) {
+        setLegalConsentModalOpen(doc, false);
+      }
       return;
     }
 
     if (!wrap || !inlineCb) return;
     if (hasLegalConsent(doc) && !inlineCb.checked) inlineCb.checked = true;
+    if (hasLegalConsent(doc) && inlineAdult && !inlineAdult.checked) {
+      inlineAdult.checked = true;
+    }
     wrap.hidden = isConsentGranted(doc);
   }
 
   function bindLegalConsent(doc, hooks = {}) {
     if (!doc) return;
+    if (doc.documentElement?.dataset?.[BIND_FLAG] === "1") return;
+    if (doc.documentElement?.dataset) doc.documentElement.dataset[BIND_FLAG] = "1";
 
     mountLegalConsentModal(doc);
 
@@ -149,17 +184,32 @@
     }
 
     const inlineCb = doc.getElementById(INLINE_CB_ID);
+    const inlineAdult = doc.getElementById(INLINE_ADULT_CB_ID);
+    function tryMarkInline() {
+      if (
+        inlineCb?.checked &&
+        (!inlineAdult || inlineAdult.checked)
+      ) {
+        markLegalConsent(doc);
+      }
+    }
     inlineCb?.addEventListener("change", () => {
-      if (inlineCb.checked) markLegalConsent(doc);
+      tryMarkInline();
+      onConsentChange();
+    });
+    inlineAdult?.addEventListener("change", () => {
+      tryMarkInline();
       onConsentChange();
     });
 
     const modalCb = doc.getElementById(MODAL_CB_ID);
+    const modalAdult = doc.getElementById(MODAL_ADULT_CB_ID);
     modalCb?.addEventListener("change", onConsentChange);
+    modalAdult?.addEventListener("change", onConsentChange);
 
     const confirm = doc.getElementById(MODAL_CONFIRM_ID);
     confirm?.addEventListener("click", () => {
-      if (!modalCb?.checked) return;
+      if (!areEntryChecksComplete(doc)) return;
       markLegalConsent(doc);
       setLegalConsentModalOpen(doc, false);
       if (typeof hooks.onPaint === "function") hooks.onPaint();
@@ -169,8 +219,9 @@
 
   function promptLegalConsent(doc) {
     if (!doc || isConsentGranted(doc)) return false;
-    mountLegalConsentModal(doc);
-    if (usesIntroModal(doc)) {
+    const modal = mountLegalConsentModal(doc);
+    if (usesIntroModal(doc) && modal) {
+      // Only one modal instance; open it once for the login gate.
       setLegalConsentModalOpen(doc, true);
       syncModalConfirmState(doc);
       consentCheckbox(doc)?.focus?.();
@@ -180,12 +231,15 @@
     return true;
   }
 
+  root.shell.LEGAL_CONSENT_VERSION = CONSENT_VERSION;
   root.shell.setLegalConsentStorage = setLegalConsentStorage;
   root.shell.hasLegalConsent = hasLegalConsent;
   root.shell.markLegalConsent = markLegalConsent;
   root.shell.isLegalConsentGranted = isConsentGranted;
+  root.shell.areLegalEntryChecksComplete = areEntryChecksComplete;
   root.shell.mountLegalConsentModal = mountLegalConsentModal;
   root.shell.paintLegalConsent = paintLegalConsent;
   root.shell.bindLegalConsent = bindLegalConsent;
   root.shell.promptLegalConsent = promptLegalConsent;
+  root.shell.setLegalConsentModalOpen = setLegalConsentModalOpen;
 })(typeof window !== "undefined" ? window : globalThis);
