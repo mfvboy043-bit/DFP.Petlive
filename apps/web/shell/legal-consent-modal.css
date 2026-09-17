@@ -79,6 +79,9 @@
 
 .legal-consent-modal-consent {
   flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
   padding: 14px 14px 12px;
   border-radius: 14px;
   border: 1px solid rgba(61, 107, 87, 0.14);

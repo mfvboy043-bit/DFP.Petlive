@@ -153,7 +153,8 @@ const I18N = {
     legalConsentModalConfirm: "同意並繼續",
     legalConsentLabel:
       '我已閱讀並同意 <a href="./legal/privacy.html?v=20260903-legal-v13&lang=zh-Hant" target="_blank" rel="noopener">隱私權政策</a> 與 <a href="./legal/terms.html?v=20260903-legal-v13&lang=zh-Hant" target="_blank" rel="noopener">醫療免責與使用條款</a>',
-    legalConsentRequired: "請先勾選同意隱私權政策與使用條款",
+    legalAdultAttestLabel: "我確認自己已滿 18 歲",
+    legalConsentRequired: "請先勾選同意條款，並確認已滿 18 歲",
     introStart: "開始使用",
     introTryLocal: "本機試用",
     introEnterApp: "進入護照",
@@ -1032,7 +1033,8 @@ const I18N = {
     legalConsentModalConfirm: "Agree and continue",
     legalConsentLabel:
       'I have read and agree to the <a href="./legal/privacy.html?v=20260903-legal-v13&lang=en" target="_blank" rel="noopener">Privacy Policy</a> and <a href="./legal/terms.html?v=20260903-legal-v13&lang=en" target="_blank" rel="noopener">Medical Disclaimer &amp; Terms</a>',
-    legalConsentRequired: "Please agree to the Privacy Policy and Terms first",
+    legalAdultAttestLabel: "I confirm that I am 18 years of age or older",
+    legalConsentRequired: "Please agree to the Privacy Policy and Terms, and confirm you are 18 or older",
     introStart: "Get started",
     introTryLocal: "Try offline",
     introEnterApp: "Enter passport",
@@ -1911,7 +1913,8 @@ const I18N = {
     legalConsentModalConfirm: "同意して続ける",
     legalConsentLabel:
       '<a href="./legal/privacy.html?v=20260903-legal-v13&lang=ja" target="_blank" rel="noopener">プライバシーポリシー</a>と<a href="./legal/terms.html?v=20260903-legal-v13&lang=ja" target="_blank" rel="noopener">免責事項・利用規約</a>に同意します',
-    legalConsentRequired: "先にプライバシーポリシーと利用規約への同意にチェックを入れてください",
+    legalAdultAttestLabel: "私は18歳以上です",
+    legalConsentRequired: "先に規約への同意と、18歳以上であることの確認にチェックを入れてください",
     introStart: "はじめる",
     introTryLocal: "端末だけで試す",
     introEnterApp: "パスポートへ",
@@ -2795,7 +2798,8 @@ const I18N = {
     legalConsentModalConfirm: "동의하고 계속",
     legalConsentLabel:
       '<a href="./legal/privacy.html?v=20260903-legal-v13&lang=ko" target="_blank" rel="noopener">개인정보 처리방침</a> 및 <a href="./legal/terms.html?v=20260903-legal-v13&lang=ko" target="_blank" rel="noopener">면책·이용약관</a>에 동의합니다',
-    legalConsentRequired: "먼저 개인정보 처리방침과 이용약관에 동의해 주세요",
+    legalAdultAttestLabel: "나는 만 18세 이상입니다",
+    legalConsentRequired: "먼저 약관에 동의하고 만 18세 이상임을 확인해 주세요",
     introStart: "시작하기",
     introTryLocal: "기기로만 체험",
     introEnterApp: "여권 열기",
