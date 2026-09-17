@@ -124,7 +124,7 @@ const I18N = {
     a2hsGuideStepGeneric1: "用瀏覽器的「分享」或「選單」找到「加入主畫面」",
     a2hsGuideStepGeneric2: "將捷徑加到主畫面",
     a2hsGuideStepGeneric3: "從主畫面圖示開啟，再登入",
-    introStoriesEyebrow: "四則故事",
+    introStoriesEyebrow: "五則故事",
     introStoriesTitle: "換院、急診時，紀錄有跟著走嗎？",
     introStory1Title: "半夜急診那張空白紙",
     introStory1Body:
@@ -139,6 +139,19 @@ const I18N = {
     introStory4Title: "我為什麼會做這個網頁？",
     introStory4Body:
       "<p>身為飼主，我想很多人都曾經有過這樣的念頭：</p><blockquote class=\"story-pull\"><p><strong>「如果我早一點知道呢？」</strong></p><p><strong>「如果當時手上再多一點資訊呢？」</strong></p></blockquote><p>也許，有些事情就會不一樣。這樣的遺憾，也曾經發生在我身上。</p><hr class=\"story-divider\" /><p>當我們帶著寵物換一家醫院看診時，新的醫師常常不知道牠之前做過什麼檢查、吃過什麼藥、接受過什麼治療。醫師只能重新詢問、重新判斷，有時甚至必須重新檢查。</p><p>不是因為前一位醫師做得不夠好。而是因為那些重要的資訊，<strong>沒有一起跟著牠來到下一間醫院。</strong></p><p>對人來說，我們有健保與醫療資訊系統。換了一位醫師，過去的檢查、用藥與醫療紀錄，仍有機會成為下一次判斷的重要參考。</p><p>可是寵物沒有自己的「健康存摺」。牠不會說話，也無法告訴下一位醫師：</p><ul class=\"story-list\"><li><strong>「我之前吃過什麼藥。」</strong></li><li><strong>「我曾經做過什麼檢查。」</strong></li><li><strong>「我的身體以前發生過什麼事。」</strong></li></ul><hr class=\"story-divider\" /><p>所以，我想替牠們留下一份可以帶著走的醫療紀錄。讓每一次看診，不再只是一次結束後就散落的記憶；而是一塊一塊被保存下來，陪著牠走到下一位醫師面前的資訊。</p><p>我不知道這份紀錄有一天能不能真的救下一條生命。但我希望，當那個最關鍵的時刻來臨時，飼主可以少說一次：</p><blockquote class=\"story-pull\"><p><strong>「如果我早一點知道就好了。」</strong></p></blockquote><p>而醫師，也可以多一點資訊，去做下一個重要的決定。</p><p>這就是我想做這個網頁的原因。</p><blockquote class=\"story-pull story-pull--closing\"><p><strong>讓重要的醫療資訊，跟著牠一起走。</strong></p></blockquote>",
+    introStory5Title: "關於我",
+    introStory5Body:
+      "<p class=\"intro-about-lede\">嗨，我是<strong>火龍果護照</strong>的設計與製作人</p><p>可以叫我<strong>振宇</strong>、<strong>振宇哥</strong>、<strong>Victor</strong>、<strong>Vic</strong>，<br />這些是我常被身邊朋友稱呼的名字。</p><p>我不是獸醫師，<br />我現在正在接受犬隻教育相關的專業培訓。<br />與其說是訓犬師，我覺得自己更像是一位<strong>生活教練</strong>，<br />幫助飼主與家庭，獲得更好的生活，<br />與自己的毛小孩建立更深層的連結。</p><p>這個網站，來自我一直很在意的一件事：</p><blockquote class=\"story-pull\"><p><strong>當寵物換院、急診或換醫師時，重要的醫療紀錄，常常沒有一起跟著走。</strong></p></blockquote><p>寵物不會說話。<br />如果我們手上沒有<strong>「吃過什麼、試過什麼、做過什麼」</strong>，<br />醫師就必須在資訊不完整的情況下做判斷。</p><p>所以，我把這個想法做成了 <strong>火龍果護照</strong>。</p><p>希望每一次看診留下的資訊，都可以被好好保存，<br />在需要的時候，陪著牠走到下一位醫師面前。</p><p>如果你對火龍果護照有任何建議、問題，<br />或只是有一個「如果可以這樣就好了」的想法，都很歡迎告訴我。</p>",
+    introStory5IgCaption: "掃碼追蹤 Instagram",
+    introStory5IgLabel: "Instagram｜",
+    introStory5EmailLead: "Email｜",
+    introStory5EmailNote: "（ 關於火龍果護照的相關建議，歡迎寫信給我 ）",
+    introStory5Copy: "複製",
+    introStory5CopyDone: "已複製",
+    introStory5CopyIgAria: "複製 Instagram 帳號",
+    introStory5CopyEmailAria: "複製 Email",
+    introStory5Closing:
+      "<blockquote class=\"story-pull story-pull--closing\"><p><strong>讓重要的醫療資訊，跟著牠一起走。</strong></p></blockquote><p class=\"intro-about-sign\">— Victor</p>",
     introStoriesBridge:
       "換院、急診、換醫生時，<br />把「試過什麼、吃過什麼」帶著走。",
     introStoriesNote: "以上為理解情境之示意，不取代獸醫診斷。",
@@ -1005,7 +1018,7 @@ const I18N = {
     a2hsGuideStepGeneric1: "Use Share or browser menu to find Add to Home Screen",
     a2hsGuideStepGeneric2: "Add the shortcut to your home screen",
     a2hsGuideStepGeneric3: "Open from the icon, then sign in",
-    introStoriesEyebrow: "Four stories",
+    introStoriesEyebrow: "Five stories",
     introStoriesTitle: "When you switch clinics, does the record travel with you?",
     introStory1Title: "The blank chart at midnight ER",
     introStory1Body:
@@ -1020,6 +1033,19 @@ const I18N = {
     introStory4Title: "Why I built this site",
     introStory4Body:
       "<p>As a pet owner, I think many of us have had this thought:</p><blockquote class=\"story-pull\"><p><strong>“What if I had known sooner?”</strong></p><p><strong>“What if I had had a little more information then?”</strong></p></blockquote><p>Maybe some things would have turned out differently. That regret has happened to me too.</p><hr class=\"story-divider\" /><p>When we take our pet to a new clinic, the new vet often doesn’t know what tests she had, what medicine she took, or what treatment she received. The vet has to ask again, judge again, and sometimes test again.</p><p>Not because the previous vet didn’t do enough. But because that important information <strong>didn’t travel with her to the next clinic.</strong></p><p>For people, we have health insurance and medical records systems. When we see a new doctor, past tests, medicines, and records can still guide the next decision.</p><p>But pets don’t have their own “health passbook.” They can’t speak, and they can’t tell the next vet:</p><ul class=\"story-list\"><li><strong>“What medicine I took before.”</strong></li><li><strong>“What tests I had.”</strong></li><li><strong>“What happened to my body before.”</strong></li></ul><hr class=\"story-divider\" /><p>So I wanted to leave them a medical record they can carry. So each visit isn’t just a memory that scatters when it’s over—but pieces saved, walking with them to the next vet.</p><p>I don’t know if this record will ever save a life. But I hope that when the most critical moment comes, an owner can say one fewer time:</p><blockquote class=\"story-pull\"><p><strong>“If only I had known sooner.”</strong></p></blockquote><p>And a vet can have a little more information for the next important decision.</p><p>That’s why I built this site.</p><blockquote class=\"story-pull story-pull--closing\"><p><strong>Let important medical information travel with them.</strong></p></blockquote>",
+    introStory5Title: "About me",
+    introStory5Body:
+      "<p class=\"intro-about-lede\">Hi—I’m the designer and maker of <strong>Dragon Fruit Passport</strong></p><p>You can call me <strong>Zhenyu</strong>, <strong>Zhenyu-ge</strong>, <strong>Victor</strong>, or <strong>Vic</strong>—<br />those are the names friends usually use.</p><p>I’m not a veterinarian.<br />I’m currently training in dog education.<br />Rather than a dog trainer, I see myself more as a <strong>life coach</strong>—<br />helping owners and families live better,<br />and build a deeper bond with their pets.</p><p>This site comes from something I’ve cared about for a long time:</p><blockquote class=\"story-pull\"><p><strong>When a pet switches clinics, goes to ER, or sees a new vet, important medical records often don’t travel with them.</strong></p></blockquote><p>Pets can’t speak.<br />Without <strong>“what they ate, what was tried, and what was done”</strong>,<br />a vet has to decide with incomplete information.</p><p>So I turned that idea into <strong>Dragon Fruit Passport</strong>.</p><p>I hope every visit leaves information that can be kept well—<br />and, when it matters, walk with them to the next veterinarian.</p><p>If you have suggestions, questions,<br />or even a simple “what if it could work like this?” idea, I’d love to hear from you.</p>",
+    introStory5IgCaption: "Scan to follow on Instagram",
+    introStory5IgLabel: "Instagram｜",
+    introStory5EmailLead: "Email｜",
+    introStory5EmailNote: "(Suggestions about Dragon Fruit Passport are welcome)",
+    introStory5Copy: "Copy",
+    introStory5CopyDone: "Copied",
+    introStory5CopyIgAria: "Copy Instagram handle",
+    introStory5CopyEmailAria: "Copy email",
+    introStory5Closing:
+      "<blockquote class=\"story-pull story-pull--closing\"><p><strong>Let important medical information travel with them.</strong></p></blockquote><p class=\"intro-about-sign\">— Victor</p>",
     introStoriesBridge:
       "At every new clinic, ER visit, or new vet,<br />bring what was tried and what was given.",
     introStoriesNote: "Illustrative scenarios for context only—not a veterinary diagnosis.",
@@ -1886,7 +1912,7 @@ const I18N = {
     a2hsGuideStepGeneric1: "共有またはメニューから「ホーム画面に追加」を探す",
     a2hsGuideStepGeneric2: "ホーム画面にショートカットを追加",
     a2hsGuideStepGeneric3: "アイコンから開き、ログイン",
-    introStoriesEyebrow: "4つのストーリー",
+    introStoriesEyebrow: "5つのストーリー",
     introStoriesTitle: "病院を替えるとき、記録は一緒に行きますか？",
     introStory1Title: "真夜中の救急、その空白の紙",
     introStory1Body:
@@ -1901,6 +1927,19 @@ const I18N = {
     introStory4Title: "なぜこのサイトを作ったのか",
     introStory4Body:
       "<p>飼い主として、こんなふうに思ったことはないでしょうか。</p><blockquote class=\"story-pull\"><p><strong>「もっと早く知っていたら。」</strong></p><p><strong>「あのとき、もう少し情報があれば。」</strong></p></blockquote><p>きっと、何かが変わっていたかもしれません。そんな後悔は、私にもありました。</p><hr class=\"story-divider\" /><p>別の病院に連れて行くと、新しい獣医さんは、これまでの検査・お薬・治療を知らないことがよくあります。もう一度聞き、もう一度判断し、時にはもう一度検査することもあります。</p><p>前の先生が不十分だったからではありません。大切な情報が、<strong>次の病院まで一緒について行かなかった</strong>からです。</p><p>人には、健保や医療情報の仕組みがあります。担当医が替わっても、過去の記録が次の判断の参考になることがあります。</p><p>でもペットには、自分の「健康通帳」がありません。話せないので、次の獣医さんにこうは言えません。</p><ul class=\"story-list\"><li><strong>「前に飲んだ薬。」</strong></li><li><strong>「受けた検査。」</strong></li><li><strong>「これまで体に起きたこと。」</strong></li></ul><hr class=\"story-divider\" /><p>だから、持ち歩ける医療記録を残したい。診察が終われば消える記憶ではなく、次の先生の前まで一緒に歩く情報として。</p><p>この記録が本当に命を救う日が来るかはわかりません。でも、いちばん大切な瞬間に、飼い主が言う回数が、ひとつでも減ればいい。</p><blockquote class=\"story-pull\"><p><strong>「もっと早く知っていれば。」</strong></p></blockquote><p>獣医さんにも、次の大切な決断のための情報が、少しでも増えればいい。</p><p>それが、このサイトを作った理由です。</p><blockquote class=\"story-pull story-pull--closing\"><p><strong>大切な医療情報を、一緒に歩かせたい。</strong></p></blockquote>",
+    introStory5Title: "私について",
+    introStory5Body:
+      "<p class=\"intro-about-lede\">こんにちは。<strong>ドラゴンフルーツパスポート</strong>のデザインと制作をしています</p><p><strong>振宇</strong>、<strong>振宇哥</strong>、<strong>Victor</strong>、<strong>Vic</strong>—<br />周りではこう呼ばれることが多いです。</p><p>私は獣医師ではありません。<br />いまは犬の教育に関する専門研修を受けています。<br />トレーナーというより、自分は<strong>ライフコーチ</strong>に近いと思っています。<br />飼い主さんとご家族がより良い暮らしを送り、<br />大切なペットともっと深い絆を築けるようお手伝いしています。</p><p>このサイトは、ずっと気になっていたことから生まれました：</p><blockquote class=\"story-pull\"><p><strong>ペットが転院・救急・担当医の交代をするとき、大切な医療記録が一緒について来ないことがよくある。</strong></p></blockquote><p>ペットは話せません。<br /><strong>「何を食べたか、何を試したか、何をしたか」</strong>が手元になければ、<br />獣医さんは情報不足のまま判断せざるを得ません。</p><p>だから、その想いを <strong>ドラゴンフルーツパスポート</strong> にしました。</p><p>毎回の診察で残った情報がきちんと保存され、<br />必要なとき次の獣医さんの前まで一緒に歩けますように。</p><p>ご意見・ご質問、<br />「こうできたらいいのに」という小さなアイデアでも、ぜひ教えてください。</p>",
+    introStory5IgCaption: "QRコードで Instagram をフォロー",
+    introStory5IgLabel: "Instagram｜",
+    introStory5EmailLead: "Email｜",
+    introStory5EmailNote: "（ドラゴンフルーツパスポートへのご意見・ご提案を歓迎します）",
+    introStory5Copy: "コピー",
+    introStory5CopyDone: "コピー済み",
+    introStory5CopyIgAria: "Instagram アカウントをコピー",
+    introStory5CopyEmailAria: "メールアドレスをコピー",
+    introStory5Closing:
+      "<blockquote class=\"story-pull story-pull--closing\"><p><strong>大切な医療情報を、一緒に歩かせたい。</strong></p></blockquote><p class=\"intro-about-sign\">— Victor</p>",
     introStoriesBridge:
       "病院が替わるたびに、<br />「試した薬・飲ませた薬」を一緒に持っていきましょう。",
     introStoriesNote: "理解のための示意です。診断の代わりではありません。",
@@ -2772,7 +2811,7 @@ const I18N = {
     a2hsGuideStepGeneric1: "공유 또는 메뉴에서 ‘홈 화면에 추가’ 찾기",
     a2hsGuideStepGeneric2: "홈 화면에 바로가기 추가",
     a2hsGuideStepGeneric3: "아이콘으로 연 뒤 로그인",
-    introStoriesEyebrow: "네 가지 이야기",
+    introStoriesEyebrow: "다섯 가지 이야기",
     introStoriesTitle: "병원을 바꿀 때, 기록도 함께 가나요?",
     introStory1Title: "한밤중 응급실, 그 빈 종이",
     introStory1Body:
@@ -2787,6 +2826,19 @@ const I18N = {
     introStory4Title: "왜 이 웹사이트를 만들었나",
     introStory4Body:
       "<p>보호자라면, 이런 생각을 해 본 적이 있을 겁니다.</p><blockquote class=\"story-pull\"><p><strong>“조금만 더 일찍 알았더라면.”</strong></p><p><strong>“그때 정보가 조금만 더 있었더라면.”</strong></p></blockquote><p>어쩌면 달라졌을지도 모릅니다. 그런 아쉬움은 저에게도 있었습니다.</p><hr class=\"story-divider\" /><p>다른 병원에 가면, 새 수의사는 이전 검사·약·치료를 모르는 경우가 많습니다. 다시 묻고, 다시 판단하고, 때로는 다시 검사해야 합니다.</p><p>앞선 선생님이 부족해서가 아닙니다. 중요한 정보가 <strong>다음 병원까지 함께 가지 못했기</strong> 때문입니다.</p><p>사람에게는 건강보험과 의료정보 시스템이 있습니다. 담당 의사가 바뀌어도, 과거 기록이 다음 판단의 참고가 될 수 있습니다.</p><p>하지만 반려동물에게는 ‘건강 통장’이 없습니다. 말을 못 하니, 다음 수의사에게 이렇게 말할 수 없습니다.</p><ul class=\"story-list\"><li><strong>“전에 먹은 약.”</strong></li><li><strong>“받은 검사.”</strong></li><li><strong>“몸에 일어났던 일.”</strong></li></ul><hr class=\"story-divider\" /><p>그래서, 들고 다닐 수 있는 의료 기록을 남기고 싶었습니다. 진료가 끝나면 흩어지는 기억이 아니라, 다음 선생님 앞까지 함께 가는 정보로.</p><p>이 기록이 정말 생명을 구할지는 모릅니다. 하지만 가장 중요한 순간에, 보호자가 말하는 횟수가 하나라도 줄면 좋겠습니다.</p><blockquote class=\"story-pull\"><p><strong>“조금만 더 일찍 알았더라.”</strong></p></blockquote><p>수의사에게도, 다음 중요한 결정을 위한 정보가 조금 더 있으면 좋겠습니다.</p><p>그것이 이 웹사이트를 만든 이유입니다.</p><blockquote class=\"story-pull story-pull--closing\"><p><strong>중요한 의료 정보가, 함께 걸어가게.</strong></p></blockquote>",
+    introStory5Title: "소개",
+    introStory5Body:
+      "<p class=\"intro-about-lede\">안녕하세요. <strong>용과 패스포트</strong>의 디자인과 제작을 맡고 있습니다</p><p><strong>振宇</strong>、<strong>振宇哥</strong>、<strong>Victor</strong>、<strong>Vic</strong>—<br />주변에서는 이렇게 많이 불러 줍니다.</p><p>저는 수의사가 아닙니다.<br />지금은 반려견 교육 관련 전문 교육을 받고 있습니다.<br />훈련사라기보다, 저는 <strong>라이프 코치</strong>에 가깝다고 생각합니다.<br />보호자와 가족이 더 나은 일상을 얻고,<br />반려견과 더 깊은 유대를 맺도록 돕습니다.</p><p>이 사이트는 제가 오랫동안 마음에 두었던 일에서 시작했습니다:</p><blockquote class=\"story-pull\"><p><strong>반려동물이 병원을 바꾸거나, 응급실에 가거나, 담당 수의사가 바뀔 때, 중요한 의료 기록이 함께 따라오지 않는 경우가 많다.</strong></p></blockquote><p>반려동물은 말을 못 합니다.<br /><strong>‘무엇을 먹었는지, 무엇을 써 봤는지, 무엇을 했는지’</strong>가 없으면,<br />수의사는 정보가 부족한 채로 판단해야 합니다.</p><p>그래서 그 생각을 <strong>용과 패스포트</strong>로 만들었습니다.</p><p>매 진료에서 남긴 정보가 잘 보관되고,<br />필요할 때 다음 수의사 앞까지 함께 가길 바랍니다.</p><p>제안·질문,<br />혹은 ‘이렇게 되면 좋겠다’는 작은 아이디어라도 언제든 알려 주세요.</p>",
+    introStory5IgCaption: "QR로 Instagram 팔로우",
+    introStory5IgLabel: "Instagram｜",
+    introStory5EmailLead: "Email｜",
+    introStory5EmailNote: "(용과 패스포트 관련 제안은 이메일로 보내 주세요)",
+    introStory5Copy: "복사",
+    introStory5CopyDone: "복사됨",
+    introStory5CopyIgAria: "Instagram 계정 복사",
+    introStory5CopyEmailAria: "이메일 복사",
+    introStory5Closing:
+      "<blockquote class=\"story-pull story-pull--closing\"><p><strong>중요한 의료 정보가, 함께 걸어가게.</strong></p></blockquote><p class=\"intro-about-sign\">— Victor</p>",
     introStoriesBridge:
       "병원·응급·담당 수의사가 바뀔 때마다<br />‘무엇을 써 봤는지’를 함께 가져가세요.",
     introStoriesNote: "상황 이해를 위한 예시이며, 수의사 진단을 대체하지 않습니다.",
