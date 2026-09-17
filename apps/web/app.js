@@ -6643,9 +6643,15 @@ function paintAccountMenu(session) {
   const view = PetLiveWeb.shell.buildAccountChromePresentation(session, {
     fallbackLabel: t("accountFallback"),
   });
+  const locale =
+    typeof window.getCurrentLang === "function" ? window.getCurrentLang() : "zh-Hant";
   PetLiveWeb.shell.applyAccountMenuPaint(document, view, {
     syncStatusText: view.signedIn ? accountSyncStatusText() : "",
     chipAriaLabel: t("accountChipAria"),
+    legalPrivacyHref: PetLiveWeb.shell.privacyDocHref({
+      basePath: "./legal/privacy.html",
+      locale,
+    }),
   });
   if (!view.signedIn) return;
 

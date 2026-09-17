@@ -4,6 +4,33 @@
   const root = (global.PetLiveWeb = global.PetLiveWeb || {});
   root.shell = root.shell || {};
 
+  const LEGAL_DOC_VERSION = "20260917-legal-v14";
+  const LEGAL_LOCALES = ["zh-Hant", "en", "ja", "ko"];
+
+  function normalizeLegalLocale(locale) {
+    const raw = String(locale || "").trim();
+    if (LEGAL_LOCALES.includes(raw)) return raw;
+    const lower = raw.toLowerCase();
+    if (lower === "zh" || lower === "zh-tw" || lower === "zh-hant") return "zh-Hant";
+    if (lower === "en" || lower.startsWith("en-")) return "en";
+    if (lower === "ja" || lower.startsWith("ja-")) return "ja";
+    if (lower === "ko" || lower.startsWith("ko-")) return "ko";
+    return "zh-Hant";
+  }
+
+  /**
+   * Build privacy policy URL for account chrome.
+   * @param {{ basePath?: string, locale?: string, version?: string }} opts
+   *   basePath e.g. "../legal/privacy.html" (C) or "./legal/privacy.html" (B)
+   */
+  function privacyDocHref(opts = {}) {
+    const basePath = String(opts.basePath || "./legal/privacy.html");
+    const version = String(opts.version || LEGAL_DOC_VERSION);
+    const locale = normalizeLegalLocale(opts.locale);
+    const joiner = basePath.includes("?") ? "&" : "?";
+    return `${basePath}${joiner}v=${encodeURIComponent(version)}&lang=${encodeURIComponent(locale)}`;
+  }
+
   function glassChromeNavAccountMarkup() {
     return `
       <div class="app-nav-menu">
@@ -131,7 +158,7 @@
    */
   function applyAccountMenuPaint(doc, view, opts = {}) {
     if (!doc || typeof doc.getElementById !== "function" || !view) return;
-    const { syncStatusText = "", chipAriaLabel = "" } = opts;
+    const { syncStatusText = "", chipAriaLabel = "", legalPrivacyHref = "" } = opts;
 
     const ownerBtn = doc.getElementById("owner-settings-btn");
     const homeMenu = doc.getElementById("account-menu");
@@ -141,6 +168,7 @@
     const popAvatar = doc.getElementById("account-popover-avatar");
     const popFallback = doc.getElementById("account-popover-fallback");
     const planValue = doc.getElementById("account-popover-plan-value");
+    const legalLink = doc.getElementById("account-popover-legal");
 
     if (ownerBtn) ownerBtn.hidden = view.hideOwnerGear;
     if (homeMenu) homeMenu.hidden = view.hideAccountMenus;
@@ -172,6 +200,9 @@
     }
     if (planValue) {
       planValue.textContent = syncStatusText;
+    }
+    if (legalLink && legalPrivacyHref) {
+      legalLink.setAttribute("href", legalPrivacyHref);
     }
 
     const popSyncBtn = doc.getElementById("account-popover-edit");
@@ -237,4 +268,6 @@
   root.shell.applyAccountMenuPaint = applyAccountMenuPaint;
   root.shell.applyIntroCloudVisibility = applyIntroCloudVisibility;
   root.shell.resolveOriginHint = resolveOriginHint;
+  root.shell.privacyDocHref = privacyDocHref;
+  root.shell.LEGAL_DOC_VERSION = LEGAL_DOC_VERSION;
 })(typeof window !== "undefined" ? window : globalThis);

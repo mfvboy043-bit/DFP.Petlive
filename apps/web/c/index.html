@@ -16,9 +16,9 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,700&family=Noto+Sans+TC:wght@400;500;700&family=Noto+Serif+TC:wght@600;700&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="../shell/account-chrome.css?v=20260903-cb-p1" />
-  <link rel="stylesheet" href="../shell/parasite-strip.css?v=20260903-cb-p1" />
   <link rel="stylesheet" href="./styles.css?v=20260916-toast-cal-top" />
+  <link rel="stylesheet" href="../shell/account-chrome.css?v=20260917-legal-link" />
+  <link rel="stylesheet" href="../shell/parasite-strip.css?v=20260903-cb-p1" />
   <link rel="stylesheet" href="../shell/glass-dock.css?v=20260828-dock-smooth" />
   <link rel="stylesheet" href="../shell/glass-perf.css?v=20260830-perf-click-c" />
   <link rel="stylesheet" href="../shell/screen-home-btn.css?v=20260827-screen-home-btn" />
@@ -1988,9 +1988,20 @@
 
       <div class="account-popover-plan">
         <p class="account-popover-plan-label" data-i18n="accountPlanLabel">資料</p>
-        <p class="account-popover-plan-value" id="account-popover-plan-value" data-i18n="accountPlanLocal">
-          本機（討論版）
-        </p>
+        <div class="account-popover-plan-row">
+          <p class="account-popover-plan-value" id="account-popover-plan-value" data-i18n="accountPlanLocal">
+            本機（討論版）
+          </p>
+          <a
+            class="account-popover-edit account-popover-legal"
+            id="account-popover-legal"
+            href="../legal/privacy.html?v=20260917-legal-v14&amp;lang=zh-Hant"
+            target="_blank"
+            rel="noopener"
+            role="menuitem"
+            data-i18n="accountLegalDocs"
+          >隱私與條款</a>
+        </div>
         <p
           class="account-popover-conflict-hint"
           id="account-popover-conflict-hint"
@@ -2084,7 +2095,7 @@
   <script defer src="../shell/clinic-picker.js?v=20260903-facade-slim-r2"></script>
   <script defer src="../shell/drug-search.js?v=20260903-facade-slim-r2"></script>
   <script defer src="../shell/proof-preview.js?v=20260827-fo-render"></script>
-  <script defer src="../shell/account-chrome.js?v=20260827-wire-bundles"></script>
+  <script defer src="../shell/account-chrome.js?v=20260917-legal-link"></script>
   <script defer src="../shell/intro-cloud.js?v=20260828-c-no-legal"></script>
   <script defer src="../shell/intro-stories.js?v=20260902-story-epigraph"></script>
   <script defer src="../shell/alert-form.js?v=20260827-wire-thin-forms"></script>
@@ -2145,6 +2156,6 @@
   <script defer src="../domains/weight/render.js?v=20260829-pet-weight-scale"></script>
   <!-- IDB opt-in (C only): data-petlive-storage-backend="idb"|"auto" on <html> and
        storage-boot.js before app.js. Default local = no change; markBootComplete at app end. -->
-  <script defer src="./app.js?v=20260903-facade-slim-r2"></script>
+  <script defer src="./app.js?v=20260917-legal-link"></script>
 </body>
 </html>
