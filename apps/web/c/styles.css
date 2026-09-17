@@ -5313,6 +5313,26 @@ html.is-photo-crop-open body {
   border-bottom: 1px solid rgba(40, 36, 32, 0.08);
 }
 
+/* Popover-only halves of former chip+popover grouped rules (QA-1).
+   Chip halves live in shell/account-chrome.css; do not re-merge. */
+.account-popover-avatar[hidden] {
+  display: none !important;
+}
+
+.account-popover-fallback {
+  display: grid;
+  place-items: center;
+  background: #3d6b57;
+  color: #fff;
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 1;
+}
+
+.account-popover-fallback[hidden] {
+  display: none !important;
+}
+
 .account-popover-avatar,
 .account-popover-fallback {
   flex: 0 0 auto;

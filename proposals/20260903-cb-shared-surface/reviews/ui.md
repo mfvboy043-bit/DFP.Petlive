@@ -1,65 +1,77 @@
-# UI review — 20260903-cb-shared-surface Phase 1
+# UI review — 20260903-cb-shared-surface (Phase 2)
 
-- verdict: **pass**
-- reviewer: UI (independent pass)
-- candidate: `/private/tmp/petlive-cb-shared-surface-p1` · `proposal/cb-shared-surface-p1`
-- served: `http://127.0.0.1:5188/apps/web/c/` (worktree zero-build)
+**Candidate:** `.worktrees/cb-shared-surface-p2` @ `proposal/cb-shared-surface-p2`  
+**Surfaces reviewed:** B `http://127.0.0.1:5190/apps/web/?app=1`, C `http://127.0.0.1:5190/apps/web/c/`  
+**Scope:** B activates shared `shell/account-chrome.css` + `shell/parasite-strip.css` (same owners as C); surface duplicates removed from `styles.css`.  
+**Verdict: pass**
 
-## Issues
+Independent pass. Did not read other `reviews/*.md`. No product JS/CSS edits.
 
-None blocking.
+---
 
-No UI-n findings at High/Medium. Cascade and visual smoke for the migrated account-chip + parasite-strip blocks look intact on C; B product cascade remains unchanged for Phase 1.
+## Cascade
+
+| Surface | Order (stylesheet links) | Result |
+|---|---|---|
+| B | fonts → `shell/account-chrome.css?v=20260903-cb-p2` → `shell/parasite-strip.css?v=20260903-cb-p2` → `styles.css` → other shell | **OK** — shared owners load **before** `styles.css` |
+| C | fonts → `../shell/account-chrome.css?v=20260903-cb-p2` → `../shell/parasite-strip.css?v=20260903-cb-p2` → `./styles.css` → … | **OK** — same token + same relative order |
+
+Runtime check (CDP): B `accountIdx=1`, `parasiteIdx=2`, `stylesIdx=3`. C identical indices.
+
+B `styles.css` leftover selectors: `.account-chip` **0**, `.parasite-strip` **0** (popover/menu rules remain in surface CSS — outside Phase 2 chip/strip migration).
+
+---
+
+## Visual / layout
+
+### Parasite strip (B home, unsigned via `?app=1`)
+
+- Present (`#parasite-strip`), three cells: 疫苗 / 體外 / 心絲蟲, lights +「尚未設定 · 點此新增」+「未保護」.
+- Desktop ~1060: horizontal 3-up grid; card buttons ≈ **261×102**.
+- Narrow ~390-class: stacked rows; buttons ≈ **328×44**.
+- Shared strip paint looks intact (lights, empty-state copy, card geometry). Matches C strip chrome structure (C has demo pet data; B empty-state content differs as expected).
+
+### Account chip
+
+- Markup present on B (`#account-chip` inside `#account-menu`).
+- When unsigned, `#account-menu[hidden]` — chip not laid out (0×0). **Expected B auth chrome**, not a missing shared CSS file.
+- Computed chip styles still resolve from shared owner even while menu hidden: desktop `min-height: 38px`, `background: rgb(26,26,26)`; narrow breakpoint `min-height: 40px`, `padding: 4px 10px 4px 4px`, `gap: 6px`, `border-radius: 999px` — matches `shell/account-chrome.css`.
+- C (demo signed-in): chip visible ≈ **103×40**, same bg / radius language — shared CSS path confirmed live.
+
+### Tap targets
+
+| Control | Viewport | Size | Notes |
+|---|---|---|---|
+| Strip cells | desktop | ~261×102 | Pass (≥44) |
+| Strip cells | phone-class | ~328×44 | Pass (meets 44) |
+| Account chip (C live) | phone-class | ~103×40 | Pass |
+| Account chip (B unsigned) | — | n/a layout | Parent menu hidden |
+
+No overflow/collision of strip vs home CTAs observed at reviewed viewports.
+
+---
+
+## UI-n issues
+
+None.
+
+---
 
 ## Evidence
 
-### Ownership / link order (C)
+Screenshots (identical copies under main + worktree `…/reviews/ui-screenshots/`):
 
-- `apps/web/c/index.html` loads, in order:
-  1. `../shell/account-chrome.css?v=20260903-cb-p1`
-  2. `../shell/parasite-strip.css?v=20260903-cb-p1`
-  3. `./styles.css?v=20260903-cb-p1`
-- Migrated selectors are **absent** from `apps/web/c/styles.css` (no `account-chip` / `parasite-strip` / `parasite-row` leftovers).
-- Canonical rules live in `shell/account-chrome.css` (unlayered) and `shell/parasite-strip.css` (`@layer petlive-shared-shell` for layout/status tones; unlayered lights overlay preserved at file end).
+- `b-home-desktop-1060.png`
+- `b-home-desktop-1060-chip-strip.png` (strip crop)
+- `b-home-phone-390.png`
+- `b-home-phone-390-chip-strip.png` (strip / empty-home band)
 
-### B unchanged (Phase 1 contract)
+Served worktree on `127.0.0.1:5190`; server stopped after capture.
 
-- Worktree Phase 1 dirty set does **not** include `apps/web/index.html`, `apps/web/styles.css`, or `apps/web/app.js`.
-- B still has **no** `account-chrome.css` link.
-- B still loads `./styles.css` **before** `./shell/parasite-strip.css?v=20260830-strip-lights` (token unchanged).
-- New parasite layout/status rules are inside `@layer petlive-shared-shell`, so B’s existing unlayered surface duplicates remain the winning origin; lights overlay stays unlayered and continues to win label/`::before` traffic-light presentation as before.
-
-### Declaration fidelity
-
-Normalized body compare of migrated selectors vs B surface duplicates: account-chip family and parasite-strip/row/status-tone blocks **match** (including `.parasite-row.is-protected|approaching|unprotected|optional` and responsive `@media` counts for 760 / 1060 / 759). Intentional C-only activation + `@layer` wrapping for B safety noted in cascade-evidence.
-
-### Screenshots (C home)
-
-Captured via headless Chrome against the worktree server; saved under both:
-
-- `proposals/20260903-cb-shared-surface/reviews/ui-screenshots/`
-- worktree `proposals/20260903-cb-shared-surface/reviews/ui-screenshots/`
-
-| File | Focus |
-|------|--------|
-| `c-home-desktop-1060.png` | Full C home ~1060×1600 |
-| `c-home-desktop-1060-chip-strip.png` | Same, upper composition (chip + strip) |
-| `c-home-phone-390.png` | Full C home ~390×1000 |
-| `c-home-phone-390-chip-strip.png` | Same, upper composition |
-
-Observed:
-
-- **Account chip:** dark pill, avatar +「示範飼主」, sits with menu in top chrome; no obvious overflow/clip at 1060; at 390 remains a usable dark control beside menu / C badge.
-- **Parasite strip:** desktop 3-column cards with traffic lights, approaching (即將到期) + unprotected (未保護) tones; phone stacked rows with lights + meta; row height/padding reads ≥ tap-friendly (~44px phone min-height in CSS).
-- No missing-style blank strip, broken lights, or chip collapse seen in these captures.
-
-### Pre-migration C cascade note (informational)
-
-Before Phase 1, C loaded `styles.css` then later `parasite-strip.css` (lights last). After Phase 1, layout/status move into `@layer` inside `parasite-strip.css` with lights still unlayered afterward, then `c/styles.css` without duplicates. Lights still beat layered label/`::before` rules; layout has no remaining C surface competitor. Screenshots consistent with intended parity.
+---
 
 ## Unverified
 
-- Pixel-diff / computed-style dump **before vs after** on the same baseline DOM (this pass is after-only screenshots + CSS/cascade inspection).
-- Live B browser paint (not required to change visually; inferred from untouched B files + `@layer` demotion of shared parasite rules).
-- Interactive tap/hover timing and screen-head-actions chip at ≤720px (name hide) not separately exercised beyond static phone/desktop shots.
-- Other reviewers’ notes not read (independent pass).
+- **Signed-in B account-chip paint** (avatar + name + tap geometry) — needs live Google/Supabase session; unsigned `?app=1` correctly keeps `#account-menu` hidden. Shared declarations verified via computed style + C demo chip, not via B signed-in screenshot.
+- Pixel-diff vs pre–Phase 2 B baseline assets (no prior-B golden frames in this pass).
+- Account popover open state / positioning under shared chip CSS (popover rules still surface-owned).

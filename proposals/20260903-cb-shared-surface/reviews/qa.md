@@ -1,80 +1,101 @@
-# QA review — 20260903-cb-shared-surface Phase 1
+# QA review — Phase 2 re-run (`20260903-cb-shared-surface`)
 
-- verdict: **pass**
-- issues: none
-- reviewer: qa (independent; did not read other `reviews/*.md`)
-- candidate: `/private/tmp/petlive-cb-shared-surface-p1` @ `proposal/cb-shared-surface-p1` (HEAD `133d70c` + Phase 1 working tree)
+- **Reviewer:** QA (independent re-run after Builder QA-1 fix)
+- **Candidate:** `/Users/victorwu/Desktop/petlive/.worktrees/cb-shared-surface-p2` @ `proposal/cb-shared-surface-p2`
+- **Scope:** Phase 2 — B activation of canonical account/parasite CSS; C shared token align; tests + allowlist deletion; **QA-1 popover-only restore**
+- **Date:** 2026-09-17
+- **Prior blocking:** QA-1 (comma-grouped chip+popover rules deleted wholesale; popover halves missing)
+
+## Verdict
+
+**pass**
+
+**QA-1 is fixed.** Popover-only halves are restored identically in B and C `styles.css`; chip halves remain in `shell/account-chrome.css`; no migrated `.account-chip*` / `.parasite-strip` / `.parasite-row` duplicates reappear in surface styles. Phase 2 ownership + surface-assets tests: 6/6 pass. Link order + shared shell token OK.
+
+## Checks
+
+| # | Check | Result |
+|---|---|---|
+| 1 | `node --test` ownership + surface-assets (worktree absolute paths) | **pass** — 6/6 |
+| 2 | Migrated selectors absent from `c/styles.css` and `styles.css`; present in shell CSS | **pass** — 0 surface hits for `.account-chip` / `.parasite-strip` / `.parasite-row` / `screen-head-actions .account` |
+| 3 | B and C load `account-chrome` + `parasite-strip` before `styles.css`; shell token `20260903-cb-p2` | **pass** |
+| 4 | Surface `styles.css` cache bumped for QA-1 | **pass** — `?v=20260917-cb-p2-qa1` on B and C |
+| 5 | Phase 1 allowlist fixture gone | **pass** — `qa/fixtures/web-shared-css-allowlist.json` deleted |
+| 6 | QA-1 popover-only rules in both B and C `styles.css` | **pass** — fixed |
+| 7 | BB-n chrome CSS still in `shell/` | **pass** |
+
+## Issues
+
+### QA-1 — B/C lost account-popover half of comma-grouped chip rules — **FIXED**
+
+Prior fail: deleting migrated `.account-chip*` blocks from surface CSS also dropped co-located `.account-popover-*` decls not owned by `shell/account-chrome.css`.
+
+**Re-verify (both surfaces identical block):**
+
+```css
+/* Popover-only halves of former chip+popover grouped rules (QA-1).
+   Chip halves live in shell/account-chrome.css; do not re-merge. */
+.account-popover-avatar[hidden] {
+  display: none !important;
+}
+
+.account-popover-fallback {
+  display: grid;
+  place-items: center;
+  background: #3d6b57;
+  color: #fff;
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 1;
+}
+
+.account-popover-fallback[hidden] {
+  display: none !important;
+}
+```
+
+Present in `apps/web/styles.css` and `apps/web/c/styles.css` (B body ≡ C body). Chip `[hidden]` / fallback grid halves remain only in `shell/account-chrome.css`. No re-merge of chip+popover grouped selectors into surface styles.
+
+### BB-1 — Shared chrome CSS remains under `shell/` (pass)
+
+Canonical account/parasite CSS continues to live in `apps/web/shell/account-chrome.css` and `apps/web/shell/parasite-strip.css`. Phase 2 links them on B/C and removes surface duplicates; QA-1 restore is popover-only (surface-owned), not chrome brain pasted into surface sheets. **BB pass.**
 
 ## Evidence
 
-### 1) Scoped tests (required)
+### Tests (worktree)
 
-```bash
-cd /private/tmp/petlive-cb-shared-surface-p1
+```text
 "/Applications/Cursor.app/Contents/Resources/app/resources/helpers/node" --test \
-  qa/tests/web-shared-css-ownership.test.js \
-  qa/tests/web-surface-assets.test.js
+  /Users/victorwu/Desktop/petlive/.worktrees/cb-shared-surface-p2/qa/tests/web-shared-css-ownership.test.js \
+  /Users/victorwu/Desktop/petlive/.worktrees/cb-shared-surface-p2/qa/tests/web-surface-assets.test.js
+→ Phase 2 shared CSS ownership: 4 pass
+→ Phase 2 surface stylesheet activation: 2 pass
+→ tests 6, fail 0
 ```
 
-Result: **7 pass / 0 fail** (2 suites).
+### Link order + token
 
-### 2) B product files unchanged
+- **C** `c/index.html`: `../shell/account-chrome.css?v=20260903-cb-p2`, `../shell/parasite-strip.css?v=20260903-cb-p2`, then `./styles.css?v=20260917-cb-p2-qa1`
+- **B** `index.html`: `./shell/account-chrome.css?v=20260903-cb-p2`, `./shell/parasite-strip.css?v=20260903-cb-p2`, then `./styles.css?v=20260917-cb-p2-qa1`; single parasite-strip link
 
-```bash
-git diff --name-only
-# apps/web/c/index.html
-# apps/web/c/styles.css
-# apps/web/shell/parasite-strip.css
-# (+ untracked: apps/web/shell/account-chrome.css, qa/*, proposals/…)
-```
+### Selector ownership
 
-`git diff --name-only -- apps/web/index.html apps/web/styles.css apps/web/app.js` → **empty**. No B product edits.
+| File | Migrated selector rules (`.account-chip*` / `.parasite-strip*` / `.parasite-row*` / screen-head account) |
+|---|---|
+| `c/styles.css` | 0 |
+| `styles.css` | 0 |
+| `shell/account-chrome.css` | chip / screen-head present |
+| `shell/parasite-strip.css` | strip / row / status present |
 
-### 3) Migrated selectors ownership
+### Diff scope note (QA-1 revision)
 
-- `rg` for `.account-chip` / `.screen-head-actions .account` / `.parasite-strip` / `.parasite-row` in `apps/web/c/styles.css` → **no matches**.
-- Present in `apps/web/shell/account-chrome.css` (account/screen-head chip rules) and `apps/web/shell/parasite-strip.css` (layout/status inside `@layer petlive-shared-shell`, lights overlay preserved after layer).
-- Ownership test asserts C migrated rule count **0**; canonical rule/declaration counts match allowlist (`14/47` account, `27/79` parasite slice).
+QA-1 fix touches `apps/web/styles.css`, `apps/web/c/styles.css`, and both `index.html` cache tokens for surface styles. Shared shell CSS bodies unchanged for this re-run claim; ownership tests still green.
 
-### 4) C vs B stylesheet activation
+## Unverified
 
-C `apps/web/c/index.html` link order (only stylesheet change in that file):
+- Computed styles / screenshots for B account popover avatar↔fallback `[hidden]` after restore (UI gate)
+- Formal Pages publish / Gate B adoption (out of QA scope)
 
-1. `../shell/account-chrome.css?v=20260903-cb-p1`
-2. `../shell/parasite-strip.css?v=20260903-cb-p1`
-3. `./styles.css?v=20260903-cb-p1`
+## Gate recommendation
 
-B `apps/web/index.html`: loads `./styles.css` then `./shell/parasite-strip.css`; **no** `account-chrome.css`. Confirmed by test + `rg`.
-
-### 5) Allowlist labeled for Phase 2 deletion
-
-`qa/fixtures/web-shared-css-allowlist.json`: `"delete_in": "Phase 2"`; surface `B` / `apps/web/styles.css`; note says delete with Phase 2 B duplicate removal. Test asserts `ALLOWLIST.delete_in === "Phase 2"` and B signatures match canonical.
-
-### 6) Zero-build
-
-Static CSS/HTML only. `package.json` `serve` is `python3 -m http.server`; no webpack/vite/rollup configs; no bundler/npm production step introduced for this pilot.
-
-### 7) Scope hygiene (storage / auth / i18n / screens / medical)
-
-Changed product paths limited to:
-
-- `apps/web/shell/account-chrome.css` (new)
-- `apps/web/shell/parasite-strip.css` (extended)
-- `apps/web/c/index.html` (stylesheet link/order/cache tokens only)
-- `apps/web/c/styles.css` (removed duplicate selector blocks)
-
-No diffs on `apps/web/app.js`, `apps/web/c/app.js`, i18n, `core/`, `auth/`, `domains/`, or HTML body/screen markup.
-
-### 8) Building blocks (BB-n)
-
-**BB-n does not apply.** New chrome CSS lives under `apps/web/shell/account-chrome.css` and extended `apps/web/shell/parasite-strip.css`; C only removes duplicates and wires links. Not dumped solely into surface `styles.css`.
-
-### Full suite note (baseline)
-
-`node --test qa/tests/*.test.js` on candidate: **268 pass / 20 fail**. Same **20 fail** count on clean HEAD with Phase 1 changes stashed (**261 pass / 20 fail**). Failures are pre-existing on this branch baseline (alerts/allergy/storage/cloud/labs/owner/vaccines/weight-scale ESM, etc.), **not** Phase 1 regressions. Scoped pilot tests are green.
-
-## Unverified items
-
-- Live `python3 -m http.server` browser load and DevTools computed-style dumps (static cascade proof in `cascade-evidence.md` + ownership tests; not re-measured in a browser here).
-- Pixel / visual before–after parity of C desktop/phone screenshots (files exist under `reviews/ui-screenshots/`; visual judgment deferred to UI reviewer).
-- Formal Pages / B runtime behavior beyond “B product files and account-chrome link unchanged.”
+**QA clear for Gate B** on Phase 2 + QA-1. Prior blocking QA-1 is resolved. UI may still smoke-check B popover avatar/fallback if desired; no open QA Medium/High.

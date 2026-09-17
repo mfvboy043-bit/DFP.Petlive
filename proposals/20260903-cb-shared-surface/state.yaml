@@ -5,20 +5,20 @@ status: adopted
 
 gate_a:
   status: approved
-  scope: "Phase 1 only — C-first shared account/parasite CSS ownership pilot"
-  note: "Victor 2026-09-03 — 確認 Phase 1"
+  scope: "Phase 2 only — formal B activation of canonical account/parasite CSS"
+  note: "Victor 2026-09-17 — 開始正式版那一步的提案／製作"
 
 gate_b:
-  status: adopted
-  note: "Victor 2026-09-03 — 採用 Phase 1（C CSS ownership only；非 Phase 2、不推 Pages）"
+  status: approved
+  note: "Victor 2026-09-17 採用 Phase 2 — merge to main + Pages publish. NOT Phase 3+."
 
 iteration: 1
 max_iterations: 3
 
 candidate:
-  branch: "proposal/cb-shared-surface-p1"
-  path: "/private/tmp/petlive-cb-shared-surface-p1"
-  worktree: "/private/tmp/petlive-cb-shared-surface-p1"
+  branch: "proposal/cb-shared-surface-p2"
+  path: "/Users/victorwu/Desktop/petlive/.worktrees/cb-shared-surface-p2"
+  worktree: "/Users/victorwu/Desktop/petlive/.worktrees/cb-shared-surface-p2"
 
 reviews:
   pharmacist: skipped

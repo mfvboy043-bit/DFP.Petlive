@@ -1,6 +1,6 @@
-# Arbiter — 20260903-cb-shared-surface Phase 1
+# Arbiter — 20260903-cb-shared-surface Phase 2
 
-- decision: candidate_ready
+- decision: adopted
 - blocking_issues: []
 - non_blocking: []
 - iteration: 1 / max 3
@@ -8,15 +8,14 @@
 
 ## Summary
 
-QA and UI both verdict **pass** with no High / P1 / reject items and no numbered QA-n / UI-n / BB-n findings. Phase 1 acceptance evidence is sufficient for Gate B: C-only activation of `shell/account-chrome.css` + extended `shell/parasite-strip.css`, migrated selectors absent from `c/styles.css`, B product files untouched, allowlist labeled `delete_in: Phase 2`, scoped ownership/assets tests green (7/7), Tier 2 shell CSS ownership clean, and UI desktop/phone screenshots show intact account chip and parasite strip. Informational unverified notes (live before/after computed-style dumps, pixel-diff) are not mapped to issue IDs and do not block.
+QA re-run and UI both verdict **pass**. Prior blocking **QA-1** (popover-only halves lost when stripping comma-grouped chip rules) is **fixed**; popover-only rules restored identically in B and C `styles.css`; chip halves remain in `shell/account-chrome.css`. No High / P1 / reject items and no open QA-n / UI-n / BB-n findings.
 
-No revision loop. `builder_scope` cleared. Gate B remains **pending** for Victor.
+Phase 2 acceptance evidence is sufficient for Gate B: B loads `shell/account-chrome.css` + `shell/parasite-strip.css` before `styles.css`; shared shell token `20260903-cb-p2` aligned on C and B; migrated `.account-chip*` / parasite selectors absent from both surface stylesheets; Phase 1 allowlist deleted; ownership + surface-assets tests 6/6 green; Tier 2 shell CSS ownership clean; UI desktop/phone screenshots and cascade checks show intact B parasite strip and shared account-chip computed styles. Informational unverified notes (signed-in B chip screenshot, pixel-diff vs pre–Phase 2 baseline, popover open-state paint) are not mapped to issue IDs and do not block.
 
-## Gate B ask (Victor)
+No further revision loop. `builder_scope` and `blocking_issues` cleared.
 
-請決定 Phase 1 候選：
+## Gate B
 
-- **採用** — land canonical CSS + C activation only (shell CSS ownership + C link/token/cleanup). This is **not** Phase 2 B activation, **not** removing B duplicates, **not** linking `account-chrome.css` on B, and **not** Pages publish. After 採用, Version Steward merges the candidate; Pages stays off until a later Phase 2 Gate B (if/when confirmed).
-- **否決** — do not adopt; leave mainline without this Phase 1 candidate.
-
-Reply「採用」or「否決」.
+- **Victor 2026-09-17：採用**
+- Merge Phase 2 candidate to `main` + Pages publish (auto-publish-pages).
+- Scope remains **Phase 2 only** — not Phase 3+.
