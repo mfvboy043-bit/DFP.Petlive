@@ -6,14 +6,90 @@
 
   const MOBILE_MQ = "(max-width: 759px)";
 
+  function resolveAssetBase(doc, options = {}) {
+    if (options.assetBase) return String(options.assetBase).replace(/\/$/, "");
+    const path = doc?.location?.pathname || "";
+    return path.includes("/c/") || path.endsWith("/c") ? "../assets" : "./assets";
+  }
+
+  function createAboutMeMarkup(assetBase) {
+    const qrSrc = `${assetBase}/about/instagram-qr-vboy043.jpg?v=20260918-about-me-v4`;
+    return `<article class="intro-story-card intro-story-card--about">
+            <details class="intro-story-disclosure" data-intro-story="about-me">
+              <summary class="intro-story-summary">
+                <span class="intro-story-index" aria-hidden="true">05</span>
+                <h3 class="intro-story-title" data-i18n="introStory5Title">關於我</h3>
+                <span class="intro-story-chevron" aria-hidden="true"></span>
+              </summary>
+              <div class="intro-story-body intro-about-body">
+                <div data-i18n-html="introStory5Body">
+                  <p class="intro-about-lede">嗨，我是<strong>火龍果護照</strong>的設計與製作人</p>
+                  <p>可以叫我<strong>振宇</strong>、<strong>振宇哥</strong>、<strong>Victor</strong>、<strong>Vic</strong>，<br />這些是我常被身邊朋友稱呼的名字。</p>
+                  <p>我不是獸醫師，<br />我現在正在接受犬隻教育相關的專業培訓。<br />與其說是訓犬師，我覺得自己更像是一位<strong>生活教練</strong>，<br />幫助飼主與家庭，獲得更好的生活，<br />與自己的毛小孩建立更深層的連結。</p>
+                  <p>這個網站，來自我一直很在意的一件事：</p>
+                  <blockquote class="story-pull"><p><strong>當寵物換院、急診或換醫師時，重要的醫療紀錄，常常沒有一起跟著走。</strong></p></blockquote>
+                  <p>寵物不會說話。<br />如果我們手上沒有<strong>「吃過什麼、試過什麼、做過什麼」</strong>，<br />醫師就必須在資訊不完整的情況下做判斷。</p>
+                  <p>所以，我把這個想法做成了 <strong>火龍果護照</strong>。</p>
+                  <p>希望每一次看診留下的資訊，都可以被好好保存，<br />在需要的時候，陪著牠走到下一位醫師面前。</p>
+                  <p>如果你對火龍果護照有任何建議、問題，<br />或只是有一個「如果可以這樣就好了」的想法，都很歡迎告訴我。</p>
+                </div>
+                <figure class="intro-about-ig">
+                  <img
+                    class="intro-about-ig-img"
+                    src="${qrSrc}"
+                    width="320"
+                    height="320"
+                    loading="lazy"
+                    decoding="async"
+                    alt="@vboy043 Instagram QR"
+                  />
+                  <figcaption class="intro-about-ig-caption" data-i18n="introStory5IgCaption">掃碼追蹤 Instagram</figcaption>
+                </figure>
+                <ul class="intro-about-contact">
+                  <li>
+                    <span class="intro-about-contact-label" data-i18n="introStory5IgLabel">Instagram｜</span>
+                    <a href="https://www.instagram.com/vboy043/" target="_blank" rel="noopener noreferrer">vboy043</a>
+                    <button
+                      type="button"
+                      class="intro-about-copy"
+                      data-intro-copy="vboy043"
+                      data-i18n="introStory5Copy"
+                      data-i18n-aria="introStory5CopyIgAria"
+                    >複製</button>
+                  </li>
+                  <li class="intro-about-contact--email">
+                    <div class="intro-about-contact-row">
+                      <span class="intro-about-contact-label" data-i18n="introStory5EmailLead">Email｜</span>
+                      <a href="mailto:dragondog2026@gmail.com">dragondog2026@gmail.com</a>
+                      <button
+                        type="button"
+                        class="intro-about-copy"
+                        data-intro-copy="dragondog2026@gmail.com"
+                        data-i18n="introStory5Copy"
+                        data-i18n-aria="introStory5CopyEmailAria"
+                      >複製</button>
+                    </div>
+                    <p class="intro-about-contact-note" data-i18n="introStory5EmailNote">（ 關於火龍果護照的相關建議，歡迎寫信給我 ）</p>
+                  </li>
+                </ul>
+                <div data-i18n-html="introStory5Closing">
+                  <blockquote class="story-pull story-pull--closing"><p><strong>讓重要的醫療資訊，跟著牠一起走。</strong></p></blockquote>
+                  <p class="intro-about-sign">— Victor</p>
+                </div>
+              </div>
+            </details>
+          </article>`;
+  }
+
   function createIntroStoriesMarkup(options = {}) {
-    const { includeHeader = true } = options;
+    const { includeHeader = true, includeAboutMe = false, assetBase = "./assets" } = options;
     const header = includeHeader
-      ? `<p class="intro-stories-eyebrow" data-i18n="introStoriesEyebrow">四則故事</p>
+      ? `<p class="intro-stories-eyebrow" data-i18n="introStoriesEyebrow">五則故事</p>
         <h2 class="intro-stories-title" id="intro-stories-heading" data-i18n="introStoriesTitle">
           換院、急診時，紀錄有跟著走嗎？
         </h2>`
       : "";
+    const aboutMe = includeAboutMe ? createAboutMeMarkup(assetBase) : "";
 
     return `${header}
         <div class="intro-stories-stack">
@@ -114,6 +190,7 @@
               </div>
             </details>
           </article>
+          ${aboutMe}
         </div>
         <p class="intro-stories-bridge" data-i18n-html="introStoriesBridge">
           換院、急診、換醫生時，<br />把「試過什麼、吃過什麼」帶著走。
@@ -156,6 +233,43 @@
     paintIntroStoryAria(doc, hooks.t, hooks);
   }
 
+  function bindAboutCopyButtons(doc, hooks = {}) {
+    if (!doc) return;
+    const scope = resolveScope(doc, hooks);
+    scope.querySelectorAll("[data-intro-copy]").forEach((btn) => {
+      if (btn.dataset.introCopyBound === "1") return;
+      btn.dataset.introCopyBound = "1";
+      btn.addEventListener("click", async (event) => {
+        event.preventDefault();
+        event.stopPropagation();
+        const text = btn.getAttribute("data-intro-copy") || "";
+        if (!text) return;
+        const t = hooks.t;
+        const labelCopy = typeof t === "function" ? t("introStory5Copy") : "複製";
+        const labelDone = typeof t === "function" ? t("introStory5CopyDone") : "已複製";
+        try {
+          if (typeof hooks.copyText === "function") {
+            await hooks.copyText(text);
+          } else if (doc.defaultView?.navigator?.clipboard?.writeText) {
+            await doc.defaultView.navigator.clipboard.writeText(text);
+          } else {
+            throw new Error("copy unavailable");
+          }
+          btn.textContent = labelDone;
+          btn.classList.add("is-copied");
+          if (typeof hooks.onCopied === "function") hooks.onCopied(text);
+          clearTimeout(btn._introCopyReset);
+          btn._introCopyReset = setTimeout(() => {
+            btn.textContent = labelCopy;
+            btn.classList.remove("is-copied");
+          }, 1600);
+        } catch (_err) {
+          if (typeof hooks.onCopyFail === "function") hooks.onCopyFail();
+        }
+      });
+    });
+  }
+
   function initIntroStories(doc, win, hooks = {}) {
     if (!doc) return;
     const scope = resolveScope(doc, hooks);
@@ -169,6 +283,7 @@
       });
     });
 
+    bindAboutCopyButtons(doc, hooks);
     syncIntroStoryDisclosures(doc, win, hooks);
 
     if (!win || win.__introStoriesMqBound) return;
@@ -184,8 +299,14 @@
 
   function mountIntroStories(doc, mountEl, options = {}) {
     if (!doc || !mountEl) return;
-    const { includeHeader = true } = options;
-    mountEl.innerHTML = createIntroStoriesMarkup({ includeHeader });
+    const includeHeader = options.includeHeader !== false;
+    const includeAboutMe = options.includeAboutMe === true;
+    const assetBase = resolveAssetBase(doc, options);
+    mountEl.innerHTML = createIntroStoriesMarkup({
+      includeHeader,
+      includeAboutMe,
+      assetBase,
+    });
   }
 
   root.shell.createIntroStoriesMarkup = createIntroStoriesMarkup;

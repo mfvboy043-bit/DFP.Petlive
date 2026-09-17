@@ -477,6 +477,142 @@ html[lang="ko"] .intro-story-body {
   }
 }
 
+/* About-me letter — contact + Instagram QR */
+.intro-story-card--about::before {
+  background: linear-gradient(
+    180deg,
+    rgba(185, 143, 94, 0.62) 0%,
+    rgba(194, 59, 59, 0.42) 100%
+  );
+}
+
+.intro-about-body > [data-i18n-html="introStory5Body"] {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.intro-about-lede {
+  margin: 0;
+  font-family: "Noto Serif TC", serif;
+  font-size: 15px;
+  font-weight: 700;
+  line-height: 1.55;
+  letter-spacing: 0.01em;
+  color: var(--text-strong, #17231e);
+}
+
+.intro-about-ig {
+  margin: 4px 0 0;
+  padding: 14px 12px 12px;
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.72);
+  border: 1px solid rgba(61, 107, 87, 0.12);
+  text-align: center;
+}
+
+.intro-about-ig-img {
+  display: block;
+  width: min(280px, 100%);
+  height: auto;
+  margin: 0 auto;
+  border-radius: 12px;
+}
+
+.intro-about-ig-caption {
+  margin: 10px 0 0;
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  color: var(--leaf-mid, #6a8b7a);
+}
+
+.intro-about-contact {
+  list-style: none;
+  margin: 4px 0 0;
+  padding: 0;
+  display: grid;
+  gap: 10px;
+}
+
+.intro-about-contact li {
+  margin: 0;
+  padding: 12px 14px;
+  border-radius: 12px;
+  background: rgba(244, 248, 245, 0.85);
+  border: 1px solid rgba(61, 107, 87, 0.1);
+}
+
+.intro-about-contact-row,
+.intro-about-contact > li:not(.intro-about-contact--email) {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px 8px;
+}
+
+.intro-about-contact-label {
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  color: var(--leaf-mid, #6a8b7a);
+  white-space: nowrap;
+}
+
+.intro-about-contact a {
+  color: var(--text-strong, #17231e);
+  font-weight: 700;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  word-break: break-all;
+}
+
+.intro-about-copy {
+  margin-left: auto;
+  flex-shrink: 0;
+  appearance: none;
+  border: 1px solid rgba(61, 107, 87, 0.22);
+  border-radius: 999px;
+  padding: 5px 11px;
+  background: rgba(255, 255, 255, 0.92);
+  color: var(--leaf-deep, #3f5c4e);
+  font: inherit;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  line-height: 1.2;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.intro-about-copy:active {
+  transform: scale(0.97);
+}
+
+.intro-about-copy.is-copied {
+  border-color: rgba(79, 157, 120, 0.45);
+  background: rgba(228, 235, 230, 0.95);
+  color: var(--leaf, #5a7d6c);
+}
+
+.intro-about-contact-note {
+  margin: 8px 0 0;
+  font-size: 12.5px;
+  font-weight: 600;
+  line-height: 1.55;
+  letter-spacing: 0.01em;
+  color: #c23b3b;
+}
+
+.intro-about-sign {
+  margin: 2px 0 0;
+  font-size: 14px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  color: var(--leaf-mid, #6a8b7a);
+  text-align: right;
+}
+
 /* B — why-stories full screen (for vet / owner context) */
 .screen-why-stories .why-stories-eyebrow {
   margin: 0 0 4px;

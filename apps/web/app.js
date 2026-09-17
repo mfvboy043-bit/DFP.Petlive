@@ -3816,14 +3816,27 @@ function mountIntroStoriesShell() {
   const introMount = document.getElementById("intro-stories");
   if (introMount && introMount.dataset.introStoriesMounted !== "1") {
     introMount.dataset.introStoriesMounted = "1";
-    PetLiveWeb.shell.mountIntroStories?.(document, introMount, { includeHeader: true });
+    PetLiveWeb.shell.mountIntroStories?.(document, introMount, {
+      includeHeader: true,
+      includeAboutMe: true,
+      assetBase: "./assets",
+    });
   }
   const whyMount = document.getElementById("why-stories-mount");
   if (whyMount && whyMount.dataset.introStoriesMounted !== "1") {
     whyMount.dataset.introStoriesMounted = "1";
-    PetLiveWeb.shell.mountIntroStories?.(document, whyMount, { includeHeader: false });
+    PetLiveWeb.shell.mountIntroStories?.(document, whyMount, {
+      includeHeader: false,
+      includeAboutMe: true,
+      assetBase: "./assets",
+    });
   }
-  PetLiveWeb.shell.initIntroStories?.(document, window, { t });
+  PetLiveWeb.shell.initIntroStories?.(document, window, {
+    t,
+    copyText: copyTextToClipboard,
+    onCopied: () => showToast(t("toastCopied")),
+    onCopyFail: () => showToast(t("toastCopyFail")),
+  });
 }
 
 function paintManualScreen() {
