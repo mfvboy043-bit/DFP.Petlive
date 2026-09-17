@@ -2,7 +2,7 @@
   "use strict";
 
   const LOCALES = ["zh-Hant", "en", "ja", "ko"];
-  const DEFAULT_VERSION = "20260903-legal-v13";
+  const DEFAULT_VERSION = "20260917-legal-v14";
 
   function escapeHtml(text) {
     return String(text)
@@ -171,7 +171,7 @@
         terms: "使用條款",
         lang: "語言",
         loading: "載入中…",
-        error: "無法載入文件。請稍後再試或來信 mfvboy043@gmail.com。"
+        error: "無法載入文件。請稍後再試或來信 dragondog2026@gmail.com。"
       },
       en: {
         back: "← Back to Dragon Fruit Passport",
@@ -179,7 +179,7 @@
         terms: "Terms",
         lang: "Language",
         loading: "Loading…",
-        error: "Unable to load this document. Try again later or email mfvboy043@gmail.com."
+        error: "Unable to load this document. Try again later or email dragondog2026@gmail.com."
       },
       ja: {
         back: "← 火龍果護照に戻る",
@@ -187,7 +187,7 @@
         terms: "利用規約",
         lang: "言語",
         loading: "読み込み中…",
-        error: "文書を読み込めません。しばらくしてから再試行するか、mfvboy043@gmail.com までご連絡ください。"
+        error: "文書を読み込めません。しばらくしてから再試行するか、dragondog2026@gmail.com までご連絡ください。"
       },
       ko: {
         back: "← 화룡과 여권으로 돌아가기",
@@ -195,7 +195,7 @@
         terms: "이용약관",
         lang: "언어",
         loading: "불러오는 중…",
-        error: "문서를 불러올 수 없습니다. 잠시 후 다시 시도하거나 mfvboy043@gmail.com으로 연락하세요."
+        error: "문서를 불러올 수 없습니다. 잠시 후 다시 시도하거나 dragondog2026@gmail.com으로 연락하세요."
       }
     };
     return map[locale] || map["zh-Hant"];
