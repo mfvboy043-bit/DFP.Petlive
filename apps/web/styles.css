@@ -8419,3 +8419,9 @@ html.is-proof-lightbox-open body {
   }
 }
 
+/* ARCHIVE 2026-09-18: hide timeline → observation chart entry on formal B.
+   Re-enable with observation chart relaunch (uncomment nav in index.html too). */
+.tl-obs-chart-btn {
+  display: none !important;
+}
+

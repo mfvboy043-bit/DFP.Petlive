@@ -1,0 +1,52 @@
+id: 20260918-observation-passport-pets
+title: Observation chart tryout uses passport pets (#pet-switcher)
+version: 2
+status: candidate_ready
+# proposed | building | reviewing | revising | candidate_ready | halted | adopted | rejected
+
+gate_a:
+  status: approved
+  approved_at: "2026-09-18"
+  decisions:
+    E: E1
+    W: W1
+    V: V1
+    P: P1
+
+gate_b:
+  status: pending
+  note: "Deferred 2026-09-18 — Victor archived formal B entry; resume later then 採用 / cover B"
+
+iteration: 1
+max_iterations: 3
+
+candidate:
+  branch: ""
+  path: "apps/web/tryouts/observation-chart/ + domains/observations/bridge.js + shell/observation-bridge.js + c facade"
+  worktree: ""
+  notes: "C candidate still live locally; formal B nav/timeline entry archived 2026-09-18"
+
+reviews:
+  pharmacist: skipped
+  qa: pass
+  ui: pass
+  legal: skipped
+  arbiter: candidate_ready
+
+rerun: []
+blocking_issues: []
+non_blocking:
+  - QA-1
+  - QA-2
+  - QA-3
+  - QA-4
+  - UI-1
+  - UI-2
+  - UI-3
+builder_scope: []
+halt_reason: ""
+notes: |
+  Gate A: Victor「確認」→ E1 W1 V1 P1.
+  Iteration 1 candidate_ready on C.
+  2026-09-18 Victor: archive formal B — remove 圖表 nav + hide timeline 觀察圖表; push Pages.
+  Resume: un-comment B nav, restore B bridge from C, drop .tl-obs-chart-btn hide CSS, then Gate B 採用 / 覆蓋.
