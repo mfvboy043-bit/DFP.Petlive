@@ -2,8 +2,8 @@
 
 **Operator / Service name:** Dragon Fruit Passport (火龍果護照)  
 **Contact:** dragondog2026@gmail.com  
-**Last updated:** 17 September 2026  
-**Version:** Draft v1.4 (2026-09-17: operator contact email → dragondog2026@gmail.com; 18+ posture; pending licensed counsel review)
+**Last updated:** 18 September 2026
+**Version:** v1.5
 
 ---
 
@@ -13,7 +13,7 @@ Welcome to Dragon Fruit Passport (the "**Service**" or "**we**").
 
 By using the Service, signing in with Google, or enabling cloud backup, you acknowledge that you have read, understood, and agree to this Privacy Policy. If you disagree with any part of this Policy, do not use features that require sign-in or cloud backup.
 
-This Policy explains how we collect, use, store, share, and protect personal data. Medical disclaimers and general terms of use are in the *[Medical Disclaimer & Terms](./terms.html?v=20260917-legal-v14&lang=en)*.
+This Policy explains how we collect, use, store, share, and protect personal data. Medical disclaimers and general terms of use are in the *[Medical Disclaimer & Terms](./terms.html?v=20260918-legal-v15&lang=en)*.
 
 > **Important:** The Service is **not** an electronic health record (EHR/EMR). Pet health records are entered and kept by you for personal reference and visit memory only.
 
@@ -245,7 +245,7 @@ You may refuse or withdraw consent. Doing so may disable sign-in, cloud backup, 
 1. The Service is **not directed at** users under 18.
 2. Before using the Service, you must confirm and declare that you are **18 or older**. This is a **self-attestation** and risk-reduction measure, **not** government-ID-grade precise age verification. Standard Google sign-in scopes also do **not** provide us a reliable date of birth or age.
 3. If we learn or have reason to believe a user is under 18, we will investigate and, where appropriate, delete the related account and/or data (including on-device data and cloud backups as guided by this Policy).
-4. This section does **not** claim compliance with COPPA, GDPR/UK GDPR, Korea's PIPA, or similar child-protection regimes via verifiable parental consent. Formal compliance and jurisdiction-specific thresholds remain for licensed counsel; until then this document remains a **draft**.
+4. This section does **not** claim compliance with COPPA, GDPR/UK GDPR, Korea's PIPA, or similar child-protection regimes via verifiable parental consent.
 
 ---
 
@@ -275,7 +275,3 @@ You may refuse or withdraw consent. Doing so may disable sign-in, cloud backup, 
 | Cloud backup | Copy to Google Drive or (from Phase 2) Supabase after your authorization |
 | Phase 1 | Live: Supabase Auth, on-device pet data, optional Google Drive backup |
 | Phase 2 | Planned: Supabase database cloud sync |
-
----
-
-*This is one of four AI-assisted language drafts (en). It is not legal advice or counsel sign-off. Licensed counsel in applicable jurisdictions must review it before it becomes operative.*

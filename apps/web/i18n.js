@@ -169,7 +169,7 @@ const I18N = {
       "火龍果護照僅供飼主整理寵物健康資訊之參考，不能取代獸醫診斷。請先閱讀並同意下列條款後再登入。",
     legalConsentModalConfirm: "同意並繼續",
     legalConsentLabel:
-      '我已閱讀並同意 <a href="./legal/privacy.html?v=20260917-legal-v14&lang=zh-Hant" target="_blank" rel="noopener">隱私權政策</a> 與 <a href="./legal/terms.html?v=20260917-legal-v14&lang=zh-Hant" target="_blank" rel="noopener">醫療免責與使用條款</a>',
+      '我已閱讀並同意 <a href="./legal/privacy.html?v=20260918-legal-v15&lang=zh-Hant" target="_blank" rel="noopener">隱私權政策</a> 與 <a href="./legal/terms.html?v=20260918-legal-v15&lang=zh-Hant" target="_blank" rel="noopener">醫療免責與使用條款</a>',
     legalAdultAttestLabel: "我確認自己已滿 18 歲",
     legalConsentRequired: "請先勾選同意條款，並確認已滿 18 歲",
     introStart: "開始使用",
@@ -1067,7 +1067,7 @@ const I18N = {
       "Petlive Passport helps you organize pet health information for reference only—it does not replace veterinary diagnosis. Please read and agree to the terms below before signing in.",
     legalConsentModalConfirm: "Agree and continue",
     legalConsentLabel:
-      'I have read and agree to the <a href="./legal/privacy.html?v=20260917-legal-v14&lang=en" target="_blank" rel="noopener">Privacy Policy</a> and <a href="./legal/terms.html?v=20260917-legal-v14&lang=en" target="_blank" rel="noopener">Medical Disclaimer &amp; Terms</a>',
+      'I have read and agree to the <a href="./legal/privacy.html?v=20260918-legal-v15&lang=en" target="_blank" rel="noopener">Privacy Policy</a> and <a href="./legal/terms.html?v=20260918-legal-v15&lang=en" target="_blank" rel="noopener">Medical Disclaimer &amp; Terms</a>',
     legalAdultAttestLabel: "I confirm that I am 18 years of age or older",
     legalConsentRequired: "Please agree to the Privacy Policy and Terms, and confirm you are 18 or older",
     introStart: "Get started",
@@ -1965,7 +1965,7 @@ const I18N = {
       "火龍果パスポートは、飼い主がペットの健康情報を整理するための参考ツールです。獣医師の診断に代わるものではありません。ログイン前に、以下の条項をお読みのうえ同意してください。",
     legalConsentModalConfirm: "同意して続ける",
     legalConsentLabel:
-      '<a href="./legal/privacy.html?v=20260917-legal-v14&lang=ja" target="_blank" rel="noopener">プライバシーポリシー</a>と<a href="./legal/terms.html?v=20260917-legal-v14&lang=ja" target="_blank" rel="noopener">免責事項・利用規約</a>に同意します',
+      '<a href="./legal/privacy.html?v=20260918-legal-v15&lang=ja" target="_blank" rel="noopener">プライバシーポリシー</a>と<a href="./legal/terms.html?v=20260918-legal-v15&lang=ja" target="_blank" rel="noopener">免責事項・利用規約</a>に同意します',
     legalAdultAttestLabel: "私は18歳以上です",
     legalConsentRequired: "先に規約への同意と、18歳以上であることの確認にチェックを入れてください",
     introStart: "はじめる",
@@ -2868,7 +2868,7 @@ const I18N = {
       "드래곤프루트 여권은 반려동물 건강 정보를 정리하는 참고 도구입니다. 수의사 진단을 대체하지 않습니다. 로그인 전에 아래 약관을 읽고 동의해 주세요.",
     legalConsentModalConfirm: "동의하고 계속",
     legalConsentLabel:
-      '<a href="./legal/privacy.html?v=20260917-legal-v14&lang=ko" target="_blank" rel="noopener">개인정보 처리방침</a> 및 <a href="./legal/terms.html?v=20260917-legal-v14&lang=ko" target="_blank" rel="noopener">면책·이용약관</a>에 동의합니다',
+      '<a href="./legal/privacy.html?v=20260918-legal-v15&lang=ko" target="_blank" rel="noopener">개인정보 처리방침</a> 및 <a href="./legal/terms.html?v=20260918-legal-v15&lang=ko" target="_blank" rel="noopener">면책·이용약관</a>에 동의합니다',
     legalAdultAttestLabel: "나는 만 18세 이상입니다",
     legalConsentRequired: "먼저 약관에 동의하고 만 18세 이상임을 확인해 주세요",
     introStart: "시작하기",
