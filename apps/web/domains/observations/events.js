@@ -27,6 +27,7 @@
         index: index,
         label: event && event.label != null ? event.label : "",
         kind: event && event.kind != null ? event.kind : "",
+        visitId: event && event.visitId != null ? String(event.visitId) : "",
         shortLabel: shortLabelFor(event),
         tone: toneForKind(event && event.kind),
         showLabel: showLabel,

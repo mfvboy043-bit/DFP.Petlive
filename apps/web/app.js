@@ -3753,6 +3753,61 @@ function initGlassDock() {
   });
 }
 
+function initObservationChartBridge() {
+  const obs = PetLiveWeb.domains?.observations;
+  if (!PetLiveWeb.shell?.initObservationBridge || !obs?.parseBridgeMessage) return null;
+
+  const api = PetLiveWeb.shell.initObservationBridge(document, {
+    win: window,
+    onOpenVisit: (msg) => {
+      go("timeline");
+      window.setTimeout(() => {
+        const pet = typeof getCurrentPet === "function" ? getCurrentPet() : null;
+        const dateMatch = String(msg.visitId || "").match(/(\d{4}-\d{2}-\d{2})/);
+        let el = null;
+        if (pet?.visits && dateMatch) {
+          const idx = pet.visits.findIndex(
+            (visit) => String(visit.date || "").slice(0, 10) === dateMatch[1]
+          );
+          if (idx >= 0) el = document.querySelector(`[data-visit-index="${idx}"]`);
+        }
+        if (!el && Number.isInteger(msg.visitIndex)) {
+          el = document.querySelector(`[data-visit-index="${msg.visitIndex}"]`);
+        }
+        if (!el) el = document.querySelector("[data-visit-index]");
+        el?.scrollIntoView({ behavior: "smooth", block: "center" });
+        document
+          .querySelectorAll(".tl-item.is-obs-focus")
+          .forEach((node) => node.classList.remove("is-obs-focus"));
+        el?.classList.add("is-obs-focus");
+      }, 220);
+    },
+    onOpenChart: (msg) => {
+      go("observation-chart-tryout");
+      window.setTimeout(() => {
+        const frame = document.getElementById("obs-tryout-frame");
+        api.focusChartVisit(frame, msg || {});
+      }, 450);
+    },
+  });
+
+  document.addEventListener("click", (event) => {
+    const btn = event.target.closest("[data-obs-open-chart]");
+    if (!btn) return;
+    const visitIndex = Number(btn.getAttribute("data-visit-index"));
+    const pet = typeof getCurrentPet === "function" ? getCurrentPet() : null;
+    const visit = Number.isInteger(visitIndex) ? pet?.visits?.[visitIndex] : null;
+    const dateKey = visit?.date ? String(visit.date).slice(0, 10) : "";
+    api.requestOpenChart({
+      visitIndex: Number.isInteger(visitIndex) ? visitIndex : null,
+      visitId: visit?.id || (dateKey ? `v-${dateKey}` : ""),
+      title: visit ? `${visit.clinicName || "就診"}・觀察` : "",
+    });
+  });
+
+  return api;
+}
+
 function glassChromeNavAccountMarkup() {
   return PetLiveWeb.shell.glassChromeNavAccountMarkup();
 }
@@ -6999,6 +7054,7 @@ PetLiveWeb.shell.runBootPhases({
     () => applySelectedPet(),
     () => initGlassDock(),
     () => initAppNavMenu(),
+    () => initObservationChartBridge(),
     () => initIntroAndCloud(),
   ],
   soon: [

@@ -236,6 +236,53 @@
       letter-spacing: -0.02em;
     }
 
+    .chart-title-edit {
+      display: grid;
+      gap: 4px;
+      margin-bottom: 8px;
+    }
+
+    .chart-title-edit-label {
+      color: var(--ink-soft);
+      font-size: 0.72rem;
+      font-weight: 800;
+    }
+
+    .chart-title-edit input {
+      min-height: 38px;
+      border: 1px solid var(--line-strong);
+      border-radius: 10px;
+      padding: 0 11px;
+      color: var(--ink);
+      background: #fff;
+      width: 100%;
+    }
+
+    .visit-jump {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 8px;
+      margin: 10px 0 0;
+      padding: 8px 10px;
+      border-radius: 10px;
+      background: #eef6fa;
+      color: var(--ink-soft);
+      font-size: 0.82rem;
+    }
+
+    .visit-jump[hidden] { display: none !important; }
+
+    .visit-jump-btn {
+      border: 0;
+      border-radius: 999px;
+      background: var(--blue);
+      color: #fff;
+      padding: 6px 12px;
+      font-weight: 750;
+      cursor: pointer;
+    }
+
     .chart-head p {
       margin: 4px 0 0;
       color: var(--ink-soft);
@@ -579,9 +626,23 @@
           </div>
 
           <div class="chart-head">
-            <div>
+            <div class="chart-title-block">
+              <label class="chart-title-edit" for="chartTitleInput">
+                <span class="chart-title-edit-label">圖表標題（可自訂）</span>
+                <input
+                  id="chartTitleInput"
+                  type="text"
+                  maxlength="48"
+                  autocomplete="off"
+                  placeholder="例如：9月腸胃觀察"
+                />
+              </label>
               <h2 id="chartTitle">頭痛程度｜每週觀察趨勢</h2>
-              <p id="chartSubtitle">數值越高代表不適越明顯；就診與用藥事件以垂直虛線標示。</p>
+              <p id="chartSubtitle">數值越高代表不適越明顯；就診與用藥事件以垂直虛線標示。點時間軸事件可跳到就診。</p>
+              <p class="visit-jump" id="visitJump" hidden>
+                <span id="visitJumpLabel"></span>
+                <button type="button" class="visit-jump-btn" id="visitJumpBtn">前往時間軸就診</button>
+              </p>
             </div>
             <label class="compare-control">
               <input id="compareToggle" type="checkbox" autocomplete="off" checked />
@@ -683,14 +744,16 @@
     </div>
   </main>
 
-  <script defer src="../../domains/observations/metrics.js?v=20260918-phone-fix"></script>
-  <script defer src="../../domains/observations/series.js?v=20260918-phone-fix"></script>
-  <script defer src="../../domains/observations/events.js?v=20260918-phone-fix"></script>
-  <script defer src="../../domains/observations/diary.js?v=20260918-phone-fix"></script>
-  <script defer src="../../domains/observations/summary.js?v=20260918-phone-fix"></script>
-  <script defer src="../../domains/observations/demo-seed.js?v=20260918-phone-fix"></script>
-  <script defer src="../../domains/observations/chart.js?v=20260918-phone-fix"></script>
-  <script defer src="../../domains/observations/controller.js?v=20260918-phone-fix"></script>
-  <script defer src="./tryout-wire.js?v=20260918-phone-fix"></script>
+  <script defer src="../../domains/observations/metrics.js?v=20260918-title-jump"></script>
+  <script defer src="../../domains/observations/series.js?v=20260918-title-jump"></script>
+  <script defer src="../../domains/observations/events.js?v=20260918-title-jump"></script>
+  <script defer src="../../domains/observations/diary.js?v=20260918-title-jump"></script>
+  <script defer src="../../domains/observations/summary.js?v=20260918-title-jump"></script>
+  <script defer src="../../domains/observations/titles.js?v=20260918-title-jump"></script>
+  <script defer src="../../domains/observations/bridge.js?v=20260918-title-jump"></script>
+  <script defer src="../../domains/observations/demo-seed.js?v=20260918-title-jump"></script>
+  <script defer src="../../domains/observations/chart.js?v=20260918-title-jump"></script>
+  <script defer src="../../domains/observations/controller.js?v=20260918-title-jump"></script>
+  <script defer src="./tryout-wire.js?v=20260918-title-jump"></script>
 </body>
 </html>
