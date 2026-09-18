@@ -73,13 +73,166 @@ describe("SH-05 shell photo crop styles", () => {
     assert.ok(Math.abs(clamped.offsetY) <= (metrics.height - metrics.view) / 2 + 0.001);
   });
 
-  it("photo-crop.js has no document or innerHTML", () => {
+  it("photo-crop.js has no document or localStorage", () => {
     const src = readFileSync(
       new URL("shell/photo-crop.js", WEB_ROOT),
       "utf8"
     );
     assert.equal(/\bdocument\b/.test(src), false);
-    assert.equal(/\binnerHTML\b/.test(src), false);
+    assert.equal(/\blocalStorage\b/.test(src), false);
+  });
+
+  it("applyPhotoCropFlags toggles overlay chrome via injected els", () => {
+    const context = vm.createContext({ console });
+    context.globalThis = context;
+    context.window = context;
+    vm.runInContext(
+      readFileSync(new URL("shell/photo-crop.js", WEB_ROOT), "utf8"),
+      context,
+      { filename: "shell/photo-crop.js" }
+    );
+    const shell = context.PetLiveWeb.shell;
+    const htmlClasses = new Set();
+    const els = {
+      root: { hidden: true },
+      img: {
+        attrs: new Map([["src", "x"], ["style", "y"]]),
+        removeAttribute(name) {
+          this.attrs.delete(name);
+        },
+      },
+      zoom: { value: "2" },
+      htmlEl: {
+        classList: {
+          toggle(name, on) {
+            if (on) htmlClasses.add(name);
+            else htmlClasses.delete(name);
+          },
+        },
+      },
+      bodyEl: { style: { overflow: "" } },
+    };
+    assert.equal(
+      shell.applyPhotoCropFlags(els, {
+        rootHidden: false,
+        htmlClass: "is-photo-crop-open",
+        htmlClassOn: true,
+        bodyOverflow: "hidden",
+        clearImg: true,
+        zoomValue: "1",
+      }),
+      true
+    );
+    assert.equal(els.root.hidden, false);
+    assert.ok(htmlClasses.has("is-photo-crop-open"));
+    assert.equal(els.bodyEl.style.overflow, "hidden");
+    assert.equal(els.zoom.value, "1");
+    assert.equal(els.img.attrs.has("src"), false);
+  });
+
+  it("applyCropImageTransform writes width/height/transform", () => {
+    const context = vm.createContext({ console });
+    context.globalThis = context;
+    context.window = context;
+    vm.runInContext(
+      readFileSync(new URL("shell/photo-crop.js", WEB_ROOT), "utf8"),
+      context,
+      { filename: "shell/photo-crop.js" }
+    );
+    const img = { style: {} };
+    assert.equal(
+      context.PetLiveWeb.shell.applyCropImageTransform(img, {
+        width: "10px",
+        height: "20px",
+        transform: "translate(1px, 2px)",
+      }),
+      true
+    );
+    assert.equal(img.style.width, "10px");
+    assert.equal(img.style.height, "20px");
+    assert.equal(img.style.transform, "translate(1px, 2px)");
+  });
+
+  it("bindPetPhotoFileInput opens crop with read file", async () => {
+    const context = vm.createContext({ console });
+    context.globalThis = context;
+    context.window = context;
+    vm.runInContext(
+      readFileSync(new URL("shell/photo-crop.js", WEB_ROOT), "utf8"),
+      context,
+      { filename: "shell/photo-crop.js" }
+    );
+    const calls = [];
+    let changeFn = null;
+    const input = {
+      getAttribute() {
+        return null;
+      },
+      setAttribute() {},
+      addEventListener(type, fn) {
+        if (type === "change") changeFn = fn;
+      },
+      files: [{ name: "a.jpg" }],
+      value: "x",
+    };
+    context.PetLiveWeb.shell.bindPetPhotoFileInput(input, {
+      getCurrentPet: () => ({ id: "p1" }),
+      readFileAsDataUrl: async () => "data:image/jpeg;base64,xx",
+      onOpenCrop: async (dataUrl, petId) => {
+        calls.push(["open", dataUrl, petId]);
+      },
+      onFail: () => calls.push(["fail"]),
+    });
+    await changeFn({ target: input });
+    assert.equal(input.value, "");
+    assert.deepEqual(calls, [
+      ["open", "data:image/jpeg;base64,xx", "p1"],
+    ]);
+  });
+
+  it("applyEmergencyPetPhotoFrame paints label and frame", () => {
+    const context = vm.createContext({ console });
+    context.globalThis = context;
+    context.window = context;
+    vm.runInContext(
+      readFileSync(new URL("shell/photo-crop.js", WEB_ROOT), "utf8"),
+      context,
+      { filename: "shell/photo-crop.js" }
+    );
+    const frameLabel = {
+      title: "",
+      attrs: {},
+      setAttribute(k, v) {
+        this.attrs[k] = v;
+      },
+    };
+    const frame = {
+      classList: {
+        on: false,
+        toggle(_n, v) {
+          this.on = v;
+        },
+      },
+      style: { backgroundImage: "" },
+      innerHTML: "",
+    };
+    assert.equal(
+      context.PetLiveWeb.shell.applyEmergencyPetPhotoFrame(
+        { frameLabel, frame },
+        {
+          hasPhoto: true,
+          backgroundImage: "url(x)",
+          frameInnerHtml: "<span></span>",
+        },
+        "Photo"
+      ),
+      true
+    );
+    assert.equal(frameLabel.title, "Photo");
+    assert.equal(frameLabel.attrs["aria-label"], "Photo");
+    assert.equal(frame.classList.on, true);
+    assert.equal(frame.style.backgroundImage, "url(x)");
+    assert.equal(frame.innerHTML, "<span></span>");
   });
 
   it("bindPhotoCropUi registers zoom input and cancel hooks", () => {

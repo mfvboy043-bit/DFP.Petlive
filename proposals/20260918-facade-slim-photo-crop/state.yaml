@@ -1,0 +1,51 @@
+id: "20260918-facade-slim-photo-crop"
+title: "Facade slim — Wave 3 cluster 2 (pet photo / crop) on C"
+version: 2
+status: adopted
+# proposed | building | reviewing | revising | candidate_ready | halted | adopted | rejected
+
+gate_a:
+  status: approved
+  approved_at: "2026-09-18"
+  note: >-
+    Victor 2026-09-18 —「確認，且推上去」. Gate A + cover B + Pages push
+    in the same ask.
+  # pending | approved | modified | rejected
+
+gate_b:
+  status: adopted
+  approved_at: "2026-09-18"
+  note: >-
+    Victor「確認，且推上去」treated as adopt + 覆蓋 B + Pages publish.
+  # pending | adopted | rejected
+
+iteration: 1
+max_iterations: 3
+
+candidate:
+  branch: "cursor/modules-write-phase1-6f84"
+  path: "proposals/20260918-facade-slim-photo-crop"
+  worktree: ""
+
+reviews:
+  pharmacist: skipped
+  qa: pass
+  ui: pending
+  # pending | skipped | pass | conditional | reject
+
+rerun: []
+blocking_issues: []
+non_blocking: []
+builder_scope: ["PC-1", "PC-2", "PC-3", "PC-4"]
+halt_reason: ""
+
+builder_report:
+  note: >-
+    Extended shell/photo-crop.js with applyPhotoCropFlags, applyCropImageTransform,
+    applyEmergencyPetPhotoFrame, bindPetPhotoFileInput. Thin-wired C and B.
+    PC-2: no media.js change required (presentation already in pets/render).
+  tests: "web-shell-photo-crop + web-facade-hygiene 33/33 pass"
+
+notes: |
+  Parent: 20260903-building-blocks-audit Wave 3 cluster 2.
+  Prerequisite P0 restored in the same publish batch.
