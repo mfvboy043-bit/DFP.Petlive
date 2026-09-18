@@ -28,12 +28,10 @@
   const renderer = obs.createRenderer({ escapeHtml: escapeHtml });
 
   const mainSvg = document.getElementById("mainChart");
-  const miniSvg = document.getElementById("miniChart");
   const tooltip = document.getElementById("tooltip");
   const chartWrap = document.getElementById("mainChartWrap");
   const emptyState = document.getElementById("emptyState");
   const metricSelect = document.getElementById("metricSelect");
-  const secondarySelect = document.getElementById("secondarySelect");
   const diaryMetric = document.getElementById("diaryMetric");
   const diaryVisit = document.getElementById("diaryVisit");
   const diaryIndex = document.getElementById("diaryIndex");
@@ -140,10 +138,8 @@
     }
 
     fill(metricSelect, state.metric);
-    fill(secondarySelect, state.secondary);
     fill(diaryMetric, state.metric);
     controller.setMetric(metricSelect.value);
-    controller.setSecondary(secondarySelect.value);
   }
 
   function rebuildVisitSelect() {
@@ -187,15 +183,6 @@
       });
       metricCards.appendChild(btn);
     });
-  }
-
-  function syncSecondaryOptions() {
-    const state = controller.getState();
-    Array.prototype.forEach.call(secondarySelect.options, function (option) {
-      option.disabled = option.value === state.metric;
-    });
-    const next = controller.ensureSecondaryDistinct();
-    if (secondarySelect.value !== next) secondarySelect.value = next;
   }
 
   function paintSummary(summary) {
@@ -245,24 +232,10 @@
     );
   }
 
-  function renderMiniChart() {
-    const state = controller.getState();
-    const modeData = controller.getModeData();
-    const meta = metrics.get(state.secondary);
-    const series = controller.getSeries(state.secondary);
-    renderer.renderMini(miniSvg, {
-      labels: modeData.labels,
-      series: series,
-      meta: meta,
-    });
-  }
-
   function renderAll() {
     rebuildCards();
     rebuildDiaryIndexSelect();
-    syncSecondaryOptions();
     renderMainChart();
-    renderMiniChart();
   }
 
   function addCustomMetric() {
@@ -297,11 +270,6 @@
     controller.setMetric(event.target.value);
     if (diaryMetric) diaryMetric.value = event.target.value;
     renderAll();
-  });
-
-  secondarySelect.addEventListener("change", function (event) {
-    controller.setSecondary(event.target.value);
-    renderMiniChart();
   });
 
   document.getElementById("compareToggle").addEventListener("change", function (event) {
