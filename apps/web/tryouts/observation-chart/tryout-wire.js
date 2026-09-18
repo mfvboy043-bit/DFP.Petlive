@@ -387,13 +387,6 @@
     });
   }
 
-  function paintSummary(summary) {
-    document.getElementById("latestValue").textContent = summary.latestText;
-    document.getElementById("latestNote").textContent = summary.latestNote;
-    document.getElementById("changeValue").textContent = summary.changeText;
-    document.getElementById("completionValue").textContent = summary.completionText;
-  }
-
   function renderMainChart() {
     const project = controller.getActiveProject();
     const state = controller.getState();
@@ -407,7 +400,6 @@
       if (emptyAddPointCta) emptyAddPointCta.hidden = true;
       if (emptyCreateProjectCta) emptyCreateProjectCta.hidden = false;
       mainSvg.replaceChildren();
-      paintSummary({ latestText: "—", latestNote: "—", changeText: "—", completionText: "—" });
       document.getElementById("chartSubtitle").textContent = "用標題旁選單新建專案。";
       return;
     }
@@ -440,9 +432,6 @@
     if (previousLegend) previousLegend.hidden = !state.compare || controller.hidesCompare();
 
     if (empty) {
-      paintSummary(
-        obs.computePeriodSummary([], modeData.labels, meta, metrics.formatValue)
-      );
       mainSvg.replaceChildren();
       return;
     }
@@ -459,10 +448,6 @@
       onHideTooltip: hideTooltip,
       onEventActivate: activateVisitFromChart,
     });
-
-    paintSummary(
-      obs.computePeriodSummary(series.current, modeData.labels, meta, metrics.formatValue)
-    );
   }
 
   function renderAll() {
