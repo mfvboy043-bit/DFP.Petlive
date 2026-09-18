@@ -1,6 +1,6 @@
 id: 20260918-weight-chart-upgrade
 title: Health observation chart tryout (timeline-linked, multi-metric)
-version: 2
+version: 3
 status: revising
 # proposed | building | reviewing | revising | candidate_ready | halted | adopted | rejected
 
@@ -21,7 +21,7 @@ gate_a:
 gate_b:
   status: pending
 
-iteration: 2
+iteration: 3
 max_iterations: 3
 
 candidate:
@@ -31,20 +31,29 @@ candidate:
 
 reviews:
   pharmacist: skipped
-  qa: pass
-  ui: conditional
+  qa: pending
+  ui: pending
 
 rerun: []
 blocking_issues: []
-non_blocking:
-  - UI-1
-  - UI-2
-  - UI-3
-  - QA-1
-  - QA-2
+non_blocking: []
 builder_scope:
-  - phone-first layout (~430px column)
-  - chart viewBox fits phone without 690px min-width scroll
+  - Tier 2 extract apps/web/domains/observations/* IIFE modules
+  - preview tryout-wire.js thin DOM only
+  - qa/tests/web-observations-blocks.test.js
+  - iframe cache ?v=20260918-blocks on C/B
 notes: |
-  Victor 2026-09-18: primary UI is phone; previous layout felt too wide.
-  Iteration 2: phone-first shell + SVG. Hard refresh recommended.
+  Victor 2026-09-18: Tier 2 — observation chart brains must be independent modules.
+  Block map (PetLiveWeb.domains.observations.*):
+    metrics.js — registry API (createRegistry, listIds, get, addCustom, formatValue)
+    series.js — isEmptySeries, emptySeries, ensureSeriesShape, yScaleFor
+    events.js — shortLabelFor, toneForKind, planEventLabels
+    diary.js — createNote, applyDiaryPoint
+    summary.js — computePeriodSummary
+    chart.js — createRenderer renderMain/renderMini (SVG only, viewBox 360)
+    demo-seed.js — getDefaultMetricMeta, getDemoVisits, createDemoViewData
+    controller.js — createController (mode/metric/secondary/compare)
+    preview/tryout-wire.js — DOM wire only
+  Weight domain stays independent; weight metric only in demo seed.
+  shell/observation-tryout.css = iframe host only.
+  Cache: ?v=20260918-blocks

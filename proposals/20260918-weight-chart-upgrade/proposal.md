@@ -1,13 +1,34 @@
 ---
 id: 20260918-weight-chart-upgrade
 title: Health observation chart tryout (timeline-linked, multi-metric)
-status: reviewing
+status: revising
 author: planner
 candidate_branch: ""
 candidate_path: "proposals/20260918-weight-chart-upgrade/preview/"
 created: 2026-09-18
 updated: 2026-09-18
 ---
+
+## Tier 2 block map (iteration 3)
+
+Victor required independent modules under `apps/web/domains/observations/`
+(`PetLiveWeb.domains.observations.*`). Preview HTML keeps CSS+markup; brains are not inline.
+
+| Module | Path | Concern |
+|--------|------|---------|
+| metrics | `apps/web/domains/observations/metrics.js` | Registry: createRegistry / listIds / get / addCustom (0–10) / formatValue |
+| series | `…/series.js` | isEmptySeries, emptySeries, ensureSeriesShape, yScaleFor |
+| events | `…/events.js` | shortLabelFor, toneForKind, planEventLabels |
+| diary | `…/diary.js` | createNote, applyDiaryPoint |
+| summary | `…/summary.js` | computePeriodSummary |
+| chart | `…/chart.js` | SVG createRenderer → renderMain / renderMini (viewBox 360) |
+| demo-seed | `…/demo-seed.js` | getDefaultMetricMeta, getDemoVisits, createDemoViewData |
+| controller | `…/controller.js` | createController (mode/metric/secondary/compare) |
+| wire | `preview/tryout-wire.js` | Thin DOM only |
+| host CSS | `apps/web/shell/observation-tryout.css` | iframe host only |
+
+Non-goals preserved: no merge into `domains/weight`; no algorithm dump into `app.js` / `c/app.js`.
+Cache bust: `?v=20260918-blocks`. QA: `qa/tests/web-observations-blocks.test.js`.
 
 # Proposal: Health observation chart tryout
 
