@@ -36,11 +36,14 @@
   const secondarySelect = document.getElementById("secondarySelect");
   const diaryMetric = document.getElementById("diaryMetric");
   const diaryVisit = document.getElementById("diaryVisit");
+  const diaryIndex = document.getElementById("diaryIndex");
+  const diaryValue = document.getElementById("diaryValue");
   const metricCards = document.getElementById("metricCards");
   const chartTitleInput = document.getElementById("chartTitleInput");
   const visitJump = document.getElementById("visitJump");
   const visitJumpLabel = document.getElementById("visitJumpLabel");
   const visitJumpBtn = document.getElementById("visitJumpBtn");
+  const emptyAddPointCta = document.getElementById("emptyAddPointCta");
   let activeVisitId = "";
 
   function paintTitle() {
@@ -77,6 +80,7 @@
       });
     }
   }
+
   function showTooltip(event, title, value) {
     tooltip.innerHTML = "<strong>" + escapeHtml(title) + "</strong>" + escapeHtml(value);
     tooltip.style.display = "block";
@@ -89,6 +93,33 @@
 
   function hideTooltip() {
     tooltip.style.display = "none";
+  }
+
+  function focusDiaryForm() {
+    const form = document.getElementById("diaryForm");
+    if (form && typeof form.scrollIntoView === "function") {
+      form.scrollIntoView({ behavior: "smooth", block: "nearest" });
+    }
+    if (diaryValue) diaryValue.focus();
+  }
+
+  function rebuildDiaryIndexSelect() {
+    if (!diaryIndex) return;
+    const modeData = controller.getModeData();
+    const labels = (modeData && modeData.labels) || [];
+    const prev = diaryIndex.value;
+    diaryIndex.replaceChildren();
+    labels.forEach(function (label, index) {
+      const opt = document.createElement("option");
+      opt.value = String(index);
+      opt.textContent = label;
+      diaryIndex.appendChild(opt);
+    });
+    if (prev !== "" && Number(prev) >= 0 && Number(prev) < labels.length) {
+      diaryIndex.value = prev;
+    } else if (labels.length) {
+      diaryIndex.value = "0";
+    }
   }
 
   function rebuildSelects() {
@@ -151,18 +182,11 @@
       btn.addEventListener("click", function () {
         controller.setMetric(id);
         metricSelect.value = id;
+        if (diaryMetric) diaryMetric.value = id;
         renderAll();
       });
       metricCards.appendChild(btn);
     });
-
-    const eventCard = document.createElement("div");
-    eventCard.className = "metric-card";
-    eventCard.style.cursor = "default";
-    eventCard.innerHTML =
-      '<span class="metric-color pink"></span>' +
-      "<div><strong>治療事件</strong><span>就診、用藥開始、劑量調整</span></div>";
-    metricCards.appendChild(eventCard);
   }
 
   function syncSecondaryOptions() {
@@ -192,7 +216,7 @@
     chartWrap.setAttribute("data-empty", empty ? "true" : "false");
     paintTitle();
     document.getElementById("chartSubtitle").textContent =
-      meta.direction + "；點時間軸上的就診／用藥標記可跳到時間軸。";
+      (meta.direction || "") + "。在側欄記分數後，圖上的日記點與折線會更新。";
     document.getElementById("previousLegend").hidden = !state.compare;
 
     if (empty) {
@@ -234,10 +258,8 @@
   }
 
   function renderAll() {
-    const state = controller.getState();
-    const granularity = { day: "每 2 小時", week: "逐日", month: "每 3 日", year: "逐月" };
-    document.getElementById("summarySelect").options[0].textContent = granularity[state.mode];
     rebuildCards();
+    rebuildDiaryIndexSelect();
     syncSecondaryOptions();
     renderMainChart();
     renderMiniChart();
@@ -258,6 +280,7 @@
     metricSelect.value = id;
     diaryMetric.value = id;
     renderAll();
+    focusDiaryForm();
   }
 
   document.querySelectorAll(".segment").forEach(function (button) {
@@ -272,6 +295,7 @@
 
   metricSelect.addEventListener("change", function (event) {
     controller.setMetric(event.target.value);
+    if (diaryMetric) diaryMetric.value = event.target.value;
     renderAll();
   });
 
@@ -293,36 +317,70 @@
     }
   });
 
+  if (emptyAddPointCta) {
+    emptyAddPointCta.addEventListener("click", function () {
+      focusDiaryForm();
+    });
+  }
+
   document.getElementById("diaryForm").addEventListener("submit", function (event) {
     event.preventDefault();
-    const noteText = (document.getElementById("diaryNote").value || "").trim();
+    const feedback = document.getElementById("diaryFeedback");
     const metricId = diaryMetric.value;
+    const meta = metrics.get(metricId);
+    const noteText = (document.getElementById("diaryNote").value || "").trim();
     const visitId = diaryVisit.value;
     const visitLabel = visits.find(function (v) {
       return v.id === visitId;
     });
-    const meta = metrics.get(metricId);
-    const feedback = document.getElementById("diaryFeedback");
+    const rawValue = diaryValue ? diaryValue.value : "";
+    const value = Number(rawValue);
+    const index = diaryIndex ? Number(diaryIndex.value) : NaN;
+    const modeData = controller.getModeData();
+    const labelCount = modeData && Array.isArray(modeData.labels) ? modeData.labels.length : 0;
+    const indexOk = Number.isInteger(index) && index >= 0 && index < labelCount;
 
-    if (!noteText) {
-      feedback.textContent = "請先輸入備註文字（示範不寫入正式儲存）。";
+    if (!Number.isFinite(value) || value < 0 || value > 10) {
+      feedback.textContent = "請輸入 0–10 的分數。";
       feedback.style.color = "#b45309";
+      if (diaryValue) diaryValue.focus();
+      return;
+    }
+    if (!indexOk) {
+      feedback.textContent = "請選擇有效的時間點。";
+      feedback.style.color = "#b45309";
+      if (diaryIndex) diaryIndex.focus();
       return;
     }
 
     controller.addDiaryPoint({
       metricId: metricId,
-      text: noteText,
+      value: value,
+      index: index,
       visitId: visitId || null,
+      text: noteText,
     });
 
+    controller.setMetric(metricId);
+    metricSelect.value = metricId;
+    renderAll();
+
+    const bucketLabel =
+      modeData && modeData.labels && modeData.labels[index] != null
+        ? modeData.labels[index]
+        : String(index);
     feedback.style.color = "#146d65";
     feedback.textContent =
-      "已記錄示範備註：「" +
+      "已寫上圖表：「" +
       (meta ? meta.label : metricId) +
       "」" +
-      (visitId ? "・已連結 " + (visitLabel ? visitLabel.label : visitId) : "・未連結就診") +
+      value +
+      "（" +
+      bucketLabel +
+      "）" +
+      (visitId ? "・已連結 " + (visitLabel ? visitLabel.label : visitId) : "") +
       "（記憶體暫存，重整後消失）";
+    if (diaryValue) diaryValue.value = "";
     document.getElementById("diaryNote").value = "";
   });
 

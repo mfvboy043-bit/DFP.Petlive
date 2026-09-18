@@ -58,9 +58,9 @@
   function getDemoVisits() {
     return [
       { id: "", label: "不連結就診" },
-      { id: "v-2025-09-01", label: "2025-09-01 門診・開立處方並拍照" },
-      { id: "v-2025-09-15", label: "2025-09-15 回診・調整劑量" },
-      { id: "v-2025-09-29", label: "2025-09-29 追蹤回診" },
+      { id: "v-2025-09-01", label: "2025-09-01 門診・開始追蹤" },
+      { id: "v-2025-09-15", label: "2025-09-15 門診" },
+      { id: "v-2025-09-29", label: "2025-09-29 門診" },
     ];
   }
 
@@ -84,9 +84,13 @@
           "24:00",
         ],
         events: [
-          { index: 4, label: "08:00 用藥", shortLabel: "用藥", kind: "med", visitId: "v-2025-09-01" },
-          { index: 7, label: "13:40 日記・發作感", shortLabel: "日記", kind: "note" },
-          { index: 10, label: "20:00 第二次用藥", shortLabel: "用藥", kind: "med", visitId: "v-2025-09-01" },
+          {
+            index: 4,
+            label: "08:00 開始用藥／就診起追蹤",
+            shortLabel: "開始追蹤",
+            kind: "med",
+            visitId: "v-2025-09-01",
+          },
         ],
         headache: {
           current: [2, 2, 3, 5, 7, 6, 5, 6, 4, 3, 3, 2, 2],
@@ -188,9 +192,13 @@
         label: "每週",
         labels: ["週一", "週二", "週三", "週四", "週五", "週六", "週日"],
         events: [
-          { index: 0, label: "用藥開始（接續 9/1）", shortLabel: "用藥", kind: "med", visitId: "v-2025-09-01" },
-          { index: 3, label: "劑量調整", shortLabel: "調劑", kind: "med", visitId: "v-2025-09-15" },
-          { index: 6, label: "回診", shortLabel: "回診", kind: "visit", visitId: "v-2025-09-29" },
+          {
+            index: 0,
+            label: "開始用藥／就診起追蹤",
+            shortLabel: "開始追蹤",
+            kind: "med",
+            visitId: "v-2025-09-01",
+          },
         ],
         headache: {
           current: [7, 6, 5, 3, 4, 3, 3],
@@ -222,10 +230,13 @@
         label: "每月",
         labels: ["1日", "4日", "7日", "10日", "13日", "16日", "19日", "22日", "25日", "28日", "30日"],
         events: [
-          { index: 0, label: "9/1 就診・開立處方", shortLabel: "9/1 就診", kind: "visit", visitId: "v-2025-09-01" },
-          { index: 0, label: "開始用藥", shortLabel: "用藥", kind: "med", visitId: "v-2025-09-01" },
-          { index: 5, label: "9/15 劑量調整", shortLabel: "9/15 調劑", kind: "med", visitId: "v-2025-09-15" },
-          { index: 9, label: "9/29 回診", shortLabel: "9/29 回診", kind: "visit", visitId: "v-2025-09-29" },
+          {
+            index: 0,
+            label: "9/1 開始用藥／就診起追蹤",
+            shortLabel: "開始追蹤",
+            kind: "med",
+            visitId: "v-2025-09-01",
+          },
         ],
         headache: {
           current: [8, 6, 4, 3, 3, 4, 3, 2, 3, 4, 3],
@@ -317,9 +328,13 @@
         label: "每年",
         labels: ["1月", "2月", "3月", "4月", "5月", "6月", "7月", "8月", "9月", "10月", "11月", "12月"],
         events: [
-          { index: 8, label: "9月就診・開始追蹤", shortLabel: "9月就診", kind: "visit", visitId: "v-2025-09-01" },
-          { index: 8, label: "用藥開始", shortLabel: "用藥", kind: "med", visitId: "v-2025-09-01" },
-          { index: 10, label: "劑量調整／回診", shortLabel: "回診", kind: "med", visitId: "v-2025-09-15" },
+          {
+            index: 8,
+            label: "9月 開始用藥／就診起追蹤",
+            shortLabel: "開始追蹤",
+            kind: "med",
+            visitId: "v-2025-09-01",
+          },
         ],
         headache: {
           current: [5, 5, 4, 4, 3, 4, 5, 7, 4, 3, 2, 3],

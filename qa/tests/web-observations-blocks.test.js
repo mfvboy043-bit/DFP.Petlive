@@ -146,3 +146,74 @@ test("bridge message round-trip", () => {
   assert.equal(parsed.visitIndex, 2);
   assert.equal(obs.parseBridgeMessage({ type: "nope" }), null);
 });
+
+test("controller addCustom yields empty series; addDiaryPoint fills chart series", () => {
+  const obs = loadObservations([
+    ...CORE_FILES,
+    "titles.js",
+    "demo-seed.js",
+    "controller.js",
+  ]);
+  const metrics = obs.createRegistry(obs.getDefaultMetricMeta());
+  const viewData = obs.createDemoViewData();
+  const controller = obs.createController({
+    metrics: metrics,
+    viewData: viewData,
+    visits: obs.getDemoVisits(),
+  });
+
+  const customId = controller.addCustomMetric("疲勞程度");
+  assert.ok(customId);
+  const emptySeries = controller.getSeries(customId, "week");
+  assert.equal(obs.isEmptySeries(emptySeries), true);
+
+  controller.addDiaryPoint({
+    metricId: customId,
+    value: 7,
+    index: 2,
+    text: "下午較累",
+  });
+  const filled = controller.getSeries(customId, "week");
+  assert.equal(filled.current[2], 7);
+  assert.equal(filled.sources[2], "diary");
+  assert.equal(obs.isEmptySeries(filled), false);
+
+  ["day", "week", "month", "year"].forEach((mode) => {
+    const events = viewData[mode].events;
+    assert.equal(events.length, 1, mode + " should have one start-tracking event");
+    assert.match(String(events[0].label), /開始/);
+    assert.equal(events[0].visitId, "v-2025-09-01");
+  });
+});
+
+test("chart createRenderer loads without background bands", () => {
+  const chartSrc = readFileSync(path.join(OBS_DIR, "chart.js"), "utf8");
+  assert.equal(chartSrc.includes("#e8f4ed"), false);
+  assert.equal(chartSrc.includes("#fbe9ed"), false);
+  assert.equal(chartSrc.includes("就診帶出"), false);
+
+  const sandbox = {
+    PetLiveWeb: { domains: {} },
+    document: {
+      createElementNS: function () {
+        return {
+          setAttribute: function () {},
+          textContent: "",
+          style: {},
+          addEventListener: function () {},
+          append: function () {},
+          replaceChildren: function () {},
+        };
+      },
+    },
+  };
+  vm.createContext(sandbox);
+  for (const file of [...CORE_FILES, "chart.js"]) {
+    const src = readFileSync(path.join(OBS_DIR, file), "utf8");
+    vm.runInContext(src, sandbox, { filename: file });
+  }
+  const obs = sandbox.PetLiveWeb.domains.observations;
+  assert.equal(typeof obs.createRenderer, "function");
+  const renderer = obs.createRenderer({});
+  assert.equal(typeof renderer.renderMain, "function");
+});

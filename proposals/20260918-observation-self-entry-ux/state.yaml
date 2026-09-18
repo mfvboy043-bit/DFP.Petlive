@@ -1,0 +1,54 @@
+id: 20260918-observation-self-entry-ux
+title: Observation chart self-entry UX rethink (DIY metrics + fill-in first)
+version: 2
+status: adopted
+# proposed | building | reviewing | revising | candidate_ready | halted | adopted | rejected
+
+gate_a:
+  status: approved
+  approved_at: "2026-09-18"
+  decisions:
+    J: J1
+    K: K1
+    L: L1
+    M: M1
+    N: N2
+    O: O1
+
+gate_b:
+  status: adopted
+  adopted_at: "2026-09-18"
+
+iteration: 1
+max_iterations: 3
+
+candidate:
+  branch: ""
+  path: "apps/web/tryouts/observation-chart/"
+  worktree: ""
+  notes: "Phase1–2 built on domains/observations/* + tryouts/observation-chart; ?v=20260918-self-entry"
+
+reviews:
+  pharmacist: skipped
+  qa: pass
+  ui: conditional
+
+rerun: []
+blocking_issues: []
+non_blocking:
+  - UI-1
+  - QA-1
+  - UI-2
+  - UI-3
+  - UI-4
+  - QA-2
+  - QA-3
+  - QA-4
+builder_scope: []
+halt_reason: ""
+notes: |
+  Gate A: Victor「確認」→ J1 K1 L1 M1 N2 O1.
+  Gate B: Victor「採用」2026-09-18 — tryout accepted as productization baseline.
+  Version Steward: no git branch merge needed (candidate already on tryout + domains path).
+  No B cover / Pages (out of scope). Carry-forward polish: UI-1 weight form, UI-2 mobile DIY fold, UI-3 empty legend, UI-4 shared start marker.
+  Supersedes 20260918-weight-chart-upgrade (halted).
