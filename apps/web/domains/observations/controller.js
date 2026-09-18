@@ -24,6 +24,8 @@
       secondary: "sleep",
       compare: true,
       customCount: 0,
+      customTitle: "",
+      focusVisitId: "",
     };
 
     const ids = metrics.listIds();
@@ -41,7 +43,43 @@
         secondary: state.secondary,
         compare: state.compare,
         customCount: state.customCount,
+        customTitle: state.customTitle,
+        focusVisitId: state.focusVisitId,
       };
+    }
+
+    function setCustomTitle(value) {
+      state.customTitle = obs.normalizeCustomTitle
+        ? obs.normalizeCustomTitle(value)
+        : String(value || "").trim().slice(0, 48);
+      return state.customTitle;
+    }
+
+    function resolveTitle() {
+      const meta = metrics.get(state.metric) || {};
+      const modeData = getModeData();
+      if (typeof obs.resolveChartTitle === "function") {
+        return obs.resolveChartTitle({
+          customTitle: state.customTitle,
+          metricLabel: meta.label,
+          modeLabel: modeData && modeData.label,
+        });
+      }
+      return (meta.label || "") + "｜" + ((modeData && modeData.label) || "") + "觀察趨勢";
+    }
+
+    function setFocusVisitId(visitId) {
+      state.focusVisitId = visitId != null ? String(visitId) : "";
+      return state.focusVisitId;
+    }
+
+    function findVisit(visitId) {
+      const id = String(visitId || "");
+      if (!id) return null;
+      for (let i = 0; i < visits.length; i += 1) {
+        if (String(visits[i].id) === id) return visits[i];
+      }
+      return null;
     }
 
     function setMode(mode) {
@@ -129,6 +167,10 @@
       setMetric: setMetric,
       setSecondary: setSecondary,
       setCompare: setCompare,
+      setCustomTitle: setCustomTitle,
+      resolveTitle: resolveTitle,
+      setFocusVisitId: setFocusVisitId,
+      findVisit: findVisit,
       ensureSecondaryDistinct: ensureSecondaryDistinct,
       addCustomMetric: addCustomMetric,
       addDiaryPoint: addDiaryPoint,

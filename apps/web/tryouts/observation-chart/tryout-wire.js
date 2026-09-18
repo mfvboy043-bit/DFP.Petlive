@@ -37,7 +37,46 @@
   const diaryMetric = document.getElementById("diaryMetric");
   const diaryVisit = document.getElementById("diaryVisit");
   const metricCards = document.getElementById("metricCards");
+  const chartTitleInput = document.getElementById("chartTitleInput");
+  const visitJump = document.getElementById("visitJump");
+  const visitJumpLabel = document.getElementById("visitJumpLabel");
+  const visitJumpBtn = document.getElementById("visitJumpBtn");
+  let activeVisitId = "";
 
+  function paintTitle() {
+    const title = controller.resolveTitle();
+    document.getElementById("chartTitle").textContent = title;
+    if (chartTitleInput && document.activeElement !== chartTitleInput) {
+      const state = controller.getState();
+      chartTitleInput.value = state.customTitle || "";
+      chartTitleInput.placeholder = title;
+    }
+  }
+
+  function showVisitJump(visitId, label) {
+    activeVisitId = visitId || "";
+    if (!visitJump) return;
+    if (!activeVisitId) {
+      visitJump.hidden = true;
+      return;
+    }
+    const visit = controller.findVisit(activeVisitId);
+    visitJumpLabel.textContent = label || (visit && visit.label) || activeVisitId;
+    visitJump.hidden = false;
+  }
+
+  function activateVisitFromChart(eventInfo) {
+    const info = eventInfo || {};
+    const visitId = info.visitId || "";
+    controller.setFocusVisitId(visitId);
+    showVisitJump(visitId, info.label);
+    if (visitId && typeof obs.postBridgeToParent === "function") {
+      obs.postBridgeToParent(window, obs.BRIDGE_ACTIONS.openVisit, {
+        visitId: visitId,
+        title: controller.resolveTitle(),
+      });
+    }
+  }
   function showTooltip(event, title, value) {
     tooltip.innerHTML = "<strong>" + escapeHtml(title) + "</strong>" + escapeHtml(value);
     tooltip.style.display = "block";
@@ -151,10 +190,9 @@
 
     emptyState.setAttribute("data-show", empty ? "true" : "false");
     chartWrap.setAttribute("data-empty", empty ? "true" : "false");
-    document.getElementById("chartTitle").textContent =
-      meta.label + "｜" + modeData.label + "觀察趨勢";
+    paintTitle();
     document.getElementById("chartSubtitle").textContent =
-      meta.direction + "；就診與用藥事件以垂直虛線標示。";
+      meta.direction + "；點時間軸上的就診／用藥標記可跳到時間軸。";
     document.getElementById("previousLegend").hidden = !state.compare;
 
     if (empty) {
@@ -175,6 +213,7 @@
       formatValue: metrics.formatValue,
       onShowTooltip: showTooltip,
       onHideTooltip: hideTooltip,
+      onEventActivate: activateVisitFromChart,
     });
 
     paintSummary(
@@ -285,6 +324,36 @@
       (visitId ? "・已連結 " + (visitLabel ? visitLabel.label : visitId) : "・未連結就診") +
       "（記憶體暫存，重整後消失）";
     document.getElementById("diaryNote").value = "";
+  });
+
+  if (chartTitleInput) {
+    chartTitleInput.addEventListener("input", function () {
+      controller.setCustomTitle(chartTitleInput.value);
+      paintTitle();
+    });
+  }
+
+  if (visitJumpBtn) {
+    visitJumpBtn.addEventListener("click", function () {
+      if (!activeVisitId) return;
+      obs.postBridgeToParent(window, obs.BRIDGE_ACTIONS.openVisit, {
+        visitId: activeVisitId,
+        title: controller.resolveTitle(),
+      });
+    });
+  }
+
+  window.addEventListener("message", function (event) {
+    const msg = obs.parseBridgeMessage(event && event.data);
+    if (!msg) return;
+    if (msg.action === obs.BRIDGE_ACTIONS.focusVisit) {
+      controller.setFocusVisitId(msg.visitId || "");
+      showVisitJump(msg.visitId, msg.title || msg.visitId);
+      if (msg.title) {
+        controller.setCustomTitle(msg.title);
+        paintTitle();
+      }
+    }
   });
 
   rebuildVisitSelect();

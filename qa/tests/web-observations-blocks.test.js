@@ -116,3 +116,33 @@ test("diary applyDiaryPoint mutates current and sources", () => {
   assert.equal(note.visitId, "v1");
   assert.equal(note.value, 6);
 });
+
+test("titles resolveChartTitle prefers custom title", () => {
+  const obs = loadObservations(["titles.js"]);
+  assert.equal(
+    obs.resolveChartTitle({
+      customTitle: "  9月腸胃觀察  ",
+      metricLabel: "頭痛程度",
+      modeLabel: "每週",
+    }),
+    "9月腸胃觀察"
+  );
+  assert.equal(
+    obs.resolveChartTitle({ metricLabel: "頭痛程度", modeLabel: "每週" }),
+    "頭痛程度｜每週觀察趨勢"
+  );
+  assert.equal(obs.normalizeCustomTitle("x".repeat(60)).length, 48);
+});
+
+test("bridge message round-trip", () => {
+  const obs = loadObservations(["bridge.js"]);
+  const msg = obs.buildBridgeMessage(obs.BRIDGE_ACTIONS.openVisit, {
+    visitId: "v-2025-09-01",
+    visitIndex: 2,
+  });
+  const parsed = obs.parseBridgeMessage(msg);
+  assert.equal(parsed.action, "openVisit");
+  assert.equal(parsed.visitId, "v-2025-09-01");
+  assert.equal(parsed.visitIndex, 2);
+  assert.equal(obs.parseBridgeMessage({ type: "nope" }), null);
+});

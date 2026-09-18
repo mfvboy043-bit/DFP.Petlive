@@ -416,6 +416,12 @@
           aria-expanded="false"
           aria-controls="${imagingPanelId}"
         >${label("timelineVisitImagingBtn")}</button>
+        <button
+          type="button"
+          class="tl-drug-notes-btn tl-obs-chart-btn"
+          data-obs-open-chart
+          data-visit-index="${visitIndex}"
+        >${label("timelineOpenObsChart")}</button>
       </div>
       ${yearHtml}
     </div>

@@ -194,6 +194,7 @@
       const planned = obs.planEventLabels(events);
       planned.forEach(function (event) {
         const eventX = x(event.index);
+        const linkable = Boolean(event.visitId) || event.kind === "visit" || event.kind === "med";
         svg.append(
           node("line", {
             x1: eventX,
@@ -203,28 +204,63 @@
             class: "event-line",
           })
         );
-        svg.append(
-          node("circle", {
-            cx: eventX,
-            cy: margin.top + 5,
-            r: 5,
-            fill: event.tone,
-            stroke: "#fff",
-            "stroke-width": 2,
-          })
-        );
-        if (event.showLabel) {
-          svg.append(
-            node(
-              "text",
-              {
-                x: Math.min(Math.max(eventX + 6, margin.left), width - margin.right - 4),
-                y: 30,
-                class: "event-label",
-              },
-              event.shortLabel
-            )
+        const marker = node("circle", {
+          cx: eventX,
+          cy: margin.top + 5,
+          r: linkable ? 7 : 5,
+          fill: event.tone,
+          stroke: "#fff",
+          "stroke-width": 2,
+        });
+        if (linkable) {
+          marker.setAttribute("role", "button");
+          marker.setAttribute("tabindex", "0");
+          marker.style.cursor = "pointer";
+          marker.setAttribute(
+            "aria-label",
+            (event.label || event.shortLabel || "事件") + "（開啟就診）"
           );
+          const activate = function (ev) {
+            if (ev && typeof ev.preventDefault === "function") ev.preventDefault();
+            if (typeof opts.onEventActivate === "function") {
+              opts.onEventActivate({
+                index: event.index,
+                label: event.label,
+                kind: event.kind,
+                visitId: event.visitId,
+              });
+            }
+          };
+          marker.addEventListener("click", activate);
+          marker.addEventListener("keydown", function (ev) {
+            if (ev.key === "Enter" || ev.key === " ") activate(ev);
+          });
+        }
+        svg.append(marker);
+        if (event.showLabel) {
+          const labelNode = node(
+            "text",
+            {
+              x: Math.min(Math.max(eventX + 6, margin.left), width - margin.right - 4),
+              y: 30,
+              class: "event-label",
+            },
+            event.shortLabel
+          );
+          if (linkable) {
+            labelNode.style.cursor = "pointer";
+            labelNode.addEventListener("click", function () {
+              if (typeof opts.onEventActivate === "function") {
+                opts.onEventActivate({
+                  index: event.index,
+                  label: event.label,
+                  kind: event.kind,
+                  visitId: event.visitId,
+                });
+              }
+            });
+          }
+          svg.append(labelNode);
         }
       });
 
