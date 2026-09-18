@@ -1,0 +1,696 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="description" content="健康觀察圖表試用版：多指標、日記與就診連結、事件標記。" />
+  <title>健康觀察圖表｜試用版</title>
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='15' fill='%230f3757'/%3E%3Cpath d='M10 42 21 31l9 7 12-19 12 8' fill='none' stroke='%236ad0c6' stroke-width='6' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E" />
+  <style>
+    :root {
+      color-scheme: light;
+      --ink: #17324d;
+      --ink-soft: #577187;
+      --paper: #f4f7f9;
+      --panel: #ffffff;
+      --line: #d7e0e7;
+      --line-strong: #b9c7d2;
+      --blue: #1487bd;
+      --blue-dark: #0d5e86;
+      --pink: #db1f64;
+      --teal: #2aa99d;
+      --orange: #e8873a;
+      --purple: #7b6cc7;
+      --green-wash: #e8f4ed;
+      --rose-wash: #fbe9ed;
+      --grey-wash: #eef1f3;
+      --shadow: 0 18px 46px rgba(25, 55, 79, 0.10);
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      min-width: 320px;
+      background:
+        radial-gradient(circle at 85% 0%, rgba(42, 169, 157, 0.11), transparent 27rem),
+        linear-gradient(180deg, #f7fafb 0%, var(--paper) 100%);
+      color: var(--ink);
+      font-family: "Noto Sans TC", ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      font-size: 16px;
+      line-height: 1.5;
+    }
+
+    button, select, input, textarea { font: inherit; }
+
+    /* Phone-first tryout: content column stays phone-width even on desktop. */
+    .shell {
+      width: min(430px, calc(100% - 16px));
+      margin: 0 auto;
+      padding: 16px 0 40px;
+    }
+
+    .topbar {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 14px;
+    }
+
+    .eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      color: var(--blue-dark);
+      font-size: 0.82rem;
+      font-weight: 800;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+    }
+
+    .eyebrow::before {
+      width: 9px;
+      height: 9px;
+      border-radius: 50%;
+      background: var(--teal);
+      content: "";
+      box-shadow: 0 0 0 5px rgba(42, 169, 157, 0.13);
+    }
+
+    h1 {
+      margin: 6px 0 4px;
+      font-size: clamp(1.35rem, 5.5vw, 1.7rem);
+      line-height: 1.15;
+      letter-spacing: -0.03em;
+    }
+
+    .topbar p {
+      margin: 0;
+      color: var(--ink-soft);
+      font-size: 0.88rem;
+      max-width: 34ch;
+    }
+
+    .demo-badge {
+      flex: 0 0 auto;
+      border: 1px solid #bdd7d3;
+      border-radius: 999px;
+      background: #eaf7f5;
+      color: #146d65;
+      padding: 8px 13px;
+      font-size: 0.82rem;
+      font-weight: 800;
+    }
+
+    .story-banner {
+      margin-bottom: 18px;
+      border: 1px solid #c9dde8;
+      border-radius: 14px;
+      background: linear-gradient(135deg, rgba(20, 135, 189, 0.08), rgba(42, 169, 157, 0.06));
+      padding: 12px 16px;
+      color: var(--ink-soft);
+      font-size: 0.88rem;
+    }
+
+    .story-banner strong { color: var(--ink); }
+
+    .workspace {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 14px;
+      align-items: start;
+    }
+
+    .main-column { min-width: 0; }
+
+    .panel {
+      border: 1px solid rgba(185, 199, 210, 0.72);
+      border-radius: 20px;
+      background: rgba(255, 255, 255, 0.94);
+      box-shadow: var(--shadow);
+    }
+
+    .toolbar {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: stretch;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 14px 14px;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .segmented {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      width: 100%;
+      padding: 4px;
+      border: 1px solid var(--line);
+      border-radius: 13px;
+      background: #eef3f6;
+    }
+
+    .segment {
+      min-width: 0;
+      border: 0;
+      border-radius: 9px;
+      background: transparent;
+      color: var(--ink-soft);
+      padding: 8px 6px;
+      cursor: pointer;
+      font-weight: 750;
+      transition: 160ms ease;
+    }
+
+    .segment:hover { color: var(--ink); }
+
+    .segment[aria-pressed="true"] {
+      background: var(--panel);
+      color: var(--ink);
+      box-shadow: 0 2px 9px rgba(38, 66, 88, 0.12);
+    }
+
+    .controls {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      align-items: flex-end;
+    }
+
+    .field {
+      display: grid;
+      gap: 5px;
+    }
+
+    .field label {
+      color: var(--ink-soft);
+      font-size: 0.78rem;
+      font-weight: 800;
+    }
+
+    select, input[type="text"] {
+      min-width: 156px;
+      min-height: 41px;
+      border: 1px solid var(--line-strong);
+      border-radius: 11px;
+      background: #fff;
+      color: var(--ink);
+      padding: 0 12px;
+      outline: none;
+    }
+
+    select { padding-right: 35px; }
+
+    select:focus-visible, button:focus-visible, input:focus-visible, textarea:focus-visible {
+      outline: 3px solid rgba(20, 135, 189, 0.24);
+      outline-offset: 2px;
+    }
+
+    .chart-head {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 10px;
+      padding: 16px 14px 4px;
+    }
+
+    .chart-wrap {
+      position: relative;
+      padding: 4px 6px 0;
+      overflow-x: visible;
+    }
+
+    #mainChart, #miniChart {
+      display: block;
+      width: 100%;
+      max-width: 100%;
+      height: auto;
+      overflow: visible;
+    }
+
+    .chart-head h2 {
+      margin: 0;
+      font-size: clamp(1.15rem, 2vw, 1.55rem);
+      letter-spacing: -0.02em;
+    }
+
+    .chart-head p {
+      margin: 4px 0 0;
+      color: var(--ink-soft);
+      font-size: 0.88rem;
+    }
+
+    .compare-control {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      color: var(--ink-soft);
+      font-size: 0.85rem;
+      font-weight: 750;
+      white-space: nowrap;
+    }
+
+    .compare-control input {
+      width: 18px;
+      height: 18px;
+      accent-color: var(--pink);
+    }
+
+    .empty-state {
+      display: none;
+      margin: 16px 14px 8px;
+      border: 1px dashed var(--line-strong);
+      border-radius: 14px;
+      background: #f8fafb;
+      padding: 22px 16px;
+      text-align: center;
+      color: var(--ink-soft);
+      font-size: 0.9rem;
+    }
+
+    .empty-state[data-show="true"] { display: block; }
+    .chart-wrap[data-empty="true"] { display: none; }
+
+    .tooltip {
+      position: absolute;
+      z-index: 4;
+      display: none;
+      min-width: 150px;
+      max-width: 260px;
+      pointer-events: none;
+      border: 1px solid rgba(23, 50, 77, 0.16);
+      border-radius: 11px;
+      background: rgba(255, 255, 255, 0.98);
+      box-shadow: 0 10px 30px rgba(23, 50, 77, 0.18);
+      padding: 9px 11px;
+      color: var(--ink);
+      font-size: 0.82rem;
+    }
+
+    .tooltip strong { display: block; margin-bottom: 2px; }
+
+    .legend-row {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 17px;
+      padding: 7px 24px 21px;
+      color: var(--ink-soft);
+      font-size: 0.8rem;
+    }
+
+    .legend-item {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+    }
+
+    .legend-line {
+      width: 27px;
+      height: 3px;
+      border-radius: 9px;
+      background: var(--blue);
+    }
+
+    .legend-line.pink { background: var(--pink); }
+
+    .legend-dot {
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      background: var(--blue);
+      border: 2px solid #fff;
+      box-shadow: 0 0 0 1px rgba(20, 135, 189, 0.35);
+    }
+
+    .legend-square {
+      width: 12px;
+      height: 12px;
+      border-radius: 2px;
+      background: var(--orange);
+      border: 2px solid #fff;
+      box-shadow: 0 0 0 1px rgba(232, 135, 58, 0.4);
+    }
+
+    .legend-block {
+      width: 18px;
+      height: 12px;
+      border: 1px solid rgba(50, 73, 90, 0.09);
+      border-radius: 3px;
+      background: var(--green-wash);
+    }
+
+    .legend-block.grey { background: var(--grey-wash); }
+    .legend-block.rose { background: var(--rose-wash); }
+
+    .lower-grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 14px;
+      margin-top: 14px;
+    }
+
+    .mini-panel { padding: 18px 20px 14px; }
+
+    .mini-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 3px;
+    }
+
+    .mini-head h3 { margin: 0; font-size: 1rem; }
+    .mini-head select { min-width: 140px; min-height: 36px; }
+
+    .summary-panel {
+      display: grid;
+      gap: 12px;
+      padding: 18px;
+    }
+
+    .summary-panel h3 { margin: 0; font-size: 0.95rem; }
+
+    .stat {
+      padding-top: 11px;
+      border-top: 1px solid var(--line);
+    }
+
+    .stat:first-of-type { padding-top: 0; border-top: 0; }
+    .stat-label { color: var(--ink-soft); font-size: 0.76rem; font-weight: 800; }
+    .stat-value { margin-top: 2px; font-size: 1.45rem; font-weight: 850; letter-spacing: -0.04em; }
+    .stat-note { color: var(--ink-soft); font-size: 0.76rem; }
+
+    .side-panel {
+      position: sticky;
+      top: 18px;
+      overflow: hidden;
+    }
+
+    .side-title {
+      padding: 19px 20px 15px;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .side-title h2 { margin: 0; font-size: 1rem; }
+    .side-title p { margin: 4px 0 0; color: var(--ink-soft); font-size: 0.78rem; }
+
+    .metric-card {
+      display: grid;
+      grid-template-columns: 10px 1fr;
+      gap: 11px;
+      padding: 14px 20px;
+      border-bottom: 1px solid var(--line);
+      cursor: pointer;
+      background: transparent;
+      width: 100%;
+      text-align: left;
+      color: inherit;
+      border-left: 0;
+      border-right: 0;
+      border-top: 0;
+    }
+
+    .metric-card:hover { background: #f7fafc; }
+    .metric-card[aria-current="true"] { background: #eef7fb; }
+    .metric-card:last-of-type { border-bottom: 1px solid var(--line); }
+
+    .metric-color {
+      width: 10px;
+      height: 38px;
+      border-radius: 999px;
+      background: var(--blue);
+    }
+
+    .metric-color.orange { background: var(--orange); }
+    .metric-color.green { background: var(--teal); }
+    .metric-color.pink { background: var(--pink); }
+    .metric-color.purple { background: var(--purple); }
+    .metric-color.weight { background: #5a7a92; }
+
+    .metric-card strong { display: block; font-size: 0.9rem; }
+    .metric-card span { color: var(--ink-soft); font-size: 0.76rem; }
+
+    .side-tools {
+      padding: 16px 18px 18px;
+      display: grid;
+      gap: 14px;
+      border-top: 1px solid var(--line);
+      background: #fbfcfd;
+    }
+
+    .side-tools h3 {
+      margin: 0;
+      font-size: 0.88rem;
+    }
+
+    .side-tools .hint {
+      margin: 0;
+      color: var(--ink-soft);
+      font-size: 0.74rem;
+    }
+
+    .add-row {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 8px;
+    }
+
+    .btn {
+      border: 0;
+      border-radius: 11px;
+      background: var(--blue);
+      color: #fff;
+      padding: 0 14px;
+      min-height: 41px;
+      cursor: pointer;
+      font-weight: 750;
+    }
+
+    .btn:hover { background: var(--blue-dark); }
+
+    .btn.secondary {
+      background: #e8eef3;
+      color: var(--ink);
+    }
+
+    .btn.secondary:hover { background: #dce6ed; }
+
+    textarea {
+      width: 100%;
+      min-height: 68px;
+      border: 1px solid var(--line-strong);
+      border-radius: 11px;
+      padding: 10px 12px;
+      resize: vertical;
+      color: var(--ink);
+      background: #fff;
+    }
+
+    .diary-form {
+      display: grid;
+      gap: 8px;
+    }
+
+    .diary-feedback {
+      min-height: 1.2em;
+      color: var(--teal);
+      font-size: 0.76rem;
+      font-weight: 700;
+    }
+
+    .medical-note {
+      margin-top: 18px;
+      border: 1px solid #cfdae2;
+      border-radius: 14px;
+      background: rgba(255, 255, 255, 0.72);
+      padding: 12px 15px;
+      color: var(--ink-soft);
+      font-size: 0.78rem;
+    }
+
+    .grid-line { stroke: #d7dee3; stroke-width: 1; }
+    .axis-line { stroke: #9fb0bd; stroke-width: 1.25; }
+    .axis-label { fill: #526b7e; font-size: 11px; }
+    .axis-title { fill: #2f4b62; font-size: 11px; font-weight: 750; }
+    .event-line { stroke: #8d526a; stroke-width: 1.2; stroke-dasharray: 4 4; }
+    .event-label { fill: #8f174a; font-size: 10px; font-weight: 800; }
+
+    .controls { width: 100%; }
+    .field { flex: 1 1 100%; }
+    select, input[type="text"], textarea { width: 100%; min-width: 0; }
+    .legend-row { padding: 7px 14px 16px; gap: 10px; }
+    .lower-grid { gap: 14px; }
+    .summary-panel { grid-template-columns: 1fr; }
+    .side-panel { position: static; }
+    .demo-badge { display: none; }
+
+    /* Wider desktop: still cap at phone column; optional soft widen for tablets. */
+    @media (min-width: 760px) {
+      .shell { width: min(430px, calc(100% - 24px)); }
+      .demo-badge { display: inline-flex; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after { scroll-behavior: auto !important; transition: none !important; }
+    }
+  </style>
+</head>
+<body>
+  <main class="shell">
+    <header class="topbar">
+      <div>
+        <span class="eyebrow">觀察時間軸</span>
+        <h1>健康觀察圖表</h1>
+        <p>手機優先試用。切換時間尺度，對照觀察分數、體重與就診／用藥事件。示範資料不寫入正式寵物紀錄。</p>
+      </div>
+      <span class="demo-badge">測試資料 · H1</span>
+    </header>
+
+    <p class="story-banner">
+      <strong>示範故事：</strong>9/1 就診記錄用藥與處方照片 → 之後開始追蹤頭痛、睡眠、腸胃／泌尿不適與體重。圖上圓點＝日記；方點＝就診帶出；虛線＝就診或用藥事件。
+    </p>
+
+    <div class="workspace">
+      <section class="main-column" aria-label="圖表工作區">
+        <article class="panel">
+          <div class="toolbar">
+            <div class="segmented" role="group" aria-label="時間尺度">
+              <button class="segment" type="button" data-mode="day" aria-pressed="false">每日</button>
+              <button class="segment" type="button" data-mode="week" aria-pressed="true">每週</button>
+              <button class="segment" type="button" data-mode="month" aria-pressed="false">每月</button>
+              <button class="segment" type="button" data-mode="year" aria-pressed="false">每年</button>
+            </div>
+
+            <div class="controls">
+              <div class="field">
+                <label for="metricSelect">主要觀察指標</label>
+                <select id="metricSelect" autocomplete="off"></select>
+              </div>
+              <div class="field">
+                <label for="summarySelect">取樣粒度</label>
+                <select id="summarySelect" autocomplete="off" disabled>
+                  <option>逐日</option>
+                </select>
+              </div>
+            </div>
+          </div>
+
+          <div class="chart-head">
+            <div>
+              <h2 id="chartTitle">頭痛程度｜每週觀察趨勢</h2>
+              <p id="chartSubtitle">數值越高代表不適越明顯；就診與用藥事件以垂直虛線標示。</p>
+            </div>
+            <label class="compare-control">
+              <input id="compareToggle" type="checkbox" autocomplete="off" checked />
+              比較上一期間
+            </label>
+          </div>
+
+          <div class="empty-state" id="emptyState" data-show="false" role="status">
+            此指標尚無觀察點。可在下方指標區新增自訂指標後再查看，或切回已有示範資料的指標。
+          </div>
+
+          <div class="chart-wrap" id="mainChartWrap" data-empty="false">
+            <svg id="mainChart" viewBox="0 0 360 420" role="img" aria-labelledby="chartTitle"></svg>
+            <div class="tooltip" id="tooltip" role="status" aria-live="polite"></div>
+          </div>
+
+          <div class="legend-row" aria-label="圖例">
+            <span class="legend-item"><span class="legend-line"></span>本期</span>
+            <span class="legend-item" id="previousLegend"><span class="legend-line pink"></span>上一期間</span>
+            <span class="legend-item"><span class="legend-dot"></span>日記點</span>
+            <span class="legend-item"><span class="legend-square"></span>就診帶出</span>
+            <span class="legend-item"><span class="legend-block grey"></span>基準觀察</span>
+            <span class="legend-item"><span class="legend-block"></span>治療追蹤</span>
+            <span class="legend-item"><span class="legend-block rose"></span>調整與回診</span>
+          </div>
+        </article>
+
+        <div class="lower-grid">
+          <article class="panel mini-panel">
+            <div class="mini-head">
+              <h3>關聯指標</h3>
+              <select id="secondarySelect" aria-label="選擇關聯指標" autocomplete="off"></select>
+            </div>
+            <svg id="miniChart" viewBox="0 0 360 140" role="img" aria-label="關聯指標趨勢"></svg>
+          </article>
+
+          <aside class="panel summary-panel" aria-label="期間摘要">
+            <h3>期間摘要</h3>
+            <div class="stat">
+              <div class="stat-label">最新紀錄</div>
+              <div class="stat-value" id="latestValue">—</div>
+              <div class="stat-note" id="latestNote">—</div>
+            </div>
+            <div class="stat">
+              <div class="stat-label">期間變化</div>
+              <div class="stat-value" id="changeValue">—</div>
+              <div class="stat-note">相較第一筆有效點</div>
+            </div>
+            <div class="stat">
+              <div class="stat-label">資料完整度</div>
+              <div class="stat-value" id="completionValue">—</div>
+              <div class="stat-note">有效觀察點</div>
+            </div>
+          </aside>
+        </div>
+
+        <p class="medical-note">這是介面與資料呈現測試，不提供診斷或用藥建議。圖表只描述紀錄期間的變化，不自行判定治療效果。示範內容為人類症狀詞彙（試用視覺），正式產品化時再改為寵物觀察用語。</p>
+      </section>
+
+      <aside class="panel side-panel" aria-label="觀察指標與日記">
+        <div class="side-title">
+          <h2>觀察指標積木</h2>
+          <p>點選切換主要指標；0–10 與體重（kg）分軸。</p>
+        </div>
+        <div id="metricCards"></div>
+
+        <div class="side-tools">
+          <div>
+            <h3>新增自訂指標（0–10）</h3>
+            <p class="hint">名稱會出現在下拉選單；無資料時顯示空狀態。</p>
+            <div class="add-row" style="margin-top:8px">
+              <input id="customMetricName" type="text" maxlength="24" placeholder="例如：疲勞程度" autocomplete="off" />
+              <button class="btn" type="button" id="addMetricBtn">新增</button>
+            </div>
+          </div>
+
+          <div>
+            <h3>日記備註（示範）</h3>
+            <p class="hint">D2：可自由寫日記，並選填連結就診。</p>
+            <form class="diary-form" id="diaryForm">
+              <div class="field">
+                <label for="diaryMetric">指標</label>
+                <select id="diaryMetric"></select>
+              </div>
+              <div class="field">
+                <label for="diaryNote">備註</label>
+                <textarea id="diaryNote" maxlength="200" placeholder="例如：下午較悶、有吃藥"></textarea>
+              </div>
+              <div class="field">
+                <label for="diaryVisit">連結就診（選填）</label>
+                <select id="diaryVisit"></select>
+              </div>
+              <button class="btn secondary" type="submit">儲存示範備註</button>
+              <div class="diary-feedback" id="diaryFeedback" aria-live="polite"></div>
+            </form>
+          </div>
+        </div>
+      </aside>
+    </div>
+  </main>
+
+  <script defer src="../../domains/observations/metrics.js?v=20260918-phone-fix"></script>
+  <script defer src="../../domains/observations/series.js?v=20260918-phone-fix"></script>
+  <script defer src="../../domains/observations/events.js?v=20260918-phone-fix"></script>
+  <script defer src="../../domains/observations/diary.js?v=20260918-phone-fix"></script>
+  <script defer src="../../domains/observations/summary.js?v=20260918-phone-fix"></script>
+  <script defer src="../../domains/observations/demo-seed.js?v=20260918-phone-fix"></script>
+  <script defer src="../../domains/observations/chart.js?v=20260918-phone-fix"></script>
+  <script defer src="../../domains/observations/controller.js?v=20260918-phone-fix"></script>
+  <script defer src="./tryout-wire.js?v=20260918-phone-fix"></script>
+</body>
+</html>
