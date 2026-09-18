@@ -1,0 +1,55 @@
+id: 20260918-observation-chart-projects
+title: Observation chart projects (專案 layer above metric/title)
+version: 2
+status: adopted
+# proposed | building | reviewing | revising | candidate_ready | halted | adopted | rejected
+
+gate_a:
+  status: approved
+  approved_at: "2026-09-18"
+  decisions:
+    P: P1
+    Q: Q1
+    R: R1
+    S: S1
+    T: T2
+
+gate_b:
+  status: adopted
+  adopted_at: "2026-09-18"
+
+iteration: 2
+max_iterations: 3
+
+candidate:
+  branch: ""
+  path: "apps/web/tryouts/observation-chart/"
+  worktree: ""
+  notes: "Adopted on tryout + domains/observations/*; ?v=20260918-projects"
+
+reviews:
+  pharmacist: skipped
+  qa: pass
+  ui: conditional
+  arbiter: candidate_ready
+
+rerun: []
+blocking_issues: []
+non_blocking:
+  - UI-1
+  - UI-2
+  - UI-3
+  - UI-4
+  - UI-5
+  - QA-2
+  - QA-3
+  - QA-4
+builder_scope: []
+halt_reason: ""
+notes: |
+  Baseline: adopted 20260918-observation-self-entry-ux (tryout DIY fill-in).
+  Surface: tryout + C/B iframe cover.
+  Gate A: Victor「確認」→ P1 Q1 R1 S1 T2.
+  Gate B: Victor「採用」2026-09-18 — tryout project layer accepted.
+  Cover: Victor「覆蓋吧」2026-09-18 — C+B iframe/bridge ?v=20260918-projects; auto-publish Pages.
+  Carry-forward: UI-1/UI-2 side panel metric-first vs project model; UI-3 native confirm; QA-2 empty a11y.
