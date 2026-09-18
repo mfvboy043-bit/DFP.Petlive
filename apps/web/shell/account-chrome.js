@@ -4,7 +4,7 @@
   const root = (global.PetLiveWeb = global.PetLiveWeb || {});
   root.shell = root.shell || {};
 
-  const LEGAL_DOC_VERSION = "20260917-legal-v14";
+  const LEGAL_DOC_VERSION = "20260918-legal-v15";
   const LEGAL_LOCALES = ["zh-Hant", "en", "ja", "ko"];
 
   function normalizeLegalLocale(locale) {

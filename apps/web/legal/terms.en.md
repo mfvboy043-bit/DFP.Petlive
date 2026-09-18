@@ -2,8 +2,8 @@
 
 **Operator / Service name:** Dragon Fruit Passport (火龍果護照)  
 **Contact:** dragondog2026@gmail.com  
-**Last updated:** 17 September 2026  
-**Version:** Draft v1.4 (2026-09-17: operator contact email → dragondog2026@gmail.com; 18+ posture; pending licensed counsel review)
+**Last updated:** 18 September 2026
+**Version:** v1.5
 
 ---
 
@@ -13,7 +13,7 @@ Welcome to Dragon Fruit Passport (the "**Service**" or "**we**").
 
 By using the Service, you agree to these Terms. If you disagree, stop using the Service.
 
-Personal data collection and protection are described in the *[Privacy Policy](./privacy.html?v=20260917-legal-v14&lang=en)*.
+Personal data collection and protection are described in the *[Privacy Policy](./privacy.html?v=20260918-legal-v15&lang=en)*.
 
 ---
 
@@ -92,7 +92,7 @@ You agree to:
 1. The Service is only for people **18 or older** and is **not directed at** users under 18.
 2. By using the Service, you declare that you are 18 or older. This is a **self-attestation** and risk-reduction measure, **not** precise age verification; standard Google sign-in does not provide us a reliable age.
 3. If we learn or have reason to believe you are under 18, we may suspend or terminate access and investigate/delete related data under the Privacy Policy.
-4. This section does **not** claim child-protection compliance via parental consent; formal compliance remains for licensed counsel.
+4. This section does **not** claim child-protection compliance via parental consent.
 
 ---
 
@@ -202,7 +202,3 @@ These Terms and the Privacy Policy are the entire agreement between you and Drag
 ## Appendix: short medical disclaimer (for in-app display)
 
 > **Dragon Fruit Passport is for owners to organize health information for reference only. It is not veterinary diagnosis or prescription. Seek care immediately in emergencies. Follow your veterinarian's medication instructions.**
-
----
-
-*This is one of four AI-assisted language drafts (en). It is not legal advice or counsel sign-off. Licensed counsel in applicable jurisdictions must review it before it becomes operative.*
