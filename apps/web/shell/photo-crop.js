@@ -210,5 +210,102 @@
     };
   }
 
+  /**
+   * Apply overlay open/close flags to injected elements (no global doc).
+   * @param {{ root?: HTMLElement, img?: HTMLElement, zoom?: HTMLInputElement, htmlEl?: Element, bodyEl?: HTMLElement }} els
+   * @param {object} flags from applyOpen / applyClose
+   */
+  function applyPhotoCropFlags(els, flags) {
+    if (!els?.root || !flags) return false;
+    els.root.hidden = Boolean(flags.rootHidden);
+    if (els.htmlEl && els.htmlEl.classList && flags.htmlClass) {
+      els.htmlEl.classList.toggle(flags.htmlClass, Boolean(flags.htmlClassOn));
+    }
+    if (els.bodyEl && els.bodyEl.style) {
+      els.bodyEl.style.overflow = flags.bodyOverflow || "";
+    }
+    if (flags.clearImg && els.img) {
+      els.img.removeAttribute("src");
+      els.img.removeAttribute("style");
+    }
+    if (flags.zoomValue != null && els.zoom) {
+      els.zoom.value = flags.zoomValue;
+    }
+    return true;
+  }
+
+  /**
+   * @param {HTMLElement|null} imgEl
+   * @param {{ width?: string, height?: string, transform?: string }|null} styles
+   */
+  function applyCropImageTransform(imgEl, styles) {
+    if (!imgEl || !styles) return false;
+    imgEl.style.width = styles.width || "";
+    imgEl.style.height = styles.height || "";
+    imgEl.style.transform = styles.transform || "";
+    return true;
+  }
+
+  /**
+   * Paint emergency card pet photo frame from a petsRenderer view.
+   * @param {{ frameLabel?: HTMLElement, frame?: HTMLElement }} els
+   * @param {{ hasPhoto?: boolean, backgroundImage?: string, frameInnerHtml?: string }} view
+   * @param {string} labelText
+   */
+  function applyEmergencyPetPhotoFrame(els, view, labelText) {
+    const { frameLabel, frame } = els || {};
+    if (!frameLabel || !frame || !view) return false;
+    frameLabel.title = labelText || "";
+    frameLabel.setAttribute("aria-label", labelText || "");
+    frame.classList.toggle("has-photo", Boolean(view.hasPhoto));
+    frame.style.backgroundImage = view.backgroundImage || "";
+    frame.innerHTML = view.frameInnerHtml || "";
+    return true;
+  }
+
+  /**
+   * Wire emergency pet photo file input. Persistence / crop open stay in hooks.
+   * @param {HTMLInputElement|null} inputEl
+   * @param {{ getCurrentPet: Function, readFileAsDataUrl: Function, onOpenCrop: Function, onFail?: Function }} hooks
+   */
+  function bindPetPhotoFileInput(inputEl, hooks = {}) {
+    if (!inputEl || inputEl.getAttribute("data-pet-photo-wired") === "1") {
+      return null;
+    }
+    const {
+      getCurrentPet,
+      readFileAsDataUrl,
+      onOpenCrop,
+      onFail,
+    } = hooks;
+    inputEl.setAttribute("data-pet-photo-wired", "1");
+    inputEl.addEventListener("change", async (event) => {
+      const file = event.target.files?.[0];
+      event.target.value = "";
+      if (!file) return;
+      const pet =
+        typeof getCurrentPet === "function" ? getCurrentPet() : null;
+      if (!pet) return;
+      try {
+        const raw =
+          typeof readFileAsDataUrl === "function"
+            ? await readFileAsDataUrl(file)
+            : null;
+        if (!raw) {
+          if (typeof onFail === "function") onFail();
+          return;
+        }
+        if (typeof onOpenCrop === "function") await onOpenCrop(raw, pet.id);
+      } catch {
+        if (typeof onFail === "function") onFail();
+      }
+    });
+    return inputEl;
+  }
+
   root.shell.createPhotoCrop = createPhotoCrop;
+  root.shell.applyPhotoCropFlags = applyPhotoCropFlags;
+  root.shell.applyCropImageTransform = applyCropImageTransform;
+  root.shell.applyEmergencyPetPhotoFrame = applyEmergencyPetPhotoFrame;
+  root.shell.bindPetPhotoFileInput = bindPetPhotoFileInput;
 })(typeof window !== "undefined" ? window : globalThis);

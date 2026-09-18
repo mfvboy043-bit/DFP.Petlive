@@ -1639,16 +1639,16 @@ function resizeImageDataUrl(dataUrl, maxEdge = 480) {
 }
 
 function renderEmergencyPetPhoto(pet) {
-  const frameLabel = document.getElementById("e-pet-photo");
-  const frame = document.getElementById("e-pet-photo-preview");
-  if (!frameLabel || !frame || !petsRenderer) return;
+  if (!petsRenderer) return;
   const view = petsRenderer.buildEmergencyPhotoFrame(pet);
-  const labelText = t(view.labelKey);
-  frameLabel.title = labelText;
-  frameLabel.setAttribute("aria-label", labelText);
-  frame.classList.toggle("has-photo", view.hasPhoto);
-  frame.style.backgroundImage = view.backgroundImage;
-  frame.innerHTML = view.frameInnerHtml;
+  requireShellFn("applyEmergencyPetPhotoFrame")(
+    {
+      frameLabel: document.getElementById("e-pet-photo"),
+      frame: document.getElementById("e-pet-photo-preview"),
+    },
+    view,
+    t(view.labelKey)
+  );
 }
 
 const photoCropEls = {
@@ -1712,23 +1712,20 @@ function renderPhotoCropTransform() {
   if (!photoCropEls.img || !photoCropShell) return;
   clampPhotoCropOffset();
   const styles = photoCropShell.buildCropImageStyles(getPhotoCropMetrics());
-  photoCropEls.img.style.width = styles.width;
-  photoCropEls.img.style.height = styles.height;
-  photoCropEls.img.style.transform = styles.transform;
+  requireShellFn("applyCropImageTransform")(photoCropEls.img, styles);
 }
 
 function applyPhotoCropOverlay(flags) {
-  if (!photoCropEls.root || !flags) return;
-  photoCropEls.root.hidden = flags.rootHidden;
-  document.documentElement.classList.toggle(flags.htmlClass, flags.htmlClassOn);
-  document.body.style.overflow = flags.bodyOverflow;
-  if (flags.clearImg && photoCropEls.img) {
-    photoCropEls.img.removeAttribute("src");
-    photoCropEls.img.removeAttribute("style");
-  }
-  if (flags.zoomValue != null && photoCropEls.zoom) {
-    photoCropEls.zoom.value = flags.zoomValue;
-  }
+  requireShellFn("applyPhotoCropFlags")(
+    {
+      root: photoCropEls.root,
+      img: photoCropEls.img,
+      zoom: photoCropEls.zoom,
+      htmlEl: document.documentElement,
+      bodyEl: document.body,
+    },
+    flags
+  );
 }
 
 function closePetPhotoCrop() {
@@ -5868,19 +5865,15 @@ document.getElementById("e-pet-photo-edit")?.addEventListener("click", () => {
   openEditCurrentPet();
 });
 
-document.getElementById("e-pet-photo-input")?.addEventListener("change", async (event) => {
-  const file = event.target.files?.[0];
-  event.target.value = "";
-  if (!file) return;
-  const pet = getCurrentPet();
-  if (!pet) return;
-  try {
-    const raw = await readFileAsDataUrl(file);
-    await openPetPhotoCrop(raw, pet.id);
-  } catch {
-    showToast(t("toastPetPhotoFail"));
+requireShellFn("bindPetPhotoFileInput")(
+  document.getElementById("e-pet-photo-input"),
+  {
+    getCurrentPet,
+    readFileAsDataUrl,
+    onOpenCrop: openPetPhotoCrop,
+    onFail: () => showToast(t("toastPetPhotoFail")),
   }
-});
+);
 
 const langFab = document.getElementById("lang-fab");
 const langMenu = document.getElementById("lang-menu");
