@@ -1,0 +1,1471 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="description" content="健康觀察圖表試用版：多指標、日記與就診連結、事件標記。" />
+  <title>健康觀察圖表｜試用版</title>
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='15' fill='%230f3757'/%3E%3Cpath d='M10 42 21 31l9 7 12-19 12 8' fill='none' stroke='%236ad0c6' stroke-width='6' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E" />
+  <style>
+    :root {
+      color-scheme: light;
+      --ink: #17324d;
+      --ink-soft: #577187;
+      --paper: #f4f7f9;
+      --panel: #ffffff;
+      --line: #d7e0e7;
+      --line-strong: #b9c7d2;
+      --blue: #1487bd;
+      --blue-dark: #0d5e86;
+      --pink: #db1f64;
+      --teal: #2aa99d;
+      --orange: #e8873a;
+      --purple: #7b6cc7;
+      --green-wash: #e8f4ed;
+      --rose-wash: #fbe9ed;
+      --grey-wash: #eef1f3;
+      --shadow: 0 18px 46px rgba(25, 55, 79, 0.10);
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      min-width: 320px;
+      background:
+        radial-gradient(circle at 85% 0%, rgba(42, 169, 157, 0.11), transparent 27rem),
+        linear-gradient(180deg, #f7fafb 0%, var(--paper) 100%);
+      color: var(--ink);
+      font-family: "Noto Sans TC", ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      font-size: 16px;
+      line-height: 1.5;
+    }
+
+    button, select, input, textarea { font: inherit; }
+
+    /* Phone-first tryout: content column stays phone-width even on desktop. */
+    .shell {
+      width: min(430px, calc(100% - 16px));
+      margin: 0 auto;
+      padding: 16px 0 40px;
+    }
+
+    .topbar {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 14px;
+    }
+
+    .eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      color: var(--blue-dark);
+      font-size: 0.82rem;
+      font-weight: 800;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+    }
+
+    .eyebrow::before {
+      width: 9px;
+      height: 9px;
+      border-radius: 50%;
+      background: var(--teal);
+      content: "";
+      box-shadow: 0 0 0 5px rgba(42, 169, 157, 0.13);
+    }
+
+    h1 {
+      margin: 6px 0 4px;
+      font-size: clamp(1.35rem, 5.5vw, 1.7rem);
+      line-height: 1.15;
+      letter-spacing: -0.03em;
+    }
+
+    .topbar p {
+      margin: 0;
+      color: var(--ink-soft);
+      font-size: 0.88rem;
+      max-width: 34ch;
+    }
+
+    .demo-badge {
+      flex: 0 0 auto;
+      border: 1px solid #bdd7d3;
+      border-radius: 999px;
+      background: #eaf7f5;
+      color: #146d65;
+      padding: 8px 13px;
+      font-size: 0.82rem;
+      font-weight: 800;
+    }
+
+    .story-banner {
+      margin-bottom: 18px;
+      border: 1px solid #c9dde8;
+      border-radius: 14px;
+      background: linear-gradient(135deg, rgba(20, 135, 189, 0.08), rgba(42, 169, 157, 0.06));
+      padding: 12px 16px;
+      color: var(--ink-soft);
+      font-size: 0.88rem;
+    }
+
+    .story-banner strong { color: var(--ink); }
+
+    .workspace {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 14px;
+      align-items: start;
+    }
+
+    .main-column { min-width: 0; }
+
+    .panel {
+      border: 1px solid rgba(185, 199, 210, 0.72);
+      border-radius: 20px;
+      background: rgba(255, 255, 255, 0.94);
+      box-shadow: var(--shadow);
+    }
+
+    .toolbar {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: stretch;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 14px 14px;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .segmented {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      width: 100%;
+      padding: 4px;
+      border: 1px solid var(--line);
+      border-radius: 13px;
+      background: #eef3f6;
+    }
+
+    .segment {
+      min-width: 0;
+      border: 0;
+      border-radius: 9px;
+      background: transparent;
+      color: var(--ink-soft);
+      padding: 8px 6px;
+      cursor: pointer;
+      font-weight: 750;
+      transition: 160ms ease;
+    }
+
+    .segment:hover { color: var(--ink); }
+
+    .segment[aria-pressed="true"] {
+      background: var(--panel);
+      color: var(--ink);
+      box-shadow: 0 2px 9px rgba(38, 66, 88, 0.12);
+    }
+
+    .controls {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      align-items: flex-end;
+    }
+
+    .field {
+      display: grid;
+      gap: 5px;
+    }
+
+    .field label {
+      color: var(--ink-soft);
+      font-size: 0.78rem;
+      font-weight: 800;
+    }
+
+    select, input[type="text"] {
+      min-width: 156px;
+      min-height: 41px;
+      border: 1px solid var(--line-strong);
+      border-radius: 11px;
+      background: #fff;
+      color: var(--ink);
+      padding: 0 12px;
+      outline: none;
+    }
+
+    select { padding-right: 35px; }
+
+    select:focus-visible, button:focus-visible, input:focus-visible, textarea:focus-visible {
+      outline: 3px solid rgba(20, 135, 189, 0.24);
+      outline-offset: 2px;
+    }
+
+    .chart-head {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 10px;
+      padding: 16px 14px 4px;
+    }
+
+    .chart-wrap {
+      position: relative;
+      padding: 4px 6px 0;
+      overflow-x: visible;
+    }
+
+    #mainChart, #miniChart {
+      display: block;
+      width: 100%;
+      max-width: 100%;
+      height: auto;
+      overflow: visible;
+    }
+
+    .chart-head h2 {
+      margin: 0;
+      font-size: clamp(1.15rem, 2vw, 1.55rem);
+      letter-spacing: -0.02em;
+    }
+
+    .chart-head p {
+      margin: 4px 0 0;
+      color: var(--ink-soft);
+      font-size: 0.88rem;
+    }
+
+    .compare-control {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      color: var(--ink-soft);
+      font-size: 0.85rem;
+      font-weight: 750;
+      white-space: nowrap;
+    }
+
+    .compare-control input {
+      width: 18px;
+      height: 18px;
+      accent-color: var(--pink);
+    }
+
+    .empty-state {
+      display: none;
+      margin: 16px 14px 8px;
+      border: 1px dashed var(--line-strong);
+      border-radius: 14px;
+      background: #f8fafb;
+      padding: 22px 16px;
+      text-align: center;
+      color: var(--ink-soft);
+      font-size: 0.9rem;
+    }
+
+    .empty-state[data-show="true"] { display: block; }
+    .chart-wrap[data-empty="true"] { display: none; }
+
+    .tooltip {
+      position: absolute;
+      z-index: 4;
+      display: none;
+      min-width: 150px;
+      max-width: 260px;
+      pointer-events: none;
+      border: 1px solid rgba(23, 50, 77, 0.16);
+      border-radius: 11px;
+      background: rgba(255, 255, 255, 0.98);
+      box-shadow: 0 10px 30px rgba(23, 50, 77, 0.18);
+      padding: 9px 11px;
+      color: var(--ink);
+      font-size: 0.82rem;
+    }
+
+    .tooltip strong { display: block; margin-bottom: 2px; }
+
+    .legend-row {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 17px;
+      padding: 7px 24px 21px;
+      color: var(--ink-soft);
+      font-size: 0.8rem;
+    }
+
+    .legend-item {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+    }
+
+    .legend-line {
+      width: 27px;
+      height: 3px;
+      border-radius: 9px;
+      background: var(--blue);
+    }
+
+    .legend-line.pink { background: var(--pink); }
+
+    .legend-dot {
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      background: var(--blue);
+      border: 2px solid #fff;
+      box-shadow: 0 0 0 1px rgba(20, 135, 189, 0.35);
+    }
+
+    .legend-square {
+      width: 12px;
+      height: 12px;
+      border-radius: 2px;
+      background: var(--orange);
+      border: 2px solid #fff;
+      box-shadow: 0 0 0 1px rgba(232, 135, 58, 0.4);
+    }
+
+    .legend-block {
+      width: 18px;
+      height: 12px;
+      border: 1px solid rgba(50, 73, 90, 0.09);
+      border-radius: 3px;
+      background: var(--green-wash);
+    }
+
+    .legend-block.grey { background: var(--grey-wash); }
+    .legend-block.rose { background: var(--rose-wash); }
+
+    .lower-grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 14px;
+      margin-top: 14px;
+    }
+
+    .mini-panel { padding: 18px 20px 14px; }
+
+    .mini-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 3px;
+    }
+
+    .mini-head h3 { margin: 0; font-size: 1rem; }
+    .mini-head select { min-width: 140px; min-height: 36px; }
+
+    .summary-panel {
+      display: grid;
+      gap: 12px;
+      padding: 18px;
+    }
+
+    .summary-panel h3 { margin: 0; font-size: 0.95rem; }
+
+    .stat {
+      padding-top: 11px;
+      border-top: 1px solid var(--line);
+    }
+
+    .stat:first-of-type { padding-top: 0; border-top: 0; }
+    .stat-label { color: var(--ink-soft); font-size: 0.76rem; font-weight: 800; }
+    .stat-value { margin-top: 2px; font-size: 1.45rem; font-weight: 850; letter-spacing: -0.04em; }
+    .stat-note { color: var(--ink-soft); font-size: 0.76rem; }
+
+    .side-panel {
+      position: sticky;
+      top: 18px;
+      overflow: hidden;
+    }
+
+    .side-title {
+      padding: 19px 20px 15px;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .side-title h2 { margin: 0; font-size: 1rem; }
+    .side-title p { margin: 4px 0 0; color: var(--ink-soft); font-size: 0.78rem; }
+
+    .metric-card {
+      display: grid;
+      grid-template-columns: 10px 1fr;
+      gap: 11px;
+      padding: 14px 20px;
+      border-bottom: 1px solid var(--line);
+      cursor: pointer;
+      background: transparent;
+      width: 100%;
+      text-align: left;
+      color: inherit;
+      border-left: 0;
+      border-right: 0;
+      border-top: 0;
+    }
+
+    .metric-card:hover { background: #f7fafc; }
+    .metric-card[aria-current="true"] { background: #eef7fb; }
+    .metric-card:last-of-type { border-bottom: 1px solid var(--line); }
+
+    .metric-color {
+      width: 10px;
+      height: 38px;
+      border-radius: 999px;
+      background: var(--blue);
+    }
+
+    .metric-color.orange { background: var(--orange); }
+    .metric-color.green { background: var(--teal); }
+    .metric-color.pink { background: var(--pink); }
+    .metric-color.purple { background: var(--purple); }
+    .metric-color.weight { background: #5a7a92; }
+
+    .metric-card strong { display: block; font-size: 0.9rem; }
+    .metric-card span { color: var(--ink-soft); font-size: 0.76rem; }
+
+    .side-tools {
+      padding: 16px 18px 18px;
+      display: grid;
+      gap: 14px;
+      border-top: 1px solid var(--line);
+      background: #fbfcfd;
+    }
+
+    .side-tools h3 {
+      margin: 0;
+      font-size: 0.88rem;
+    }
+
+    .side-tools .hint {
+      margin: 0;
+      color: var(--ink-soft);
+      font-size: 0.74rem;
+    }
+
+    .add-row {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 8px;
+    }
+
+    .btn {
+      border: 0;
+      border-radius: 11px;
+      background: var(--blue);
+      color: #fff;
+      padding: 0 14px;
+      min-height: 41px;
+      cursor: pointer;
+      font-weight: 750;
+    }
+
+    .btn:hover { background: var(--blue-dark); }
+
+    .btn.secondary {
+      background: #e8eef3;
+      color: var(--ink);
+    }
+
+    .btn.secondary:hover { background: #dce6ed; }
+
+    textarea {
+      width: 100%;
+      min-height: 68px;
+      border: 1px solid var(--line-strong);
+      border-radius: 11px;
+      padding: 10px 12px;
+      resize: vertical;
+      color: var(--ink);
+      background: #fff;
+    }
+
+    .diary-form {
+      display: grid;
+      gap: 8px;
+    }
+
+    .diary-feedback {
+      min-height: 1.2em;
+      color: var(--teal);
+      font-size: 0.76rem;
+      font-weight: 700;
+    }
+
+    .medical-note {
+      margin-top: 18px;
+      border: 1px solid #cfdae2;
+      border-radius: 14px;
+      background: rgba(255, 255, 255, 0.72);
+      padding: 12px 15px;
+      color: var(--ink-soft);
+      font-size: 0.78rem;
+    }
+
+    .grid-line { stroke: #d7dee3; stroke-width: 1; }
+    .axis-line { stroke: #9fb0bd; stroke-width: 1.25; }
+    .axis-label { fill: #526b7e; font-size: 11px; }
+    .axis-title { fill: #2f4b62; font-size: 11px; font-weight: 750; }
+    .event-line { stroke: #8d526a; stroke-width: 1.2; stroke-dasharray: 4 4; }
+    .event-label { fill: #8f174a; font-size: 10px; font-weight: 800; }
+
+    .controls { width: 100%; }
+    .field { flex: 1 1 100%; }
+    select, input[type="text"], textarea { width: 100%; min-width: 0; }
+    .legend-row { padding: 7px 14px 16px; gap: 10px; }
+    .lower-grid { gap: 14px; }
+    .summary-panel { grid-template-columns: 1fr; }
+    .side-panel { position: static; }
+    .demo-badge { display: none; }
+
+    /* Wider desktop: still cap at phone column; optional soft widen for tablets. */
+    @media (min-width: 760px) {
+      .shell { width: min(430px, calc(100% - 24px)); }
+      .demo-badge { display: inline-flex; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after { scroll-behavior: auto !important; transition: none !important; }
+    }
+  </style>
+</head>
+<body>
+  <main class="shell">
+    <header class="topbar">
+      <div>
+        <span class="eyebrow">觀察時間軸</span>
+        <h1>健康觀察圖表</h1>
+        <p>手機優先試用。切換時間尺度，對照觀察分數、體重與就診／用藥事件。示範資料不寫入正式寵物紀錄。</p>
+      </div>
+      <span class="demo-badge">測試資料 · H1</span>
+    </header>
+
+    <p class="story-banner">
+      <strong>示範故事：</strong>9/1 就診記錄用藥與處方照片 → 之後開始追蹤頭痛、睡眠、腸胃／泌尿不適與體重。圖上圓點＝日記；方點＝就診帶出；虛線＝就診或用藥事件。
+    </p>
+
+    <div class="workspace">
+      <section class="main-column" aria-label="圖表工作區">
+        <article class="panel">
+          <div class="toolbar">
+            <div class="segmented" role="group" aria-label="時間尺度">
+              <button class="segment" type="button" data-mode="day" aria-pressed="false">每日</button>
+              <button class="segment" type="button" data-mode="week" aria-pressed="true">每週</button>
+              <button class="segment" type="button" data-mode="month" aria-pressed="false">每月</button>
+              <button class="segment" type="button" data-mode="year" aria-pressed="false">每年</button>
+            </div>
+
+            <div class="controls">
+              <div class="field">
+                <label for="metricSelect">主要觀察指標</label>
+                <select id="metricSelect" autocomplete="off"></select>
+              </div>
+              <div class="field">
+                <label for="summarySelect">取樣粒度</label>
+                <select id="summarySelect" autocomplete="off" disabled>
+                  <option>逐日</option>
+                </select>
+              </div>
+            </div>
+          </div>
+
+          <div class="chart-head">
+            <div>
+              <h2 id="chartTitle">頭痛程度｜每週觀察趨勢</h2>
+              <p id="chartSubtitle">數值越高代表不適越明顯；就診與用藥事件以垂直虛線標示。</p>
+            </div>
+            <label class="compare-control">
+              <input id="compareToggle" type="checkbox" autocomplete="off" checked />
+              比較上一期間
+            </label>
+          </div>
+
+          <div class="empty-state" id="emptyState" data-show="false" role="status">
+            此指標尚無觀察點。可在下方指標區新增自訂指標後再查看，或切回已有示範資料的指標。
+          </div>
+
+          <div class="chart-wrap" id="mainChartWrap" data-empty="false">
+            <svg id="mainChart" viewBox="0 0 360 420" role="img" aria-labelledby="chartTitle"></svg>
+            <div class="tooltip" id="tooltip" role="status" aria-live="polite"></div>
+          </div>
+
+          <div class="legend-row" aria-label="圖例">
+            <span class="legend-item"><span class="legend-line"></span>本期</span>
+            <span class="legend-item" id="previousLegend"><span class="legend-line pink"></span>上一期間</span>
+            <span class="legend-item"><span class="legend-dot"></span>日記點</span>
+            <span class="legend-item"><span class="legend-square"></span>就診帶出</span>
+            <span class="legend-item"><span class="legend-block grey"></span>基準觀察</span>
+            <span class="legend-item"><span class="legend-block"></span>治療追蹤</span>
+            <span class="legend-item"><span class="legend-block rose"></span>調整與回診</span>
+          </div>
+        </article>
+
+        <div class="lower-grid">
+          <article class="panel mini-panel">
+            <div class="mini-head">
+              <h3>關聯指標</h3>
+              <select id="secondarySelect" aria-label="選擇關聯指標" autocomplete="off"></select>
+            </div>
+            <svg id="miniChart" viewBox="0 0 360 140" role="img" aria-label="關聯指標趨勢"></svg>
+          </article>
+
+          <aside class="panel summary-panel" aria-label="期間摘要">
+            <h3>期間摘要</h3>
+            <div class="stat">
+              <div class="stat-label">最新紀錄</div>
+              <div class="stat-value" id="latestValue">—</div>
+              <div class="stat-note" id="latestNote">—</div>
+            </div>
+            <div class="stat">
+              <div class="stat-label">期間變化</div>
+              <div class="stat-value" id="changeValue">—</div>
+              <div class="stat-note">相較第一筆有效點</div>
+            </div>
+            <div class="stat">
+              <div class="stat-label">資料完整度</div>
+              <div class="stat-value" id="completionValue">—</div>
+              <div class="stat-note">有效觀察點</div>
+            </div>
+          </aside>
+        </div>
+
+        <p class="medical-note">這是介面與資料呈現測試，不提供診斷或用藥建議。圖表只描述紀錄期間的變化，不自行判定治療效果。示範內容為人類症狀詞彙（試用視覺），正式產品化時再改為寵物觀察用語。</p>
+      </section>
+
+      <aside class="panel side-panel" aria-label="觀察指標與日記">
+        <div class="side-title">
+          <h2>觀察指標積木</h2>
+          <p>點選切換主要指標；0–10 與體重（kg）分軸。</p>
+        </div>
+        <div id="metricCards"></div>
+
+        <div class="side-tools">
+          <div>
+            <h3>新增自訂指標（0–10）</h3>
+            <p class="hint">名稱會出現在下拉選單；無資料時顯示空狀態。</p>
+            <div class="add-row" style="margin-top:8px">
+              <input id="customMetricName" type="text" maxlength="24" placeholder="例如：疲勞程度" autocomplete="off" />
+              <button class="btn" type="button" id="addMetricBtn">新增</button>
+            </div>
+          </div>
+
+          <div>
+            <h3>日記備註（示範）</h3>
+            <p class="hint">D2：可自由寫日記，並選填連結就診。</p>
+            <form class="diary-form" id="diaryForm">
+              <div class="field">
+                <label for="diaryMetric">指標</label>
+                <select id="diaryMetric"></select>
+              </div>
+              <div class="field">
+                <label for="diaryNote">備註</label>
+                <textarea id="diaryNote" maxlength="200" placeholder="例如：下午較悶、有吃藥"></textarea>
+              </div>
+              <div class="field">
+                <label for="diaryVisit">連結就診（選填）</label>
+                <select id="diaryVisit"></select>
+              </div>
+              <button class="btn secondary" type="submit">儲存示範備註</button>
+              <div class="diary-feedback" id="diaryFeedback" aria-live="polite"></div>
+            </form>
+          </div>
+        </div>
+      </aside>
+    </div>
+  </main>
+
+  <script>
+    (function () {
+      "use strict";
+
+      const NS = "http://www.w3.org/2000/svg";
+      const CUSTOM_COLORS = ["#6b8cae", "#c47a9a", "#8a9a5b", "#a0785a", "#5c8a8a"];
+
+      /** @type {Record<string, {label:string, unit:string, max:number|null, direction:string, color:string, colorClass:string, scale:'fixed10'|'weight', empty?:boolean}>} */
+      const metricMeta = {
+        headache: {
+          label: "頭痛程度",
+          unit: "分",
+          max: 10,
+          direction: "數值越高代表不適越明顯",
+          color: "#1487bd",
+          colorClass: "",
+          scale: "fixed10"
+        },
+        sleep: {
+          label: "睡眠品質",
+          unit: "分",
+          max: 10,
+          direction: "數值越高代表睡眠品質越好",
+          color: "#2aa99d",
+          colorClass: "green",
+          scale: "fixed10"
+        },
+        gi: {
+          label: "腸胃不適程度",
+          unit: "分",
+          max: 10,
+          direction: "數值越高代表腸胃不適越明顯",
+          color: "#e8873a",
+          colorClass: "orange",
+          scale: "fixed10"
+        },
+        urinary: {
+          label: "泌尿不適程度",
+          unit: "分",
+          max: 10,
+          direction: "數值越高代表泌尿不適越明顯",
+          color: "#7b6cc7",
+          colorClass: "purple",
+          scale: "fixed10"
+        },
+        weight: {
+          label: "體重",
+          unit: "kg",
+          max: null,
+          direction: "以公斤顯示；Y 軸依本期／上期資料範圍自動調整",
+          color: "#5a7a92",
+          colorClass: "weight",
+          scale: "weight"
+        }
+      };
+
+      const demoVisits = [
+        { id: "", label: "不連結就診" },
+        { id: "v-2025-09-01", label: "2025-09-01 門診・開立處方並拍照" },
+        { id: "v-2025-09-15", label: "2025-09-15 回診・調整劑量" },
+        { id: "v-2025-09-29", label: "2025-09-29 追蹤回診" }
+      ];
+
+      // sources: "diary" | "visit" | null (null = no point / skip draw marker style)
+      const viewData = {
+        day: {
+          label: "每日",
+          labels: ["00:00", "02:00", "04:00", "06:00", "08:00", "10:00", "12:00", "14:00", "16:00", "18:00", "20:00", "22:00", "24:00"],
+          events: [
+            { index: 4, label: "08:00 用藥", shortLabel: "用藥", kind: "med" },
+            { index: 7, label: "13:40 日記・發作感", shortLabel: "日記", kind: "note" },
+            { index: 10, label: "20:00 第二次用藥", shortLabel: "用藥", kind: "med" }
+          ],
+          headache: {
+            current: [2, 2, 3, 5, 7, 6, 5, 6, 4, 3, 3, 2, 2],
+            previous: [3, 3, 4, 5, 6, 6, 7, 6, 5, 5, 4, 4, 3],
+            sources: ["diary", "diary", "diary", "diary", "diary", "diary", "diary", "diary", "diary", "diary", "diary", "diary", "diary"]
+          },
+          sleep: {
+            current: [7, 7, 6, 5, 4, 4, 5, 5, 6, 6, 7, 8, 8],
+            previous: [6, 6, 5, 5, 5, 4, 4, 5, 5, 6, 6, 7, 7],
+            sources: ["diary", "diary", "diary", "diary", "diary", "diary", "diary", "diary", "diary", "diary", "diary", "diary", "diary"]
+          },
+          gi: {
+            current: [1, 1, 2, 2, 3, 3, 2, 2, 2, 1, 1, 1, 1],
+            previous: [2, 2, 2, 3, 3, 4, 3, 3, 2, 2, 2, 2, 1],
+            sources: ["diary", "diary", "diary", "diary", "diary", "diary", "diary", "diary", "diary", "diary", "diary", "diary", "diary"]
+          },
+          urinary: {
+            current: [2, 2, 2, 3, 3, 2, 2, 2, 1, 1, 1, 1, 1],
+            previous: [3, 3, 3, 3, 4, 3, 3, 2, 2, 2, 2, 2, 2],
+            sources: ["diary", "diary", "diary", "diary", "diary", "diary", "diary", "diary", "diary", "diary", "diary", "diary", "diary"]
+          },
+          weight: {
+            current: [62.4, 62.4, 62.4, 62.4, 62.4, 62.4, 62.4, 62.4, 62.4, 62.4, 62.4, 62.4, 62.4],
+            previous: [62.8, 62.8, 62.8, 62.8, 62.8, 62.8, 62.8, 62.8, 62.8, 62.8, 62.8, 62.8, 62.8],
+            sources: ["diary", "diary", "diary", "diary", "diary", "diary", "diary", "diary", "diary", "diary", "diary", "diary", "diary"]
+          }
+        },
+        week: {
+          label: "每週",
+          labels: ["週一", "週二", "週三", "週四", "週五", "週六", "週日"],
+          events: [
+            { index: 0, label: "用藥開始（接續 9/1）", shortLabel: "用藥", kind: "med" },
+            { index: 3, label: "劑量調整", shortLabel: "調劑", kind: "med" },
+            { index: 6, label: "回診", shortLabel: "回診", kind: "visit" }
+          ],
+          headache: {
+            current: [7, 6, 5, 3, 4, 3, 3],
+            previous: [8, 7, 7, 6, 5, 5, 4],
+            sources: ["visit", "diary", "diary", "diary", "diary", "diary", "visit"]
+          },
+          sleep: {
+            current: [4, 5, 5, 7, 6, 7, 8],
+            previous: [3, 4, 4, 5, 5, 6, 6],
+            sources: ["diary", "diary", "diary", "diary", "diary", "diary", "diary"]
+          },
+          gi: {
+            current: [5, 4, 3, 3, 2, 2, 2],
+            previous: [6, 5, 5, 4, 4, 3, 3],
+            sources: ["visit", "diary", "diary", "diary", "diary", "diary", "diary"]
+          },
+          urinary: {
+            current: [4, 4, 3, 2, 2, 2, 1],
+            previous: [5, 5, 4, 4, 3, 3, 2],
+            sources: ["diary", "diary", "diary", "diary", "diary", "diary", "visit"]
+          },
+          weight: {
+            current: [63.1, 62.9, 62.8, 62.6, 62.5, 62.4, 62.3],
+            previous: [63.6, 63.5, 63.4, 63.3, 63.2, 63.1, 63.0],
+            sources: ["visit", "diary", "diary", "diary", "diary", "diary", "diary"]
+          }
+        },
+        month: {
+          label: "每月",
+          labels: ["1日", "4日", "7日", "10日", "13日", "16日", "19日", "22日", "25日", "28日", "30日"],
+          events: [
+            { index: 0, label: "9/1 就診・開立處方", shortLabel: "9/1 就診", kind: "visit" },
+            { index: 0, label: "開始用藥", shortLabel: "用藥", kind: "med" },
+            { index: 5, label: "9/15 劑量調整", shortLabel: "9/15 調劑", kind: "med" },
+            { index: 9, label: "9/29 回診", shortLabel: "9/29 回診", kind: "visit" }
+          ],
+          headache: {
+            current: [8, 6, 4, 3, 3, 4, 3, 2, 3, 4, 3],
+            previous: [8, 7, 6, 5, 4, 5, 5, 4, 5, 5, 4],
+            sources: ["visit", "diary", "diary", "diary", "diary", "visit", "diary", "diary", "diary", "visit", "diary"]
+          },
+          sleep: {
+            current: [3, 4, 6, 7, 7, 6, 7, 8, 7, 6, 8],
+            previous: [3, 4, 4, 5, 6, 5, 5, 6, 6, 6, 7],
+            sources: ["diary", "diary", "diary", "diary", "diary", "diary", "diary", "diary", "diary", "diary", "diary"]
+          },
+          gi: {
+            current: [6, 5, 4, 3, 3, 3, 2, 2, 2, 2, 2],
+            previous: [7, 6, 5, 5, 4, 4, 4, 3, 3, 3, 3],
+            sources: ["visit", "diary", "diary", "diary", "diary", "diary", "diary", "diary", "diary", "diary", "diary"]
+          },
+          urinary: {
+            current: [5, 4, 4, 3, 3, 2, 2, 2, 2, 1, 1],
+            previous: [6, 5, 5, 4, 4, 4, 3, 3, 3, 2, 2],
+            sources: ["diary", "diary", "diary", "diary", "diary", "visit", "diary", "diary", "diary", "visit", "diary"]
+          },
+          weight: {
+            current: [63.8, 63.5, 63.2, 63.0, 62.8, 62.7, 62.6, 62.5, 62.4, 62.3, 62.2],
+            previous: [64.2, 64.1, 64.0, 63.9, 63.8, 63.7, 63.6, 63.5, 63.5, 63.4, 63.3],
+            sources: ["visit", "diary", "diary", "diary", "diary", "visit", "diary", "diary", "diary", "visit", "diary"]
+          }
+        },
+        year: {
+          label: "每年",
+          labels: ["1月", "2月", "3月", "4月", "5月", "6月", "7月", "8月", "9月", "10月", "11月", "12月"],
+          events: [
+            { index: 8, label: "9月就診・開始追蹤", shortLabel: "9月就診", kind: "visit" },
+            { index: 8, label: "用藥開始", shortLabel: "用藥", kind: "med" },
+            { index: 10, label: "劑量調整／回診", shortLabel: "回診", kind: "med" }
+          ],
+          headache: {
+            current: [5, 5, 4, 4, 3, 4, 5, 7, 4, 3, 2, 3],
+            previous: [5, 5, 5, 4, 4, 4, 5, 5, 6, 5, 4, 4],
+            sources: ["diary", "diary", "diary", "diary", "diary", "diary", "diary", "diary", "visit", "diary", "visit", "diary"]
+          },
+          sleep: {
+            current: [6, 6, 7, 7, 7, 6, 6, 4, 7, 8, 8, 7],
+            previous: [6, 6, 6, 6, 7, 7, 6, 6, 5, 6, 6, 6],
+            sources: ["diary", "diary", "diary", "diary", "diary", "diary", "diary", "diary", "diary", "diary", "diary", "diary"]
+          },
+          gi: {
+            current: [3, 3, 2, 2, 2, 3, 3, 4, 3, 2, 2, 2],
+            previous: [3, 3, 3, 3, 2, 2, 3, 3, 4, 3, 3, 3],
+            sources: ["diary", "diary", "diary", "diary", "diary", "diary", "diary", "diary", "visit", "diary", "diary", "diary"]
+          },
+          urinary: {
+            current: [2, 2, 2, 2, 3, 2, 2, 3, 2, 1, 1, 1],
+            previous: [2, 2, 2, 3, 3, 2, 2, 2, 3, 2, 2, 2],
+            sources: ["diary", "diary", "diary", "diary", "diary", "diary", "diary", "diary", "visit", "diary", "visit", "diary"]
+          },
+          weight: {
+            current: [61.5, 61.7, 61.9, 62.0, 62.2, 62.4, 62.8, 63.4, 62.7, 62.4, 62.2, 62.1],
+            previous: [61.2, 61.3, 61.4, 61.5, 61.6, 61.8, 62.0, 62.2, 62.5, 62.6, 62.7, 62.8],
+            sources: ["diary", "diary", "diary", "diary", "diary", "diary", "diary", "diary", "visit", "diary", "visit", "diary"]
+          }
+        }
+      };
+
+      const diaryNotes = [];
+
+      let state = {
+        mode: "week",
+        metric: "headache",
+        secondary: "sleep",
+        compare: true,
+        customCount: 0
+      };
+
+      const mainSvg = document.getElementById("mainChart");
+      const miniSvg = document.getElementById("miniChart");
+      const tooltip = document.getElementById("tooltip");
+      const chartWrap = document.getElementById("mainChartWrap");
+      const emptyState = document.getElementById("emptyState");
+      const metricSelect = document.getElementById("metricSelect");
+      const secondarySelect = document.getElementById("secondarySelect");
+      const diaryMetric = document.getElementById("diaryMetric");
+      const diaryVisit = document.getElementById("diaryVisit");
+      const metricCards = document.getElementById("metricCards");
+
+      function escapeHtml(text) {
+        return String(text)
+          .replace(/&/g, "&amp;")
+          .replace(/</g, "&lt;")
+          .replace(/>/g, "&gt;")
+          .replace(/"/g, "&quot;")
+          .replace(/'/g, "&#39;");
+      }
+
+      function node(name, attrs, text) {
+        const el = document.createElementNS(NS, name);
+        Object.entries(attrs || {}).forEach(function (entry) {
+          el.setAttribute(entry[0], entry[1]);
+        });
+        if (text != null && text !== "") el.textContent = text;
+        return el;
+      }
+
+      function linePath(values, x, y) {
+        let started = false;
+        return values.map(function (value, index) {
+          if (!Number.isFinite(value)) return "";
+          const cmd = started ? "L" : "M";
+          started = true;
+          return cmd + " " + x(index) + " " + y(value);
+        }).filter(Boolean).join(" ");
+      }
+
+      function metricIds() {
+        return Object.keys(metricMeta);
+      }
+
+      function isEmptySeries(series) {
+        if (!series || !Array.isArray(series.current)) return true;
+        return !series.current.some(function (v) { return Number.isFinite(v); });
+      }
+
+      function yScaleFor(meta, series, compare) {
+        if (meta.scale === "fixed10") {
+          return { min: 0, max: 10, ticks: [0, 2, 4, 6, 8, 10] };
+        }
+        const values = (series.current || []).concat(compare ? (series.previous || []) : []);
+        const finite = values.filter(function (v) { return Number.isFinite(v); });
+        if (!finite.length) return { min: 0, max: 10, ticks: [0, 5, 10] };
+        let min = Math.min.apply(null, finite);
+        let max = Math.max.apply(null, finite);
+        if (min === max) {
+          min = Math.max(0, min - 1);
+          max = max + 1;
+        }
+        const pad = (max - min) * 0.12;
+        min = Math.floor((min - pad) * 10) / 10;
+        max = Math.ceil((max + pad) * 10) / 10;
+        const mid = Math.round(((min + max) / 2) * 10) / 10;
+        return { min: min, max: max, ticks: [min, mid, max] };
+      }
+
+      function formatValue(value, meta) {
+        if (!Number.isFinite(value)) return "—";
+        if (meta.scale === "weight") {
+          return (Math.round(value * 10) / 10) + " " + meta.unit;
+        }
+        return value + " " + meta.unit;
+      }
+
+      function rebuildSelects() {
+        const ids = metricIds();
+        function fill(select, selected) {
+          select.replaceChildren();
+          ids.forEach(function (id) {
+            const opt = document.createElement("option");
+            opt.value = id;
+            opt.textContent = metricMeta[id].label;
+            select.appendChild(opt);
+          });
+          if (ids.indexOf(selected) >= 0) select.value = selected;
+          else if (ids.length) select.value = ids[0];
+        }
+        fill(metricSelect, state.metric);
+        fill(secondarySelect, state.secondary);
+        fill(diaryMetric, state.metric);
+        state.metric = metricSelect.value;
+        state.secondary = secondarySelect.value;
+      }
+
+      function rebuildVisitSelect() {
+        diaryVisit.replaceChildren();
+        demoVisits.forEach(function (visit) {
+          const opt = document.createElement("option");
+          opt.value = visit.id;
+          opt.textContent = visit.label;
+          diaryVisit.appendChild(opt);
+        });
+      }
+
+      function rebuildCards() {
+        metricCards.replaceChildren();
+        metricIds().forEach(function (id) {
+          const meta = metricMeta[id];
+          const btn = document.createElement("button");
+          btn.type = "button";
+          btn.className = "metric-card";
+          btn.setAttribute("data-metric", id);
+          btn.setAttribute("aria-current", id === state.metric ? "true" : "false");
+          const scaleNote = meta.scale === "weight"
+            ? "公斤・Y 軸依資料範圍"
+            : "0–10 分・" + (id === "sleep" ? "越高越好" : "越高越明顯");
+          btn.innerHTML =
+            '<span class="metric-color ' + escapeHtml(meta.colorClass || "") + '"></span>' +
+            "<div><strong>" + escapeHtml(meta.label) + "</strong><span>" + escapeHtml(scaleNote) + "</span></div>";
+          btn.addEventListener("click", function () {
+            state.metric = id;
+            metricSelect.value = id;
+            renderAll();
+          });
+          metricCards.appendChild(btn);
+        });
+
+        const eventCard = document.createElement("div");
+        eventCard.className = "metric-card";
+        eventCard.style.cursor = "default";
+        eventCard.innerHTML =
+          '<span class="metric-color pink"></span>' +
+          "<div><strong>治療事件</strong><span>就診、用藥開始、劑量調整</span></div>";
+        metricCards.appendChild(eventCard);
+      }
+
+      function ensureSeriesShape(mode, metricId) {
+        const data = viewData[mode];
+        if (!data[metricId]) {
+          const len = data.labels.length;
+          data[metricId] = {
+            current: Array(len).fill(null),
+            previous: Array(len).fill(null),
+            sources: Array(len).fill(null)
+          };
+        }
+      }
+
+      function renderMain() {
+        const data = viewData[state.mode];
+        ensureSeriesShape(state.mode, state.metric);
+        const series = data[state.metric];
+        const meta = metricMeta[state.metric];
+        const empty = isEmptySeries(series);
+
+        emptyState.setAttribute("data-show", empty ? "true" : "false");
+        chartWrap.setAttribute("data-empty", empty ? "true" : "false");
+
+        document.getElementById("chartTitle").textContent = meta.label + "｜" + data.label + "觀察趨勢";
+        document.getElementById("chartSubtitle").textContent =
+          meta.direction + "；就診與用藥事件以垂直虛線標示。";
+        document.getElementById("previousLegend").hidden = !state.compare;
+
+        if (empty) {
+          updateSummary(data, [], meta);
+          mainSvg.replaceChildren();
+          return;
+        }
+
+        const width = 360;
+        const height = 420;
+        const margin = { top: 52, right: 10, bottom: 48, left: 34 };
+        const innerW = width - margin.left - margin.right;
+        const innerH = height - margin.top - margin.bottom;
+        const scale = yScaleFor(meta, series, state.compare);
+        mainSvg.setAttribute("viewBox", "0 0 " + width + " " + height);
+        const x = function (index) {
+          return margin.left + (index / Math.max(1, data.labels.length - 1)) * innerW;
+        };
+        const y = function (value) {
+          return margin.top + innerH - ((value - scale.min) / (scale.max - scale.min)) * innerH;
+        };
+
+        mainSvg.replaceChildren();
+
+        const bands = [
+          { start: 0, end: 0.18, fill: "#eef1f3" },
+          { start: 0.18, end: 0.68, fill: "#e8f4ed" },
+          { start: 0.68, end: 1, fill: "#fbe9ed" }
+        ];
+        bands.forEach(function (band) {
+          mainSvg.append(node("rect", {
+            x: margin.left + innerW * band.start,
+            y: margin.top,
+            width: innerW * (band.end - band.start),
+            height: innerH,
+            fill: band.fill
+          }));
+        });
+
+        scale.ticks.forEach(function (tick) {
+          mainSvg.append(node("line", {
+            x1: margin.left, y1: y(tick), x2: width - margin.right, y2: y(tick), class: "grid-line"
+          }));
+          const label = meta.scale === "weight" ? String(Math.round(tick * 10) / 10) : String(tick);
+          mainSvg.append(node("text", {
+            x: margin.left - 15, y: y(tick) + 4, "text-anchor": "end", class: "axis-label"
+          }, label));
+        });
+
+        data.labels.forEach(function (label, index) {
+          if (index > 0 && index < data.labels.length - 1) {
+            mainSvg.append(node("line", {
+              x1: x(index), y1: margin.top, x2: x(index), y2: margin.top + innerH,
+              class: "grid-line", opacity: "0.55"
+            }));
+          }
+          // Phone density: skip some x labels on day mode
+          const skipLabel =
+            data.labels.length > 8 &&
+            index !== 0 &&
+            index !== data.labels.length - 1 &&
+            index % 2 !== 0;
+          if (skipLabel) return;
+          mainSvg.append(node("text", {
+            x: x(index), y: height - 18, "text-anchor": "middle", class: "axis-label"
+          }, label));
+        });
+
+        mainSvg.append(node("line", {
+          x1: margin.left, y1: margin.top + innerH, x2: width - margin.right, y2: margin.top + innerH, class: "axis-line"
+        }));
+        mainSvg.append(node("line", {
+          x1: margin.left, y1: margin.top, x2: margin.left, y2: margin.top + innerH, class: "axis-line"
+        }));
+        // Y unit in top-left instead of rotated title (phone-friendly)
+        mainSvg.append(node("text", {
+          x: margin.left, y: 16, "text-anchor": "start", class: "axis-title"
+        }, meta.unit));
+        mainSvg.append(node("text", {
+          x: margin.left + innerW / 2, y: height - 4, "text-anchor": "middle", class: "axis-title"
+        }, data.label === "每日" ? "一天內時段" : data.label));
+
+        // Event markers (G2) — short labels; second marker at same x uses tooltip-only circle
+        const labelSlots = {};
+        data.events.forEach(function (event) {
+          const eventX = x(event.index);
+          const slot = labelSlots[event.index] || 0;
+          labelSlots[event.index] = slot + 1;
+          const tone = event.kind === "visit" ? "#db1f64" : "#1487bd";
+          const shortLabel = event.shortLabel || (event.label.length > 8 ? event.label.slice(0, 7) + "…" : event.label);
+          mainSvg.append(node("line", {
+            x1: eventX, y1: margin.top, x2: eventX, y2: margin.top + innerH, class: "event-line"
+          }));
+          mainSvg.append(node("circle", {
+            cx: eventX, cy: margin.top + 5, r: 5, fill: tone, stroke: "#fff", "stroke-width": 2
+          }));
+          if (slot === 0) {
+            mainSvg.append(node("text", {
+              x: Math.min(Math.max(eventX + 6, margin.left), width - margin.right - 4),
+              y: 30,
+              class: "event-label"
+            }, shortLabel));
+          }
+        });
+
+        if (state.compare) {
+          const prevPath = linePath(series.previous, x, y);
+          if (prevPath) {
+            mainSvg.append(node("path", {
+              d: prevPath,
+              fill: "none",
+              stroke: "#db1f64",
+              "stroke-width": 3.2,
+              "stroke-linecap": "round",
+              "stroke-linejoin": "round",
+              opacity: "0.9"
+            }));
+          }
+        }
+
+        const currPath = linePath(series.current, x, y);
+        if (currPath) {
+          mainSvg.append(node("path", {
+            d: currPath,
+            fill: "none",
+            stroke: meta.color,
+            "stroke-width": 4,
+            "stroke-linecap": "round",
+            "stroke-linejoin": "round"
+          }));
+        }
+
+        function addPoints(values, sources, color, groupLabel, forceSquare) {
+          values.forEach(function (value, index) {
+            if (!Number.isFinite(value)) return;
+            const source = sources && sources[index];
+            const asSquare = forceSquare || source === "visit";
+            const sourceLabel = source === "visit" ? "就診帶出" : source === "diary" ? "日記" : "紀錄";
+            let point;
+            if (asSquare) {
+              point = node("rect", {
+                x: x(index) - 5, y: y(value) - 5, width: 10, height: 10, rx: 1,
+                fill: color, stroke: "#fff", "stroke-width": 2, tabindex: "0"
+              });
+            } else {
+              point = node("circle", {
+                cx: x(index), cy: y(value), r: 6,
+                fill: color, stroke: "#fff", "stroke-width": 2, tabindex: "0"
+              });
+            }
+            point.setAttribute("role", "button");
+            point.setAttribute(
+              "aria-label",
+              groupLabel + " " + data.labels[index] + " " + meta.label + " " + value + meta.unit + "（" + sourceLabel + "）"
+            );
+            const show = function (event) {
+              showTooltip(
+                event,
+                groupLabel + "・" + data.labels[index],
+                meta.label + "：" + formatValue(value, meta) + "（" + sourceLabel + "）"
+              );
+            };
+            point.addEventListener("mouseenter", show);
+            point.addEventListener("mousemove", show);
+            point.addEventListener("focus", show);
+            point.addEventListener("mouseleave", hideTooltip);
+            point.addEventListener("blur", hideTooltip);
+            mainSvg.append(point);
+          });
+        }
+
+        if (state.compare) addPoints(series.previous, null, "#db1f64", "上一期間", true);
+        addPoints(series.current, series.sources, meta.color, "本期", false);
+
+        updateSummary(data, series.current, meta);
+      }
+
+      function renderMini() {
+        const data = viewData[state.mode];
+        ensureSeriesShape(state.mode, state.secondary);
+        const series = data[state.secondary];
+        const meta = metricMeta[state.secondary];
+        const width = 360;
+        const height = 140;
+        const margin = { top: 12, right: 10, bottom: 28, left: 32 };
+        const innerW = width - margin.left - margin.right;
+        const innerH = height - margin.top - margin.bottom;
+        const scale = yScaleFor(meta, series, false);
+        miniSvg.setAttribute("viewBox", "0 0 " + width + " " + height);
+        const x = function (index) {
+          return margin.left + (index / Math.max(1, data.labels.length - 1)) * innerW;
+        };
+        const y = function (value) {
+          return margin.top + innerH - ((value - scale.min) / (scale.max - scale.min)) * innerH;
+        };
+
+        miniSvg.replaceChildren();
+
+        if (isEmptySeries(series)) {
+          miniSvg.append(node("text", {
+            x: width / 2, y: height / 2, "text-anchor": "middle", class: "axis-label"
+          }, "尚無資料"));
+          return;
+        }
+
+        scale.ticks.forEach(function (tick) {
+          miniSvg.append(node("line", {
+            x1: margin.left, y1: y(tick), x2: width - margin.right, y2: y(tick), class: "grid-line"
+          }));
+          const label = meta.scale === "weight" ? String(Math.round(tick * 10) / 10) : String(tick);
+          miniSvg.append(node("text", {
+            x: margin.left - 10, y: y(tick) + 4, "text-anchor": "end", class: "axis-label"
+          }, label));
+        });
+
+        const path = linePath(series.current, x, y);
+        if (path) {
+          miniSvg.append(node("path", {
+            d: path, fill: "none", stroke: meta.color, "stroke-width": 3,
+            "stroke-linecap": "round", "stroke-linejoin": "round"
+          }));
+        }
+        series.current.forEach(function (value, index) {
+          if (!Number.isFinite(value)) return;
+          miniSvg.append(node("circle", {
+            cx: x(index), cy: y(value), r: 4, fill: meta.color, stroke: "#fff", "stroke-width": 1.5
+          }));
+        });
+
+        const labelIndexes = [0, Math.floor((data.labels.length - 1) / 2), data.labels.length - 1]
+          .filter(function (v, i, arr) { return arr.indexOf(v) === i; });
+        labelIndexes.forEach(function (index) {
+          miniSvg.append(node("text", {
+            x: x(index), y: height - 8, "text-anchor": "middle", class: "axis-label"
+          }, data.labels[index]));
+        });
+      }
+
+      function updateSummary(data, values, meta) {
+        const valid = values.filter(function (value) { return Number.isFinite(value); });
+        if (!valid.length) {
+          document.getElementById("latestValue").textContent = "—";
+          document.getElementById("latestNote").textContent = "無有效點";
+          document.getElementById("changeValue").textContent = "—";
+          document.getElementById("completionValue").textContent = "0%";
+          return;
+        }
+        const latest = valid[valid.length - 1];
+        const first = valid[0];
+        const change = Math.round((latest - first) * 10) / 10;
+        const completion = Math.round((valid.length / Math.max(1, values.length)) * 100);
+        let lastIndex = values.length - 1;
+        for (let i = values.length - 1; i >= 0; i--) {
+          if (Number.isFinite(values[i])) { lastIndex = i; break; }
+        }
+        document.getElementById("latestValue").textContent = formatValue(latest, meta);
+        document.getElementById("latestNote").textContent = data.labels[lastIndex];
+        document.getElementById("changeValue").textContent =
+          (change > 0 ? "+" : change < 0 ? "−" : "") + Math.abs(change);
+        document.getElementById("completionValue").textContent = completion + "%";
+      }
+
+      function showTooltip(event, title, value) {
+        tooltip.innerHTML = "<strong>" + escapeHtml(title) + "</strong>" + escapeHtml(value);
+        tooltip.style.display = "block";
+        const rect = chartWrap.getBoundingClientRect();
+        const pointX = "clientX" in event ? event.clientX - rect.left : rect.width / 2;
+        const pointY = "clientY" in event ? event.clientY - rect.top : 80;
+        tooltip.style.left = Math.min(Math.max(pointX + 12, 8), rect.width - 180) + "px";
+        tooltip.style.top = Math.max(pointY - 48, 8) + "px";
+      }
+
+      function hideTooltip() {
+        tooltip.style.display = "none";
+      }
+
+      function syncSecondaryOptions() {
+        Array.prototype.forEach.call(secondarySelect.options, function (option) {
+          option.disabled = option.value === state.metric;
+        });
+        if (state.secondary === state.metric) {
+          const fallback = metricIds().find(function (id) { return id !== state.metric; });
+          if (fallback) {
+            state.secondary = fallback;
+            secondarySelect.value = fallback;
+          }
+        }
+      }
+
+      function renderAll() {
+        const granularity = { day: "每 2 小時", week: "逐日", month: "每 3 日", year: "逐月" };
+        document.getElementById("summarySelect").options[0].textContent = granularity[state.mode];
+        rebuildCards();
+        syncSecondaryOptions();
+        renderMain();
+        renderMini();
+      }
+
+      function addCustomMetric() {
+        const input = document.getElementById("customMetricName");
+        const raw = (input.value || "").trim();
+        if (!raw) {
+          input.focus();
+          return;
+        }
+        if (raw.length > 24) return;
+
+        state.customCount += 1;
+        const id = "custom_" + state.customCount;
+        const color = CUSTOM_COLORS[(state.customCount - 1) % CUSTOM_COLORS.length];
+        metricMeta[id] = {
+          label: raw,
+          unit: "分",
+          max: 10,
+          direction: "自訂 0–10 觀察指標（示範）",
+          color: color,
+          colorClass: "",
+          scale: "fixed10",
+          empty: true
+        };
+
+        ["day", "week", "month", "year"].forEach(function (mode) {
+          const len = viewData[mode].labels.length;
+          viewData[mode][id] = {
+            current: Array(len).fill(null),
+            previous: Array(len).fill(null),
+            sources: Array(len).fill(null)
+          };
+        });
+
+        input.value = "";
+        rebuildSelects();
+        state.metric = id;
+        metricSelect.value = id;
+        diaryMetric.value = id;
+        renderAll();
+      }
+
+      document.querySelectorAll(".segment").forEach(function (button) {
+        button.addEventListener("click", function () {
+          state.mode = button.dataset.mode;
+          document.querySelectorAll(".segment").forEach(function (item) {
+            item.setAttribute("aria-pressed", String(item === button));
+          });
+          renderAll();
+        });
+      });
+
+      metricSelect.addEventListener("change", function (event) {
+        state.metric = event.target.value;
+        renderAll();
+      });
+
+      secondarySelect.addEventListener("change", function (event) {
+        state.secondary = event.target.value;
+        renderMini();
+      });
+
+      document.getElementById("compareToggle").addEventListener("change", function (event) {
+        state.compare = event.target.checked;
+        renderMain();
+      });
+
+      document.getElementById("addMetricBtn").addEventListener("click", addCustomMetric);
+      document.getElementById("customMetricName").addEventListener("keydown", function (event) {
+        if (event.key === "Enter") {
+          event.preventDefault();
+          addCustomMetric();
+        }
+      });
+
+      document.getElementById("diaryForm").addEventListener("submit", function (event) {
+        event.preventDefault();
+        const note = (document.getElementById("diaryNote").value || "").trim();
+        const metricId = diaryMetric.value;
+        const visitId = diaryVisit.value;
+        const visitLabel = demoVisits.find(function (v) { return v.id === visitId; });
+        const meta = metricMeta[metricId];
+        const feedback = document.getElementById("diaryFeedback");
+
+        if (!note) {
+          feedback.textContent = "請先輸入備註文字（示範不寫入正式儲存）。";
+          feedback.style.color = "#b45309";
+          return;
+        }
+
+        diaryNotes.push({
+          at: new Date().toISOString(),
+          metricId: metricId,
+          note: note,
+          visitId: visitId || null
+        });
+
+        feedback.style.color = "#146d65";
+        feedback.textContent =
+          "已記錄示範備註：「" + meta.label + "」" +
+          (visitId ? "・已連結 " + (visitLabel ? visitLabel.label : visitId) : "・未連結就診") +
+          "（記憶體暫存，重整後消失）";
+        document.getElementById("diaryNote").value = "";
+      });
+
+      rebuildVisitSelect();
+      rebuildSelects();
+      document.getElementById("compareToggle").checked = state.compare;
+      renderAll();
+    })();
+  </script>
+</body>
+</html>

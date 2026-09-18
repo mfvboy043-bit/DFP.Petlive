@@ -3575,7 +3575,7 @@ function paintGlassDock({ animateJump } = {}) {
     getActiveScreen: () =>
       app.querySelector(".screen.is-active")?.dataset.screen || "home",
     animateJump: Boolean(animateJump),
-    hideOnScreens: ["home"],
+    hideOnScreens: ["home", "observation-chart-tryout"],
   });
 }
 
@@ -3584,7 +3584,7 @@ function initGlassDock() {
     win: window,
     getActiveScreen: () =>
       app.querySelector(".screen.is-active")?.dataset.screen || "home",
-    hideOnScreens: ["home"],
+    hideOnScreens: ["home", "observation-chart-tryout"],
     passportGo: "emergency",
     startHidden: false,
     onGo: (screen) => go(screen),

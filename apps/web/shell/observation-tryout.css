@@ -1,0 +1,27 @@
+/* Shell — observation chart tryout hatch (iframe host) */
+.screen-observation-chart-tryout {
+  display: flex;
+  flex-direction: column;
+  min-height: 100dvh;
+}
+
+.screen-observation-chart-tryout .screen-head {
+  flex: 0 0 auto;
+}
+
+.obs-tryout-frame-wrap {
+  flex: 1 1 auto;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  background: #f4f7f9;
+}
+
+.obs-tryout-frame {
+  display: block;
+  width: 100%;
+  flex: 1 1 auto;
+  min-height: calc(100dvh - 72px);
+  border: 0;
+  background: #f4f7f9;
+}
