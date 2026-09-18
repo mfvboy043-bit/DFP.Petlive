@@ -222,7 +222,7 @@
       overflow-x: visible;
     }
 
-    #mainChart, #miniChart {
+    #mainChart {
       display: block;
       width: 100%;
       max-width: 100%;
@@ -412,19 +412,6 @@
       gap: 14px;
       margin-top: 14px;
     }
-
-    .mini-panel { padding: 18px 20px 14px; }
-
-    .mini-head {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 12px;
-      margin-bottom: 3px;
-    }
-
-    .mini-head h3 { margin: 0; font-size: 1rem; }
-    .mini-head select { min-width: 140px; min-height: 36px; }
 
     .summary-panel {
       display: grid;
@@ -676,14 +663,6 @@
         </article>
 
         <div class="lower-grid">
-          <article class="panel mini-panel">
-            <div class="mini-head">
-              <h3>關聯指標</h3>
-              <select id="secondarySelect" aria-label="選擇關聯指標" autocomplete="off"></select>
-            </div>
-            <svg id="miniChart" viewBox="0 0 360 140" role="img" aria-label="關聯指標趨勢"></svg>
-          </article>
-
           <aside class="panel summary-panel" aria-label="期間摘要">
             <h3>期間摘要</h3>
             <div class="stat">
@@ -757,16 +736,16 @@
     </div>
   </main>
 
-  <script defer src="../../domains/observations/metrics.js?v=20260918-self-entry"></script>
-  <script defer src="../../domains/observations/series.js?v=20260918-self-entry"></script>
-  <script defer src="../../domains/observations/events.js?v=20260918-self-entry"></script>
-  <script defer src="../../domains/observations/diary.js?v=20260918-self-entry"></script>
-  <script defer src="../../domains/observations/summary.js?v=20260918-self-entry"></script>
-  <script defer src="../../domains/observations/titles.js?v=20260918-self-entry"></script>
-  <script defer src="../../domains/observations/bridge.js?v=20260918-self-entry"></script>
-  <script defer src="../../domains/observations/demo-seed.js?v=20260918-self-entry"></script>
-  <script defer src="../../domains/observations/chart.js?v=20260918-self-entry"></script>
-  <script defer src="../../domains/observations/controller.js?v=20260918-self-entry"></script>
-  <script defer src="./tryout-wire.js?v=20260918-self-entry"></script>
+  <script defer src="../../domains/observations/metrics.js?v=20260918-no-related"></script>
+  <script defer src="../../domains/observations/series.js?v=20260918-no-related"></script>
+  <script defer src="../../domains/observations/events.js?v=20260918-no-related"></script>
+  <script defer src="../../domains/observations/diary.js?v=20260918-no-related"></script>
+  <script defer src="../../domains/observations/summary.js?v=20260918-no-related"></script>
+  <script defer src="../../domains/observations/titles.js?v=20260918-no-related"></script>
+  <script defer src="../../domains/observations/bridge.js?v=20260918-no-related"></script>
+  <script defer src="../../domains/observations/demo-seed.js?v=20260918-no-related"></script>
+  <script defer src="../../domains/observations/chart.js?v=20260918-no-related"></script>
+  <script defer src="../../domains/observations/controller.js?v=20260918-no-related"></script>
+  <script defer src="./tryout-wire.js?v=20260918-no-related"></script>
 </body>
 </html>
