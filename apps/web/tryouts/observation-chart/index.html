@@ -606,31 +606,6 @@
     .legend-block.grey { background: var(--grey-wash); }
     .legend-block.rose { background: var(--rose-wash); }
 
-    .lower-grid {
-      display: grid;
-      grid-template-columns: 1fr;
-      gap: 14px;
-      margin-top: 14px;
-    }
-
-    .summary-panel {
-      display: grid;
-      gap: 12px;
-      padding: 18px;
-    }
-
-    .summary-panel h3 { margin: 0; font-size: 0.95rem; }
-
-    .stat {
-      padding-top: 11px;
-      border-top: 1px solid var(--line);
-    }
-
-    .stat:first-of-type { padding-top: 0; border-top: 0; }
-    .stat-label { color: var(--ink-soft); font-size: 0.76rem; font-weight: 800; }
-    .stat-value { margin-top: 2px; font-size: 1.45rem; font-weight: 850; letter-spacing: -0.04em; }
-    .stat-note { color: var(--ink-soft); font-size: 0.76rem; }
-
     .side-panel {
       position: sticky;
       top: 18px;
@@ -770,8 +745,6 @@
     .field { flex: 1 1 100%; }
     select, input[type="text"], input[type="number"], textarea { width: 100%; min-width: 0; }
     .legend-row { padding: 7px 14px 16px; gap: 10px; }
-    .lower-grid { gap: 14px; }
-    .summary-panel { grid-template-columns: 1fr; }
     .side-panel { position: static; }
     .demo-badge { display: none; }
 
@@ -890,27 +863,6 @@
           </div>
         </article>
 
-        <div class="lower-grid">
-          <aside class="panel summary-panel" aria-label="期間摘要">
-            <h3>期間摘要</h3>
-            <div class="stat">
-              <div class="stat-label">最新紀錄</div>
-              <div class="stat-value" id="latestValue">—</div>
-              <div class="stat-note" id="latestNote">—</div>
-            </div>
-            <div class="stat">
-              <div class="stat-label">期間變化</div>
-              <div class="stat-value" id="changeValue">—</div>
-              <div class="stat-note">相較第一筆有效點</div>
-            </div>
-            <div class="stat">
-              <div class="stat-label">資料完整度</div>
-              <div class="stat-value" id="completionValue">—</div>
-              <div class="stat-note">有效觀察點</div>
-            </div>
-          </aside>
-        </div>
-
         <p class="medical-note">這是介面與資料呈現測試，不提供診斷或用藥建議。圖表只描述紀錄期間的變化，不自行判定治療效果。示範內容為人類症狀詞彙（試用視覺），正式產品化時再改為寵物觀察用語。</p>
       </section>
 
@@ -972,18 +924,18 @@
     </div>
   </div>
 
-  <script defer src="../../domains/observations/metrics.js?v=20260918-projects"></script>
-  <script defer src="../../domains/observations/series.js?v=20260918-projects"></script>
-  <script defer src="../../domains/observations/events.js?v=20260918-projects"></script>
-  <script defer src="../../domains/observations/diary.js?v=20260918-projects"></script>
-  <script defer src="../../domains/observations/summary.js?v=20260918-projects"></script>
-  <script defer src="../../domains/observations/titles.js?v=20260918-projects"></script>
-  <script defer src="../../domains/observations/bridge.js?v=20260918-projects"></script>
-  <script defer src="../../domains/observations/demo-seed.js?v=20260918-projects"></script>
-  <script defer src="../../domains/observations/projects.js?v=20260918-projects"></script>
-  <script defer src="../../domains/observations/persist.js?v=20260918-projects"></script>
-  <script defer src="../../domains/observations/chart.js?v=20260918-projects"></script>
-  <script defer src="../../domains/observations/controller.js?v=20260918-projects"></script>
-  <script defer src="./tryout-wire.js?v=20260918-projects"></script>
+  <script defer src="../../domains/observations/metrics.js?v=20260918-no-summary"></script>
+  <script defer src="../../domains/observations/series.js?v=20260918-no-summary"></script>
+  <script defer src="../../domains/observations/events.js?v=20260918-no-summary"></script>
+  <script defer src="../../domains/observations/diary.js?v=20260918-no-summary"></script>
+  <script defer src="../../domains/observations/summary.js?v=20260918-no-summary"></script>
+  <script defer src="../../domains/observations/titles.js?v=20260918-no-summary"></script>
+  <script defer src="../../domains/observations/bridge.js?v=20260918-no-summary"></script>
+  <script defer src="../../domains/observations/demo-seed.js?v=20260918-no-summary"></script>
+  <script defer src="../../domains/observations/projects.js?v=20260918-no-summary"></script>
+  <script defer src="../../domains/observations/persist.js?v=20260918-no-summary"></script>
+  <script defer src="../../domains/observations/chart.js?v=20260918-no-summary"></script>
+  <script defer src="../../domains/observations/controller.js?v=20260918-no-summary"></script>
+  <script defer src="./tryout-wire.js?v=20260918-no-summary"></script>
 </body>
 </html>
