@@ -114,6 +114,28 @@
     }
 
     .story-banner strong { color: var(--ink); }
+    .story-banner code {
+      font-size: 0.78em;
+      padding: 1px 5px;
+      border-radius: 6px;
+      background: rgba(255, 255, 255, 0.7);
+      color: var(--ink);
+    }
+
+    .persist-bar {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      align-items: flex-end;
+      margin-bottom: 18px;
+      padding: 12px 14px;
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      background: rgba(255, 255, 255, 0.88);
+    }
+
+    .persist-bar .field { flex: 1 1 140px; }
+    .persist-bar .btn.secondary { min-height: 41px; }
 
     .workspace {
       display: grid;
@@ -234,6 +256,184 @@
       margin: 0;
       font-size: clamp(1.15rem, 2vw, 1.55rem);
       letter-spacing: -0.02em;
+    }
+
+    .chart-title-row {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 10px;
+      width: 100%;
+    }
+
+    .chart-title-row h2 {
+      margin: 0;
+      flex: 1 1 auto;
+      min-width: 0;
+      font-size: clamp(1.15rem, 2vw, 1.55rem);
+      letter-spacing: -0.02em;
+      word-break: break-word;
+    }
+
+    .project-menu-wrap {
+      position: relative;
+      flex: 0 0 auto;
+    }
+
+    .project-menu-btn {
+      width: 40px;
+      height: 40px;
+      border: 1px solid var(--line-strong);
+      border-radius: 11px;
+      background: #fff;
+      color: var(--ink);
+      font-size: 1.2rem;
+      line-height: 1;
+      cursor: pointer;
+    }
+
+    .project-menu-btn:hover { background: #f3f7fa; }
+
+    .project-menu {
+      position: absolute;
+      right: 0;
+      top: calc(100% + 6px);
+      z-index: 8;
+      display: none;
+      min-width: 168px;
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      background: #fff;
+      box-shadow: 0 12px 28px rgba(23, 50, 77, 0.14);
+      padding: 6px;
+    }
+
+    .project-menu[data-open="true"] { display: grid; gap: 2px; }
+
+    .project-menu button {
+      border: 0;
+      border-radius: 8px;
+      background: transparent;
+      color: var(--ink);
+      text-align: left;
+      padding: 10px 12px;
+      cursor: pointer;
+      font-weight: 700;
+      font-size: 0.88rem;
+    }
+
+    .project-menu button:hover { background: #eef5f9; }
+    .project-menu button[data-danger="true"] { color: #b42318; }
+
+    .sheet-backdrop {
+      position: fixed;
+      inset: 0;
+      z-index: 20;
+      display: none;
+      align-items: flex-end;
+      justify-content: center;
+      background: rgba(17, 36, 52, 0.38);
+      padding: 16px;
+    }
+
+    .sheet-backdrop[data-open="true"] { display: flex; }
+
+    .sheet {
+      width: min(430px, 100%);
+      max-height: min(86vh, 640px);
+      overflow: auto;
+      border-radius: 18px 18px 14px 14px;
+      background: #fff;
+      box-shadow: 0 18px 40px rgba(17, 36, 52, 0.22);
+      padding: 18px 16px 16px;
+    }
+
+    .sheet h3 {
+      margin: 0 0 12px;
+      font-size: 1.05rem;
+    }
+
+    .sheet .field { margin-bottom: 10px; }
+
+    .sheet-actions {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+      margin-top: 14px;
+    }
+
+    .kind-pick {
+      display: grid;
+      gap: 8px;
+    }
+
+    .kind-pick label {
+      display: flex;
+      gap: 10px;
+      align-items: flex-start;
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      padding: 10px 12px;
+      cursor: pointer;
+    }
+
+    .kind-pick label[data-selected="true"] {
+      border-color: #9cc7de;
+      background: #f2f8fc;
+    }
+
+    .kind-pick strong { display: block; font-size: 0.9rem; }
+    .kind-pick span { color: var(--ink-soft); font-size: 0.76rem; }
+
+    .visit-check-list {
+      display: grid;
+      gap: 6px;
+      max-height: 160px;
+      overflow: auto;
+    }
+
+    .visit-check-list label {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+      font-size: 0.86rem;
+    }
+
+    .project-pick-list {
+      display: grid;
+      gap: 6px;
+    }
+
+    .project-pick-list button {
+      border: 1px solid var(--line);
+      border-radius: 11px;
+      background: #fff;
+      text-align: left;
+      padding: 11px 12px;
+      cursor: pointer;
+      font-weight: 750;
+      color: var(--ink);
+    }
+
+    .project-pick-list button[aria-current="true"] {
+      border-color: #9cc7de;
+      background: #eef7fb;
+    }
+
+    .toolbar[data-kind="visit-linked"] .segmented {
+      display: none;
+    }
+
+    .field-metric-bound[hidden],
+    .compare-control[hidden] {
+      display: none !important;
+    }
+
+    .bound-metric-label {
+      color: var(--ink);
+      font-size: 0.92rem;
+      font-weight: 750;
+      padding: 8px 0 2px;
     }
 
     .chart-title-edit {
@@ -598,14 +798,28 @@
     </header>
 
     <p class="story-banner">
-      <strong>怎麼用：</strong>先選一個示範指標，或新增你的指標名稱 → 在側欄填分數與時間點 → 圖上出現日記點。可選連結一筆就診當「開始追蹤」；圖上最多一條開始追蹤標記。
+      <strong>怎麼用：</strong>用標題旁選單<strong>新建／選擇專案</strong>（一專案＝一張圖）。可串接就診日期當時間軸，或自訂 0–10 指標。示範專案已標（示範）。
+      <br /><strong>耐久試用：</strong>專案／記分會寫入本機試用鍵 <code>petlive-obs-tryout-store</code>（非正式 passport）。重整同一頁可還原；切換寵物不會串資料。
     </p>
+
+    <div class="persist-bar" aria-label="試用儲存">
+      <div class="field" style="flex:1 1 140px; min-width:0">
+        <label for="tryoutPetSelect">試用寵物</label>
+        <select id="tryoutPetSelect" autocomplete="off"></select>
+      </div>
+      <label class="compare-control" style="align-self:flex-end; padding-bottom:8px">
+        <input id="demoModeToggle" type="checkbox" autocomplete="off" />
+        示範模式（不寫入）
+      </label>
+      <button class="btn secondary" type="button" id="clearPersistBtn" style="align-self:flex-end">清除試用儲存</button>
+      <p class="hint" id="persistStatus" style="flex:1 1 100%; margin:0; color:#146d65; font-size:0.78rem; font-weight:700" role="status" aria-live="polite"></p>
+    </div>
 
     <div class="workspace">
       <section class="main-column" aria-label="圖表工作區">
         <article class="panel">
-          <div class="toolbar">
-            <div class="segmented" role="group" aria-label="時間尺度">
+          <div class="toolbar" id="chartToolbar">
+            <div class="segmented" id="modeSegmented" role="group" aria-label="時間尺度">
               <button class="segment" type="button" data-mode="day" aria-pressed="false">每日</button>
               <button class="segment" type="button" data-mode="week" aria-pressed="true">每週</button>
               <button class="segment" type="button" data-mode="month" aria-pressed="false">每月</button>
@@ -613,41 +827,55 @@
             </div>
 
             <div class="controls">
-              <div class="field">
+              <div class="field field-metric-bound" id="metricSelectField" hidden>
                 <label for="metricSelect">主要觀察指標</label>
                 <select id="metricSelect" autocomplete="off"></select>
+              </div>
+              <div class="field" id="boundMetricField">
+                <span class="chart-title-edit-label">此專案指標</span>
+                <div class="bound-metric-label" id="boundMetricLabel">—</div>
               </div>
             </div>
           </div>
 
           <div class="chart-head">
-            <div class="chart-title-block">
-              <label class="chart-title-edit" for="chartTitleInput">
-                <span class="chart-title-edit-label">圖表標題（可自訂）</span>
-                <input
-                  id="chartTitleInput"
-                  type="text"
-                  maxlength="48"
-                  autocomplete="off"
-                  placeholder="例如：9月腸胃觀察"
-                />
-              </label>
-              <h2 id="chartTitle">頭痛程度｜每週觀察趨勢</h2>
-              <p id="chartSubtitle">數值越高代表不適越明顯。可在側欄記一筆分數，圖會跟著更新。</p>
+            <div class="chart-title-block" style="width:100%">
+              <div class="chart-title-row">
+                <h2 id="chartTitle">新建專案</h2>
+                <div class="project-menu-wrap">
+                  <button
+                    type="button"
+                    class="project-menu-btn"
+                    id="projectMenuBtn"
+                    aria-haspopup="true"
+                    aria-expanded="false"
+                    aria-controls="projectMenu"
+                    title="專案選單"
+                  >⋯</button>
+                  <div class="project-menu" id="projectMenu" role="menu" data-open="false">
+                    <button type="button" role="menuitem" data-project-action="select">選擇專案</button>
+                    <button type="button" role="menuitem" data-project-action="create">新建專案</button>
+                    <button type="button" role="menuitem" data-project-action="edit">編輯</button>
+                    <button type="button" role="menuitem" data-project-action="delete" data-danger="true">刪除</button>
+                  </div>
+                </div>
+              </div>
+              <p id="chartSubtitle">選擇或新建專案後，可在側欄記分數。</p>
               <p class="visit-jump" id="visitJump" hidden>
                 <span id="visitJumpLabel"></span>
                 <button type="button" class="visit-jump-btn" id="visitJumpBtn">前往時間軸就診</button>
               </p>
             </div>
-            <label class="compare-control">
+            <label class="compare-control" id="compareControl">
               <input id="compareToggle" type="checkbox" autocomplete="off" checked />
               比較上一期間
             </label>
           </div>
 
           <div class="empty-state" id="emptyState" data-show="false" role="status">
-            <p>此指標尚無觀察點。記第一筆分數後，折線就會出現。</p>
+            <p id="emptyStateCopy">此指標尚無觀察點。記第一筆分數後，折線就會出現。</p>
             <button type="button" class="empty-cta" id="emptyAddPointCta">記第一筆觀察</button>
+            <button type="button" class="empty-cta" id="emptyCreateProjectCta" hidden>新建專案</button>
           </div>
 
           <div class="chart-wrap" id="mainChartWrap" data-empty="false">
@@ -709,7 +937,7 @@
             <form class="diary-form" id="diaryForm">
               <div class="field">
                 <label for="diaryMetric">指標</label>
-                <select id="diaryMetric"></select>
+                <select id="diaryMetric" disabled></select>
               </div>
               <div class="field">
                 <label for="diaryValue">分數（0–10）</label>
@@ -736,16 +964,26 @@
     </div>
   </main>
 
-  <script defer src="../../domains/observations/metrics.js?v=20260918-no-related"></script>
-  <script defer src="../../domains/observations/series.js?v=20260918-no-related"></script>
-  <script defer src="../../domains/observations/events.js?v=20260918-no-related"></script>
-  <script defer src="../../domains/observations/diary.js?v=20260918-no-related"></script>
-  <script defer src="../../domains/observations/summary.js?v=20260918-no-related"></script>
-  <script defer src="../../domains/observations/titles.js?v=20260918-no-related"></script>
-  <script defer src="../../domains/observations/bridge.js?v=20260918-no-related"></script>
-  <script defer src="../../domains/observations/demo-seed.js?v=20260918-no-related"></script>
-  <script defer src="../../domains/observations/chart.js?v=20260918-no-related"></script>
-  <script defer src="../../domains/observations/controller.js?v=20260918-no-related"></script>
-  <script defer src="./tryout-wire.js?v=20260918-no-related"></script>
+  <div class="sheet-backdrop" id="projectSheet" data-open="false" hidden>
+    <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="projectSheetTitle">
+      <h3 id="projectSheetTitle">專案</h3>
+      <div id="projectSheetBody"></div>
+      <div class="sheet-actions" id="projectSheetActions"></div>
+    </div>
+  </div>
+
+  <script defer src="../../domains/observations/metrics.js?v=20260918-projects"></script>
+  <script defer src="../../domains/observations/series.js?v=20260918-projects"></script>
+  <script defer src="../../domains/observations/events.js?v=20260918-projects"></script>
+  <script defer src="../../domains/observations/diary.js?v=20260918-projects"></script>
+  <script defer src="../../domains/observations/summary.js?v=20260918-projects"></script>
+  <script defer src="../../domains/observations/titles.js?v=20260918-projects"></script>
+  <script defer src="../../domains/observations/bridge.js?v=20260918-projects"></script>
+  <script defer src="../../domains/observations/demo-seed.js?v=20260918-projects"></script>
+  <script defer src="../../domains/observations/projects.js?v=20260918-projects"></script>
+  <script defer src="../../domains/observations/persist.js?v=20260918-projects"></script>
+  <script defer src="../../domains/observations/chart.js?v=20260918-projects"></script>
+  <script defer src="../../domains/observations/controller.js?v=20260918-projects"></script>
+  <script defer src="./tryout-wire.js?v=20260918-projects"></script>
 </body>
 </html>

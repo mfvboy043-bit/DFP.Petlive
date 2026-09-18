@@ -128,6 +128,15 @@ test("titles resolveChartTitle prefers custom title", () => {
     "9月腸胃觀察"
   );
   assert.equal(
+    obs.resolveChartTitle({
+      projectName: "專案優先",
+      customTitle: "自訂標題",
+      metricLabel: "頭痛程度",
+      modeLabel: "每週",
+    }),
+    "專案優先"
+  );
+  assert.equal(
     obs.resolveChartTitle({ metricLabel: "頭痛程度", modeLabel: "每週" }),
     "頭痛程度｜每週觀察趨勢"
   );
@@ -152,6 +161,7 @@ test("controller addCustom yields empty series; addDiaryPoint fills chart series
     ...CORE_FILES,
     "titles.js",
     "demo-seed.js",
+    "projects.js",
     "controller.js",
   ]);
   const metrics = obs.createRegistry(obs.getDefaultMetricMeta());

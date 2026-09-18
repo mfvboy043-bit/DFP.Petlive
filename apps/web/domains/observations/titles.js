@@ -6,11 +6,12 @@
   root.domains.observations = root.domains.observations || {};
 
   /**
-   * Default auto title: "{metric}｜{mode}觀察趨勢"
-   * Custom title wins when non-empty trimmed string.
+   * Title priority: project.name → customTitle → "{metric}｜{mode}觀察趨勢"
    */
   function resolveChartTitle(opts) {
     const cfg = opts || {};
+    const projectName = String(cfg.projectName || (cfg.project && cfg.project.name) || "").trim();
+    if (projectName) return projectName;
     const custom = String(cfg.customTitle || "").trim();
     if (custom) return custom;
     const metricLabel = cfg.metricLabel != null ? String(cfg.metricLabel) : "";

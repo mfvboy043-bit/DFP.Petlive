@@ -57,11 +57,61 @@
 
   function getDemoVisits() {
     return [
-      { id: "", label: "不連結就診" },
-      { id: "v-2025-09-01", label: "2025-09-01 門診・開始追蹤" },
-      { id: "v-2025-09-15", label: "2025-09-15 門診" },
-      { id: "v-2025-09-29", label: "2025-09-29 門診" },
+      { id: "", label: "不連結就診", date: "" },
+      { id: "v-2025-09-01", label: "2025-09-01 門診・開始追蹤", date: "2025-09-01" },
+      { id: "v-2025-09-15", label: "2025-09-15 門診", date: "2025-09-15" },
+      { id: "v-2025-09-29", label: "2025-09-29 門診", date: "2025-09-29" },
     ];
+  }
+
+  /**
+   * Q1 seed: visit-linked from v-2025-09-01 arc + self-metric 頭痛程度.
+   * Labels include 示範 so users know these are samples.
+   */
+  function createDemoProjects() {
+    return [
+      {
+        id: "proj_demo_visit",
+        name: "9/1 就診追蹤（示範）",
+        kind: "visit-linked",
+        createdAt: "2025-09-01T00:00:00.000Z",
+        visitIds: ["v-2025-09-01", "v-2025-09-15", "v-2025-09-29"],
+        metricId: "headache",
+      },
+      {
+        id: "proj_demo_headache",
+        name: "頭痛程度（示範）",
+        kind: "self-metric",
+        createdAt: "2025-09-01T00:00:00.000Z",
+        visitIds: [],
+        metricId: "headache",
+      },
+    ];
+  }
+
+  function createDemoVisitSeries(metricId) {
+    const id = metricId || "headache";
+    const axis =
+      typeof root.domains.observations.buildVisitAxis === "function"
+        ? root.domains.observations.buildVisitAxis(getDemoVisits(), [
+            "v-2025-09-01",
+            "v-2025-09-15",
+            "v-2025-09-29",
+          ])
+        : { label: "就診", labels: ["9/1", "9/15", "9/29"], events: [], visitIds: [] };
+    const modeData = {
+      label: axis.label,
+      labels: axis.labels.slice(),
+      events: (axis.events || []).map(function (ev) {
+        return Object.assign({}, ev);
+      }),
+    };
+    modeData[id] = {
+      current: [7, 4, 3],
+      previous: [null, null, null],
+      sources: ["visit", "visit", "visit"],
+    };
+    return modeData;
   }
 
   function createDemoViewData() {
@@ -433,4 +483,6 @@
   root.domains.observations.getDefaultMetricMeta = getDefaultMetricMeta;
   root.domains.observations.getDemoVisits = getDemoVisits;
   root.domains.observations.createDemoViewData = createDemoViewData;
+  root.domains.observations.createDemoProjects = createDemoProjects;
+  root.domains.observations.createDemoVisitSeries = createDemoVisitSeries;
 })(typeof window !== "undefined" ? window : globalThis);
