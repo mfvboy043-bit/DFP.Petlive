@@ -73,23 +73,6 @@
         return margin.top + innerH - ((value - scale.min) / (scale.max - scale.min)) * innerH;
       };
 
-      const bands = [
-        { start: 0, end: 0.18, fill: "#eef1f3" },
-        { start: 0.18, end: 0.68, fill: "#e8f4ed" },
-        { start: 0.68, end: 1, fill: "#fbe9ed" },
-      ];
-      bands.forEach(function (band) {
-        svg.append(
-          node("rect", {
-            x: margin.left + innerW * band.start,
-            y: margin.top,
-            width: innerW * (band.end - band.start),
-            height: innerH,
-            fill: band.fill,
-          })
-        );
-      });
-
       scale.ticks.forEach(function (tick) {
         svg.append(
           node("line", {
@@ -299,9 +282,9 @@
         (values || []).forEach(function (value, index) {
           if (!Number.isFinite(value)) return;
           const source = sources && sources[index];
-          const asSquare = forceSquare || source === "visit";
-          const sourceLabel =
-            source === "visit" ? "就診帶出" : source === "diary" ? "日記" : "紀錄";
+          // N2: visit-derived points use diary circles (no visit squares).
+          const asSquare = !!forceSquare;
+          const sourceLabel = source === "diary" || source === "visit" ? "日記" : "紀錄";
           let point;
           if (asSquare) {
             point = node("rect", {

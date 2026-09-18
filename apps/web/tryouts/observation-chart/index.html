@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <meta name="description" content="健康觀察圖表試用版：多指標、日記與就診連結、事件標記。" />
+  <meta name="description" content="健康觀察圖表試用版：自己新增指標、記分數、看折線。" />
   <title>健康觀察圖表｜試用版</title>
   <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='15' fill='%230f3757'/%3E%3Cpath d='M10 42 21 31l9 7 12-19 12 8' fill='none' stroke='%236ad0c6' stroke-width='6' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E" />
   <style>
@@ -189,7 +189,7 @@
       font-weight: 800;
     }
 
-    select, input[type="text"] {
+    select, input[type="text"], input[type="number"] {
       min-width: 156px;
       min-height: 41px;
       border: 1px solid var(--line-strong);
@@ -319,6 +319,20 @@
 
     .empty-state[data-show="true"] { display: block; }
     .chart-wrap[data-empty="true"] { display: none; }
+
+    .empty-cta {
+      display: inline-flex;
+      margin-top: 12px;
+      border: 0;
+      border-radius: 11px;
+      background: var(--blue);
+      color: #fff;
+      padding: 10px 16px;
+      font-weight: 750;
+      cursor: pointer;
+    }
+
+    .empty-cta:hover { background: var(--blue-dark); }
 
     .tooltip {
       position: absolute;
@@ -567,7 +581,7 @@
 
     .controls { width: 100%; }
     .field { flex: 1 1 100%; }
-    select, input[type="text"], textarea { width: 100%; min-width: 0; }
+    select, input[type="text"], input[type="number"], textarea { width: 100%; min-width: 0; }
     .legend-row { padding: 7px 14px 16px; gap: 10px; }
     .lower-grid { gap: 14px; }
     .summary-panel { grid-template-columns: 1fr; }
@@ -589,15 +603,15 @@
   <main class="shell">
     <header class="topbar">
       <div>
-        <span class="eyebrow">觀察時間軸</span>
+        <span class="eyebrow">觀察筆記本</span>
         <h1>健康觀察圖表</h1>
-        <p>手機優先試用。切換時間尺度，對照觀察分數、體重與就診／用藥事件。示範資料不寫入正式寵物紀錄。</p>
+        <p>手機優先試用。自己新增指標、在時間點記分數，折線就會長出來。示範資料不寫入正式寵物紀錄。</p>
       </div>
       <span class="demo-badge">測試資料 · H1</span>
     </header>
 
     <p class="story-banner">
-      <strong>示範故事：</strong>9/1 就診記錄用藥與處方照片 → 之後開始追蹤頭痛、睡眠、腸胃／泌尿不適與體重。圖上圓點＝日記；方點＝就診帶出；虛線＝就診或用藥事件。
+      <strong>怎麼用：</strong>先選一個示範指標，或新增你的指標名稱 → 在側欄填分數與時間點 → 圖上出現日記點。可選連結一筆就診當「開始追蹤」；圖上最多一條開始追蹤標記。
     </p>
 
     <div class="workspace">
@@ -616,12 +630,6 @@
                 <label for="metricSelect">主要觀察指標</label>
                 <select id="metricSelect" autocomplete="off"></select>
               </div>
-              <div class="field">
-                <label for="summarySelect">取樣粒度</label>
-                <select id="summarySelect" autocomplete="off" disabled>
-                  <option>逐日</option>
-                </select>
-              </div>
             </div>
           </div>
 
@@ -638,7 +646,7 @@
                 />
               </label>
               <h2 id="chartTitle">頭痛程度｜每週觀察趨勢</h2>
-              <p id="chartSubtitle">數值越高代表不適越明顯；就診與用藥事件以垂直虛線標示。點時間軸事件可跳到就診。</p>
+              <p id="chartSubtitle">數值越高代表不適越明顯。可在側欄記一筆分數，圖會跟著更新。</p>
               <p class="visit-jump" id="visitJump" hidden>
                 <span id="visitJumpLabel"></span>
                 <button type="button" class="visit-jump-btn" id="visitJumpBtn">前往時間軸就診</button>
@@ -651,7 +659,8 @@
           </div>
 
           <div class="empty-state" id="emptyState" data-show="false" role="status">
-            此指標尚無觀察點。可在下方指標區新增自訂指標後再查看，或切回已有示範資料的指標。
+            <p>此指標尚無觀察點。記第一筆分數後，折線就會出現。</p>
+            <button type="button" class="empty-cta" id="emptyAddPointCta">記第一筆觀察</button>
           </div>
 
           <div class="chart-wrap" id="mainChartWrap" data-empty="false">
@@ -663,10 +672,6 @@
             <span class="legend-item"><span class="legend-line"></span>本期</span>
             <span class="legend-item" id="previousLegend"><span class="legend-line pink"></span>上一期間</span>
             <span class="legend-item"><span class="legend-dot"></span>日記點</span>
-            <span class="legend-item"><span class="legend-square"></span>就診帶出</span>
-            <span class="legend-item"><span class="legend-block grey"></span>基準觀察</span>
-            <span class="legend-item"><span class="legend-block"></span>治療追蹤</span>
-            <span class="legend-item"><span class="legend-block rose"></span>調整與回診</span>
           </div>
         </article>
 
@@ -704,15 +709,15 @@
 
       <aside class="panel side-panel" aria-label="觀察指標與日記">
         <div class="side-title">
-          <h2>觀察指標積木</h2>
-          <p>點選切換主要指標；0–10 與體重（kg）分軸。</p>
+          <h2>我的觀察筆記本</h2>
+          <p>先新增自己的指標，再記分數；下方範本可當起點。</p>
         </div>
         <div id="metricCards"></div>
 
         <div class="side-tools">
           <div>
-            <h3>新增自訂指標（0–10）</h3>
-            <p class="hint">名稱會出現在下拉選單；無資料時顯示空狀態。</p>
+            <h3>新增我的指標</h3>
+            <p class="hint">自己取名（0–10 分）。新增後是空圖，記得第一筆就會出現折線。下方列表的示範指標只是範本起點。</p>
             <div class="add-row" style="margin-top:8px">
               <input id="customMetricName" type="text" maxlength="24" placeholder="例如：疲勞程度" autocomplete="off" />
               <button class="btn" type="button" id="addMetricBtn">新增</button>
@@ -720,22 +725,30 @@
           </div>
 
           <div>
-            <h3>日記備註（示範）</h3>
-            <p class="hint">D2：可自由寫日記，並選填連結就診。</p>
+            <h3>記一筆觀察</h3>
+            <p class="hint">分數與時間點必填；備註與就診可選。</p>
             <form class="diary-form" id="diaryForm">
               <div class="field">
                 <label for="diaryMetric">指標</label>
                 <select id="diaryMetric"></select>
               </div>
               <div class="field">
-                <label for="diaryNote">備註</label>
-                <textarea id="diaryNote" maxlength="200" placeholder="例如：下午較悶、有吃藥"></textarea>
+                <label for="diaryValue">分數（0–10）</label>
+                <input id="diaryValue" type="number" min="0" max="10" step="1" inputmode="numeric" placeholder="例如：6" required />
+              </div>
+              <div class="field">
+                <label for="diaryIndex">時間點</label>
+                <select id="diaryIndex" required></select>
+              </div>
+              <div class="field">
+                <label for="diaryNote">備註（選填）</label>
+                <textarea id="diaryNote" maxlength="200" placeholder="例如：下午較悶"></textarea>
               </div>
               <div class="field">
                 <label for="diaryVisit">連結就診（選填）</label>
                 <select id="diaryVisit"></select>
               </div>
-              <button class="btn secondary" type="submit">儲存示範備註</button>
+              <button class="btn" type="submit">寫上圖表</button>
               <div class="diary-feedback" id="diaryFeedback" aria-live="polite"></div>
             </form>
           </div>
@@ -744,16 +757,16 @@
     </div>
   </main>
 
-  <script defer src="../../domains/observations/metrics.js?v=20260918-title-jump"></script>
-  <script defer src="../../domains/observations/series.js?v=20260918-title-jump"></script>
-  <script defer src="../../domains/observations/events.js?v=20260918-title-jump"></script>
-  <script defer src="../../domains/observations/diary.js?v=20260918-title-jump"></script>
-  <script defer src="../../domains/observations/summary.js?v=20260918-title-jump"></script>
-  <script defer src="../../domains/observations/titles.js?v=20260918-title-jump"></script>
-  <script defer src="../../domains/observations/bridge.js?v=20260918-title-jump"></script>
-  <script defer src="../../domains/observations/demo-seed.js?v=20260918-title-jump"></script>
-  <script defer src="../../domains/observations/chart.js?v=20260918-title-jump"></script>
-  <script defer src="../../domains/observations/controller.js?v=20260918-title-jump"></script>
-  <script defer src="./tryout-wire.js?v=20260918-title-jump"></script>
+  <script defer src="../../domains/observations/metrics.js?v=20260918-self-entry"></script>
+  <script defer src="../../domains/observations/series.js?v=20260918-self-entry"></script>
+  <script defer src="../../domains/observations/events.js?v=20260918-self-entry"></script>
+  <script defer src="../../domains/observations/diary.js?v=20260918-self-entry"></script>
+  <script defer src="../../domains/observations/summary.js?v=20260918-self-entry"></script>
+  <script defer src="../../domains/observations/titles.js?v=20260918-self-entry"></script>
+  <script defer src="../../domains/observations/bridge.js?v=20260918-self-entry"></script>
+  <script defer src="../../domains/observations/demo-seed.js?v=20260918-self-entry"></script>
+  <script defer src="../../domains/observations/chart.js?v=20260918-self-entry"></script>
+  <script defer src="../../domains/observations/controller.js?v=20260918-self-entry"></script>
+  <script defer src="./tryout-wire.js?v=20260918-self-entry"></script>
 </body>
 </html>
