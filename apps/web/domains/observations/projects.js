@@ -7,20 +7,55 @@
 
   const KIND_VISIT_LINKED = "visit-linked";
   const KIND_SELF_METRIC = "self-metric";
+  const KIND_NOTEBOOK = "notebook";
   const NAME_MAX = 32;
+  const CAPTION_MAX = 80;
+  const DEFAULT_NOTEBOOK_NAME = "觀察專案";
 
   function isVisitLinkedKind(kind) {
     return String(kind || "") === KIND_VISIT_LINKED;
   }
 
+  function isNotebookKind(kind) {
+    const key = String(kind || "");
+    return key === KIND_NOTEBOOK || key === KIND_SELF_METRIC;
+  }
+
   function isSelfMetricKind(kind) {
-    return String(kind || "") === KIND_SELF_METRIC;
+    return isNotebookKind(kind);
+  }
+
+  function normalizeMetricIds(rawIds, fallbackId) {
+    const seen = {};
+    const out = [];
+    function push(id) {
+      const key = String(id || "").trim().slice(0, 64);
+      if (!key || seen[key]) return;
+      seen[key] = true;
+      out.push(key);
+    }
+    if (Array.isArray(rawIds)) rawIds.forEach(push);
+    push(fallbackId);
+    return out;
+  }
+
+  function isLegacySelfMetricRaw(raw) {
+    return !!(
+      raw &&
+      typeof raw === "object" &&
+      String(raw.kind || "") === KIND_SELF_METRIC &&
+      !Array.isArray(raw.metricIds)
+    );
   }
 
   function normalizeName(value) {
     const raw = String(value == null ? "" : value).trim();
     if (!raw) return "";
     return raw.slice(0, NAME_MAX);
+  }
+
+  function normalizeCaption(value) {
+    return String(value == null ? "" : value).trim().slice(0, CAPTION_MAX);
   }
 
   function extractVisitDate(visit) {
@@ -67,22 +102,75 @@
     if (!raw || typeof raw !== "object") return null;
     const kind = isVisitLinkedKind(raw.kind)
       ? KIND_VISIT_LINKED
-      : isSelfMetricKind(raw.kind)
-        ? KIND_SELF_METRIC
+      : isNotebookKind(raw.kind)
+        ? KIND_NOTEBOOK
         : "";
     if (!kind) return null;
     const name = normalizeName(raw.name);
     if (!name) return null;
     const id = String(raw.id || "").trim().slice(0, 64);
     if (!id) return null;
+    const metricIds =
+      kind === KIND_NOTEBOOK
+        ? normalizeMetricIds(raw.metricIds, raw.metricId)
+        : normalizeMetricIds(raw.metricId ? [raw.metricId] : [], raw.metricId);
+    const focus = String(raw.focusMetricId || "").trim().slice(0, 64);
     return {
       id: id,
       name: name,
       kind: kind,
       createdAt: String(raw.createdAt || "").slice(0, 40) || new Date(0).toISOString(),
       visitIds: kind === KIND_VISIT_LINKED ? normalizeVisitIds(raw.visitIds) : [],
-      metricId: raw.metricId != null && raw.metricId !== "" ? String(raw.metricId).slice(0, 64) : "",
+      metricIds: metricIds,
+      metricId: metricIds[0] || "",
+      focusMetricId: metricIds.indexOf(focus) >= 0 ? focus : metricIds[0] || "",
+      caption: normalizeCaption(raw.caption),
     };
+  }
+
+  function cloneProject(p) {
+    if (!p) return null;
+    return Object.assign({}, p, {
+      visitIds: Array.isArray(p.visitIds) ? p.visitIds.slice() : [],
+      metricIds: Array.isArray(p.metricIds) ? p.metricIds.slice() : [],
+    });
+  }
+
+  function foldNotebooks(rawList) {
+    const visit = [];
+    const notes = [];
+    let legacy = false;
+    (Array.isArray(rawList) ? rawList : []).forEach(function (raw) {
+      if (isLegacySelfMetricRaw(raw)) legacy = true;
+      const p = normalizeProject(raw);
+      if (!p) return;
+      if (isVisitLinkedKind(p.kind)) visit.push(p);
+      else notes.push(p);
+    });
+    if (!notes.length) return visit;
+    if (notes.length === 1 && !legacy) return visit.concat([cloneProject(notes[0])]);
+    const keeper = notes[0];
+    const ids = normalizeMetricIds(
+      notes.reduce(function (acc, item) {
+        return acc.concat(item.metricIds || []);
+      }, []),
+      ""
+    );
+    const focus =
+      keeper.focusMetricId && ids.indexOf(keeper.focusMetricId) >= 0
+        ? keeper.focusMetricId
+        : ids[0] || "";
+    return visit.concat([
+      cloneProject(
+        Object.assign({}, keeper, {
+          name: normalizeName(DEFAULT_NOTEBOOK_NAME) || DEFAULT_NOTEBOOK_NAME,
+          kind: KIND_NOTEBOOK,
+          metricIds: ids,
+          metricId: ids[0] || "",
+          focusMetricId: focus,
+        })
+      ),
+    ]);
   }
 
   function sortVisitIdsByDate(visitIds, visits) {
@@ -141,17 +229,14 @@
     }
 
     function list() {
-      return projects.map(function (p) {
-        return Object.assign({}, p, { visitIds: p.visitIds.slice() });
-      });
+      return projects.map(cloneProject);
     }
 
     function get(id) {
       const key = String(id || "");
       for (let i = 0; i < projects.length; i += 1) {
         if (projects[i].id === key) {
-          const p = projects[i];
-          return Object.assign({}, p, { visitIds: p.visitIds.slice() });
+          return cloneProject(projects[i]);
         }
       }
       return null;
@@ -176,8 +261,7 @@
     function replaceAll(nextProjects, nextActiveId) {
       projects.length = 0;
       const incoming = Array.isArray(nextProjects) ? nextProjects : [];
-      incoming.forEach(function (raw) {
-        const p = normalizeProject(raw);
+      foldNotebooks(incoming).forEach(function (p) {
         if (p) projects.push(p);
       });
       let maxSeq = seq;
@@ -201,8 +285,8 @@
       if (!name) return null;
       const kind = isVisitLinkedKind(optsIn.kind)
         ? KIND_VISIT_LINKED
-        : isSelfMetricKind(optsIn.kind)
-          ? KIND_SELF_METRIC
+        : isNotebookKind(optsIn.kind)
+          ? KIND_NOTEBOOK
           : "";
       if (!kind) return null;
 
@@ -210,10 +294,8 @@
         kind === KIND_VISIT_LINKED ? normalizeVisitIds(optsIn.visitIds) : [];
       if (kind === KIND_VISIT_LINKED && !visitIds.length) return null;
 
-      const metricId =
-        optsIn.metricId != null && optsIn.metricId !== ""
-          ? String(optsIn.metricId).slice(0, 64)
-          : "";
+      const metricIds = normalizeMetricIds(optsIn.metricIds, optsIn.metricId);
+      const focus = String(optsIn.focusMetricId || "").trim().slice(0, 64);
 
       const project = {
         id: optsIn.id != null && String(optsIn.id).trim() ? String(optsIn.id).trim().slice(0, 64) : nextId(),
@@ -221,11 +303,25 @@
         kind: kind,
         createdAt: optsIn.createdAt ? String(optsIn.createdAt).slice(0, 40) : new Date().toISOString(),
         visitIds: visitIds,
-        metricId: metricId,
+        metricIds: metricIds,
+        metricId: metricIds[0] || "",
+        focusMetricId: metricIds.indexOf(focus) >= 0 ? focus : metricIds[0] || "",
+        caption: normalizeCaption(optsIn.caption),
       };
       projects.push(project);
       activeProjectId = project.id;
-      return Object.assign({}, project, { visitIds: project.visitIds.slice() });
+      return cloneProject(project);
+    }
+
+    function setCaption(id, caption) {
+      const key = String(id || "");
+      for (let i = 0; i < projects.length; i += 1) {
+        if (projects[i].id === key) {
+          projects[i].caption = normalizeCaption(caption);
+          return get(key);
+        }
+      }
+      return null;
     }
 
     function rename(id, name) {
@@ -258,8 +354,62 @@
       const key = String(id || "");
       for (let i = 0; i < projects.length; i += 1) {
         if (projects[i].id !== key) continue;
-        projects[i].metricId =
-          metricId != null && metricId !== "" ? String(metricId).slice(0, 64) : "";
+        const nextId = metricId != null && metricId !== "" ? String(metricId).slice(0, 64) : "";
+        const ids = normalizeMetricIds(projects[i].metricIds, nextId);
+        projects[i].metricIds = ids;
+        projects[i].metricId = ids[0] || "";
+        if (!projects[i].focusMetricId || ids.indexOf(projects[i].focusMetricId) < 0) {
+          projects[i].focusMetricId = ids[0] || "";
+        }
+        return get(key);
+      }
+      return null;
+    }
+
+    function addMetricId(id, metricId) {
+      const key = String(id || "");
+      const nextId = String(metricId || "").trim().slice(0, 64);
+      if (!nextId) return null;
+      for (let i = 0; i < projects.length; i += 1) {
+        if (projects[i].id !== key) continue;
+        if (!isNotebookKind(projects[i].kind)) return null;
+        const ids = normalizeMetricIds(projects[i].metricIds, nextId);
+        projects[i].metricIds = ids;
+        projects[i].metricId = ids[0] || "";
+        if (!projects[i].focusMetricId) projects[i].focusMetricId = nextId;
+        return get(key);
+      }
+      return null;
+    }
+
+    function removeMetricId(id, metricId) {
+      const key = String(id || "");
+      const drop = String(metricId || "").trim().slice(0, 64);
+      for (let i = 0; i < projects.length; i += 1) {
+        if (projects[i].id !== key) continue;
+        if (!isNotebookKind(projects[i].kind)) return null;
+        const ids = (projects[i].metricIds || []).filter(function (item) {
+          return item !== drop;
+        });
+        projects[i].metricIds = ids;
+        projects[i].metricId = ids[0] || "";
+        if (projects[i].focusMetricId === drop) {
+          projects[i].focusMetricId = ids[0] || "";
+        }
+        return get(key);
+      }
+      return null;
+    }
+
+    function setFocusMetricId(id, metricId) {
+      const key = String(id || "");
+      const nextId = String(metricId || "").trim().slice(0, 64);
+      for (let i = 0; i < projects.length; i += 1) {
+        if (projects[i].id !== key) continue;
+        const ids = projects[i].metricIds || [];
+        if (nextId && ids.indexOf(nextId) < 0) return get(key);
+        projects[i].focusMetricId = nextId || ids[0] || "";
+        if (projects[i].focusMetricId) projects[i].metricId = projects[i].focusMetricId;
         return get(key);
       }
       return null;
@@ -297,8 +447,12 @@
       setActive: setActive,
       create: create,
       rename: rename,
+      setCaption: setCaption,
       relinkVisits: relinkVisits,
       setMetricId: setMetricId,
+      addMetricId: addMetricId,
+      removeMetricId: removeMetricId,
+      setFocusMetricId: setFocusMetricId,
       delete: remove,
       remove: remove,
       replaceAll: replaceAll,
@@ -306,16 +460,23 @@
       normalizeName: normalizeName,
       isVisitLinkedKind: isVisitLinkedKind,
       isSelfMetricKind: isSelfMetricKind,
+      isNotebookKind: isNotebookKind,
     };
   }
 
   root.domains.observations.KIND_VISIT_LINKED = KIND_VISIT_LINKED;
   root.domains.observations.KIND_SELF_METRIC = KIND_SELF_METRIC;
+  root.domains.observations.KIND_NOTEBOOK = KIND_NOTEBOOK;
+  root.domains.observations.DEFAULT_NOTEBOOK_NAME = DEFAULT_NOTEBOOK_NAME;
   root.domains.observations.PROJECT_NAME_MAX = NAME_MAX;
+  root.domains.observations.PROJECT_CAPTION_MAX = CAPTION_MAX;
   root.domains.observations.normalizeProjectName = normalizeName;
+  root.domains.observations.normalizeProjectCaption = normalizeCaption;
   root.domains.observations.normalizeProject = normalizeProject;
   root.domains.observations.isVisitLinkedKind = isVisitLinkedKind;
   root.domains.observations.isSelfMetricKind = isSelfMetricKind;
+  root.domains.observations.isNotebookKind = isNotebookKind;
+  root.domains.observations.foldNotebooks = foldNotebooks;
   root.domains.observations.extractVisitDate = extractVisitDate;
   root.domains.observations.buildVisitAxis = buildVisitAxis;
   root.domains.observations.sortVisitIdsByDate = sortVisitIdsByDate;

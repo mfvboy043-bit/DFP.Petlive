@@ -54,16 +54,26 @@
       const onShowTooltip = typeof cfg.onShowTooltip === "function" ? cfg.onShowTooltip : null;
       const onHideTooltip = typeof cfg.onHideTooltip === "function" ? cfg.onHideTooltip : null;
 
-      const empty = obs.isEmptySeries(series);
+      const tracksIn = Array.isArray(cfg.tracks) ? cfg.tracks : [];
+      const tracks = (tracksIn.length
+        ? tracksIn
+        : [{ series: series, meta: meta, name: meta.label || "", primary: true }]
+      ).filter(function (track) {
+        return track && track.series && !obs.isEmptySeries(track.series);
+      });
       svg.replaceChildren();
-      if (empty) return { empty: true };
+      if (!tracks.length) return { empty: true };
+      const primaryMeta = (tracks[0] && tracks[0].meta) || meta;
 
       const width = 360;
       const height = 420;
       const margin = { top: 52, right: 10, bottom: 48, left: 34 };
       const innerW = width - margin.left - margin.right;
       const innerH = height - margin.top - margin.bottom;
-      const scale = obs.yScaleFor(meta, series, compare);
+      const scale =
+        typeof obs.yScaleForTracks === "function"
+          ? obs.yScaleForTracks(tracks)
+          : obs.yScaleFor(primaryMeta, tracks[0].series, compare);
       svg.setAttribute("viewBox", "0 0 " + width + " " + height);
 
       const x = function (index) {
@@ -83,7 +93,7 @@
             class: "grid-line",
           })
         );
-        const label = meta.scale === "weight" ? String(Math.round(tick * 10) / 10) : String(tick);
+        const label = primaryMeta.scale === "weight" ? String(Math.round(tick * 10) / 10) : String(tick);
         svg.append(
           node(
             "text",
@@ -149,30 +159,40 @@
           class: "axis-line",
         })
       );
-      svg.append(
-        node(
-          "text",
-          {
-            x: margin.left,
-            y: 16,
-            "text-anchor": "start",
-            class: "axis-title",
-          },
-          meta.unit || ""
-        )
-      );
-      svg.append(
-        node(
-          "text",
-          {
-            x: margin.left + innerW / 2,
-            y: height - 4,
-            "text-anchor": "middle",
-            class: "axis-title",
-          },
-          modeLabel === "每日" ? "一天內時段" : modeLabel
-        )
-      );
+      const sharedUnit = tracks.every(function (track) {
+        return String((track.meta && track.meta.unit) || "") === String((primaryMeta && primaryMeta.unit) || "");
+      });
+      const unitLabel = sharedUnit ? String((primaryMeta && primaryMeta.unit) || "").trim() : "";
+      if (unitLabel) {
+        const topTick = scale.ticks[scale.ticks.length - 1];
+        svg.append(
+          node(
+            "text",
+            {
+              x: margin.left - 15,
+              y: y(topTick) - 12,
+              "text-anchor": "end",
+              class: "axis-title axis-title-unit",
+            },
+            unitLabel
+          )
+        );
+      }
+      const periodLabel = modeLabel === "每日" ? "一天內時段" : modeLabel;
+      if (periodLabel) {
+        svg.append(
+          node(
+            "text",
+            {
+              x: margin.left + innerW / 2,
+              y: 22,
+              "text-anchor": "middle",
+              class: "axis-title axis-title-mode",
+            },
+            periodLabel
+          )
+        );
+      }
 
       const planned = obs.planEventLabels(events);
       planned.forEach(function (event) {
@@ -247,8 +267,8 @@
         }
       });
 
-      if (compare) {
-        const prevPath = linePath(series.previous || [], x, y);
+      if (compare && tracks[0]) {
+        const prevPath = linePath((tracks[0].series && tracks[0].series.previous) || [], x, y);
         if (prevPath) {
           svg.append(
             node("path", {
@@ -264,21 +284,24 @@
         }
       }
 
-      const currPath = linePath(series.current || [], x, y);
-      if (currPath) {
+      tracks.forEach(function (track) {
+        const currPath = linePath((track.series && track.series.current) || [], x, y);
+        if (!currPath) return;
         svg.append(
           node("path", {
             d: currPath,
             fill: "none",
-            stroke: meta.color || "#1487bd",
-            "stroke-width": 4,
+            stroke: (track.meta && track.meta.color) || "#1487bd",
+            "stroke-width": track.primary ? 4 : 3.2,
             "stroke-linecap": "round",
             "stroke-linejoin": "round",
+            opacity: track.primary ? "1" : "0.92",
           })
         );
-      }
+      });
 
-      function addPoints(values, sources, color, groupLabel, forceSquare) {
+      function addPoints(values, sources, color, groupLabel, forceSquare, pointMeta) {
+        const pointMetaSafe = pointMeta || meta;
         (values || []).forEach(function (value, index) {
           if (!Number.isFinite(value)) return;
           const source = sources && sources[index];
@@ -316,10 +339,10 @@
               " " +
               labels[index] +
               " " +
-              (meta.label || "") +
+              (pointMetaSafe.label || "") +
               " " +
               value +
-              (meta.unit || "") +
+              (pointMetaSafe.unit || "") +
               "（" +
               sourceLabel +
               "）"
@@ -329,7 +352,12 @@
             onShowTooltip(
               event,
               groupLabel + "・" + labels[index],
-              (meta.label || "") + "：" + formatValue(value, meta) + "（" + sourceLabel + "）"
+              (pointMetaSafe.label || "") +
+                "：" +
+                formatValue(value, pointMetaSafe) +
+                "（" +
+                sourceLabel +
+                "）"
             );
           };
           if (onShowTooltip) {
@@ -345,8 +373,24 @@
         });
       }
 
-      if (compare) addPoints(series.previous, null, "#db1f64", "上一期間", true);
-      addPoints(series.current, series.sources, meta.color || "#1487bd", "本期", false);
+      const useMetricLabels = !!cfg.useMetricSeriesLabels;
+      tracks.forEach(function (track) {
+        const trackMeta = track.meta || {};
+        const metricName = track.name || trackMeta.label || "指標";
+        const previousGroup = useMetricLabels ? metricName + "（上一期間）" : "上一期間";
+        const currentGroup = useMetricLabels ? metricName : "本期";
+        if (compare && track.primary) {
+          addPoints((track.series && track.series.previous) || [], null, "#db1f64", previousGroup, true, trackMeta);
+        }
+        addPoints(
+          (track.series && track.series.current) || [],
+          (track.series && track.series.sources) || null,
+          trackMeta.color || "#1487bd",
+          currentGroup,
+          false,
+          trackMeta
+        );
+      });
 
       return { empty: false, escapeHtml: escapeHtml };
     }

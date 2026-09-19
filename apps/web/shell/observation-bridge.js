@@ -22,24 +22,75 @@
       throw new TypeError("initObservationBridge requires onOpenChart(msg)");
     }
 
+    function resolveFrame(frameEl) {
+      if (frameEl) return frameEl;
+      if (typeof input.getFrame === "function") {
+        const fromHook = input.getFrame();
+        if (fromHook) return fromHook;
+      }
+      const id = input.frameId || "obs-tryout-frame";
+      return doc && typeof doc.getElementById === "function"
+        ? doc.getElementById(id)
+        : null;
+    }
+
+    function isDemoBlocked() {
+      if (typeof input.isDemoMode === "function") return !!input.isDemoMode();
+      return !!input.isDemoMode;
+    }
+
+    function syncPetsToFrame(frameEl) {
+      if (typeof input.getPets !== "function") return false;
+      const frame = resolveFrame(frameEl);
+      const frameWin = frame && frame.contentWindow;
+      if (!frameWin) return false;
+      const pets = input.getPets() || [];
+      const activePetId =
+        typeof input.getActivePetId === "function" ? input.getActivePetId() : "";
+      return obs.postBridgeToFrame(frameWin, obs.BRIDGE_ACTIONS.syncPets, {
+        pets: pets,
+        activePetId: activePetId || "",
+      });
+    }
+
     function onMessage(event) {
       const msg = obs.parseBridgeMessage(event && event.data);
       if (!msg) return;
+
       if (msg.action === obs.BRIDGE_ACTIONS.openVisit) {
         input.onOpenVisit(msg);
         return;
       }
       if (msg.action === obs.BRIDGE_ACTIONS.openChart) {
         input.onOpenChart(msg);
+        return;
+      }
+      if (msg.action === obs.BRIDGE_ACTIONS.setActivePet) {
+        if (typeof input.setActivePet === "function" && msg.petId) {
+          input.setActivePet(msg.petId);
+        }
+        syncPetsToFrame();
+        return;
+      }
+      if (msg.action === obs.BRIDGE_ACTIONS.flushObservations) {
+        if (isDemoBlocked()) return;
+        if (typeof input.saveObservations !== "function") return;
+        if (!msg.petId || !msg.observations) return;
+        input.saveObservations(msg.petId, msg.observations);
       }
     }
 
     win.addEventListener("message", onMessage);
 
     function focusChartVisit(frameEl, payload) {
-      const frameWin = frameEl && frameEl.contentWindow;
+      const frame = resolveFrame(frameEl);
+      const frameWin = frame && frame.contentWindow;
       if (!frameWin) return false;
-      return obs.postBridgeToFrame(frameWin, obs.BRIDGE_ACTIONS.focusVisit, payload || {});
+      return obs.postBridgeToFrame(
+        frameWin,
+        obs.BRIDGE_ACTIONS.focusVisit,
+        payload || {}
+      );
     }
 
     function requestOpenChart(payload) {
@@ -52,6 +103,7 @@
       },
       focusChartVisit: focusChartVisit,
       requestOpenChart: requestOpenChart,
+      syncPetsToFrame: syncPetsToFrame,
     };
   }
 

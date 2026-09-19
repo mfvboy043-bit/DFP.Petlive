@@ -16,16 +16,18 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,700&family=Noto+Sans+TC:wght@400;500;700&family=Noto+Serif+TC:wght@600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="./styles.css?v=20260916-toast-cal-top" />
   <link rel="stylesheet" href="../shell/account-chrome.css?v=20260917-legal-link" />
-  <link rel="stylesheet" href="../shell/parasite-strip.css?v=20260903-cb-p2" />
-  <link rel="stylesheet" href="./styles.css?v=20260917-cb-p2-qa1" />
+  <link rel="stylesheet" href="../shell/parasite-strip.css?v=20260918-photo-crop" />
   <link rel="stylesheet" href="../shell/glass-dock.css?v=20260828-dock-smooth" />
   <link rel="stylesheet" href="../shell/glass-perf.css?v=20260830-perf-click-c" />
   <link rel="stylesheet" href="../shell/screen-home-btn.css?v=20260827-screen-home-btn" />
   <link rel="stylesheet" href="../shell/feature-hub.css?v=20260827-vax-keep-card" />
   <link rel="stylesheet" href="../shell/intro-stories.css?v=20260918-about-me-v5" />
   <link rel="stylesheet" href="../shell/clinic-picker.css?v=20260902-saved-clinics" />
-  <link rel="stylesheet" href="../shell/observation-tryout.css?v=20260918-no-summary" />
+  <link rel="stylesheet" href="../shell/observation-tryout.css?v=20260919-inpage" />
+  <link rel="stylesheet" href="../shell/tryout-pet-picker.css?v=20260919-blocks" />
+  <link rel="stylesheet" href="../shell/observation-chart.css?v=20260919-overlay-same" />
 </head>
 <body>
   <div
@@ -782,7 +784,7 @@
       </div>
     </section>
 
-    <!-- OBSERVATION CHART TRYOUT (proposal preview iframe) -->
+    <!-- OBSERVATION CHART (in-page workspace; shared shell + domain) -->
     <section
       class="screen screen-observation-chart-tryout"
       data-screen="observation-chart-tryout"
@@ -797,16 +799,7 @@
           <p data-i18n="observationChartTryoutSub">健康觀察圖表試用版 · 示範資料</p>
         </div>
       </header>
-      <div class="obs-tryout-frame-wrap">
-        <iframe
-          class="obs-tryout-frame"
-          id="obs-tryout-frame"
-          title="健康觀察圖表試用版"
-          src="../tryouts/observation-chart/index.html?v=20260918-no-summary"
-          loading="lazy"
-          referrerpolicy="no-referrer"
-        ></iframe>
-      </div>
+      <div class="obs-workspace-host" id="obs-workspace-host"></div>
     </section>
 
     <!-- ADD VISIT -->
@@ -2113,19 +2106,19 @@
   <script defer src="../core/storage.js?v=20260903-slot-hygiene"></script>
   <script defer src="../core/state.js?v=20260813-layered-adopted"></script>
   <script defer src="../core/dates.js?v=20260827-leftover-17"></script>
-  <script defer src="../core/loc-field.js?v=20260903-facade-slim-r2"></script>
+  <script defer src="../core/loc-field.js?v=20260918-photo-crop"></script>
   <script defer src="../core/pets-graph.js?v=20260831-sec1-local-strip"></script>
   <script defer src="../shell/navigation.js?v=20260813-layered-adopted"></script>
   <script defer src="../shell/app-nav.js?v=20260827-wire-bundles"></script>
   <script defer src="../shell/glass-dock.js?v=20260831-dock-multitab"></script>
   <script defer src="../shell/screen-home-btn.js?v=20260827-screen-home-btn"></script>
-  <script defer src="../shell/feature-hub.js?v=20260903-facade-slim-r2"></script>
+  <script defer src="../shell/feature-hub.js?v=20260918-photo-crop"></script>
   <script defer src="../shell/render-coordinator.js?v=20260824-perf-adopt"></script>
   <script defer src="../shell/boot-scheduler.js?v=20260903-boot-cover"></script>
   <script defer src="../shell/photo-crop.js?v=20260918-photo-crop"></script>
   <script defer src="../shell/calendar-chooser.js?v=20260827-abcd"></script>
-  <script defer src="../shell/clinic-picker.js?v=20260903-facade-slim-r2"></script>
-  <script defer src="../shell/drug-search.js?v=20260903-facade-slim-r2"></script>
+  <script defer src="../shell/clinic-picker.js?v=20260918-photo-crop"></script>
+  <script defer src="../shell/drug-search.js?v=20260918-photo-crop"></script>
   <script defer src="../shell/proof-preview.js?v=20260827-fo-render"></script>
   <script defer src="../shell/account-chrome.js?v=20260917-legal-link"></script>
   <script defer src="../shell/intro-cloud.js?v=20260828-c-no-legal"></script>
@@ -2153,8 +2146,26 @@
   <script defer src="../domains/timeline/selectors.js?v=20260827-tl-render"></script>
   <script defer src="../domains/timeline/view.js?v=20260827-tl-render"></script>
   <script defer src="../domains/timeline/render.js?v=20260918-title-jump"></script>
-  <script defer src="../domains/observations/bridge.js?v=20260918-no-summary"></script>
-  <script defer src="../shell/observation-bridge.js?v=20260918-no-summary"></script>
+  <script defer src="../domains/observations/bridge.js?v=20260918-passport-pets"></script>
+  <script defer src="../shell/tryout-pet-picker.js?v=20260918-tryout-polish-d"></script>
+  <script defer src="../domains/observations/passport-visits.js?v=20260919-blocks"></script>
+  <script defer src="../domains/observations/metrics.js?v=20260919-mode-align"></script>
+  <script defer src="../domains/observations/series.js?v=20260919-overlay"></script>
+  <script defer src="../domains/observations/events.js?v=20260918-passport-pets"></script>
+  <script defer src="../domains/observations/diary.js?v=20260918-passport-pets"></script>
+  <script defer src="../domains/observations/summary.js?v=20260918-passport-pets"></script>
+  <script defer src="../domains/observations/titles.js?v=20260918-passport-pets"></script>
+  <script defer src="../domains/observations/demo-seed.js?v=20260918-passport-pets"></script>
+  <script defer src="../domains/observations/projects.js?v=20260919-notebook"></script>
+  <script defer src="../domains/observations/persist.js?v=20260919-overview"></script>
+  <script defer src="../domains/observations/metric-board.js?v=20260919-overlay-same"></script>
+  <script defer src="../domains/observations/chart.js?v=20260919-overlay"></script>
+  <script defer src="../domains/observations/controller.js?v=20260919-overview"></script>
+  <script defer src="../shell/observation-workspace.js?v=20260919-overlay-same"></script>
+  <script defer src="../shell/observation-chrome.js?v=20260919-overlay-same"></script>
+  <script defer src="../shell/observation-sheets.js?v=20260919-notebook"></script>
+  <script defer src="../domains/observations/cloud-roundtrip.js?v=20260919-blocks"></script>
+  <script defer src="../shell/observation-wire.js?v=20260919-blocks"></script>
   <script defer src="../domains/labs/selectors.js?v=20260827-lb-ctrl"></script>
   <script defer src="../domains/labs/controller.js?v=20260827-lb-ctrl"></script>
   <script defer src="../domains/labs/render.js?v=20260827-fo-render"></script>
@@ -2190,6 +2201,6 @@
   <script defer src="../domains/weight/render.js?v=20260829-pet-weight-scale"></script>
   <!-- IDB opt-in (C only): data-petlive-storage-backend="idb"|"auto" on <html> and
        storage-boot.js before app.js. Default local = no change; markBootComplete at app end. -->
-  <script defer src="./app.js?v=20260918-photo-crop"></script>
+  <script defer src="./app.js?v=20260919-blocks-cover"></script>
 </body>
 </html>

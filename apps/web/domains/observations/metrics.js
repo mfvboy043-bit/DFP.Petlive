@@ -5,7 +5,49 @@
   root.domains = root.domains || {};
   root.domains.observations = root.domains.observations || {};
 
-  const CUSTOM_COLORS = ["#6b8cae", "#c47a9a", "#8a9a5b", "#a0785a", "#5c8a8a"];
+  /** Chart line presets — 紅／藍 from existing series, 橘／綠 from workspace + brand sun/safe. */
+  const BASE_LINE_COLORS = [
+    { id: "red", label: "紅", hex: "#db1f64" },
+    { id: "blue", label: "藍", hex: "#1487bd" },
+    { id: "orange", label: "橘", hex: "#d8893c" },
+    { id: "green", label: "綠", hex: "#4f9d78" },
+  ];
+  const LINE_COLOR_DEFAULT = "#1487bd";
+  const CUSTOM_COLORS = BASE_LINE_COLORS.map(function (swatch) {
+    return swatch.hex;
+  });
+
+  function normalizeLineColor(raw) {
+    const text = String(raw || "").trim();
+    const short = /^#([0-9a-fA-F]{3})$/.exec(text);
+    if (short) {
+      const h = short[1];
+      return ("#" + h.charAt(0) + h.charAt(0) + h.charAt(1) + h.charAt(1) + h.charAt(2) + h.charAt(2)).toLowerCase();
+    }
+    const full = /^#([0-9a-fA-F]{6})$/.exec(text);
+    if (full) return ("#" + full[1]).toLowerCase();
+    return "";
+  }
+
+  function colorClassForLine(hex) {
+    const normalized = normalizeLineColor(hex);
+    const found = BASE_LINE_COLORS.find(function (swatch) {
+      return swatch.hex === normalized;
+    });
+    return found ? found.id : "";
+  }
+
+  function pickDefaultLineColor(usedColors) {
+    const taken = {};
+    (Array.isArray(usedColors) ? usedColors : []).forEach(function (color) {
+      const hex = normalizeLineColor(color);
+      if (hex) taken[hex] = true;
+    });
+    for (let i = 0; i < BASE_LINE_COLORS.length; i += 1) {
+      if (!taken[BASE_LINE_COLORS[i].hex]) return BASE_LINE_COLORS[i].hex;
+    }
+    return LINE_COLOR_DEFAULT;
+  }
 
   function formatValue(value, meta) {
     if (!Number.isFinite(value)) return "—";
@@ -52,27 +94,87 @@
       return Object.keys(meta);
     }
 
-    function get(id) {
-      return meta[id] || null;
+    function normalizeStoredMeta(row) {
+      if (!row || typeof row !== "object") return row;
+      if (String(row.unit || "") === "次" && row.scale === "fixed10") {
+        return Object.assign({}, row, {
+          scale: "count",
+          max: 24,
+          direction: "記錄次數",
+        });
+      }
+      return row;
     }
 
-    function addCustom(name) {
+    function get(id) {
+      return normalizeStoredMeta(meta[id]) || null;
+    }
+
+    function rename(id, nextLabel) {
+      const key = String(id || "");
+      const raw = String(nextLabel || "").trim();
+      if (!key || !raw || raw.length > 32) return null;
+      if (!meta[key]) return null;
+      meta[key] = Object.assign({}, meta[key], { label: raw });
+      return get(key);
+    }
+
+    function buildMetaFields(name, extras, previous) {
       const raw = String(name || "").trim();
       if (!raw || raw.length > 24) return null;
+      const extra = extras && typeof extras === "object" ? extras : {};
+      const prev = previous && typeof previous === "object" ? previous : {};
+      const unit =
+        String(extra.unit != null ? extra.unit : prev.unit || "分").trim().slice(0, 16) || "分";
+      let scale = extra.scale != null ? extra.scale : prev.scale || "";
+      if (!scale) {
+        if (unit === "kg") scale = "weight";
+        else if (unit === "次") scale = "count";
+        else if (unit === "分") scale = "fixed10";
+        else scale = "open";
+      }
+      const usedColors = Object.keys(meta).map(function (key) {
+        return meta[key] && meta[key].color;
+      });
+      const color =
+        normalizeLineColor(extra.color) ||
+        normalizeLineColor(prev.color) ||
+        pickDefaultLineColor(usedColors) ||
+        LINE_COLOR_DEFAULT;
+      let direction = "以「" + unit + "」記錄客觀數值";
+      if (scale === "weight") direction = "以公斤顯示；Y 軸依資料範圍調整";
+      else if (scale === "count") direction = "記錄次數";
+      else if (scale === "fixed10") direction = "0–10 觀察分數";
+      return {
+        label: raw,
+        unit: unit,
+        max: scale === "fixed10" ? 10 : scale === "count" ? 24 : null,
+        direction: direction,
+        color: color,
+        colorClass: scale === "weight" ? "weight" : colorClassForLine(color),
+        scale: scale === "open" ? "weight" : scale,
+        empty: prev.empty != null ? !!prev.empty : true,
+      };
+    }
+
+    function addCustom(name, extras) {
+      const metaRow = buildMetaFields(name, extras, null);
+      if (!metaRow) return null;
       customCount += 1;
       const id = "custom_" + customCount;
-      const color = CUSTOM_COLORS[(customCount - 1) % CUSTOM_COLORS.length];
-      meta[id] = {
-        label: raw,
-        unit: "分",
-        max: 10,
-        direction: "自訂 0–10 觀察指標（示範）",
-        color: color,
-        colorClass: "",
-        scale: "fixed10",
-        empty: true,
-      };
+      meta[id] = metaRow;
       return id;
+    }
+
+    function update(id, patch) {
+      const key = String(id || "");
+      if (!key || !meta[key]) return null;
+      const incoming = patch && typeof patch === "object" ? patch : {};
+      const nextLabel = incoming.label != null ? incoming.label : meta[key].label;
+      const metaRow = buildMetaFields(nextLabel, incoming, meta[key]);
+      if (!metaRow) return null;
+      meta[key] = metaRow;
+      return get(key);
     }
 
     function replaceAll(nextMeta) {
@@ -93,6 +195,8 @@
       listIds: listIds,
       get: get,
       addCustom: addCustom,
+      update: update,
+      rename: rename,
       replaceAll: replaceAll,
       formatValue: formatValue,
       exportMeta: function () {
@@ -113,7 +217,12 @@
     };
   }
 
+  root.domains.observations.BASE_LINE_COLORS = BASE_LINE_COLORS;
+  root.domains.observations.LINE_COLOR_DEFAULT = LINE_COLOR_DEFAULT;
   root.domains.observations.CUSTOM_COLORS = CUSTOM_COLORS;
+  root.domains.observations.normalizeLineColor = normalizeLineColor;
+  root.domains.observations.colorClassForLine = colorClassForLine;
+  root.domains.observations.pickDefaultLineColor = pickDefaultLineColor;
   root.domains.observations.formatValue = formatValue;
   root.domains.observations.createRegistry = createRegistry;
   root.domains.observations.inferCustomCountFromMeta = inferCustomCountFromMeta;

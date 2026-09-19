@@ -194,3 +194,23 @@ test("reload paint smoke: custom metric listed and series non-empty after hydrat
   assert.equal(obs.isEmptySeries(hydrated.viewData.week[id]), false);
   assert.equal(hydrated.viewData.week[id].current[0], 6);
 });
+
+test("persist keeps custom line color hex", () => {
+  const obs = loadObservations(PERSIST_FILES);
+  const metrics = obs.createRegistry({});
+  const controller = obs.createController({
+    metrics: metrics,
+    viewData: obs.createEmptyViewData([]),
+    visits: [],
+  });
+  const id = controller.addCustomMetric("胃口", { color: "#7A4B2A" });
+  const pet = { id: "pet-a" };
+  controller.flushToPet(pet);
+  const again = obs.hydrateObservations(pet.observations);
+  assert.equal(again.metrics[id].color, "#7a4b2a");
+  assert.equal(obs.normalizeLineColor("not-a-color"), "");
+  assert.equal(obs.hydrateObservations({
+    version: 1,
+    metrics: { custom_9: { label: "壞色", color: "url(x)", scale: "fixed10" } },
+  }).metrics.custom_9.color, "#1487bd");
+});

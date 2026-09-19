@@ -504,6 +504,7 @@ function hydrateDrugNotesPanel(panel) {
   panel.dataset.drugNotesHydrated = "true";
 }
 
+
 function collectVisitProofPhotos(visit) {
   return visitsController.collectVisitProofPhotos(visit);
 }
@@ -1052,6 +1053,7 @@ function getParasiteRecord(pet, kind) {
   return parasiteController.getParasiteRecord(pet, kind);
 }
 
+
 function syncParasiteNextFromLast(kind) {
   const lastEl = document.getElementById(`parasite-last-${kind}`);
   const intervalEl = document.getElementById(`parasite-interval-${kind}`);
@@ -1152,12 +1154,16 @@ function paintParasiteStripRow(kind, presentation) {
   syncParasiteStripLights(lightsEl, presentation.lightStatus ?? null);
 }
 
+function paintParasiteStripRowEmpty(kind) {
+  paintParasiteStripRow(kind, parasiteRenderer.buildEmptyStripRowPresentation(kind));
+}
+
 /** No pet (or shell only): same CTA cues as unset records on a pet. */
 function paintParasiteStripEmpty() {
   if (!document.getElementById("parasite-strip")) return;
-  ["vaccine", "external", "heartworm"].forEach((kind) =>
-    paintParasiteStripRow(kind, parasiteRenderer.buildEmptyStripRowPresentation(kind))
-  );
+  paintParasiteStripRowEmpty("vaccine");
+  paintParasiteStripRowEmpty("external");
+  paintParasiteStripRowEmpty("heartworm");
 }
 
 function renderParasiteStrip(pet) {
@@ -1317,6 +1323,12 @@ function saveParasitePastAndOfferCalendar(kind) {
   return showParasiteCalendarChooser(kind);
 }
 
+/** Dosed today: mark today in-app, then offer calendar for next due. */
+function saveParasiteDosedTodayAndOfferCalendar(kind) {
+  if (!saveParasiteKind(kind, { dosedToday: true, quiet: true })) return false;
+  return showParasiteCalendarChooser(kind);
+}
+
 function buildVaccineCalendarPayload(pet, { vaccines, given, next }) {
   const copy = vaccinesLabels.buildCalendarTitleDetails({
     pet,
@@ -1366,6 +1378,9 @@ function openAppleCalendar(payload) {
   link.remove();
   window.setTimeout(() => URL.revokeObjectURL(href), 2000);
 }
+
+
+
 
 function vaccineLabelOf(vaccine) {
   const key = resolveVaccineKey(vaccine);
@@ -1555,12 +1570,14 @@ let labAddBoundPetId = null;
 let selectedLabClinic = null;
 const selectedLabTypes = new Set();
 
+function labTypeLabel(type) {
+  return t(LAB_TYPE_I18N[type] || "labTypeOther");
+}
+
 function formatLabTypes(types) {
   const list = (types || []).filter((type) => LAB_TYPE_I18N[type]);
   if (!list.length) return t("labNoTypes");
-  return list
-    .map((type) => t(LAB_TYPE_I18N[type] || "labTypeOther"))
-    .join("／");
+  return list.map(labTypeLabel).join("／");
 }
 
 function visitLinkValue(visit) {
@@ -1733,10 +1750,10 @@ function ensureLabAddForPet(pet) {
   else refreshLabAddChrome(pet);
 }
 
-function savePetPhotosMap(map) {
-  const ok = petPhotosSlot.scheduleWrite(map);
-  if (ok) bumpLocalDataRevision();
-  return ok;
+
+
+function flushPetPhotosMap() {
+  return petsMedia.flush();
 }
 
 function getPetPhoto(petId) {
@@ -1749,7 +1766,7 @@ function setPetPhoto(petId, dataUrl) {
 
 function flushPetPhotosOrToast() {
   if (!petsMedia.hasPendingWrite()) return true;
-  if (petsMedia.flush()) return true;
+  if (flushPetPhotosMap()) return true;
   showPersistenceFailure();
   return false;
 }
@@ -2353,6 +2370,10 @@ function paintAllergyMeatChips() {
   });
 }
 
+function getSelectedAllergyMeats() {
+  return Array.from(selectedAllergyMeats);
+}
+
 function fillAllergyRecordDateDefault() {
   const dateEl = document.getElementById("allergy-record-date");
   if (!dateEl || dateEl.value) return;
@@ -2470,7 +2491,7 @@ function saveAllergyPurchaseFromForm(event) {
   const result = allergyController.addPurchase(pet, {
     brand,
     recordDate,
-    meats: Array.from(selectedAllergyMeats),
+    meats: getSelectedAllergyMeats(),
     customMeat,
     weight,
     weightUnit: selectedAllergyFormUnit,
@@ -2621,6 +2642,7 @@ const OWNER_PROFILE_KEY = "petlive-owner-profile";
 
 const ownerSelectors = PetLiveWeb.domains.owner.createSelectors();
 
+
 const ownerProfileSlot = PetLiveWeb.storage.createJsonSlot({
   key: OWNER_PROFILE_KEY,
   fallback: () => ownerSelectors.emptyProfile(),
@@ -2682,9 +2704,7 @@ function buildEmergencyCopyText(pet) {
     noneLabel: t("none"),
     lineTextOfAlert: alertLineText,
   });
-  const ownerLines = emergencyRenderer
-    ? emergencyRenderer.buildOwnerCopyLines(ownerSelectors.copyRows(payload.owner))
-    : [];
+  const ownerLines = formatOwnerCopyLines(payload.owner);
   return emergencyRenderer.buildCopyCardText({
     petLines: formatPetShareLines(pet),
     alertsText: payload.alertsText,
@@ -2707,6 +2727,11 @@ async function copyTextToClipboard(text) {
   const ok = document.execCommand("copy");
   ta.remove();
   if (!ok) throw new Error("copy failed");
+}
+
+function formatOwnerCopyLines(profile) {
+  if (!emergencyRenderer) return [];
+  return emergencyRenderer.buildOwnerCopyLines(ownerSelectors.copyRows(profile));
 }
 
 function fillOwnerSettingsForm(profile = loadOwnerProfile()) {
@@ -3257,6 +3282,10 @@ function syncDateProxies(root = document) {
   });
 }
 
+function createPetFromForm(form) {
+  return petsLifecycle.createPet(readPetIdentityFromForm(form));
+}
+
 let editingPetId = null;
 
 function paintPetFormMode() {
@@ -3298,6 +3327,10 @@ function fillPetFormFromPet(pet) {
       form.breedCustom.value = pet.breed;
     }
   }
+}
+
+function applyPetFromForm(pet, form) {
+  return petsLifecycle.updatePet(pet, readPetIdentityFromForm(form));
 }
 
 function openCreatePetForm() {
@@ -3353,6 +3386,7 @@ const petsController = PetLiveWeb.domains.pets.createController({
     applySelectedPet();
     if (typeof renderPendingMeds === "function") renderPendingMeds();
     if (typeof updateMedModeHint === "function") updateMedModeHint();
+    syncObservationPetsToFrame();
     if (petSelectionStartedAt != null) {
       const startedAt = petSelectionStartedAt;
       requestAnimationFrame(() => {
@@ -3691,12 +3725,18 @@ function go(screen, options = {}) {
   const changed = shellNavigation.go(screen, options);
   if (!changed) {
     paintGlassDock({ animateJump: false });
+    if (screen === "observation-chart-tryout") {
+      window.setTimeout(() => syncObservationPetsToFrame(), 120);
+    }
     return false;
   }
   // Instant jump — smooth scroll made every screen change feel delayed on phone.
   resetPageScroll();
   resetViewportZoom();
   paintGlassDock({ animateJump: true });
+  if (screen === "observation-chart-tryout") {
+    window.setTimeout(() => syncObservationPetsToFrame(), 120);
+  }
   return true;
 }
 
@@ -3721,6 +3761,8 @@ function clearNavigationHistory() {
 
 /** Bottom glass dock — shell brain; facade only wires active screen. */
 let glassDockApi = null;
+/** Observation chart in-page host (B). */
+let observationBridgeApi = null;
 
 function paintGlassDock({ animateJump } = {}) {
   if (glassDockApi?.paint) {
@@ -3750,11 +3792,121 @@ function initGlassDock() {
   });
 }
 
+function syncObservationPetsToFrame() {
+  if (!observationBridgeApi?.syncPetsToFrame) return;
+  const screen =
+    app.querySelector(".screen.is-active")?.dataset.screen || "";
+  if (screen !== "observation-chart-tryout") return;
+  observationBridgeApi.syncPetsToFrame();
+}
+
 function initObservationChartBridge() {
-  /* ARCHIVE 2026-09-18 (Victor): formal B observation-chart entry archived until relaunch.
-     Nav + timeline「觀察圖表」hidden; restore from apps/web/c/app.js initObservationChartBridge
-     and uncomment the app-nav button in index.html. */
-  return null;
+  const obs = PetLiveWeb.domains?.observations;
+  const host = document.getElementById("obs-workspace-host");
+  if (host && PetLiveWeb.shell?.mountObservationWorkspace) {
+    PetLiveWeb.shell.mountObservationWorkspace(host, { embedded: true });
+  }
+  if (!PetLiveWeb.shell?.initObservationChartWire || !obs) {
+    console.error("[observation] chart wire missing — workspace mounted empty");
+    return null;
+  }
+
+  const hooks = {
+    getPets: () =>
+      (pets || []).map((pet) => ({
+        id: pet.id,
+        name: pet.name,
+        observations: pet.observations || null,
+      })),
+    getActivePetId: () =>
+      (typeof appState?.getCurrentPetId === "function"
+        ? appState.getCurrentPetId()
+        : null) || currentPetId || "",
+    setActivePet: (petId) => {
+      if (petId && typeof selectPet === "function") selectPet(petId);
+    },
+    saveObservations: (petId, observations) => {
+      const pet = (pets || []).find((item) => item.id === petId);
+      if (!pet || !obs.writeObservationsToPet) return false;
+      const ok = obs.writeObservationsToPet(pet, observations, {
+        isDemoMode: false,
+      });
+      if (!ok) return false;
+      if (typeof schedulePetsGraphPersist === "function") {
+        schedulePetsGraphPersist();
+      }
+      return true;
+    },
+    onOpenVisit: (msg) => {
+      go("timeline");
+      window.setTimeout(() => {
+        const pet = typeof getCurrentPet === "function" ? getCurrentPet() : null;
+        const dateMatch = String(msg.visitId || "").match(/(\d{4}-\d{2}-\d{2})/);
+        let el = null;
+        if (pet?.visits && dateMatch) {
+          const idx = pet.visits.findIndex(
+            (visit) => String(visit.date || "").slice(0, 10) === dateMatch[1]
+          );
+          if (idx >= 0) el = document.querySelector(`[data-visit-index="${idx}"]`);
+        }
+        if (!el && Number.isInteger(msg.visitIndex)) {
+          el = document.querySelector(`[data-visit-index="${msg.visitIndex}"]`);
+        }
+        if (!el) el = document.querySelector("[data-visit-index]");
+        el?.scrollIntoView({ behavior: "smooth", block: "center" });
+        document
+          .querySelectorAll(".tl-item.is-obs-focus")
+          .forEach((node) => node.classList.remove("is-obs-focus"));
+        el?.classList.add("is-obs-focus");
+      }, 220);
+    },
+  };
+
+  const wireApi = PetLiveWeb.shell.initObservationChartWire({
+    embedded: true,
+    hooks,
+  });
+
+  function syncPetsToFrame() {
+    if (!wireApi?.syncPetsFromHost) return false;
+    return wireApi.syncPetsFromHost({
+      pets: hooks.getPets(),
+      activePetId: hooks.getActivePetId(),
+    });
+  }
+
+  const api = {
+    syncPetsToFrame,
+    focusChartVisit: (_frame, payload) => {
+      if (wireApi?.focusVisit) wireApi.focusVisit(payload || {});
+    },
+    requestOpenChart: (payload) => {
+      go("observation-chart-tryout");
+      window.setTimeout(() => {
+        syncPetsToFrame();
+        if (payload && wireApi?.focusVisit) wireApi.focusVisit(payload);
+      }, 220);
+    },
+  };
+
+  observationBridgeApi = api;
+  syncPetsToFrame();
+
+  document.addEventListener("click", (event) => {
+    const btn = event.target.closest("[data-obs-open-chart]");
+    if (!btn) return;
+    const visitIndex = Number(btn.getAttribute("data-visit-index"));
+    const pet = typeof getCurrentPet === "function" ? getCurrentPet() : null;
+    const visit = Number.isInteger(visitIndex) ? pet?.visits?.[visitIndex] : null;
+    const dateKey = visit?.date ? String(visit.date).slice(0, 10) : "";
+    api.requestOpenChart({
+      visitIndex: Number.isInteger(visitIndex) ? visitIndex : null,
+      visitId: visit?.id || (dateKey ? `v-${dateKey}` : ""),
+      title: visit ? `${visit.clinicName || "就診"}・觀察` : "",
+    });
+  });
+
+  return api;
 }
 
 function glassChromeNavAccountMarkup() {
@@ -3903,6 +4055,7 @@ document.addEventListener("keydown", (event) => {
     closeAllVaxHelp();
   }
 });
+
 
 document.getElementById("proof-lightbox")?.addEventListener("click", (event) => {
   if (event.target.closest("[data-proof-lightbox-close]")) {
@@ -4189,6 +4342,7 @@ requireShellFn("bindDrugSearch")(
   }
 );
 
+
 document.getElementById("visit-form").addEventListener("submit", (event) => {
   event.preventDefault();
   const clinicGate = PetLiveWeb.domains.visits.validateClinicGate({
@@ -4348,7 +4502,7 @@ document.getElementById("pet-form").addEventListener("submit", (event) => {
     return;
   }
 
-  const pet = petsLifecycle.createPet(readPetIdentityFromForm(form));
+  const pet = createPetFromForm(form);
   if (editingPetId) {
     const current = pets.find((item) => item.id === editingPetId);
     if (!current) {
@@ -4357,7 +4511,7 @@ document.getElementById("pet-form").addEventListener("submit", (event) => {
       showToast(t("toastNeedPetName"));
       return;
     }
-    petsLifecycle.updatePet(current, readPetIdentityFromForm(form));
+    applyPetFromForm(current, form);
     schedulePetsGraphPersist();
     editingPetId = null;
     paintPetFormMode();
@@ -6037,9 +6191,7 @@ document.getElementById("parasite-form-heartworm")?.addEventListener("submit", (
 
 document.querySelectorAll("[data-parasite-dosed]").forEach((btn) => {
   btn.addEventListener("click", () => {
-    const kind = btn.dataset.parasiteDosed;
-    if (!saveParasiteKind(kind, { dosedToday: true, quiet: true })) return;
-    showParasiteCalendarChooser(kind);
+    saveParasiteDosedTodayAndOfferCalendar(btn.dataset.parasiteDosed);
   });
 });
 

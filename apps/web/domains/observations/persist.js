@@ -72,7 +72,7 @@
       unit: raw.unit != null ? String(raw.unit).slice(0, 16) : scale === "weight" ? "kg" : "分",
       max: scale === "fixed10" ? 10 : raw.max == null ? null : Number(raw.max),
       direction: String(raw.direction || "").slice(0, 120),
-      color: String(raw.color || "#1487bd").slice(0, 32),
+      color: (obs.normalizeLineColor && obs.normalizeLineColor(raw.color)) || "#1487bd",
       colorClass: String(raw.colorClass || "").slice(0, 32),
       scale: scale,
       empty: !!raw.empty,
@@ -170,9 +170,20 @@
             if (!item || typeof item !== "object") return null;
             const name = String(item.name || "").trim().slice(0, 32);
             const kind =
-              item.kind === "visit-linked" || item.kind === "self-metric" ? item.kind : "";
+              item.kind === "visit-linked" ||
+              item.kind === "self-metric" ||
+              item.kind === "notebook"
+                ? item.kind
+                : "";
             const id = String(item.id || "").trim().slice(0, 64);
             if (!name || !kind || !id) return null;
+            const metricIds = Array.isArray(item.metricIds)
+              ? item.metricIds.map(function (v) {
+                  return String(v || "").slice(0, 64);
+                }).filter(Boolean)
+              : item.metricId
+                ? [String(item.metricId).slice(0, 64)]
+                : [];
             return {
               id: id,
               name: name,
@@ -183,10 +194,17 @@
                     return String(v || "").slice(0, 64);
                   }).filter(Boolean)
                 : [],
-              metricId: item.metricId != null ? String(item.metricId).slice(0, 64) : "",
+              metricIds: metricIds,
+              metricId: metricIds[0] || (item.metricId != null ? String(item.metricId).slice(0, 64) : ""),
+              focusMetricId: item.focusMetricId != null ? String(item.focusMetricId).slice(0, 64) : "",
+              caption: String(item.caption || "").trim().slice(0, 80),
             };
           };
-    return raw.map(normalize).filter(Boolean).slice(0, 100);
+    const list = raw.map(normalize).filter(Boolean).slice(0, 100);
+    if (typeof obs.foldNotebooks === "function") {
+      return obs.foldNotebooks(list).slice(0, 100);
+    }
+    return list;
   }
 
   function normalizeProjectAxes(raw, metricsMap) {
@@ -235,6 +253,15 @@
       focusVisitId: input.focusVisitId != null ? String(input.focusVisitId).slice(0, 64) : "",
       activeProjectId:
         input.activeProjectId != null ? String(input.activeProjectId).slice(0, 64) : "",
+      overlayMetricIds: Array.isArray(input.overlayMetricIds)
+        ? input.overlayMetricIds
+            .map(function (id) {
+              return String(id || "").slice(0, 64);
+            })
+            .filter(Boolean)
+            .slice(0, 8)
+        : [],
+      overview: !!input.overview,
     };
   }
 

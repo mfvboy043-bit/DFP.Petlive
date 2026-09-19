@@ -1,0 +1,164 @@
+/* Tryout-only pet board — mirrors formal #pet-switcher cards (no add/manage). */
+
+.tryout-pet-switcher.pet-switcher {
+  flex: 1 1 100%;
+  min-width: 0;
+}
+
+.tryout-pet-switcher .pet-switcher-head {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 4px;
+}
+
+.tryout-pet-switcher .pet-switcher-label {
+  margin: 0;
+  font-size: 0.82rem;
+  font-weight: 800;
+  color: #17324d;
+  letter-spacing: 0.04em;
+}
+
+.tryout-pet-switcher .pet-switcher-hint {
+  margin: 2px 0 0;
+  font-size: 0.76rem;
+  color: #577187;
+}
+
+.tryout-pet-switcher .pet-picker {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  align-items: flex-end;
+  gap: 12px;
+  margin: 0;
+  padding: 28px 8px 16px;
+  overflow-x: auto;
+  overflow-y: visible;
+  overscroll-behavior-x: contain;
+  -webkit-overflow-scrolling: touch;
+  touch-action: pan-x pinch-zoom;
+  scroll-snap-type: x mandatory;
+  scroll-padding-inline: 8px;
+  scrollbar-width: none;
+}
+
+.tryout-pet-switcher .pet-picker::-webkit-scrollbar {
+  display: none;
+}
+
+.tryout-pet-switcher .pet-option {
+  flex: 0 0 auto;
+  width: 88px;
+  min-height: 112px;
+  border: 1.5px solid rgba(168, 174, 170, 0.58);
+  background:
+    linear-gradient(
+      155deg,
+      rgba(252, 252, 250, 0.92) 0%,
+      rgba(255, 255, 255, 0.78) 48%,
+      rgba(236, 238, 236, 0.88) 100%
+    );
+  border-radius: 16px;
+  padding: 12px 8px;
+  display: grid;
+  gap: 8px;
+  justify-items: center;
+  align-content: start;
+  scroll-snap-align: start;
+  position: relative;
+  z-index: 1;
+  transform: translateZ(0);
+  transform-origin: bottom center;
+  box-shadow:
+    0 1px 0 rgba(255, 255, 255, 0.35) inset,
+    0 3px 12px rgba(40, 48, 44, 0.05);
+  transition: transform 200ms cubic-bezier(0.22, 1, 0.36, 1);
+  cursor: pointer;
+  font: inherit;
+  color: inherit;
+}
+
+.tryout-pet-switcher .pet-option:active {
+  transform: translateZ(0) scale(0.97);
+}
+
+.tryout-pet-switcher .pet-option.is-selected {
+  z-index: 3;
+  transform: translateZ(0) translateY(-2px) scale(1.24);
+  border-width: 2px;
+  border-color: rgba(186, 194, 188, 0.98);
+  background:
+    linear-gradient(
+      155deg,
+      rgba(255, 255, 255, 0.96) 0%,
+      rgba(255, 253, 250, 0.9) 42%,
+      rgba(248, 250, 249, 0.92) 100%
+    );
+  box-shadow:
+    0 1px 0 rgba(255, 255, 255, 0.95) inset,
+    0 12px 26px rgba(40, 48, 44, 0.11);
+}
+
+.tryout-pet-switcher .pet-option:focus-visible {
+  outline: 3px solid rgba(20, 135, 189, 0.28);
+  outline-offset: 2px;
+}
+
+.tryout-pet-switcher .pet-option-photo {
+  width: 58px;
+  height: 58px;
+  border-radius: 18px;
+  overflow: hidden;
+  display: grid;
+  place-items: center;
+  background:
+    linear-gradient(145deg, rgba(255, 255, 255, 0.55), transparent),
+    var(--pet-tone, linear-gradient(160deg, #7fafa0, #355f54));
+  color: rgba(255, 255, 255, 0.94);
+}
+
+.tryout-pet-switcher .pet-option-photo svg {
+  display: block;
+  width: 34px;
+  height: 34px;
+}
+
+.tryout-pet-switcher .pet-option-photo[data-species="dog"] svg,
+.tryout-pet-switcher .pet-option-photo[data-species="cat"] svg {
+  width: 36px;
+  height: 36px;
+}
+
+.tryout-pet-switcher .pet-option-name {
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: #17324d;
+  text-align: center;
+  line-height: 1.25;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.persist-bar .persist-tools {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  align-items: center;
+  flex: 1 1 100%;
+  padding-top: 4px;
+  border-top: 1px solid #e3e9ee;
+  margin-top: 4px;
+}
+
+.persist-bar .persist-tools .hint-status {
+  flex: 1 1 100%;
+  margin: 0;
+  color: #146d65;
+  font-size: 0.78rem;
+  font-weight: 700;
+}

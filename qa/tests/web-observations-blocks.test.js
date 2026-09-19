@@ -35,6 +35,40 @@ test("metrics addCustom creates 0–10 fixed scale entry", () => {
   assert.equal(registry.formatValue(7, meta), "7 分");
 });
 
+test("metrics addCustom stores preset or custom line color", () => {
+  const obs = loadObservations(CORE_FILES);
+  const registry = obs.createRegistry({});
+  assert.equal(obs.normalizeLineColor("#DB1"), "#ddbb11");
+  assert.equal(obs.normalizeLineColor("nope"), "");
+  const red = registry.addCustom("喝水次數", { unit: "次", color: "#db1f64" });
+  assert.equal(registry.get(red).color, "#db1f64");
+  assert.equal(registry.get(red).colorClass, "red");
+  assert.equal(registry.get(red).scale, "count");
+  const custom = registry.addCustom("睡眠時長", { unit: "分鐘", scale: "open", color: "#7a4b2a" });
+  assert.equal(registry.get(custom).color, "#7a4b2a");
+  assert.equal(registry.get(custom).colorClass, "");
+  const auto = registry.addCustom("胃口", { unit: "分" });
+  assert.equal(registry.get(auto).color, "#1487bd");
+});
+
+test("metrics update can change label unit and color", () => {
+  const obs = loadObservations(CORE_FILES);
+  const registry = obs.createRegistry({});
+  const id = registry.addCustom("喝水", { unit: "次", color: "#1487bd" });
+  const updated = registry.update(id, {
+    label: "喝水量",
+    unit: "ml",
+    scale: "open",
+    color: "#db1f64",
+  });
+  assert.ok(updated);
+  assert.equal(updated.label, "喝水量");
+  assert.equal(updated.unit, "ml");
+  assert.equal(updated.color, "#db1f64");
+  assert.equal(updated.colorClass, "red");
+  assert.equal(registry.update("missing", { label: "x" }), null);
+});
+
 test("series empty / ensure / yScaleFor", () => {
   const obs = loadObservations(CORE_FILES);
   const empty = obs.emptySeries(3);
@@ -59,6 +93,26 @@ test("series empty / ensure / yScaleFor", () => {
   assert.ok(weight.min < 62);
   assert.ok(weight.max > 64);
   assert.equal(weight.ticks.length, 3);
+
+  const count = obs.yScaleFor(
+    { scale: "count", unit: "次" },
+    { current: [null, 24, null, 20, null, 9, null] },
+    false
+  );
+  assert.equal(count.min, 0);
+  assert.ok(count.max >= 24);
+  assert.ok(count.ticks[count.ticks.length - 1] >= 24);
+
+  const remapped = obs.createRegistry({
+    custom_7: { label: "排尿次數", unit: "次", scale: "fixed10", max: 10 },
+  });
+  assert.equal(remapped.get("custom_7").scale, "count");
+  const overflow = obs.yScaleFor(
+    remapped.get("custom_7"),
+    { current: [24, 20, 9] },
+    false
+  );
+  assert.ok(overflow.max >= 24);
 });
 
 test("summary computePeriodSummary math", () => {

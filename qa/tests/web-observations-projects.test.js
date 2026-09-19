@@ -52,7 +52,8 @@ test("create visit-linked and self-metric projects; kind locked", () => {
     metricId: "headache",
   });
   assert.ok(b);
-  assert.equal(b.kind, "self-metric");
+  assert.equal(b.kind, "notebook");
+  assert.equal(b.metricIds.join(","), "headache");
   assert.equal(b.visitIds.length, 0);
 
   assert.equal(store.list().length, 2);
@@ -61,7 +62,7 @@ test("create visit-linked and self-metric projects; kind locked", () => {
   // kind cannot be changed via rename/relink APIs
   assert.equal(store.rename(a.id, "改名仍是就診").kind, "visit-linked");
   assert.equal(store.relinkVisits(b.id, ["v-2025-09-01"]), null);
-  assert.equal(store.get(b.id).kind, "self-metric");
+  assert.equal(store.get(b.id).kind, "notebook");
 });
 
 test("rename + relink visits (A only); name clamp 32", () => {
@@ -75,6 +76,8 @@ test("rename + relink visits (A only); name clamp 32", () => {
   });
 
   assert.equal(obs.normalizeProjectName("x".repeat(40)).length, 32);
+  assert.equal(obs.normalizeProjectCaption(" 術後體重觀察 ").length, 6);
+  assert.equal(obs.normalizeProjectCaption("x".repeat(90)).length, 80);
   assert.equal(store.rename(a.id, ""), null);
   assert.equal(store.rename(a.id, "  " + "長".repeat(40)).name.length, 32);
 
@@ -167,15 +170,16 @@ test("delete purges orphaned notes/metric; shared metric kept; visits remain", (
     visitCountBefore
   );
 
-  // Orphaned custom metric on a dedicated self-metric project.
+  // Extra metric on the same notebook; deleting it should keep the project.
   const custom = controller.createProject({
     name: "疲勞專案",
     kind: "self-metric",
     metricName: "疲勞程度",
   });
   assert.ok(custom);
-  const customMetricId = custom.metricId;
+  const customMetricId = custom.focusMetricId || controller.getState().metric;
   assert.ok(customMetricId);
+  assert.notEqual(customMetricId, "headache");
   assert.ok(metrics.get(customMetricId));
   controller.setActiveProject(custom.id);
   controller.addDiaryPoint({
@@ -187,7 +191,8 @@ test("delete purges orphaned notes/metric; shared metric kept; visits remain", (
   const notesBeforeCustomDelete = controller.getNotes().length;
   assert.ok(notesBeforeCustomDelete >= 2);
 
-  controller.deleteProject(custom.id);
+  assert.equal(controller.deleteMetric(custom.id, customMetricId), true);
+  assert.equal(controller.getActiveProject().id, custom.id, "notebook stays after metric delete");
   assert.equal(metrics.get(customMetricId), null, "orphaned custom metric pruned");
   assert.equal(
     controller.getNotes().filter(function (n) {
@@ -270,7 +275,7 @@ test("kind A visit axis labels from visit dates; kind B keeps mode", () => {
   assert.equal(controller.resolveTitle(), visitProj.name);
 
   const selfProj = controller.getProjects().find(function (p) {
-    return p.kind === "self-metric";
+    return obs.isSelfMetricKind(p.kind);
   });
   controller.setActiveProject(selfProj.id);
   assert.equal(controller.hidesModeToolbar(), false);
@@ -278,6 +283,50 @@ test("kind A visit axis labels from visit dates; kind B keeps mode", () => {
   controller.setMode("week");
   assert.equal(controller.getModeData().label, "每週");
   assert.equal(controller.resolveTitle(), selfProj.name);
+});
+
+test("updateSelfMetricProject edits metric only; pencil does not rename metric", () => {
+  const obs = loadObservations(PROJECT_FILES);
+  const metrics = obs.createRegistry({});
+  const controller = obs.createController({
+    metrics: metrics,
+    viewData: obs.createEmptyViewData([]),
+    visits: [],
+    notes: [],
+    ui: { mode: "week", metric: "", compare: false },
+    projects: [],
+    isDemoMode: false,
+  });
+  const project = controller.createProject({
+    name: "精神",
+    kind: "self-metric",
+    metricName: "精神",
+    metricUnit: "分",
+    metricScale: "fixed10",
+    metricColor: "#1487bd",
+  });
+  assert.ok(project);
+  assert.equal(project.name, "觀察專案");
+  const metricId = project.focusMetricId || project.metricId;
+  assert.equal(metrics.get(metricId).label, "精神");
+  const renamed = controller.renameProject(project.id, "米醬日記");
+  assert.equal(renamed.name, "米醬日記");
+  assert.equal(metrics.get(metricId).label, "精神");
+  const updated = controller.updateSelfMetricProject(project.id, {
+    metricId: metricId,
+    metricName: "精神狀態",
+    caption: "疼痛次數變化觀察",
+    metricUnit: "次",
+    metricScale: "count",
+    metricColor: "#db1f64",
+  });
+  assert.ok(updated);
+  assert.equal(updated.name, "米醬日記");
+  assert.equal(updated.caption, "疼痛次數變化觀察");
+  const meta = metrics.get(metricId);
+  assert.equal(meta.label, "精神狀態");
+  assert.equal(meta.unit, "次");
+  assert.equal(meta.color, "#db1f64");
 });
 
 test("persist bag includes projects; demo mode blocks write", () => {
@@ -307,4 +356,91 @@ test("persist bag includes projects; demo mode blocks write", () => {
   const hydrated = obs.hydrateObservations(pet.observations);
   assert.equal(hydrated.projects.length, 2);
   assert.equal(hydrated.activeProjectId, slice.activeProjectId);
+});
+
+test("project caption persists through serialize and hydrate", () => {
+  const obs = loadObservations(PROJECT_FILES);
+  const metrics = obs.createRegistry({});
+  const controller = obs.createController({
+    metrics: metrics,
+    viewData: obs.createEmptyViewData([]),
+    visits: [],
+    notes: [],
+    ui: { mode: "week", metric: "", compare: false },
+    projects: [],
+    isDemoMode: false,
+  });
+  const project = controller.createProject({
+    name: "體重",
+    kind: "self-metric",
+    metricName: "體重",
+    metricUnit: "kg",
+    caption: "術後體重觀察",
+  });
+  assert.equal(project.caption, "術後體重觀察");
+  const slice = obs.serializeObservations(controller.exportPersistState());
+  assert.equal(slice.projects[0].caption, "術後體重觀察");
+  const pet = { id: "pet-cap", observations: obs.emptyObservations() };
+  assert.equal(obs.writeObservationsToPet(pet, slice, { isDemoMode: false }), true);
+  const hydrated = obs.hydrateObservations(pet.observations);
+  assert.equal(hydrated.projects[0].caption, "術後體重觀察");
+});
+
+test("legacy self-metric projects fold into one notebook", () => {
+  const obs = loadObservations(PROJECT_FILES);
+  const store = obs.createProjectStore();
+  store.replaceAll(
+    [
+      { id: "proj_1", name: "喝水次數紀錄", kind: "self-metric", metricId: "m-drink" },
+      { id: "proj_2", name: "術後紀錄", kind: "self-metric", metricId: "m-post" },
+      { id: "proj_3", name: "排尿次數", kind: "self-metric", metricId: "m-pee" },
+    ],
+    "proj_3"
+  );
+  const list = store.list();
+  assert.equal(list.length, 1);
+  assert.equal(list[0].kind, "notebook");
+  assert.equal(list[0].name, "觀察專案");
+  assert.equal(list[0].metricIds.join(","), "m-drink,m-post,m-pee");
+  assert.equal(store.getActive().id, list[0].id);
+});
+
+test("setFocusMetric switches chart metric without renaming project", () => {
+  const obs = loadObservations(PROJECT_FILES);
+  const metrics = obs.createRegistry({});
+  const controller = obs.createController({
+    metrics: metrics,
+    viewData: obs.createEmptyViewData([]),
+    visits: [],
+    notes: [],
+    ui: { mode: "week", metric: "", compare: false },
+    projects: [],
+    isDemoMode: false,
+  });
+  const first = controller.createProject({
+    name: "喝水",
+    kind: "self-metric",
+    metricName: "喝水",
+    metricUnit: "次",
+    metricScale: "count",
+  });
+  const second = controller.createProject({
+    name: "排尿",
+    kind: "self-metric",
+    metricName: "排尿",
+    metricUnit: "次",
+    metricScale: "count",
+  });
+  assert.equal(controller.getProjects().length, 1);
+  assert.equal(first.id, second.id);
+  const drinkId = first.focusMetricId || first.metricId;
+  const peeId = second.focusMetricId || second.metricId;
+  assert.notEqual(drinkId, peeId);
+  controller.setFocusMetric(drinkId);
+  assert.equal(controller.getState().metric, drinkId);
+  assert.equal(controller.getActiveProject().name, "觀察專案");
+  assert.equal(metrics.get(drinkId).label, "喝水");
+  controller.setFocusMetric(peeId);
+  assert.equal(controller.getState().metric, peeId);
+  assert.equal(controller.resolveTitle(), "觀察專案");
 });

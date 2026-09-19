@@ -5,6 +5,9 @@
   root.domains = root.domains || {};
   root.domains.cloud = root.domains.cloud || {};
 
+  // Photos / imaging only. pet.observations (notebook metrics + series) is NOT
+  // listed here — it rides buildCloudPayload → Drive backup → applyCloudPayload.
+  // After apply, observation UI should loadFromPet / paint (see observations/cloud-roundtrip.js).
   const HEAVY_MEDIA_KEYS = new Set([
     "bagPhoto",
     "rxPhoto",
