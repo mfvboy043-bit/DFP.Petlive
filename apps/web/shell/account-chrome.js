@@ -4,7 +4,7 @@
   const root = (global.PetLiveWeb = global.PetLiveWeb || {});
   root.shell = root.shell || {};
 
-  const LEGAL_DOC_VERSION = "20260918-legal-v15";
+  const LEGAL_DOC_VERSION = "20260919-legal-v16";
   const LEGAL_LOCALES = ["zh-Hant", "en", "ja", "ko"];
 
   function normalizeLegalLocale(locale) {
@@ -158,7 +158,13 @@
    */
   function applyAccountMenuPaint(doc, view, opts = {}) {
     if (!doc || typeof doc.getElementById !== "function" || !view) return;
-    const { syncStatusText = "", chipAriaLabel = "", legalPrivacyHref = "" } = opts;
+    const {
+      syncStatusText = "",
+      chipAriaLabel = "",
+      legalPrivacyHref = "",
+      syncButtonLabel,
+      syncButtonI18nKey,
+    } = opts;
 
     const ownerBtn = doc.getElementById("owner-settings-btn");
     const homeMenu = doc.getElementById("account-menu");
@@ -211,6 +217,12 @@
     if (popSyncBtn) {
       popSyncBtn.hidden = !view.showSyncActions;
       popSyncBtn.disabled = false;
+      if (typeof syncButtonLabel === "string") {
+        popSyncBtn.textContent = syncButtonLabel;
+      }
+      if (typeof syncButtonI18nKey === "string" && syncButtonI18nKey) {
+        popSyncBtn.setAttribute("data-i18n", syncButtonI18nKey);
+      }
     }
     if (popRestoreBtn) {
       popRestoreBtn.hidden = !view.showSyncActions;

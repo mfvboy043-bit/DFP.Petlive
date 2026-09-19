@@ -259,6 +259,9 @@
       meta,
       lastBackupAt,
       hasRealLocal,
+      backingUp,
+      needDrive,
+      hasDriveSession,
     } = {}) {
       if (!signedIn) return "accountPlanLocal";
       if (reconcileState === "running") {
@@ -268,6 +271,12 @@
       }
       if (reconcileState === "error") return "accountSyncError";
       if (conflict) return "accountSyncConflict";
+      if (backingUp) return "accountSyncBackingUp";
+      const missingDrive = hasDriveSession === false;
+      const wantsDrive =
+        needDrive === true ||
+        (missingDrive && hasLocalPendingChanges(meta));
+      if (wantsDrive) return "accountSyncNeedDrive";
       if (hasLocalPendingChanges(meta)) return "accountSyncDirty";
       if (normalizeSyncMeta(meta).lastCloudUpdatedAt || lastBackupAt) {
         return "accountSyncOk";

@@ -57,7 +57,7 @@ const I18N = {
     introLede:
       "紀錄先寫在你的裝置。Google 登入進入護照；備份可選擇 Google 雲端硬碟（詳見隱私說明）。<br />僅供參考，不取代獸醫診斷。",
     legalConsentLabel:
-      '我已閱讀並同意 <a href="../legal/privacy.html?v=20260918-legal-v15&lang=zh-Hant" target="_blank" rel="noopener">隱私權政策</a> 與 <a href="../legal/terms.html?v=20260918-legal-v15&lang=zh-Hant" target="_blank" rel="noopener">醫療免責與使用條款</a>',
+      '我已閱讀並同意 <a href="../legal/privacy.html?v=20260919-legal-v16&lang=zh-Hant" target="_blank" rel="noopener">隱私權政策</a> 與 <a href="../legal/terms.html?v=20260919-legal-v16&lang=zh-Hant" target="_blank" rel="noopener">醫療免責與使用條款</a>',
     legalAdultAttestLabel: "我確認自己已滿 18 歲",
     legalConsentRequired: "請先勾選同意條款，並確認已滿 18 歲",
     introStart: "開始使用",
@@ -70,6 +70,9 @@ const I18N = {
     accountEdit: "編輯",
     accountSync: "同步到雲端",
     accountSyncDirty: "本機有未同步變更",
+    accountSyncBackingUp: "正在備份到雲端…",
+    accountSyncNeedDrive: "尚未開啟自動備份",
+    accountSyncEnableAuto: "開啟自動備份",
     accountSyncOk: "已同步到雲端",
     accountSyncPending: "尚未備份到雲端",
     accountSyncChecking: "正在檢查雲端…",
@@ -882,7 +885,7 @@ const I18N = {
     introLede:
       "Records stay on your device first. Sign in with Google to enter; optional backup to your Google Drive (see Privacy Policy).<br />Reference only—not a veterinary diagnosis.",
     legalConsentLabel:
-      'I have read and agree to the <a href="../legal/privacy.html?v=20260918-legal-v15&lang=en" target="_blank" rel="noopener">Privacy Policy</a> and <a href="../legal/terms.html?v=20260918-legal-v15&lang=en" target="_blank" rel="noopener">Medical Disclaimer &amp; Terms</a>',
+      'I have read and agree to the <a href="../legal/privacy.html?v=20260919-legal-v16&lang=en" target="_blank" rel="noopener">Privacy Policy</a> and <a href="../legal/terms.html?v=20260919-legal-v16&lang=en" target="_blank" rel="noopener">Medical Disclaimer &amp; Terms</a>',
     legalAdultAttestLabel: "I confirm that I am 18 years of age or older",
     legalConsentRequired: "Please agree to the Privacy Policy and Terms, and confirm you are 18 or older",
     introStart: "Get started",
@@ -895,6 +898,9 @@ const I18N = {
     accountEdit: "Edit",
     accountSync: "Sync to cloud",
     accountSyncDirty: "Unsynced changes on this device",
+    accountSyncBackingUp: "Backing up to cloud…",
+    accountSyncNeedDrive: "Auto-backup not enabled yet",
+    accountSyncEnableAuto: "Enable auto-backup",
     accountSyncOk: "Synced to cloud",
     accountSyncPending: "Not backed up to cloud yet",
     accountSyncChecking: "Checking cloud…",
@@ -1707,7 +1713,7 @@ const I18N = {
     introLede:
       "記録は端末に保存されます。Googleログインでパスポートへ。バックアップはGoogleドライブへ任意（プライバシーポリシー参照）。<br />参考用であり、診断の代わりではありません。",
     legalConsentLabel:
-      '<a href="../legal/privacy.html?v=20260918-legal-v15&lang=ja" target="_blank" rel="noopener">プライバシーポリシー</a>と<a href="../legal/terms.html?v=20260918-legal-v15&lang=ja" target="_blank" rel="noopener">免責事項・利用規約</a>に同意します',
+      '<a href="../legal/privacy.html?v=20260919-legal-v16&lang=ja" target="_blank" rel="noopener">プライバシーポリシー</a>と<a href="../legal/terms.html?v=20260919-legal-v16&lang=ja" target="_blank" rel="noopener">免責事項・利用規約</a>に同意します',
     legalAdultAttestLabel: "私は18歳以上です",
     legalConsentRequired: "先に規約への同意と、18歳以上であることの確認にチェックを入れてください",
     introStart: "はじめる",
@@ -1720,6 +1726,9 @@ const I18N = {
     accountEdit: "編集",
     accountSync: "クラウドに同期",
     accountSyncDirty: "端末に未同期の変更あり",
+    accountSyncBackingUp: "クラウドにバックアップ中…",
+    accountSyncNeedDrive: "自動バックアップ未開始",
+    accountSyncEnableAuto: "自動バックアップを開始",
     accountSyncOk: "クラウドに同期済み",
     accountSyncPending: "まだクラウドに未バックアップ",
     accountSyncChecking: "クラウドを確認中…",
@@ -2537,7 +2546,7 @@ const I18N = {
     introLede:
       "기록은 기기에 먼저 저장됩니다. Google 로그인 후 여권 이용; Google Drive 백업은 선택(개인정보 처리방침 참고).<br />참고용이며 수의사 진단을 대체하지 않습니다.",
     legalConsentLabel:
-      '<a href="../legal/privacy.html?v=20260918-legal-v15&lang=ko" target="_blank" rel="noopener">개인정보 처리방침</a> 및 <a href="../legal/terms.html?v=20260918-legal-v15&lang=ko" target="_blank" rel="noopener">면책·이용약관</a>에 동의합니다',
+      '<a href="../legal/privacy.html?v=20260919-legal-v16&lang=ko" target="_blank" rel="noopener">개인정보 처리방침</a> 및 <a href="../legal/terms.html?v=20260919-legal-v16&lang=ko" target="_blank" rel="noopener">면책·이용약관</a>에 동의합니다',
     legalAdultAttestLabel: "나는 만 18세 이상입니다",
     legalConsentRequired: "먼저 약관에 동의하고 만 18세 이상임을 확인해 주세요",
     introStart: "시작하기",
@@ -2550,6 +2559,9 @@ const I18N = {
     accountEdit: "편집",
     accountSync: "클라우드에 동기화",
     accountSyncDirty: "기기에 동기화되지 않은 변경 있음",
+    accountSyncBackingUp: "클라우드에 백업 중…",
+    accountSyncNeedDrive: "자동 백업이 아직 켜지 않음",
+    accountSyncEnableAuto: "자동 백업 켜기",
     accountSyncOk: "클라우드에 동기화됨",
     accountSyncPending: "아직 클라우드에 백업되지 않음",
     accountSyncChecking: "클라우드 확인 중…",

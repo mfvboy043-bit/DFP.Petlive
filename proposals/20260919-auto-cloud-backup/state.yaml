@@ -1,0 +1,55 @@
+id: 20260919-auto-cloud-backup
+title: Auto Drive backup after writes (no repeat 「同步到雲端」)
+version: 2
+status: adopted
+# proposed | building | reviewing | revising | candidate_ready | halted | adopted | rejected
+
+gate_a:
+  status: approved
+  approved_at: "2026-09-19"
+  decisions:
+    G: G1
+    H: H1
+    note: "Victor 確認（未逐字選項）→ 採用提案預設 G1 + 必選 H1"
+
+gate_b:
+  status: adopted
+  adopted_at: "2026-09-19"
+  note: "Victor 採用 — G1 Drive auto-backup on formal B + LEGAL-1 privacy/terms one-liner; Pages publish"
+
+iteration: 1
+max_iterations: 3
+
+candidate:
+  branch: "proposal/auto-cloud-backup"
+  path: ".worktrees/auto-cloud-backup"
+  worktree: "/Users/victorwu/Desktop/petlive/.worktrees/auto-cloud-backup"
+
+reviews:
+  pharmacist: skipped
+  qa: conditional
+  ui: conditional
+  legal: conditional
+  arbiter: candidate_ready
+  # pending | skipped | pass | conditional | reject
+
+rerun: []
+blocking_issues: []
+non_blocking:
+  - QA-1
+  - QA-2
+  - QA-3
+  - UI-1
+  - UI-2
+  - UI-3
+  - UI-4
+  - LEGAL-1
+  - LEGAL-2
+  - LEGAL-3
+builder_scope: []
+halt_reason: ""
+
+notes: |
+  Gate B adopted 2026-09-19. Victor 採用 G1+H1.
+  Landed on origin/main via .worktrees/main-adopt (not a full merge of proposal/auto-cloud-backup).
+  LEGAL-1 privacy/terms v1.6 included. Pages auto-publish.

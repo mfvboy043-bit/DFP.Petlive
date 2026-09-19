@@ -2,8 +2,8 @@
 
 **Operator / Service name:** Dragon Fruit Passport (火龍果護照)  
 **Contact:** dragondog2026@gmail.com  
-**Last updated:** 18 September 2026
-**Version:** v1.5
+**Last updated:** 19 September 2026
+**Version:** v1.6
 
 ---
 
@@ -13,7 +13,7 @@ Welcome to Dragon Fruit Passport (the "**Service**" or "**we**").
 
 By using the Service, you agree to these Terms. If you disagree, stop using the Service.
 
-Personal data collection and protection are described in the *[Privacy Policy](./privacy.html?v=20260918-legal-v15&lang=en)*.
+Personal data collection and protection are described in the *[Privacy Policy](./privacy.html?v=20260919-legal-v16&lang=en)*.
 
 ---
 
@@ -107,8 +107,9 @@ You agree to:
 ### 4.2 Cloud backup
 
 1. **Google Drive backup** requires **separate** Google Drive permission; files live in **your** Google account.
-2. **Supabase database sync** (Phase 2; planned; not live) would be a copy tied to your sign-in; see the Privacy Policy and in-app notices before launch.
-3. We do **not** guarantee successful, timely, or restorable backups; keep other copies of important data.
+2. After that grant, later on-device changes during the same session may back up automatically to your Google Drive; sign-in alone does not upload.
+3. **Supabase database sync** (Phase 2; planned; not live) would be a copy tied to your sign-in; see the Privacy Policy and in-app notices before launch.
+4. We do **not** guarantee successful, timely, or restorable backups; keep other copies of important data.
 
 ### 4.3 Sync conflicts
 

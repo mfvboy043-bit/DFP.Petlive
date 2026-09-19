@@ -290,9 +290,16 @@ describe("CL-04 cloud selectors + controller", () => {
     controller.bumpLocalDataRevision();
     assert.equal(controller.readSyncMeta().localRevision, 1);
     assert.equal(selectors.isLocalDirty(controller.readSyncMeta()), true);
+    assert.equal(
+      selectors.hasLocalPendingChanges(controller.readSyncMeta()),
+      false,
+      "first bump from empty meta matches legacy 1/0 and is not a pending edit"
+    );
+    controller.bumpLocalDataRevision();
+    assert.equal(controller.readSyncMeta().localRevision, 2);
     assert.equal(selectors.hasLocalPendingChanges(controller.readSyncMeta()), true);
     controller.markCloudSynced("2026-08-27T01:00:00.000Z");
-    assert.equal(controller.readSyncMeta().lastSyncedRevision, 1);
+    assert.equal(controller.readSyncMeta().lastSyncedRevision, 2);
     assert.equal(controller.readSyncMeta().lastCloudUpdatedAt, "2026-08-27T01:00:00.000Z");
   });
 
@@ -440,7 +447,7 @@ describe("CL-04 cloud selectors + controller", () => {
     assert.equal(env.archivedPets[0].id, "arch-1");
     assert.equal(env.getCurrentPetId(), "cloud-1");
     assert.equal(env.store.ownerProfile.name, "FromCloud");
-    assert.equal(env.afterApplyCount, 1);
+    assert.equal(env.afterApplyCount, 2);
     assert.ok(env.replaceViaDoorCount >= 1);
     assert.deepEqual(plain(env.store.petsGraph.pets), [{ id: "cloud-1", name: "Cloud" }]);
   });
@@ -515,6 +522,31 @@ describe("CL-04 cloud selectors + controller", () => {
         meta: metaDirty,
       }),
       "accountSyncDirty"
+    );
+    assert.equal(
+      selectors.accountSyncStatusKey({
+        signedIn: true,
+        backingUp: true,
+        meta: metaDirty,
+      }),
+      "accountSyncBackingUp"
+    );
+    assert.equal(
+      selectors.accountSyncStatusKey({
+        signedIn: true,
+        hasDriveSession: false,
+        meta: metaDirty,
+      }),
+      "accountSyncNeedDrive"
+    );
+    assert.equal(
+      selectors.accountSyncStatusKey({
+        signedIn: true,
+        needDrive: true,
+        hasDriveSession: false,
+        meta: metaClean,
+      }),
+      "accountSyncNeedDrive"
     );
     assert.equal(
       selectors.accountSyncStatusKey({

@@ -237,6 +237,7 @@ const cloudSelectors = PetLiveWeb.domains.cloud.createSelectors({
 });
 
 let cloudController = null;
+let cloudScheduler = null;
 
 function isSeedOnlyPets(petList) {
   return cloudSelectors.isSeedOnlyPets(petList);
@@ -1772,10 +1773,14 @@ function flushPetPhotosOrToast() {
 }
 
 document.addEventListener("visibilitychange", () => {
-  if (document.visibilityState === "hidden") flushPetPhotosOrToast();
+  if (document.visibilityState === "hidden") {
+    flushPetPhotosOrToast();
+    if (cloudScheduler) void cloudScheduler.flushPending();
+  }
 });
 window.addEventListener("pagehide", () => {
   flushPetPhotosOrToast();
+  if (cloudScheduler) void cloudScheduler.flushPending();
 });
 
 function hydratePetPhotos() {
@@ -6356,7 +6361,6 @@ const googleDriveAuth =
 const supabaseAuth =
   (typeof PetLiveWeb !== "undefined" && PetLiveWeb.auth && PetLiveWeb.auth.supabase) ||
   null;
-let cloudBackupTimer = null;
 let lastCloudBackupAt = null;
 let cloudBusy = false;
 let suppressSyncMetaBump = false;
@@ -6411,6 +6415,21 @@ cloudController = PetLiveWeb.domains.cloud.createController({
   },
   scheduleCloudBackup: () => {
     if (typeof scheduleCloudBackup === "function") scheduleCloudBackup();
+  },
+});
+
+cloudScheduler = PetLiveWeb.domains.cloud.createScheduler({
+  debounceMs: 1800,
+  maxRetries: 3,
+  backoffMs: 2000,
+  hasDriveSession: () => Boolean(googleDriveAuth?.getSession?.().signedIn),
+  isBusy: () => cloudBusy,
+  isDemo: () => false,
+  hasRealLocalData,
+  hasPendingLocal: hasLocalPendingChanges,
+  pushSilent: () => pushCloudBackup({ silent: true }),
+  onStateChange: () => {
+    if (typeof paintCloudChrome === "function") paintCloudChrome();
   },
 });
 
@@ -6499,14 +6518,21 @@ function writeSyncMeta(meta) {
 }
 
 function accountSyncStatusText() {
+  const sched =
+    cloudScheduler && typeof cloudScheduler.getState === "function"
+      ? cloudScheduler.getState()
+      : {};
   const key = cloudSelectors.accountSyncStatusKey({
-    signedIn: liveGoogleSignedIn(),
+    signedIn: livePassportSignedIn(),
     reconcileState: cloudReconcileState,
     reconcilePhase: cloudReconcilePhase,
     conflict: cloudSyncConflict,
     meta: cloudController.readSyncMeta(),
     lastBackupAt: lastCloudBackupAt,
     hasRealLocal: hasRealLocalData(),
+    backingUp: Boolean(sched.backingUp),
+    needDrive: Boolean(sched.needDrive),
+    hasDriveSession: Boolean(googleDriveAuth?.getSession?.().signedIn),
   });
   return t(key);
 }
@@ -6593,6 +6619,11 @@ async function reconcileCloudOnBoot({ silent, skipAutoPull } = {}) {
     }
 
     if (hasLocalPendingChanges()) {
+      if (googleDriveAuth?.getSession?.().signedIn) {
+        await (cloudScheduler
+          ? cloudScheduler.flushPending()
+          : pushCloudBackup({ silent: true }));
+      }
       setCloudReconcileState("done");
       return;
     }
@@ -6676,6 +6707,17 @@ function paintAccountMenu(session) {
   });
   const locale =
     typeof window.getCurrentLang === "function" ? window.getCurrentLang() : "zh-Hant";
+  const sched =
+    cloudScheduler && typeof cloudScheduler.getState === "function"
+      ? cloudScheduler.getState()
+      : {};
+  const driveSession = Boolean(googleDriveAuth?.getSession?.().signedIn);
+  const needDrive = Boolean(
+    sched.needDrive ||
+      (view.signedIn &&
+        !driveSession &&
+        (sched.pending || hasLocalPendingChanges()))
+  );
   PetLiveWeb.shell.applyAccountMenuPaint(document, view, {
     syncStatusText: view.signedIn ? accountSyncStatusText() : "",
     chipAriaLabel: t("accountChipAria"),
@@ -6683,6 +6725,12 @@ function paintAccountMenu(session) {
       basePath: "./legal/privacy.html",
       locale,
     }),
+    syncButtonLabel: view.signedIn
+      ? needDrive
+        ? t("accountSyncEnableAuto")
+        : t("accountSync")
+      : undefined,
+    syncButtonI18nKey: needDrive ? "accountSyncEnableAuto" : "accountSync",
   });
   if (!view.signedIn) return;
 
@@ -6776,12 +6824,7 @@ function paintCloudChrome() {
 }
 
 function scheduleCloudBackup() {
-  if (!googleDriveAuth?.getSession?.().signedIn) return;
-  if (cloudBackupTimer) clearTimeout(cloudBackupTimer);
-  cloudBackupTimer = setTimeout(() => {
-    cloudBackupTimer = null;
-    pushCloudBackup({ silent: true });
-  }, 1800);
+  if (cloudScheduler) cloudScheduler.schedule();
 }
 
 async function pushCloudBackup({ silent } = {}) {
@@ -6806,6 +6849,7 @@ async function pushCloudBackup({ silent } = {}) {
     return false;
   }
   cloudBusy = true;
+  paintCloudChrome();
   try {
     const payload = buildCloudPayload();
     await googleDriveAuth.uploadJson(payload);
@@ -7046,7 +7090,18 @@ function initIntroAndCloud() {
         showToast(t("cloudBackupFail"));
         return;
       }
-      await pushCloudBackup({ silent: false });
+      if (cloudScheduler) await cloudScheduler.notifyDriveReady();
+      if (
+        !cloudScheduler ||
+        cloudScheduler.getState().pending ||
+        hasLocalPendingChanges()
+      ) {
+        await pushCloudBackup({ silent: false });
+      } else {
+        setIntroStatus(t("cloudBackupOk"));
+        showToast(t("cloudBackupOk"));
+        paintCloudChrome();
+      }
     },
     onRestore: async () => {
       if (isCloudReconcileBusy()) return;

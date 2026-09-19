@@ -2,8 +2,8 @@
 
 **Operator / Service name:** Dragon Fruit Passport (火龍果護照)  
 **Contact:** dragondog2026@gmail.com  
-**Last updated:** 18 September 2026
-**Version:** v1.5
+**Last updated:** 19 September 2026
+**Version:** v1.6
 
 ---
 
@@ -13,7 +13,7 @@ Welcome to Dragon Fruit Passport (the "**Service**" or "**we**").
 
 By using the Service, signing in with Google, or enabling cloud backup, you acknowledge that you have read, understood, and agree to this Privacy Policy. If you disagree with any part of this Policy, do not use features that require sign-in or cloud backup.
 
-This Policy explains how we collect, use, store, share, and protect personal data. Medical disclaimers and general terms of use are in the *[Medical Disclaimer & Terms](./terms.html?v=20260918-legal-v15&lang=en)*.
+This Policy explains how we collect, use, store, share, and protect personal data. Medical disclaimers and general terms of use are in the *[Medical Disclaimer & Terms](./terms.html?v=20260919-legal-v16&lang=en)*.
 
 > **Important:** The Service is **not** an electronic health record (EHR/EMR). Pet health records are entered and kept by you for personal reference and visit memory only.
 
@@ -71,6 +71,8 @@ On-device data is managed by your device and browser settings. We cannot remotel
 | **Your Google Drive** | Passport backup files (e.g. JSON) | **You** (Google account holder) | You separately grant Google Drive permission in the app |
 
 Google sign-in (Supabase Auth) does **not** automatically enable Google Drive backup; they are **separate authorizations**.
+
+After you grant Google Drive permission in the app, later on-device edits **during that session** may upload automatically and overwrite the existing passport backup on your Drive. **Nothing is uploaded before that grant.** Closing the tab, token expiry, or sign-out requires granting Drive again. This is a backup on **your** Drive, **not** a Phase 2 Supabase pet database.
 
 #### (B) Supabase database sync (Phase 2; planned; not live)
 

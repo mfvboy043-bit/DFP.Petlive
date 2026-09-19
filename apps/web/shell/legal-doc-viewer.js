@@ -2,7 +2,7 @@
   "use strict";
 
   const LOCALES = ["zh-Hant", "en", "ja", "ko"];
-  const DEFAULT_VERSION = "20260918-legal-v15";
+  const DEFAULT_VERSION = "20260919-legal-v16";
 
   function escapeHtml(text) {
     return String(text)
