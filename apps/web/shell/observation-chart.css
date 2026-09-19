@@ -938,7 +938,7 @@
 
 .obs-workspace .toolbar .controls { display: none; }
 
-.obs-workspace .field-metric-bound[hidden], .obs-workspace .compare-control[hidden] {
+.obs-workspace .field-metric-bound[hidden] {
       display: none !important;
     }
 
@@ -1012,22 +1012,6 @@
     }
 
 .obs-workspace #chartSubtitle[hidden] { display: none !important; }
-
-.obs-workspace .compare-control {
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
-      color: var(--ink-soft);
-      font-size: 0.85rem;
-      font-weight: 750;
-      white-space: nowrap;
-    }
-
-.obs-workspace .compare-control input {
-      width: 18px;
-      height: 18px;
-      accent-color: var(--pink);
-    }
 
 .obs-workspace .empty-state {
       display: none;

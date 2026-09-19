@@ -171,7 +171,6 @@
   const visitJumpBtn = document.getElementById("visitJumpBtn");
   const petSelect = document.getElementById("tryoutPetSelect");
   const persistStatus = document.getElementById("persistStatus");
-  const demoModeToggle = document.getElementById("demoModeToggle");
   const clearPersistBtn = document.getElementById("clearPersistBtn");
   const simulateCloudRoundtripBtn = document.getElementById("simulateCloudRoundtripBtn");
   let activeVisitId = "";
@@ -1008,22 +1007,6 @@
   if (petSelect) {
     petSelect.addEventListener("change", function (event) {
       switchPet(event.target.value);
-    });
-  }
-
-  if (demoModeToggle) {
-    demoModeToggle.addEventListener("change", function (event) {
-      demoMode = !!event.target.checked;
-      setPersistStatus(
-        demoMode
-          ? embedded
-            ? "示範模式開啟：新增／記分不會寫入護照寵物"
-            : "示範模式開啟：新增／記分不會寫入試用儲存"
-          : embedded
-            ? "示範模式關閉：可寫入護照寵物"
-            : "示範模式關閉：可寫入試用儲存",
-        !demoMode
-      );
     });
   }
 

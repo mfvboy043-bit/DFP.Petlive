@@ -120,10 +120,6 @@
             <label for="tryoutPetSelect">寵物</label>
             <select id="tryoutPetSelect" autocomplete="off"></select>
           </div>
-          <label class="compare-control" style="align-self:flex-end; padding-bottom:8px">
-            <input id="demoModeToggle" type="checkbox" autocomplete="off" />
-            示範模式（不寫入）
-          </label>
           <button class="btn secondary" type="button" id="clearPersistBtn" style="align-self:flex-end">清除試用儲存</button>
           <p class="hint" id="persistStatus" style="flex:1 1 100%; margin:0; color:#146d65; font-size:0.78rem; font-weight:700" role="status" aria-live="polite"></p>
         </div>
