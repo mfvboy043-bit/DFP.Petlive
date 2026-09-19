@@ -3132,6 +3132,14 @@ function syncDateProxies(root = document) {
   });
 }
 
+function primeVisitDateForNewVisit() {
+  const form = document.getElementById("visit-form");
+  const dateInput = form?.visitDate;
+  if (!dateInput) return;
+  dateInput.value = todayISODate();
+  syncDateProxies(form);
+}
+
 function createPetFromForm(form) {
   return petsLifecycle.createPet(readPetIdentityFromForm(form));
 }
@@ -3465,12 +3473,17 @@ const shellNavigation = PetLiveWeb.shell.createNavigation({
       clearMedDrugFields();
       renderPendingMeds();
       setMedEntryMode("photo");
+      primeVisitDateForNewVisit();
     }
   },
   onEnter: (screen) => {
     const next = app.querySelector(`[data-screen="${screen}"]`);
     applyI18nInScope?.(next);
     renderCoordinator.flush(screen);
+    if (screen === "add-visit") {
+      const visitDate = document.getElementById("visit-form")?.visitDate;
+      if (visitDate && !visitDate.value) primeVisitDateForNewVisit();
+    }
     if (screen === "parasite") {
       const pet = getCurrentPet();
       if (pet) safeRender("parasiteScreen", () => fillParasiteScreen(pet));
@@ -6508,7 +6521,10 @@ PetLiveWeb.shell.runBootPhases({
   soon: [
     () => syncAlertSubmitLabel(),
     () => syncBreedFields(),
-    () => syncDateProxies(),
+    () => {
+      syncDateProxies();
+      primeVisitDateForNewVisit();
+    },
     () => setMedEntryMode("photo"),
     () => setMedUnitChip("unrecorded"),
     () => setMedFreqChip("unrecorded"),
