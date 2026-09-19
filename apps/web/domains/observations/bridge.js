@@ -36,6 +36,23 @@
     return "*";
   }
 
+  function normalizeVisitEntry(raw) {
+    if (!raw || typeof raw !== "object") return null;
+    const date = raw.date != null ? String(raw.date).slice(0, 10) : "";
+    const clinic = String(raw.clinicName || raw.clinic || "").trim().slice(0, 80);
+    const entry = {
+      date: date,
+      clinic: clinic || "就診",
+    };
+    if (raw.id != null && String(raw.id).trim()) {
+      entry.id = String(raw.id).trim().slice(0, 64);
+    }
+    if (raw.clinicId != null && String(raw.clinicId).trim()) {
+      entry.clinicId = String(raw.clinicId).trim().slice(0, 64);
+    }
+    return entry;
+  }
+
   function normalizePetEntry(raw) {
     if (!raw || typeof raw !== "object") return null;
     if (raw.id == null || raw.id === "") return null;
@@ -45,6 +62,9 @@
     };
     if (raw.observations != null && typeof raw.observations === "object") {
       entry.observations = raw.observations;
+    }
+    if (Array.isArray(raw.visits)) {
+      entry.visits = raw.visits.map(normalizeVisitEntry).filter(Boolean);
     }
     return entry;
   }

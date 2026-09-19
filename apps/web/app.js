@@ -3835,6 +3835,10 @@ function initObservationChartBridge() {
         id: pet.id,
         name: pet.name,
         observations: pet.observations || null,
+        visits:
+          typeof obs.snapshotVisitsForSync === "function"
+            ? obs.snapshotVisitsForSync(pet)
+            : [],
       })),
     getActivePetId: () =>
       (typeof appState?.getCurrentPetId === "function"
@@ -3917,10 +3921,16 @@ function initObservationChartBridge() {
     const pet = typeof getCurrentPet === "function" ? getCurrentPet() : null;
     const visit = Number.isInteger(visitIndex) ? pet?.visits?.[visitIndex] : null;
     const dateKey = visit?.date ? String(visit.date).slice(0, 10) : "";
+    const visitId =
+      pet && typeof obs.visitIdForPetVisit === "function"
+        ? obs.visitIdForPetVisit(pet.id, visit, visitIndex)
+        : visit?.id || (dateKey ? `v-${dateKey}` : "");
     api.requestOpenChart({
       visitIndex: Number.isInteger(visitIndex) ? visitIndex : null,
-      visitId: visit?.id || (dateKey ? `v-${dateKey}` : ""),
-      title: visit ? `${visit.clinicName || "就診"}・觀察` : "",
+      visitId: visitId,
+      title: visit
+        ? `${visit.clinicName || visit.clinic || "就診"}・觀察`
+        : "",
     });
   });
 

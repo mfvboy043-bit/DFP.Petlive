@@ -479,6 +479,7 @@
           entry.observations && typeof entry.observations === "object"
             ? entry.observations
             : obs.emptyObservations(),
+        visits: Array.isArray(entry.visits) ? entry.visits : [],
       };
     });
     store = {

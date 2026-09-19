@@ -137,6 +137,55 @@ test("flushObservations demo block via writeObservationsToPet (I1)", () => {
   assert.ok(flushMsg.observations);
 });
 
+test("snapshotVisitsForSync maps clinicName and keeps host visits even when empty", () => {
+  const obs = loadObservations(["passport-visits.js"]);
+  const snap = obs.snapshotVisitsForSync({
+    id: "p1",
+    visits: [
+      { date: "2026-09-19", clinicName: "測試醫院", clinicId: "saved-1" },
+      { date: "2026-08-02", clinic: "幸福動物醫院", clinicId: "c1" },
+    ],
+  });
+  assert.equal(snap.length, 2);
+  assert.equal(snap[0].clinic, "測試醫院");
+  assert.equal(snap[0].date, "2026-09-19");
+  assert.equal(
+    snap[0].id,
+    obs.visitIdForPetVisit(
+      "p1",
+      { date: "2026-09-19", clinicName: "測試醫院", clinicId: "saved-1" },
+      0
+    )
+  );
+  assert.equal(snap[1].clinic, "幸福動物醫院");
+
+  const emptyHost = obs.observationVisitsForPet({ id: "p1", visits: [] });
+  assert.equal(emptyHost.length, 0);
+
+  const missing = obs.observationVisitsForPet({ id: "no-such-pet" });
+  assert.equal(missing.length, 0);
+});
+
+test("normalizeSyncPetsPayload keeps visit snapshots off the host", () => {
+  const obs = loadObservations(["bridge.js"]);
+  const normalized = obs.normalizeSyncPetsPayload({
+    pets: [
+      {
+        id: "p1",
+        name: "米醬",
+        visits: [
+          { id: "v-p1-2026-09-19-saved-1", date: "2026-09-19", clinicName: "測試醫院" },
+        ],
+      },
+    ],
+    activePetId: "p1",
+  });
+  assert.equal(normalized.pets[0].visits.length, 1);
+  assert.equal(normalized.pets[0].visits[0].date, "2026-09-19");
+  assert.equal(normalized.pets[0].visits[0].clinic, "測試醫院");
+  assert.equal(normalized.pets[0].visits[0].id, "v-p1-2026-09-19-saved-1");
+});
+
 test("formatLinkedVisitLabel joins visit names from finder", () => {
   const obs = loadObservations(["passport-visits.js"]);
   const visits = {
