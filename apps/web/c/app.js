@@ -3770,7 +3770,8 @@ function mountIntroStoriesShell() {
     whyMount.dataset.introStoriesMounted = "1";
     PetLiveWeb.shell.mountIntroStories?.(document, whyMount, {
       includeHeader: false,
-      includeAboutMe: true,
+      // About-me letter archived (2026-09-22); flip to true to restore card 05.
+      includeAboutMe: false,
       assetBase: "../assets",
     });
   }

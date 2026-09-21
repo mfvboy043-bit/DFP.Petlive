@@ -128,7 +128,7 @@ const I18N = {
     a2hsGuideStepGeneric1: "用瀏覽器的「分享」或「選單」找到「加入主畫面」",
     a2hsGuideStepGeneric2: "將捷徑加到主畫面",
     a2hsGuideStepGeneric3: "從主畫面圖示開啟，再登入",
-    introStoriesEyebrow: "五則故事",
+    introStoriesEyebrow: "四則故事",
     introStoriesTitle: "換院、急診時，紀錄有跟著走嗎？",
     introStory1Title: "半夜急診那張空白紙",
     introStory1Body:
@@ -1030,7 +1030,7 @@ const I18N = {
     a2hsGuideStepGeneric1: "Use Share or browser menu to find Add to Home Screen",
     a2hsGuideStepGeneric2: "Add the shortcut to your home screen",
     a2hsGuideStepGeneric3: "Open from the icon, then sign in",
-    introStoriesEyebrow: "Five stories",
+    introStoriesEyebrow: "Four stories",
     introStoriesTitle: "When you switch clinics, does the record travel with you?",
     introStory1Title: "The blank chart at midnight ER",
     introStory1Body:
@@ -1932,7 +1932,7 @@ const I18N = {
     a2hsGuideStepGeneric1: "共有またはメニューから「ホーム画面に追加」を探す",
     a2hsGuideStepGeneric2: "ホーム画面にショートカットを追加",
     a2hsGuideStepGeneric3: "アイコンから開き、ログイン",
-    introStoriesEyebrow: "5つのストーリー",
+    introStoriesEyebrow: "4つのストーリー",
     introStoriesTitle: "病院を替えるとき、記録は一緒に行きますか？",
     introStory1Title: "真夜中の救急、その空白の紙",
     introStory1Body:
@@ -2839,7 +2839,7 @@ const I18N = {
     a2hsGuideStepGeneric1: "공유 또는 메뉴에서 ‘홈 화면에 추가’ 찾기",
     a2hsGuideStepGeneric2: "홈 화면에 바로가기 추가",
     a2hsGuideStepGeneric3: "아이콘으로 연 뒤 로그인",
-    introStoriesEyebrow: "다섯 가지 이야기",
+    introStoriesEyebrow: "네 가지 이야기",
     introStoriesTitle: "병원을 바꿀 때, 기록도 함께 가나요?",
     introStory1Title: "한밤중 응급실, 그 빈 종이",
     introStory1Body:

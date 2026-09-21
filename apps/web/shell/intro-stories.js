@@ -13,6 +13,7 @@
   }
 
   function createAboutMeMarkup(assetBase) {
+    // Archived from UI (2026-09-22): kept for restore via includeAboutMe: true.
     const qrSrc = `${assetBase}/about/instagram-qr-vboy043.jpg?v=20260918-about-me-v4`;
     return `<article class="intro-story-card intro-story-card--about">
             <details class="intro-story-disclosure" data-intro-story="about-me">
@@ -81,15 +82,20 @@
           </article>`;
   }
 
+  // About-me letter archived 2026-09-22 on intro + why-stories (both mounts).
+  // Keep markup helper above; restore by setting this true AND facade includeAboutMe.
+  const ABOUT_ME_ARCHIVED = true;
+
   function createIntroStoriesMarkup(options = {}) {
     const { includeHeader = true, includeAboutMe = false, assetBase = "./assets" } = options;
     const header = includeHeader
-      ? `<p class="intro-stories-eyebrow" data-i18n="introStoriesEyebrow">五則故事</p>
+      ? `<p class="intro-stories-eyebrow" data-i18n="introStoriesEyebrow">四則故事</p>
         <h2 class="intro-stories-title" id="intro-stories-heading" data-i18n="introStoriesTitle">
           換院、急診時，紀錄有跟著走嗎？
         </h2>`
       : "";
-    const aboutMe = includeAboutMe ? createAboutMeMarkup(assetBase) : "";
+    const aboutMe =
+      !ABOUT_ME_ARCHIVED && includeAboutMe ? createAboutMeMarkup(assetBase) : "";
 
     return `${header}
         <div class="intro-stories-stack">
@@ -300,7 +306,7 @@
   function mountIntroStories(doc, mountEl, options = {}) {
     if (!doc || !mountEl) return;
     const includeHeader = options.includeHeader !== false;
-    const includeAboutMe = options.includeAboutMe === true;
+    const includeAboutMe = !ABOUT_ME_ARCHIVED && options.includeAboutMe === true;
     const assetBase = resolveAssetBase(doc, options);
     mountEl.innerHTML = createIntroStoriesMarkup({
       includeHeader,

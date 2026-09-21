@@ -10,7 +10,7 @@ const I18N = {
     navMenuLabel: "選單",
     manualTitle: "說明書",
     manualNavHint: "使用說明",
-    introStoriesEyebrow: "五則故事",
+    introStoriesEyebrow: "四則故事",
     introStoriesTitle: "換院、急診時，紀錄有跟著走嗎？",
     introStory1Title: "半夜急診那張空白紙",
     introStory1Body:
@@ -838,7 +838,7 @@ const I18N = {
     navMenuLabel: "Menu",
     manualTitle: "Manual",
     manualNavHint: "How to use",
-    introStoriesEyebrow: "Five stories",
+    introStoriesEyebrow: "Four stories",
     introStoriesTitle: "When you switch clinics, does the record travel with you?",
     introStory1Title: "The blank chart at midnight ER",
     introStory1Body:
@@ -1666,7 +1666,7 @@ const I18N = {
     navMenuLabel: "メニュー",
     manualTitle: "説明書",
     manualNavHint: "使い方の説明",
-    introStoriesEyebrow: "5つのストーリー",
+    introStoriesEyebrow: "4つのストーリー",
     introStoriesTitle: "病院を替えるとき、記録は一緒に行きますか？",
     introStory1Title: "真夜中の救急、その空白の紙",
     introStory1Body:
@@ -2499,7 +2499,7 @@ const I18N = {
     navMenuLabel: "메뉴",
     manualTitle: "설명서",
     manualNavHint: "사용 안내",
-    introStoriesEyebrow: "다섯 가지 이야기",
+    introStoriesEyebrow: "네 가지 이야기",
     introStoriesTitle: "병원을 바꿀 때, 기록도 함께 가나요?",
     introStory1Title: "한밤중 응급실, 그 빈 종이",
     introStory1Body:
