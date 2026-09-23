@@ -264,7 +264,7 @@
    * - backend: "local" | "idb" | "auto" (defaults to global configure backend)
    * - coalesceMs: when > 0, scheduleWrite batches rapid updates into one persist.
    *
-   * Public surface: { read, write, scheduleWrite, flush, update, clear,
+   * Public surface: { read, write, scheduleWrite, flush, flushAsync, update, clear,
    * invalidate, getStats, hasPendingWrite }.
    *
    * Sync read()/write() after init: for idb/auto, pre-ready reads/writes use
@@ -437,6 +437,46 @@
       return ok;
     }
 
+    /** Await durable backend write (IDB). Falls back to sync flush for local. */
+    function flushAsync() {
+      clearCoalesceTimer();
+      if (pendingValue == null) return Promise.resolve(true);
+      stats.flushes += 1;
+      if (
+        backend.mode === "local" ||
+        !storageReady ||
+        typeof backend.persistRawAsync !== "function"
+      ) {
+        const ok = persist(pendingValue);
+        if (ok) pendingValue = null;
+        reportFlush?.(ok);
+        return Promise.resolve(ok);
+      }
+      const value = pendingValue;
+      let raw;
+      try {
+        raw = JSON.stringify(value);
+      } catch {
+        stats.failures += 1;
+        reportFlush?.(false);
+        return Promise.resolve(false);
+      }
+      setCachedValue(value);
+      if (globalConfig.mirrorLocal) {
+        if (!writeLocalRaw(key, raw)) stats.failures += 1;
+      }
+      return backend.persistRawAsync(key, raw).then((ok) => {
+        if (ok) {
+          pendingValue = null;
+          stats.writes += 1;
+        } else {
+          stats.failures += 1;
+        }
+        reportFlush?.(Boolean(ok));
+        return Boolean(ok);
+      });
+    }
+
     function hasPendingWrite() {
       return pendingValue != null;
     }
@@ -535,6 +575,7 @@
       write,
       scheduleWrite,
       flush,
+      flushAsync,
       hasPendingWrite,
       update,
       clear,
