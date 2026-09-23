@@ -59,6 +59,49 @@
       }
     }
 
+    /**
+     * Hang Rx proof stills on the visit only. Drop per-med copies so localStorage
+     * does not N-duplicate the same data-URLs (collectVisitProofPhotos still reads visit).
+     */
+    function setVisitProofPhotos(visit, { bagPhoto, rxPhoto, drugPhoto } = {}) {
+      if (!visit || typeof visit !== "object") return visit;
+      visit.bagPhoto = bagPhoto || null;
+      visit.rxPhoto = rxPhoto || null;
+      visit.drugPhoto = drugPhoto || null;
+      (visit.medications || []).forEach((med) => {
+        if (!med || typeof med !== "object") return;
+        med.bagPhoto = null;
+        med.rxPhoto = null;
+        med.drugPhoto = null;
+      });
+      return visit;
+    }
+
+    /** Drop med-level bag/rx/drug when the visit already owns that slot (LS size). */
+    function stripRedundantMedProofCopies(visit) {
+      if (!visit || typeof visit !== "object") return false;
+      let changed = false;
+      (visit.medications || []).forEach((med) => {
+        if (!med || typeof med !== "object") return;
+        ["bagPhoto", "rxPhoto", "drugPhoto"].forEach((key) => {
+          if (!visit[key] || med[key] == null) return;
+          med[key] = null;
+          changed = true;
+        });
+      });
+      return changed;
+    }
+
+    function stripRedundantMedProofCopiesInPets(petsList) {
+      let changed = false;
+      (Array.isArray(petsList) ? petsList : []).forEach((pet) => {
+        (pet?.visits || []).forEach((visit) => {
+          if (stripRedundantMedProofCopies(visit)) changed = true;
+        });
+      });
+      return changed;
+    }
+
     function visitWeightKg(visit) {
       const n = Number(visit?.weightAtVisit);
       return n > 0 ? n : null;
@@ -199,6 +242,9 @@
       findVisitByDateClinic,
       saveVisitWeight,
       clearVisitProofSlot,
+      setVisitProofPhotos,
+      stripRedundantMedProofCopies,
+      stripRedundantMedProofCopiesInPets,
       validateClinicGate,
       validateSymptomGate,
     };

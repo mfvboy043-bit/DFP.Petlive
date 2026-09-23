@@ -311,9 +311,10 @@
         name: name || "",
         dose: dosePendingText || "",
         source: hasProof ? "owner_proof" : "owner",
-        bagPhoto: bagPhoto || null,
-        rxPhoto: rxPhoto || null,
-        drugPhoto: drugPhoto || null,
+        // Proofs live on the visit only — avoid N× data-URL bloat in localStorage.
+        bagPhoto: null,
+        rxPhoto: null,
+        drugPhoto: null,
         structuredPending: true,
       };
       visit.medications.push(med);

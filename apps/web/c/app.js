@@ -208,6 +208,10 @@ function hydratePetsGraphFromStorage() {
 }
 
 function schedulePetsGraphPersist() {
+  if (visitsController?.stripRedundantMedProofCopiesInPets) {
+    visitsController.stripRedundantMedProofCopiesInPets(pets);
+    visitsController.stripRedundantMedProofCopiesInPets(archivedPets);
+  }
   petsGraph.schedulePersist();
 }
 
@@ -1660,7 +1664,7 @@ function hydratePetPhotos() {
   petsMedia.hydratePetPhotos(pets);
 }
 
-const PROOF_PHOTO_MAX_EDGE = 1280;
+const PROOF_PHOTO_MAX_EDGE = 960;
 
 function resizeImageDataUrl(dataUrl, maxEdge = 480) {
   return PetLiveWeb.domains.pets.resizeImageDataUrl(dataUrl, maxEdge);
@@ -5434,22 +5438,34 @@ if (eMeds) {
 document.getElementById("med-bag-photo").addEventListener("change", async (event) => {
   const file = event.target.files?.[0];
   if (!file) return;
-  pendingBagPhoto = await readAndCompressImage(file);
-  renderProofPreview(document.getElementById("med-bag-preview"), pendingBagPhoto, "bag");
+  try {
+    pendingBagPhoto = await readAndCompressImage(file);
+    renderProofPreview(document.getElementById("med-bag-preview"), pendingBagPhoto, "bag");
+  } catch {
+    showPersistenceFailure();
+  }
 });
 
 document.getElementById("med-rx-photo")?.addEventListener("change", async (event) => {
   const file = event.target.files?.[0];
   if (!file) return;
-  pendingRxPhoto = await readAndCompressImage(file);
-  renderProofPreview(document.getElementById("med-rx-preview"), pendingRxPhoto, "rx");
+  try {
+    pendingRxPhoto = await readAndCompressImage(file);
+    renderProofPreview(document.getElementById("med-rx-preview"), pendingRxPhoto, "rx");
+  } catch {
+    showPersistenceFailure();
+  }
 });
 
 document.getElementById("med-drug-photo").addEventListener("change", async (event) => {
   const file = event.target.files?.[0];
   if (!file) return;
-  pendingDrugPhoto = await readAndCompressImage(file);
-  renderProofPreview(document.getElementById("med-drug-preview"), pendingDrugPhoto, "drug");
+  try {
+    pendingDrugPhoto = await readAndCompressImage(file);
+    renderProofPreview(document.getElementById("med-drug-preview"), pendingDrugPhoto, "drug");
+  } catch {
+    showPersistenceFailure();
+  }
 });
 
 document.getElementById("med-proof-form").addEventListener("click", (event) => {
@@ -5483,14 +5499,11 @@ document.getElementById("med-proof-form").addEventListener("submit", (event) => 
   const visit = pet.visits[pendingProofVisitIndex];
   if (!visit) return;
 
-  // Assign pending as-is so cleared slots stay cleared.
-  visit.bagPhoto = pendingBagPhoto || null;
-  visit.rxPhoto = pendingRxPhoto || null;
-  visit.drugPhoto = pendingDrugPhoto || null;
-  (visit.medications || []).forEach((med) => {
-    med.bagPhoto = visit.bagPhoto;
-    med.rxPhoto = visit.rxPhoto;
-    med.drugPhoto = visit.drugPhoto;
+  // Visit-only stills (no per-med fan-out) to keep localStorage under quota.
+  visitsController.setVisitProofPhotos(visit, {
+    bagPhoto: pendingBagPhoto,
+    rxPhoto: pendingRxPhoto,
+    drugPhoto: pendingDrugPhoto,
   });
 
   pendingProofVisitIndex = null;
@@ -5499,8 +5512,14 @@ document.getElementById("med-proof-form").addEventListener("submit", (event) => 
   pendingRxPhoto = null;
   pendingDrugPhoto = null;
 
-  showToast(t("toastProofSaved"));
   schedulePetsGraphPersist();
+  const ok =
+    typeof petsGraphSlot.flush === "function" ? petsGraphSlot.flush() : true;
+  if (!ok) {
+    showPersistenceFailure();
+    return;
+  }
+  showToast(t("toastProofSaved"));
   applySelectedPet();
   go("timeline");
 });
