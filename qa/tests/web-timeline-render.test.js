@@ -117,6 +117,96 @@ describe("TL-05 timeline render builders", () => {
     assert.match(html, /data-proof-lightbox/);
   });
 
+  it("buildTimelineMedItemHtml shows edit only when showVisitMedEdit", () => {
+    const { renderer } = loadRenderer();
+    const hidden = renderer.buildTimelineMedItemHtml(
+      { id: "m-1", name: "MedX", dose: "1 tab", source: "owner" },
+      { id: "p1" },
+      0,
+      0,
+      { owner: { className: "tag-owner", label: "Owner" } },
+      []
+    );
+    assert.doesNotMatch(hidden, /data-edit-visit-med/);
+
+    const context = vm.createContext({ console, URL });
+    context.globalThis = context;
+    context.window = context;
+    [
+      "domains/visits/controller.js",
+      "domains/imaging/controller.js",
+      "domains/timeline/selectors.js",
+      "domains/timeline/view.js",
+      "domains/timeline/render.js",
+    ].forEach((path) => {
+      vm.runInContext(readFileSync(new URL(path, WEB_ROOT), "utf8"), context, {
+        filename: path,
+      });
+    });
+    const visits = context.PetLiveWeb.domains.visits.createController({});
+    const imaging = context.PetLiveWeb.domains.imaging.createController();
+    const timelineSelectors = context.PetLiveWeb.domains.timeline.createSelectors({
+      visits,
+      imaging,
+    });
+    const timelineViewHelpers = context.PetLiveWeb.domains.timeline.createViewHelpers({
+      findDrugByName: () => null,
+    });
+    const editingRenderer = context.PetLiveWeb.domains.timeline.createRenderer({
+      label: stubLabel,
+      locField: (v) => (typeof v === "string" ? v : v?.zh || ""),
+      formatShortDate: (iso) => iso,
+      visitClinicLabel: (visit) => visit.clinic || "Clinic",
+      visitTagLabel: (tag) => tag,
+      getSourceTags: () => ({
+        owner: { className: "tag-owner", label: "Owner" },
+      }),
+      expandFrequencyInText: (text) => text,
+      compoundFormClass: () => "is-liquid",
+      compoundChipToneClass: () => "is-liquid-a",
+      compoundFormBadge: () => "Liquid",
+      compoundIconKind: () => "liquid",
+      timelineSelectors,
+      timelineViewHelpers,
+      visits,
+      imaging,
+      hasLinkedLabs: () => false,
+      showVisitMedEdit: true,
+    });
+    const shown = editingRenderer.buildTimelineMedItemHtml(
+      { id: "m-1", name: "MedX", dose: "1 tab", source: "owner" },
+      { id: "p1" },
+      0,
+      0,
+      { owner: { className: "tag-owner", label: "Owner" } },
+      []
+    );
+    assert.match(shown, /data-edit-visit-med/);
+    assert.match(shown, /data-med-id="m-1"/);
+    assert.match(shown, /timelineVisitMedEdit/);
+
+    const compound = editingRenderer.buildTimelineMedItemHtml(
+      {
+        id: "m-cmp",
+        kind: "compound_bundle",
+        name: "藥水 A",
+        dose: "BID · null 天",
+        compoundForm: "liquid_a",
+        ingredients: [{ name: "Dex", dose: "0.1 ml" }],
+        source: "owner",
+      },
+      { id: "p1" },
+      0,
+      0,
+      { owner: { className: "tag-owner", label: "Owner" } },
+      []
+    );
+    assert.match(compound, /tl-compound-head/);
+    assert.match(compound, /data-edit-visit-med/);
+    assert.match(compound, /data-med-id="m-cmp"/);
+    assert.doesNotMatch(compound, /null 天/);
+  });
+
   it("buildTimelineMedItemHtml compound registers ingredient notes ids", () => {
     const { renderer } = loadRenderer();
     const panels = [];

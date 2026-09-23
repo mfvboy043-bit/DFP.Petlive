@@ -400,6 +400,9 @@ let liveRxPhoto = null;
 let liveDrugPhoto = null;
 /** When set, structured med saves append to this visit instead of creating from the visit form. */
 let completingVisitRef = null;
+/** When set, add-med is editing one saved visit drug instead of creating. */
+let editingVisitMedRef = null;
+let pendingVisitRxIndex = null;
 /** Session overrides: compoundGroup → hex */
 const compoundColorByGroup = Object.create(null);
 
@@ -3390,6 +3393,7 @@ const petsController = PetLiveWeb.domains.pets.createController({
     // Drop in-flight med session so Pet A pending / complete-drugs cannot write onto Pet B.
     pendingMeds = [];
     completingVisitRef = null;
+    editingVisitMedRef = null;
     pendingImagingVisitIndex = null;
     pendingXrayPhotos = [];
     pendingUsPhotos = [];
@@ -3399,6 +3403,7 @@ const petsController = PetLiveWeb.domains.pets.createController({
     applySelectedPet();
     if (typeof renderPendingMeds === "function") renderPendingMeds();
     if (typeof updateMedModeHint === "function") updateMedModeHint();
+    if (typeof paintMedFormMode === "function") paintMedFormMode();
     syncObservationPetsToFrame();
     if (petSelectionStartedAt != null) {
       const startedAt = petSelectionStartedAt;
@@ -3646,10 +3651,17 @@ const shellNavigation = PetLiveWeb.shell.createNavigation({
       pendingMeds = [];
       clearLiveProofPhotos();
       completingVisitRef = null;
+      editingVisitMedRef = null;
       clearMedDrugFields();
       renderPendingMeds();
       setMedEntryMode("photo");
+      paintMedFormMode();
       primeVisitDateForNewVisit();
+    }
+    if (currentScreen === "add-med" && nextScreen !== "add-med" && editingVisitMedRef) {
+      editingVisitMedRef = null;
+      clearMedDrugFields();
+      paintMedFormMode();
     }
   },
   onEnter: (screen) => {
@@ -3660,6 +3672,7 @@ const shellNavigation = PetLiveWeb.shell.createNavigation({
       const visitDate = document.getElementById("visit-form")?.visitDate;
       if (visitDate && !visitDate.value) primeVisitDateForNewVisit();
     }
+    if (screen === "add-med") paintMedFormMode();
     if (screen === "home") {
       closeAppNavMenu();
       closeAccountMenu();
@@ -3763,6 +3776,10 @@ function goBack() {
   if (active === "add-pet" && editingPetId) {
     editingPetId = null;
     paintPetFormMode();
+  }
+  if (active === "add-med" && editingVisitMedRef) {
+    editingVisitMedRef = null;
+    paintMedFormMode();
   }
   const changed = shellNavigation.back();
   if (changed) {
@@ -4403,6 +4420,8 @@ document.getElementById("visit-form").addEventListener("submit", (event) => {
     setMedEntryMode("photo");
   }
   completingVisitRef = null;
+  editingVisitMedRef = null;
+  paintMedFormMode();
   go("add-med");
 });
 
@@ -4801,6 +4820,7 @@ timelineRenderer = PetLiveWeb.domains.timeline.createRenderer({
   visits: visitsController,
   imaging: imagingController,
   hasLinkedLabs: hasLinkedLabsForVisit,
+  showVisitMedEdit: true,
 });
 
 emergencyRenderer = PetLiveWeb.domains.emergency.createRenderer({
@@ -4958,8 +4978,10 @@ function renderTimeline(pet) {
   );
   if (plan.mode === "skip") {
     const imagingPending = pendingVisitImagingIndex;
+    const rxPending = pendingVisitRxIndex;
     applyPendingVisitImagingExpand();
-    if (imagingPending == null) expandLatestVisitRx();
+    applyPendingVisitRxExpand();
+    if (imagingPending == null && rxPending == null) expandLatestVisitRx();
     return;
   }
 
@@ -4971,8 +4993,10 @@ function renderTimeline(pet) {
     lastTimelineItemSignatures = nextItemSignatures;
     lastTimelineVisitsSnapshot = nextVisits.slice();
     const imagingPending = pendingVisitImagingIndex;
+    const rxPending = pendingVisitRxIndex;
     applyPendingVisitImagingExpand();
-    if (imagingPending == null) expandLatestVisitRx();
+    applyPendingVisitRxExpand();
+    if (imagingPending == null && rxPending == null) expandLatestVisitRx();
     return;
   }
 
@@ -4992,8 +5016,10 @@ function renderTimeline(pet) {
   lastTimelineVisitsSnapshot = nextVisits.slice();
 
   const imagingPending = pendingVisitImagingIndex;
+  const rxPending = pendingVisitRxIndex;
   applyPendingVisitImagingExpand();
-  if (imagingPending == null) expandLatestVisitRx();
+  applyPendingVisitRxExpand();
+  if (imagingPending == null && rxPending == null) expandLatestVisitRx();
 }
 
 const COMPOUND_FORM_OPTIONS = [
@@ -5087,6 +5113,18 @@ function updateMedModeHint() {
   const hint = document.getElementById("med-mode-hint");
   const banner = document.getElementById("med-complete-banner");
   if (!hint) return;
+  if (editingVisitMedRef) {
+    const hintKey =
+      editingVisitMedRef.kind === "compound_bundle"
+        ? "editCompoundMedHint"
+        : "editMedHint";
+    hint.textContent = t(hintKey);
+    if (banner) {
+      banner.hidden = false;
+      banner.textContent = t(hintKey);
+    }
+    return;
+  }
   if (completingVisitRef) {
     hint.textContent = t("medModeHintComplete");
     if (banner) {
@@ -5098,6 +5136,180 @@ function updateMedModeHint() {
   if (banner) banner.hidden = true;
   hint.textContent =
     medEntryMode === "photo" ? t("medModeHintPhoto") : t("medModeHintManual");
+}
+
+function currentMedFormMode() {
+  if (!editingVisitMedRef) return false;
+  return editingVisitMedRef.kind === "compound_bundle" ? "compound" : "single";
+}
+
+function paintMedFormMode() {
+  const view = medicationsRenderer
+    ? medicationsRenderer.buildMedFormModeView(currentMedFormMode())
+    : {
+        titleKey: "addMedTitle",
+        subKey: "addMedSub",
+        backScreen: "add-visit",
+        submitKey: "saveAllMeds",
+        hidePhotoMode: false,
+        hidePendingList: false,
+        hideAddToList: false,
+        hideCompound: false,
+        showRemove: false,
+      };
+  const title = document.getElementById("add-med-title");
+  const sub = document.getElementById("add-med-sub");
+  const back = document.getElementById("add-med-back");
+  const submit = document.getElementById("save-meds-btn");
+  const addToList = document.getElementById("add-med-to-list");
+  const removeBtn = document.getElementById("remove-visit-med-btn");
+  const modeSwitch = document.querySelector(".med-mode-switch");
+  const pendingWrap = document.getElementById("pending-meds-wrap");
+  const compoundField = document.getElementById("med-compound-fieldset");
+  const screen = document.querySelector('[data-screen="add-med"]');
+  if (title) {
+    title.setAttribute("data-i18n", view.titleKey);
+    title.textContent = t(view.titleKey);
+  }
+  if (sub) {
+    sub.setAttribute("data-i18n", view.subKey);
+    sub.textContent = t(view.subKey);
+  }
+  if (back) back.setAttribute("data-go", view.backScreen);
+  if (submit) {
+    submit.setAttribute("data-i18n", view.submitKey);
+    submit.textContent = t(view.submitKey);
+  }
+  if (addToList) addToList.hidden = Boolean(view.hideAddToList);
+  if (removeBtn) {
+    removeBtn.hidden = !view.showRemove;
+    removeBtn.textContent = t("removeVisitMed");
+  }
+  if (modeSwitch) modeSwitch.hidden = Boolean(view.hidePhotoMode);
+  if (pendingWrap) pendingWrap.hidden = Boolean(view.hidePendingList);
+  if (compoundField) compoundField.hidden = Boolean(view.hideCompound);
+  if (screen) {
+    screen.setAttribute("aria-label", t(view.titleKey));
+    screen.setAttribute("data-i18n-aria", view.titleKey);
+  }
+  updateMedModeHint();
+}
+
+function fillMedFormFromDraft(draft) {
+  const form = document.getElementById("med-form");
+  if (!form || !draft) return;
+  clearMedDrugFields();
+  const name = draft.drugName || "";
+  const matched = name ? findDrugByMedName(name) : null;
+  selectedDrug = matched;
+  if (drugSearch) drugSearch.value = matched?.genericName || name;
+  if (selectedDrugEl) {
+    if (matched) {
+      selectedDrugEl.hidden = false;
+      selectedDrugEl.textContent = t("selectedDrug", {
+        name: `${matched.genericName || ""}${
+          matched.brandNameZh ? ` / ${matched.brandNameZh}` : ""
+        }`,
+      });
+    } else {
+      selectedDrugEl.hidden = !name;
+      selectedDrugEl.textContent = name;
+    }
+  }
+  renderDrugInfoCard(matched);
+  form.dosageAmount.value = draft.amount != null ? String(draft.amount) : "";
+  form.durationDays.value = draft.days != null ? String(draft.days) : "";
+  setMedUnitChip(draft.unit || "unrecorded");
+  setMedFreqChip(draft.frequency || "unrecorded");
+  const source =
+    draft.sourcePreset === "clinic_ref" ? "clinic_ref" : "owner";
+  const sourceInput = form.querySelector(
+    `input[name="sourcePreset"][value="${source}"]`
+  );
+  if (sourceInput) sourceInput.checked = true;
+}
+
+function openEditVisitMed({ visitIndex, medId, medIndex, ingredientIndex } = {}) {
+  const pet = getCurrentPet();
+  const visit = pet?.visits?.[visitIndex];
+  if (!visit) return;
+  const found = medicationsController.findVisitMed(visit, {
+    medId,
+    medIndex,
+    ingredientIndex,
+  });
+  if (!found.ok) {
+    showToast(t("toastMedMissing"));
+    return;
+  }
+  const target = found.ingredient || found.med;
+  if (target.kind === "photo_bundle" || target.structuredPending) {
+    openCompleteDrugs(visitIndex);
+    return;
+  }
+  completingVisitRef = null;
+  clearLiveProofPhotos();
+  setMedEntryMode("manual");
+  if (found.med.kind === "compound_bundle") {
+    editingVisitMedRef = {
+      visitIndex,
+      medId: found.med.id || medId || "",
+      medIndex: found.index,
+      kind: "compound_bundle",
+    };
+    pendingMeds = medicationsController.pendingFromCompoundBundle(found.med);
+    renderPendingMeds();
+    clearMedDrugFields();
+    const form = document.getElementById("med-form");
+    if (form) {
+      if (found.med.durationDays != null) {
+        form.durationDays.value = String(found.med.durationDays);
+      }
+    }
+    setMedFreqChip(found.med.frequency || "unrecorded");
+    setMedCompoundChip(found.med.compoundForm || "");
+    if (found.med.compoundColor) {
+      setMedCompoundColor(found.med.compoundColor, { persistGroup: true });
+    }
+    const source =
+      found.med.source === "clinic_ref" ? "clinic_ref" : "owner";
+    const sourceInput = document.querySelector(
+      `#med-form input[name="sourcePreset"][value="${source}"]`
+    );
+    if (sourceInput) sourceInput.checked = true;
+    paintMedFormMode();
+    go("add-med");
+    return;
+  }
+  editingVisitMedRef = {
+    visitIndex,
+    medId: found.med.id || medId || "",
+    medIndex: found.index,
+    ingredientIndex:
+      found.ingredientIndex == null ? "" : found.ingredientIndex,
+  };
+  pendingMeds = [];
+  renderPendingMeds();
+  fillMedFormFromDraft(
+    medicationsController.draftFromSavedMed(target, found.med)
+  );
+  paintMedFormMode();
+  go("add-med");
+}
+
+function finishEditMedFlow(pet, toastKey) {
+  const visitIndex = editingVisitMedRef?.visitIndex;
+  editingVisitMedRef = null;
+  pendingMeds = [];
+  renderPendingMeds();
+  clearMedDrugFields();
+  paintMedFormMode();
+  setMedEntryMode("photo");
+  showToast(t(toastKey, { name: pet?.name }));
+  schedulePetsGraphPersist();
+  if (visitIndex != null) pendingVisitRxIndex = visitIndex;
+  applySelectedPet();
+  go("timeline");
 }
 
 function setMedEntryMode(mode) {
@@ -5171,6 +5383,8 @@ function finishMedFlowAfterSave(pet, toastKey, toastVars) {
   renderPendingMeds();
   clearLiveProofPhotos();
   completingVisitRef = null;
+  editingVisitMedRef = null;
+  paintMedFormMode();
   setMedEntryMode("photo");
   setSelectedClinic(null);
   if (clinicSearch) clinicSearch.value = "";
@@ -5182,7 +5396,7 @@ function finishMedFlowAfterSave(pet, toastKey, toastVars) {
 
 document.querySelectorAll("[data-med-mode]").forEach((btn) => {
   btn.addEventListener("click", () => {
-    if (completingVisitRef && btn.dataset.medMode === "photo") {
+    if ((completingVisitRef || editingVisitMedRef) && btn.dataset.medMode === "photo") {
       setMedEntryMode("manual");
       return;
     }
@@ -5262,11 +5476,74 @@ document.getElementById("pending-med-list").addEventListener("change", (event) =
   renderPendingMeds();
 });
 
+document.getElementById("remove-visit-med-btn")?.addEventListener("click", () => {
+  if (!editingVisitMedRef) return;
+  const pet = getCurrentPet();
+  const visit = pet?.visits?.[editingVisitMedRef.visitIndex];
+  if (!visit) {
+    showToast(t("toastMedMissing"));
+    return;
+  }
+  const result = medicationsController.removeVisitMedication(
+    visit,
+    editingVisitMedRef
+  );
+  if (!result.ok) {
+    showToast(t("toastMedMissing"));
+    return;
+  }
+  finishEditMedFlow(pet, "toastMedRemoved");
+});
+
 document.getElementById("med-form").addEventListener("submit", (event) => {
   event.preventDefault();
   if (medEntryMode === "photo") return;
 
   const form = event.currentTarget;
+
+  if (editingVisitMedRef) {
+    const pet = getCurrentPet();
+    const visit = pet?.visits?.[editingVisitMedRef.visitIndex];
+    if (!visit) {
+      showToast(t("toastMedMissing"));
+      return;
+    }
+    if (editingVisitMedRef.kind === "compound_bundle") {
+      if (hasAnyMedDraftInput(form)) {
+        if (!tryAddCurrentMedToList({ toastOnSuccess: false })) return;
+      }
+      if (!pendingMeds.length) {
+        showToast(t("toastNeedPendingMeds"));
+        return;
+      }
+      const units = buildVisitMedicationsFromPending(pet.id);
+      const result = medicationsController.replaceVisitMedication(
+        visit,
+        editingVisitMedRef,
+        units
+      );
+      if (!result.ok) {
+        showToast(t("toastMedMissing"));
+        return;
+      }
+      finishEditMedFlow(pet, "toastMedUpdated");
+      return;
+    }
+    const draft = readMedDraftFromForm(form);
+    if (!validateMedDraft(draft)) return;
+    const result = medicationsController.applyDraftToVisitMed(
+      visit,
+      editingVisitMedRef,
+      draft
+    );
+    if (!result.ok) {
+      if (result.reason === "need_drug") showToast(t("toastNeedDrug"));
+      else showToast(t("toastMedMissing"));
+      return;
+    }
+    finishEditMedFlow(pet, "toastMedUpdated");
+    return;
+  }
 
   if (hasAnyMedDraftInput(form)) {
     if (!tryAddCurrentMedToList({ toastOnSuccess: false })) return;
@@ -5357,14 +5634,25 @@ function toggleVisitRxButton(toggle) {
   }
 }
 
-function expandLatestVisitRx() {
-  if (!timelineRenderer?.shouldAutoExpandLatestRx(latestRxUserCollapsed)) return;
+function expandVisitRx(visitIndex) {
   const toggle = document.querySelector(
-    '[data-visit-rx-toggle][aria-controls="visit-rx-0"]'
+    `[data-visit-rx-toggle][aria-controls="visit-rx-${visitIndex}"]`
   );
   if (!toggle) return;
-  const panel = document.getElementById("visit-rx-0");
+  const panel = document.getElementById(`visit-rx-${visitIndex}`);
   if (panel?.hasAttribute("hidden")) toggleVisitRxButton(toggle);
+}
+
+function expandLatestVisitRx() {
+  if (!timelineRenderer?.shouldAutoExpandLatestRx(latestRxUserCollapsed)) return;
+  expandVisitRx(0);
+}
+
+function applyPendingVisitRxExpand() {
+  if (pendingVisitRxIndex == null) return;
+  const visitIndex = pendingVisitRxIndex;
+  pendingVisitRxIndex = null;
+  expandVisitRx(visitIndex);
 }
 
 function toggleVisitImagingButton(toggle) {
@@ -5502,6 +5790,7 @@ function openCompleteDrugs(visitIndex) {
   const pet = getCurrentPet();
   const visit = pet.visits[visitIndex];
   if (!visit) return;
+  editingVisitMedRef = null;
   completingVisitRef = {
     date: visit.date,
     clinicId: visit.clinicId,
@@ -5511,6 +5800,7 @@ function openCompleteDrugs(visitIndex) {
   clearMedDrugFields();
   clearLiveProofPhotos();
   setMedEntryMode("manual");
+  paintMedFormMode();
   go("add-med");
 }
 
@@ -5665,6 +5955,20 @@ timelineList.addEventListener("click", (event) => {
   const imagingUpload = event.target.closest("[data-visit-imaging-upload]");
   if (imagingUpload) {
     openVisitImaging(Number(imagingUpload.dataset.visitImagingUpload));
+    return;
+  }
+  const editMedBtn = event.target.closest("[data-edit-visit-med]");
+  if (editMedBtn) {
+    const ingredientRaw = editMedBtn.dataset.ingredientIndex;
+    openEditVisitMed({
+      visitIndex: Number(editMedBtn.dataset.visitIndex),
+      medId: editMedBtn.dataset.medId || "",
+      medIndex: Number(editMedBtn.dataset.medIndex),
+      ingredientIndex:
+        ingredientRaw === undefined || ingredientRaw === ""
+          ? ""
+          : Number(ingredientRaw),
+    });
     return;
   }
   const completeBtn = event.target.closest("[data-complete-visit]");
@@ -6319,6 +6623,7 @@ window.onLanguageChange = () => {
     ? t("petHintManage")
     : t("petHint");
   paintPetFormMode();
+  if (typeof paintMedFormMode === "function") paintMedFormMode();
   // Force picker chrome without full applySelectedPet.
   renderPetPicker();
   // Home (+ active non-home) only; inactive groups stay dirty until go()/flush.

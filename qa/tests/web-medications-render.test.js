@@ -84,6 +84,29 @@ describe("FO-05 medications render builders", () => {
     assert.equal(built.showCompoundHint, true);
   });
 
+  it("buildMedFormModeView toggles edit chrome keys", () => {
+    const renderer = loadMedicationsRenderer();
+    const create = renderer.buildMedFormModeView(false);
+    assert.equal(create.titleKey, "addMedTitle");
+    assert.equal(create.backScreen, "add-visit");
+    assert.equal(create.hidePhotoMode, false);
+    assert.equal(create.showRemove, false);
+    const edit = renderer.buildMedFormModeView(true);
+    assert.equal(edit.titleKey, "editMedTitle");
+    assert.equal(edit.backScreen, "timeline");
+    assert.equal(edit.submitKey, "saveEditedMed");
+    assert.equal(edit.hidePhotoMode, true);
+    assert.equal(edit.hidePendingList, true);
+    assert.equal(edit.hideCompound, true);
+    assert.equal(edit.showRemove, true);
+    const compound = renderer.buildMedFormModeView("compound");
+    assert.equal(compound.titleKey, "editCompoundMedTitle");
+    assert.equal(compound.hidePendingList, false);
+    assert.equal(compound.hideAddToList, false);
+    assert.equal(compound.hideCompound, false);
+    assert.equal(compound.showRemove, true);
+  });
+
   it("buildCompoundColorSwatchesHtml", () => {
     const renderer = loadMedicationsRenderer();
     assert.equal(renderer.buildCompoundColorSwatchesHtml("").hidden, true);

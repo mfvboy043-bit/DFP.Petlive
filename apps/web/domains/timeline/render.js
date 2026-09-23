@@ -23,6 +23,7 @@
       visits,
       imaging,
       hasLinkedLabs,
+      showVisitMedEdit,
     } = deps;
 
     if (typeof label !== "function") {
@@ -233,6 +234,36 @@
     </p>`;
     }
 
+    function displayMedDose(text) {
+      const cleaned = String(text || "")
+        .replace(/\s*·\s*null\s*天/gi, "")
+        .replace(/\bnull\s*天\b/gi, "")
+        .replace(/^\s*·\s*|\s*·\s*$/g, "")
+        .trim();
+      return expandFrequencyInText(cleaned);
+    }
+
+    function buildVisitMedEditButtonHtml({
+      visitIndex,
+      medIndex,
+      medId,
+      ingredientIndex,
+    } = {}) {
+      if (!showVisitMedEdit) return "";
+      const ingredientAttr =
+        ingredientIndex == null || ingredientIndex === ""
+          ? ""
+          : ` data-ingredient-index="${ingredientIndex}"`;
+      return `<button
+            type="button"
+            class="tl-drug-notes-btn tl-visit-med-edit-btn"
+            data-edit-visit-med
+            data-visit-index="${visitIndex}"
+            data-med-index="${medIndex}"
+            data-med-id="${medId || ""}"${ingredientAttr}
+          >${label("timelineVisitMedEdit")}</button>`;
+    }
+
     function buildTimelineMedItemHtml(med, pet, visitIndex, medIndex, sourceTags, drugNotePanels) {
       const sourceKey = med.source || "owner";
       const source = sourceTags[sourceKey] || sourceTags.owner;
@@ -244,6 +275,11 @@
           )}</button>`
         : "";
       const detailId = `med-detail-${pet.id}-${visitIndex}-${medIndex}`;
+      const editBtn = buildVisitMedEditButtonHtml({
+        visitIndex,
+        medIndex,
+        medId: med.id,
+      });
 
       function shellForMed(noteMed, notesId) {
         drugNotePanels.push({ notesId, med: noteMed });
@@ -273,8 +309,14 @@
               aria-expanded="false"
               aria-controls="${notesId}"
             >${label("timelineDrugNotesBtn")}</button>
+            ${buildVisitMedEditButtonHtml({
+              visitIndex,
+              medIndex,
+              medId: med.id,
+              ingredientIndex: ingIndex,
+            })}
           </div>
-          <span class="dose">${expandFrequencyInText(ing.dose)}</span>
+          <span class="dose">${displayMedDose(ing.dose)}</span>
           ${shellForMed(ing, notesId)}
         </li>`;
           })
@@ -282,6 +324,7 @@
 
         return `
       <li class="tl-med-unit tl-compound ${compoundFormClass(med.compoundForm)}">
+        <div class="tl-compound-head">
         <button
           type="button"
           class="tl-med-summary"
@@ -299,10 +342,12 @@
           </span>
           <span class="tl-med-summary-body">
             <span class="tl-med-summary-names">${namesLine}</span>
-            <span class="dose">${expandFrequencyInText(med.dose)}</span>
+            <span class="dose">${displayMedDose(med.dose)}</span>
           </span>
           <span class="tl-med-summary-action">${label("timelineMedExpand")}</span>
         </button>
+        ${editBtn}
+        </div>
         <div class="tl-med-detail" id="${detailId}" hidden>
           <span class="tag ${source.className}">${source.label}</span>
           <ul class="tl-ingredients">${ingredients}</ul>
@@ -346,6 +391,7 @@
               aria-expanded="false"
               aria-controls="${notesId}"
             >${label("timelineDrugNotesBtn")}</button>
+            ${editBtn}
           </span>
           <span class="dose">${expandFrequencyInText(med.dose)}</span>
         </span>
@@ -737,6 +783,7 @@
       buildVisitWeightPartsHtml,
       buildVisitLabsLineHtml,
       buildVisitRxBlockHtml,
+      buildVisitMedEditButtonHtml,
       buildTimelineMedItemHtml,
       buildTimelineListHtml,
       buildVisitRxTogglePresentation,

@@ -478,6 +478,147 @@ describe("MD-01 / MD-02 medications controller + selectors", () => {
     const body = afterSelectMatch[1];
     assert.match(body, /pendingMeds\s*=\s*\[\]/);
     assert.match(body, /completingVisitRef\s*=\s*null/);
+    assert.match(body, /editingVisitMedRef\s*=\s*null/);
     assert.match(body, /compoundColorByGroup/);
+  });
+
+  it("draftFromSavedMed parses structured fields and dose line", () => {
+    const { meds } = createPair();
+    const fromFields = meds.draftFromSavedMed({
+      name: "Gabapentin",
+      amount: 100,
+      unit: "mg",
+      frequency: "BID",
+      durationDays: 14,
+      source: "clinic_ref",
+    });
+    assert.equal(fromFields.drugName, "Gabapentin");
+    assert.equal(fromFields.amount, 100);
+    assert.equal(fromFields.unit, "mg");
+    assert.equal(fromFields.frequency, "BID");
+    assert.equal(fromFields.days, 14);
+    assert.equal(fromFields.sourcePreset, "clinic_ref");
+
+    const fromDose = meds.draftFromSavedMed({
+      name: "Prednisolone",
+      dose: "5 mg · BID · 7 days",
+    });
+    assert.equal(fromDose.amount, 5);
+    assert.equal(fromDose.unit, "mg");
+  });
+
+  it("applyDraftToVisitMed updates a saved med in place", () => {
+    const { meds } = createPair();
+    const visit = {
+      date: "2026-07-20",
+      medications: [
+        {
+          id: "m-1",
+          name: "WrongName",
+          dose: "10 mg",
+          frequency: "SID",
+          durationDays: 5,
+          source: "owner",
+        },
+      ],
+    };
+    const result = meds.applyDraftToVisitMed(
+      visit,
+      { medId: "m-1" },
+      {
+        drugName: "Gabapentin",
+        amount: 100,
+        unit: "mg",
+        frequency: "BID",
+        days: 14,
+        sourcePreset: "clinic_ref",
+      }
+    );
+    assert.equal(result.ok, true);
+    assert.equal(visit.medications.length, 1);
+    assert.equal(visit.medications[0].id, "m-1");
+    assert.equal(visit.medications[0].name, "Gabapentin");
+    assert.equal(visit.medications[0].frequency, "BID");
+    assert.equal(visit.medications[0].durationDays, 14);
+    assert.equal(visit.medications[0].amount, 100);
+    assert.equal(visit.medications[0].unit, "mg");
+    assert.equal(visit.medications[0].source, "clinic_ref");
+    assert.match(visit.medications[0].dose, /100 mg/);
+  });
+
+  it("applyDraftToVisitMed and remove work on compound ingredients", () => {
+    const { meds } = createPair();
+    const visit = {
+      medications: [
+        {
+          id: "m-cmp",
+          kind: "compound_bundle",
+          name: "藥水 A",
+          ingredients: [
+            { name: "A", dose: "1 mg", source: "owner" },
+            { name: "B", dose: "2 mg", source: "owner" },
+          ],
+        },
+      ],
+    };
+    const updated = meds.applyDraftToVisitMed(
+      visit,
+      { medId: "m-cmp", ingredientIndex: 1 },
+      { drugName: "C", amount: 3, unit: "mg", frequency: "SID", days: 3 }
+    );
+    assert.equal(updated.ok, true);
+    assert.equal(visit.medications[0].ingredients[1].name, "C");
+
+    const removedOne = meds.removeVisitMedication(visit, {
+      medId: "m-cmp",
+      ingredientIndex: 0,
+    });
+    assert.equal(removedOne.ok, true);
+    assert.equal(visit.medications[0].ingredients.length, 1);
+
+    const removedLast = meds.removeVisitMedication(visit, {
+      medId: "m-cmp",
+      ingredientIndex: 0,
+    });
+    assert.equal(removedLast.ok, true);
+    assert.equal(visit.medications.length, 0);
+  });
+
+  it("pendingFromCompoundBundle and replaceVisitMedication rebuild a mix", () => {
+    const { meds } = createPair();
+    const bundle = {
+      id: "m-cmp",
+      kind: "compound_bundle",
+      compoundForm: "liquid_a",
+      compoundColor: "#6DA6C3",
+      frequency: "BID",
+      durationDays: 5,
+      source: "clinic_ref",
+      ingredients: [
+        { name: "Dex", dose: "0.5 ml", source: "clinic_ref" },
+        { name: "Ocla", dose: "0.1 ml", source: "clinic_ref" },
+      ],
+    };
+    const pending = meds.pendingFromCompoundBundle(bundle);
+    assert.equal(pending.length, 2);
+    assert.equal(pending[0].name, "Dex");
+    assert.equal(pending[0].compoundGroup, "liquid_a");
+    assert.equal(pending[1].name, "Ocla");
+    assert.equal(pending[0].frequency, "BID");
+    assert.equal(pending[0].durationDays, 5);
+
+    const visit = { date: "2026-07-20", medications: [bundle] };
+    const units = meds.buildVisitMedicationsFromPending(pending, "pet1");
+    const replaced = meds.replaceVisitMedication(
+      visit,
+      { medId: "m-cmp" },
+      units
+    );
+    assert.equal(replaced.ok, true);
+    assert.equal(visit.medications.length, 1);
+    assert.equal(visit.medications[0].kind, "compound_bundle");
+    assert.notEqual(visit.medications[0].id, "m-cmp");
+    assert.equal(visit.medications[0].ingredients.length, 2);
+    assert.doesNotMatch(visit.medications[0].dose || "", /null/);
   });
 });

@@ -233,6 +233,35 @@
       };
     }
 
+    function buildMedFormModeView(mode) {
+      const editing = Boolean(mode);
+      const compound = mode === "compound";
+      return {
+        titleKey: editing
+          ? compound
+            ? "editCompoundMedTitle"
+            : "editMedTitle"
+          : "addMedTitle",
+        subKey: editing
+          ? compound
+            ? "editCompoundMedSub"
+            : "editMedSub"
+          : "addMedSub",
+        backScreen: editing ? "timeline" : "add-visit",
+        submitKey: editing ? "saveEditedMed" : "saveAllMeds",
+        hintKey: editing
+          ? compound
+            ? "editCompoundMedHint"
+            : "editMedHint"
+          : null,
+        hidePhotoMode: editing,
+        hidePendingList: editing && !compound,
+        hideAddToList: editing && !compound,
+        hideCompound: editing && !compound,
+        showRemove: editing,
+      };
+    }
+
     return {
       buildClinicResultsHtml,
       buildLabClinicResultsHtml,
@@ -241,6 +270,7 @@
       buildPendingCompoundOptionsHtml,
       buildPendingMedsListHtml,
       buildCompoundColorSwatchesHtml,
+      buildMedFormModeView,
     };
   }
 

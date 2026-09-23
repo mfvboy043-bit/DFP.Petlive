@@ -220,6 +220,8 @@
             source: med.source,
             frequency: med.frequency,
             durationDays: med.durationDays,
+            amount: med.amount || null,
+            unit: med.unit || "",
           });
           return;
         }
@@ -239,6 +241,8 @@
               source: med.source,
               frequency: med.frequency,
               durationDays: med.durationDays,
+              amount: med.amount || null,
+              unit: med.unit || "",
             });
           });
           return;
@@ -246,13 +250,16 @@
         const sample = members[0];
         const compoundColor =
           sample.compoundColor || resolveCompoundColor(form);
+        const doseParts = [];
+        if (sample.frequency) doseParts.push(freqLabel(sample.frequency));
+        if (Number.isInteger(sample.durationDays) && sample.durationDays > 0) {
+          doseParts.push(daysLabel(sample.durationDays));
+        }
         feedingUnits.push({
           id: `m-${petId}-cmp-${Date.now()}-${feedingUnits.length}`,
           kind: "compound_bundle",
           name: compoundLabel(form),
-          dose: `${freqLabel(sample.frequency)} · ${daysLabel(
-            sample.durationDays
-          )}`,
+          dose: doseParts.join(" · "),
           source: sample.source,
           compoundForm: form,
           compoundColor,
@@ -262,6 +269,8 @@
             name: med.name,
             dose: med.dose,
             source: med.source,
+            amount: med.amount || null,
+            unit: med.unit || "",
           })),
         });
       });
@@ -304,6 +313,139 @@
         if (!med.startDate) med.startDate = visit.date;
         visit.medications.push(med);
       });
+    }
+
+    const DOSE_UNIT_ALIASES = {
+      mg: "mg",
+      ml: "ml",
+      tablet: "tablet",
+      tab: "tablet",
+    };
+
+    function parseAmountUnitFromDose(dose) {
+      const text = String(dose || "").trim();
+      const match = text.match(/^(\d+(?:\.\d+)?)\s*([A-Za-z]+)?/);
+      if (!match) return { amount: null, unit: "" };
+      const amount = Number(match[1]);
+      const raw = String(match[2] || "").toLowerCase();
+      return {
+        amount: amount > 0 ? amount : null,
+        unit: DOSE_UNIT_ALIASES[raw] || "",
+      };
+    }
+
+    function draftFromSavedMed(med, parent) {
+      const source = med?.source || parent?.source || "owner";
+      const parsed = parseAmountUnitFromDose(med?.dose);
+      const amountRaw = med?.amount ?? med?.dosageAmount ?? parsed.amount;
+      const amount = amountRaw != null && Number(amountRaw) > 0 ? Number(amountRaw) : null;
+      const daysRaw = med?.durationDays ?? parent?.durationDays;
+      const days =
+        daysRaw != null && Number.isInteger(Number(daysRaw)) && Number(daysRaw) > 0
+          ? Number(daysRaw)
+          : null;
+      return {
+        drugName: String(med?.name || "").trim(),
+        amount,
+        unit: normalizeMedUnitForStore(med?.unit || med?.dosageUnit || parsed.unit),
+        frequency: normalizeMedFreqForStore(med?.frequency || parent?.frequency || ""),
+        days,
+        sourcePreset: source === "clinic_ref" ? "clinic_ref" : "owner",
+        compoundGroup: String(med?.compoundGroup || parent?.compoundForm || "").trim(),
+        compoundColor: String(med?.compoundColor || parent?.compoundColor || "").trim(),
+      };
+    }
+
+    function findVisitMed(visit, ref = {}) {
+      const list = Array.isArray(visit?.medications) ? visit.medications : [];
+      let index = -1;
+      if (ref.medId) {
+        index = list.findIndex((item) => item && item.id === ref.medId);
+      }
+      if (index < 0 && Number.isInteger(ref.medIndex)) {
+        index = ref.medIndex;
+      }
+      const med = index >= 0 ? list[index] : null;
+      if (!med) return { ok: false, reason: "missing_med" };
+      if (ref.ingredientIndex == null || ref.ingredientIndex === "") {
+        return { ok: true, med, list, index };
+      }
+      const ingredientIndex = Number(ref.ingredientIndex);
+      const ingredients = Array.isArray(med.ingredients) ? med.ingredients : [];
+      const ingredient = ingredients[ingredientIndex];
+      if (!ingredient) return { ok: false, reason: "missing_ingredient" };
+      return { ok: true, med, ingredient, ingredients, list, index, ingredientIndex };
+    }
+
+    function applyDraftToVisitMed(visit, ref, draft) {
+      const found = findVisitMed(visit, ref);
+      if (!found.ok) return found;
+      if (!draft?.drugName) return { ok: false, reason: "need_drug" };
+      const target = found.ingredient || found.med;
+      target.name = draft.drugName;
+      target.dose = doseLineForDraft(draft);
+      target.frequency = draft.frequency || "";
+      target.durationDays = draft.days || null;
+      target.amount = draft.amount || null;
+      target.unit = draft.unit || "";
+      if (!found.ingredient) {
+        target.source = draft.sourcePreset === "clinic_ref" ? "clinic_ref" : "owner";
+      } else if (draft.sourcePreset) {
+        target.source = draft.sourcePreset === "clinic_ref" ? "clinic_ref" : "owner";
+      }
+      return { ok: true, med: found.med, target };
+    }
+
+    function pendingFromCompoundBundle(bundle) {
+      const ingredients = Array.isArray(bundle?.ingredients)
+        ? bundle.ingredients
+        : [];
+      const pending = [];
+      ingredients.forEach((ing) => {
+        const draft = draftFromSavedMed(ing, bundle);
+        draft.compoundGroup = bundle?.compoundForm || draft.compoundGroup;
+        draft.compoundColor = bundle?.compoundColor || draft.compoundColor;
+        pending.push(buildPendingItem(draft, { pendingMeds: pending }));
+      });
+      return pending;
+    }
+
+    function replaceVisitMedication(visit, ref, units) {
+      const found = findVisitMed(visit, {
+        medId: ref?.medId,
+        medIndex: ref?.medIndex,
+      });
+      if (!found.ok) return found;
+      const next = Array.isArray(units) ? units.slice() : [];
+      next.forEach((med) => {
+        if (!med.startDate) med.startDate = visit?.date;
+      });
+      if (!next.length) {
+        found.list.splice(found.index, 1);
+        return { ok: true, removed: true, units: [] };
+      }
+      found.list.splice(found.index, 1, ...next);
+      return { ok: true, units: next };
+    }
+
+    function removeVisitMedication(visit, ref) {
+      const found = findVisitMed(visit, ref);
+      if (!found.ok) return found;
+      if (Number.isInteger(found.ingredientIndex)) {
+        const ingredients = Array.isArray(found.med?.ingredients)
+          ? found.med.ingredients
+          : [];
+        if (!ingredients[found.ingredientIndex]) {
+          return { ok: false, reason: "missing_ingredient" };
+        }
+        ingredients.splice(found.ingredientIndex, 1);
+        if (!ingredients.length) {
+          found.list.splice(found.index, 1);
+        }
+        return { ok: true, removed: "ingredient" };
+      }
+      found.list.splice(found.index, 1);
+      return { ok: true, removed: "med" };
     }
 
     function findVisitForMedSave(
@@ -363,6 +505,13 @@
       buildVisitMedicationsFromPending,
       appendPhotoBundleToVisit,
       appendUnitsToVisit,
+      parseAmountUnitFromDose,
+      draftFromSavedMed,
+      findVisitMed,
+      applyDraftToVisitMed,
+      pendingFromCompoundBundle,
+      replaceVisitMedication,
+      removeVisitMedication,
       findVisitForMedSave,
       applyVisitWeightOnMedSave,
       searchDrugs,

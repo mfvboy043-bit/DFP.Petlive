@@ -1469,6 +1469,16 @@ html[lang="ko"] .hero-intro .brand-zh {
   min-width: 0;
 }
 
+#med-mode-manual,
+#med-mode-photo {
+  display: contents;
+}
+
+#med-mode-manual[hidden],
+#med-mode-photo[hidden] {
+  display: none;
+}
+
 .cta-row .btn {
   white-space: normal;
   text-wrap: balance;
@@ -2277,16 +2287,16 @@ input[type="week"] {
 
 .source-options {
   display: grid;
-  gap: 9px;
+  gap: 6px;
 
-  margin-top: 10px;
+  margin-top: 8px;
 }
 
 .source-opt {
   display: flex;
-  gap: 10px;
+  gap: 8px;
 
-  padding: 13px;
+  padding: 10px 12px;
 
   border: 1px solid var(--line);
   border-radius: var(--r-sm);
@@ -2787,6 +2797,21 @@ input[type="week"] {
 
 .med-list strong {
   display: inline;
+}
+
+.tl-compound-head {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 8px;
+  align-items: start;
+}
+
+.tl-compound-head .tl-med-summary {
+  width: 100%;
+}
+
+.tl-compound-head .tl-visit-med-edit-btn {
+  margin-top: 6px;
 }
 
 .tl-med-summary {
@@ -7769,6 +7794,36 @@ html.is-proof-lightbox-open body {
   .med-form-actions {
     display: grid;
     grid-template-columns: 1fr;
+  }
+
+  #med-form .source-options {
+    gap: 6px;
+    margin-top: 6px;
+  }
+
+  #med-form .source-opt {
+    padding: 9px 11px;
+    gap: 8px;
+  }
+
+  #med-form .med-form-actions {
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+    margin-top: 2px;
+  }
+
+  #med-form .med-form-actions .btn-primary {
+    grid-column: 1 / -1;
+  }
+
+  #med-form .med-form-actions:not(:has(#remove-visit-med-btn:not([hidden])))
+    #add-med-to-list {
+    grid-column: 1 / -1;
+  }
+
+  #med-form .med-form-actions:not(:has(#add-med-to-list:not([hidden])))
+    #remove-visit-med-btn {
+    grid-column: 1 / -1;
   }
 
   .parasite-actions {
