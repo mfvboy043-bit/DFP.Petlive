@@ -147,6 +147,11 @@ function isPetsGraphShape(value) {
   );
 }
 
+// Prefer IndexedDB — same as formal B (localStorage quota blocks Rx proof saves).
+if (typeof PetLiveWeb?.storage?.configure === "function") {
+  PetLiveWeb.storage.configure({ backend: "idb", mirrorLocal: false });
+}
+
 const petsGraphSlot = PetLiveWeb.storage.createJsonSlot({
   key: PETS_GRAPH_KEY,
   fallback: () => ({
@@ -1664,7 +1669,7 @@ function hydratePetPhotos() {
   petsMedia.hydratePetPhotos(pets);
 }
 
-const PROOF_PHOTO_MAX_EDGE = 960;
+const PROOF_PHOTO_MAX_EDGE = 720;
 
 function resizeImageDataUrl(dataUrl, maxEdge = 480) {
   return PetLiveWeb.domains.pets.resizeImageDataUrl(dataUrl, maxEdge);
@@ -5488,7 +5493,7 @@ document.getElementById("med-proof-form").addEventListener("click", (event) => {
   }
 });
 
-document.getElementById("med-proof-form").addEventListener("submit", (event) => {
+document.getElementById("med-proof-form").addEventListener("submit", async (event) => {
   event.preventDefault();
   const pet = getCurrentPet();
   let visitIndex =
@@ -5534,8 +5539,16 @@ document.getElementById("med-proof-form").addEventListener("submit", (event) => 
   });
 
   schedulePetsGraphPersist();
-  const ok =
-    typeof petsGraphSlot.flush === "function" ? petsGraphSlot.flush() : true;
+  let ok = true;
+  try {
+    if (typeof petsGraphSlot.flushAsync === "function") {
+      ok = await petsGraphSlot.flushAsync();
+    } else if (typeof petsGraphSlot.flush === "function") {
+      ok = petsGraphSlot.flush();
+    }
+  } catch {
+    ok = false;
+  }
   if (!ok) {
     showPersistenceFailure();
     // Keep pendingProofVisitIndex so retry Save still knows which visit.
