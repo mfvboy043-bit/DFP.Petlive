@@ -590,13 +590,28 @@
       };
     }
 
+    function proofSlotFingerprint(urls) {
+      // Length + byte-size hint so add/clear and same-count replace both invalidate.
+      return (Array.isArray(urls) ? urls : [])
+        .map((url) => String(url || "").length)
+        .join(",");
+    }
+
     function visitStructuralFingerprint(visit, index) {
-      const proofs = visit?.proofPhotos || {};
-      const imagingData = visit?.imaging || {};
+      // Real proof slots are visit/med bagPhoto|rxPhoto|drugPhoto (via collectVisitProofPhotos).
+      // visit.proofPhotos is unused legacy — fingerprinting it left Rx thumbs stale after 補傳.
+      const slots =
+        typeof visits.collectVisitProofPhotos === "function"
+          ? visits.collectVisitProofPhotos(visit)
+          : { bag: [], rx: [], drug: [] };
+      const imagingData =
+        typeof imaging.getVisitImaging === "function"
+          ? imaging.getVisitImaging(visit)
+          : visit?.imaging || {};
       const meds = Array.isArray(visit?.medications) ? visit.medications : [];
-      const bag = Array.isArray(proofs.bag) ? proofs.bag.length : 0;
-      const rx = Array.isArray(proofs.rx) ? proofs.rx.length : 0;
-      const drug = Array.isArray(proofs.drug) ? proofs.drug.length : 0;
+      const bag = proofSlotFingerprint(slots.bag);
+      const rx = proofSlotFingerprint(slots.rx);
+      const drug = proofSlotFingerprint(slots.drug);
       const xray = Array.isArray(imagingData.xrayPhotos)
         ? imagingData.xrayPhotos.length
         : 0;

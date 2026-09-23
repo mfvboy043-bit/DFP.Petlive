@@ -393,6 +393,62 @@ describe("TL-05 timeline render builders", () => {
     assert.equal(renderer.planKeyedListReconcile([], []).mode, "full");
   });
 
+  it("proof photo add invalidates structural signature (not legacy proofPhotos)", () => {
+    const { renderer } = loadRenderer();
+    const before = {
+      id: "p1",
+      visits: [
+        {
+          date: "2026-08-27",
+          clinic: "Happy",
+          medications: [{ name: "MedX", dose: "1 tab", source: "owner" }],
+        },
+      ],
+    };
+    const after = {
+      id: "p1",
+      visits: [
+        {
+          ...before.visits[0],
+          bagPhoto: "data:image/jpeg;base64,AAA",
+          medications: [
+            {
+              ...before.visits[0].medications[0],
+              bagPhoto: "data:image/jpeg;base64,AAA",
+            },
+          ],
+        },
+      ],
+    };
+    const prevSigs = renderer.buildItemSignatures(before, { lang: "zh-Hant" });
+    const nextSigs = renderer.buildItemSignatures(after, { lang: "zh-Hant" });
+    const plan = renderer.planKeyedListReconcile(prevSigs, nextSigs);
+    assert.notEqual(plan.mode, "skip");
+    assert.ok(plan.indices.includes(0));
+
+    // Same-count replace must also rebuild (not length-only).
+    const replaced = {
+      id: "p1",
+      visits: [
+        {
+          ...after.visits[0],
+          bagPhoto: "data:image/jpeg;base64,BBBBBB",
+          medications: [
+            {
+              ...after.visits[0].medications[0],
+              bagPhoto: "data:image/jpeg;base64,BBBBBB",
+            },
+          ],
+        },
+      ],
+    };
+    const replacedSigs = renderer.buildItemSignatures(replaced, {
+      lang: "zh-Hant",
+    });
+    const replacePlan = renderer.planKeyedListReconcile(nextSigs, replacedSigs);
+    assert.notEqual(replacePlan.mode, "skip");
+  });
+
   it("planKeyedListReconcile morph when only clinic/note surface changes", () => {
     const { renderer } = loadRenderer();
     const prevVisits = [
