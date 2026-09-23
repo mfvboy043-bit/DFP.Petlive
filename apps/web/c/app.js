@@ -3495,6 +3495,7 @@ const shellNavigation = PetLiveWeb.shell.createNavigation({
       if (pet) safeRender("parasiteScreen", () => fillParasiteScreen(pet));
     }
     if (screen === "owner-settings") fillOwnerSettingsForm();
+    if (screen === "manual") paintManualScreen();
     if (screen === "why-stories") {
       const root = document.getElementById("why-stories-mount");
       PetLiveWeb.shell.syncIntroStoryDisclosures?.(document, window, {
@@ -3783,13 +3784,17 @@ function mountIntroStoriesShell() {
   });
 }
 
+function paintManualScreen() {
+  PetLiveWeb.shell.paintManualScreen?.(document, {
+    empty: !pets.length || isSeedOnlyPets(pets),
+    label: (key) => t(key),
+  });
+}
+
 function initAppNavMenu() {
   PetLiveWeb.shell.initAppNavMenu(document, {
     win: window,
     closeAccountMenu,
-    onManualNav: () => {
-      window.location.assign("../?app=1&screen=manual");
-    },
   });
 }
 

@@ -5,16 +5,16 @@
   root.domains = root.domains || {};
   root.domains.cloud = root.domains.cloud || {};
 
-  // Photos / imaging only. pet.observations (notebook metrics + series) is NOT
-  // listed here — it rides buildCloudPayload → Drive backup → applyCloudPayload.
-  // After apply, observation UI should loadFromPet / paint (see observations/cloud-roundtrip.js).
+  // Rx proof stills stay off the Drive JSON. Visit imaging (xrayPhotos / usPhotos
+  // inside visit.imaging) rides with pets[], same path as observations:
+  // buildCloudPayload → Drive backup → applyCloudPayload.
+  // Array items are kept as-is, so compressed imaging data-URLs survive.
+  // A data:image string stored directly on an object property and longer than
+  // 8000 chars is still dropped (avatar-style blobs).
   const HEAVY_MEDIA_KEYS = new Set([
     "bagPhoto",
     "rxPhoto",
     "drugPhoto",
-    "xrayPhotos",
-    "usPhotos",
-    "imaging",
     "attachmentUrl",
   ]);
 

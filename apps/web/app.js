@@ -4042,20 +4042,10 @@ function mountIntroStoriesShell() {
 }
 
 function paintManualScreen() {
-  const empty = !pets.length || isSeedOnlyPets(pets);
-  const primary = document.getElementById("manual-cta-primary");
-  const addAlt = document.getElementById("manual-cta-add-alt");
-  if (primary) {
-    primary.setAttribute("data-go", empty ? "add-pet" : "home");
-    primary.setAttribute("data-i18n", empty ? "manualCtaAddPet" : "manualCtaHome");
-    primary.textContent = t(empty ? "manualCtaAddPet" : "manualCtaHome");
-  }
-  if (addAlt) {
-    // When account is empty, primary already goes to add-pet; offer home as alt.
-    addAlt.setAttribute("data-go", empty ? "home" : "add-pet");
-    addAlt.setAttribute("data-i18n", empty ? "manualCtaHome" : "manualCtaAddPet");
-    addAlt.textContent = t(empty ? "manualCtaHome" : "manualCtaAddPet");
-  }
+  PetLiveWeb.shell.paintManualScreen?.(document, {
+    empty: !pets.length || isSeedOnlyPets(pets),
+    label: (key) => t(key),
+  });
 }
 
 function initAppNavMenu() {

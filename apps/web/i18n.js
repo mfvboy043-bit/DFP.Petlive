@@ -191,7 +191,7 @@ const I18N = {
     manualStep4Title: "打開醫療資訊卡",
     manualStep4Body: "急診／換院時快速出示重點：警示、疫苗狀態與近期紀錄。",
     manualStep5Title: "雲端備份／換機",
-    manualStep5Body: "備份寫進你的 Google 雲端硬碟資料夾——不是我們的伺服器。換機登入即可讀回。",
+    manualStep5Body: "備份寫進你的 Google 雲端硬碟資料夾——不是我們的伺服器。開啟自動備份後，新紀錄（含就診影像）會自己跟上；換機登入即可讀回。",
     manualBoundariesTitle: "這是什麼／不是什麼",
     manualBoundaryIs: "飼主持有的寵物健康護照：幫你整理就診、用藥與急診參考資訊。",
     manualBoundaryIsnt: "不是電子病歷系統，也不取代獸醫師的診斷或處方。",
@@ -204,7 +204,10 @@ const I18N = {
       "急診卡會優先顯示的注意事項（例如過敏、特殊狀況）。細節可之後再補；選單有「醫療警示」。",
     manualFaqCloudQ: "資料存在哪裡？",
     manualFaqCloudA:
-      "本機先寫入；登入後可備份到你自己的 Google 雲端硬碟「火龍果護照」資料夾。不是 Petlive 伺服器上的病歷庫。",
+      "本機先寫入；登入並開啟 Google 雲端硬碟備份後，就診、觀察與 X-Ray／超音波照片會寫進你自己的「火龍果護照」資料夾。不是 Petlive 伺服器上的病歷庫。藥袋／藥單照片目前不進這份備份。",
+    manualFaqImagingQ: "X-Ray 或超音波照片會跟著備份嗎？",
+    manualFaqImagingA:
+      "會。時間軸那筆就診按「影像」上傳並儲存後，照片先存在這支手機。已開啟雲端硬碟備份的話，會自動跟著護照一起備份；換機登入即可讀回。僅供對照原件，不判讀影像。",
     manualCtaHome: "回到護照",
     manualCtaAddPet: "去新增寵物",
     manualCtaTour: "開始導覽",
@@ -1105,7 +1108,7 @@ const I18N = {
     manualStep4Title: "Open the medical info card",
     manualStep4Body: "Quick handoff for emergencies or clinic switches: alerts, vaccine status, recent notes.",
     manualStep5Title: "Cloud backup / switch device",
-    manualStep5Body: "Backups go into your Google Drive folder—not our servers. Sign in on a new device to restore.",
+    manualStep5Body: "Backups go into your Google Drive folder—not our servers. After you turn on auto-backup, new records (including visit imaging) follow; sign in on a new device to restore.",
     manualBoundariesTitle: "What it is / isn’t",
     manualBoundaryIs: "An owner-held pet health passport for visits, meds, and emergency reference.",
     manualBoundaryIsnt: "Not an EMR, and not a substitute for veterinary diagnosis or prescriptions.",
@@ -1118,7 +1121,10 @@ const I18N = {
       "Notes the emergency card shows first (allergies, special situations). Add details later via Medical alerts in the menu.",
     manualFaqCloudQ: "Where is my data stored?",
     manualFaqCloudA:
-      "Saved on this device first; after sign-in you can back up to your own Google Drive “Dragon Fruit Passport” folder—not a Petlive medical server.",
+      "Saved on this device first. After you sign in and turn on Google Drive backup, visits, observations, and X-ray / ultrasound photos go into your own “Dragon Fruit Passport” folder—not a Petlive medical server. Rx bag / slip photos are not in this backup yet.",
+    manualFaqImagingQ: "Do X-ray or ultrasound photos back up too?",
+    manualFaqImagingA:
+      "Yes. On the timeline, open Imaging for that visit, add photos, and save. They stay on this phone first. If Drive backup is on, they travel with the passport; sign in on a new device to restore. For comparing originals only—not an interpretation.",
     manualCtaHome: "Back to passport",
     manualCtaAddPet: "Add a pet",
     manualCtaTour: "Start tour",
@@ -2019,7 +2025,7 @@ const I18N = {
     manualStep4Title: "医療情報カードを開く",
     manualStep4Body: "救急・転院時に要点をすぐ見せられます：注意事項、ワクチン状態、最近の記録。",
     manualStep5Title: "クラウドバックアップ／機種変更",
-    manualStep5Body: "バックアップはあなたの Google ドライブのフォルダへ——当社サーバーではありません。別端末でもログインすれば読み戻せます。",
+    manualStep5Body: "バックアップはあなたの Google ドライブのフォルダへ——当社サーバーではありません。自動バックアップを開いたあと、新しい記録（来院画像を含む）は一緒に上がります。別端末でもログインすれば読み戻せます。",
     manualBoundariesTitle: "できること／できないこと",
     manualBoundaryIs: "飼い主が持つペット健康パスポート。受診・投薬・救急参考情報を整理します。",
     manualBoundaryIsnt: "電子カルテではなく、診断や処方の代わりにもなりません。",
@@ -2032,7 +2038,10 @@ const I18N = {
       "救急カードで優先表示する注意（アレルギーなど）。後からメニューの「医療アラート」で追加できます。",
     manualFaqCloudQ: "データはどこに保存されますか？",
     manualFaqCloudA:
-      "まずこの端末に保存。ログイン後はあなたの Google ドライブ「ドラゴンフルーツパスポート」フォルダへバックアップできます。Petlive の病歴サーバーではありません。",
+      "まずこの端末に保存。ログインして Google ドライブのバックアップを開くと、受診・観察・X線／超音波写真があなたの「ドラゴンフルーツパスポート」フォルダへ入ります。Petlive の病歴サーバーではありません。薬袋／処方箋の写真はこのバックアップにまだ入りません。",
+    manualFaqImagingQ: "X線や超音波の写真もバックアップされますか？",
+    manualFaqImagingA:
+      "されます。タイムラインのその来院で「画像」を開き、保存してください。まずはこの端末に残ります。ドライブバックアップがオンならパスポートと一緒に上がり、別端末でログインすれば読み戻せます。原本の照合用であり、画像の判読ではありません。",
     manualCtaHome: "パスポートに戻る",
     manualCtaAddPet: "ペットを追加",
     manualCtaTour: "ガイドを開始",
@@ -2938,7 +2947,7 @@ const I18N = {
     manualStep4Title: "의료 정보 카드 열기",
     manualStep4Body: "응급·전원 시 핵심을 빠르게 보여 줍니다: 주의사항, 백신 상태, 최근 기록.",
     manualStep5Title: "클라우드 백업 / 기기 변경",
-    manualStep5Body: "백업은 당신의 Google 드라이브 폴더로—저희 서버가 아닙니다. 다른 기기에서 로그인하면 다시 불러올 수 있습니다.",
+    manualStep5Body: "백업은 당신의 Google 드라이브 폴더로—저희 서버가 아닙니다. 자동 백업을 켜면 새 기록(진료 영상 포함)이 따라갑니다. 다른 기기에서 로그인하면 다시 불러올 수 있습니다.",
     manualBoundariesTitle: "이것이 무엇인지 / 아닌지",
     manualBoundaryIs: "보호자가 보유하는 반려동물 건강 여권. 진료·투약·응급 참고 정보를 정리합니다.",
     manualBoundaryIsnt: "전자의무기록이 아니며, 수의사 진단이나 처방을 대체하지 않습니다.",
@@ -2951,7 +2960,10 @@ const I18N = {
       "응급 카드에 우선 표시되는 주의사항(알레르기 등)입니다. 나중에 메뉴의 「의료 알림」에서 보완할 수 있습니다.",
     manualFaqCloudQ: "데이터는 어디에 저장되나요?",
     manualFaqCloudA:
-      "먼저 이 기기에 저장됩니다. 로그인 후 본인 Google 드라이브 「용과 패스포트」 폴더로 백업할 수 있습니다. Petlive 의료 서버가 아닙니다.",
+      "먼저 이 기기에 저장됩니다. 로그인하고 Google 드라이브 백업을 켜면 진료·관찰·X-Ray/초음파 사진이 본인 「용과 패스포트」 폴더로 들어갑니다. Petlive 의료 서버가 아닙니다. 약봉투/처방전 사진은 아직 이 백업에 넣지 않습니다.",
+    manualFaqImagingQ: "X-Ray나 초음파 사진도 백업되나요?",
+    manualFaqImagingA:
+      "됩니다. 타임라인에서 해당 진료의 「영상」을 열고 저장하세요. 먼저 이 휴대폰에 남습니다. 드라이브 백업이 켜져 있으면 패스포트와 함께 올라가고, 다른 기기에서 로그인하면 다시 불러올 수 있습니다. 원본 대조용이며 영상을 판독하지 않습니다.",
     manualCtaHome: "패스포트로 돌아가기",
     manualCtaAddPet: "반려동물 추가",
     manualCtaTour: "가이드 시작",

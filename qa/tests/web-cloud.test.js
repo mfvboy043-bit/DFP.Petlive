@@ -356,35 +356,59 @@ describe("CL-04 cloud selectors + controller", () => {
     );
   });
 
-  it("stripHeavyMedia drops heavy keys and large data-URLs", () => {
+  it("stripHeavyMedia drops Rx proofs but keeps visit imaging", () => {
     const { controller } = loadCloud();
-    const big = `data:image/png;base64,${"A".repeat(9000)}`;
+    const big = `data:image/jpeg;base64,${"A".repeat(9000)}`;
     const stripped = controller.stripHeavyMedia({
       name: "keep",
       bagPhoto: "x",
       rxPhoto: "y",
       drugPhoto: "z",
-      xrayPhotos: [],
-      usPhotos: [],
-      imaging: {},
       attachmentUrl: "u",
       thumb: big,
       nested: { bagPhoto: "nope", ok: 1 },
       list: [{ rxPhoto: "a", id: 2 }],
+      visits: [
+        {
+          date: "2026-09-01",
+          imaging: { xrayPhotos: [big], usPhotos: ["data:image/jpeg;base64,small"] },
+        },
+      ],
     });
     assert.deepEqual(plain(stripped), {
       name: "keep",
       nested: { ok: 1 },
       list: [{ id: 2 }],
+      visits: [
+        {
+          date: "2026-09-01",
+          imaging: {
+            xrayPhotos: [big],
+            usPhotos: ["data:image/jpeg;base64,small"],
+          },
+        },
+      ],
     });
   });
 
   it("buildCloudPayload shape and applyCloudPayload guards + replace", () => {
     const env = loadCloud({ seedIds: ["p1", "p2", "p3"] });
-    env.pets.push({ id: "real-1", name: "Mochi", bagPhoto: "drop-me" });
+    const photo = `data:image/jpeg;base64,${"B".repeat(9000)}`;
+    env.pets.push({
+      id: "real-1",
+      name: "Mochi",
+      bagPhoto: "drop-me",
+      visits: [
+        {
+          date: "2026-09-01",
+          bagPhoto: "drop-visit",
+          imaging: { xrayPhotos: [photo], usPhotos: [] },
+        },
+      ],
+    });
     env.store.ownerProfile = { name: "Owner" };
     env.store.petAlerts = { "real-1": [] };
-    env.store.labReports = { "real-1": [{ id: "lr1", imaging: "x" }] };
+    env.store.labReports = { "real-1": [{ id: "lr1", attachmentUrl: "x" }] };
 
     const payload = env.controller.buildCloudPayload();
     assert.equal(payload.version, 1);
@@ -393,9 +417,11 @@ describe("CL-04 cloud selectors + controller", () => {
     assert.equal(payload.pets.length, 1);
     assert.equal(payload.pets[0].id, "real-1");
     assert.equal(payload.pets[0].bagPhoto, undefined);
+    assert.equal(payload.pets[0].visits[0].bagPhoto, undefined);
+    assert.equal(payload.pets[0].visits[0].imaging.xrayPhotos[0], photo);
     assert.equal(payload.ownerProfile.name, "Owner");
     assert.ok(payload.labReports["real-1"][0]);
-    assert.equal(payload.labReports["real-1"][0].imaging, undefined);
+    assert.equal(payload.labReports["real-1"][0].attachmentUrl, undefined);
 
     assert.equal(
       env.controller.applyCloudPayload({
@@ -432,7 +458,15 @@ describe("CL-04 cloud selectors + controller", () => {
     assert.equal(env.controller.applyCloudPayload({ pets: "bad" }), false);
 
     const ok = env.controller.applyCloudPayload({
-      pets: [{ id: "cloud-1", name: "Cloud" }],
+      pets: [
+        {
+          id: "cloud-1",
+          name: "Cloud",
+          visits: [
+            { imaging: { xrayPhotos: [photo], usPhotos: ["us-1"] } },
+          ],
+        },
+      ],
       archivedPets: [{ id: "arch-1" }],
       currentPetId: "cloud-1",
       ownerProfile: { name: "FromCloud" },
@@ -447,9 +481,12 @@ describe("CL-04 cloud selectors + controller", () => {
     assert.equal(env.archivedPets[0].id, "arch-1");
     assert.equal(env.getCurrentPetId(), "cloud-1");
     assert.equal(env.store.ownerProfile.name, "FromCloud");
+    assert.equal(env.pets[0].visits[0].imaging.xrayPhotos[0], photo);
+    assert.equal(env.pets[0].visits[0].imaging.usPhotos[0], "us-1");
     assert.equal(env.afterApplyCount, 2);
     assert.ok(env.replaceViaDoorCount >= 1);
-    assert.deepEqual(plain(env.store.petsGraph.pets), [{ id: "cloud-1", name: "Cloud" }]);
+    assert.equal(env.store.petsGraph.pets[0].id, "cloud-1");
+    assert.equal(env.store.petsGraph.pets[0].visits[0].imaging.xrayPhotos[0], photo);
   });
 
   it("applyCloudPayload rejects DEMO_MODE", () => {

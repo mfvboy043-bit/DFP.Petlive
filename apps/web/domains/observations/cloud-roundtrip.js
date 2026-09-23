@@ -11,8 +11,8 @@
    * Phase B R1 — observations travel inside pets[] on the existing Drive backup.
    *
    * domains/cloud/controller.js stripHeavyMedia drops only HEAVY_MEDIA_KEYS
-   * (photos / imaging / attachmentUrl). "observations" is not in that set, so
-   * buildCloudPayload keeps pet.observations without a payload schema change.
+   * (Rx proof photos / attachmentUrl). Visit imaging and "observations" are
+   * not in that set, so buildCloudPayload keeps both without a schema change.
    *
    * Formal passport (C wiring later): after applyCloudPayload succeeds, call
    * onPetsGraphApplied(activePet, observationController) → loadFromPet + paint.
@@ -27,9 +27,6 @@
     "bagPhoto",
     "rxPhoto",
     "drugPhoto",
-    "xrayPhotos",
-    "usPhotos",
-    "imaging",
     "attachmentUrl",
   ]);
 
