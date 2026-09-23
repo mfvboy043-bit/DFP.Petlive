@@ -191,6 +191,9 @@ const petsGraphSlot = PetLiveWeb.storage.createJsonSlot({
   }),
   validate: isPetsGraphShape,
   coalesceMs: 220,
+  onFlushResult: (ok) => {
+    if (!ok) showPersistenceFailure();
+  },
 });
 
 const currentPetSlot = PetLiveWeb.storage.createJsonSlot({

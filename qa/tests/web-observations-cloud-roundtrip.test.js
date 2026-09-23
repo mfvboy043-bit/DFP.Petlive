@@ -37,7 +37,7 @@ function loadSandbox() {
     const src = readFileSync(path.join(OBS_DIR, file), "utf8");
     vm.runInContext(src, sandbox, { filename: file });
   }
-  for (const file of ["selectors.js", "controller.js"]) {
+  for (const file of ["selectors.js", "proof-merge.js", "controller.js"]) {
     const src = readFileSync(path.join(CLOUD_DIR, file), "utf8");
     vm.runInContext(src, sandbox, { filename: `cloud/${file}` });
   }

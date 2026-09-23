@@ -11,6 +11,8 @@
   // Array items are kept as-is, so compressed imaging data-URLs survive.
   // A data:image string stored directly on an object property and longer than
   // 8000 chars is still dropped (avatar-style blobs).
+  // applyCloudPayload re-merges local bag/rx/drug proofs via proof-merge.js so
+  // a stripped Drive pull cannot wipe on-device stills (L1).
   const HEAVY_MEDIA_KEYS = new Set([
     "bagPhoto",
     "rxPhoto",
@@ -174,9 +176,26 @@
       if (!payload || !Array.isArray(payload.pets)) return false;
       if (selectors.isSeedOnlyCloudPayload(payload)) return false;
 
+      // Snapshot local Rx proofs before replace — Drive JSON omits them (strip).
+      // Must clone: replaceActiveGraph mutates the same pets[] arrays in place.
+      const localPetsSnap = JSON.parse(JSON.stringify(getPets() || []));
+      const localArchivedSnap = JSON.parse(
+        JSON.stringify(getArchivedPets() || [])
+      );
+
       replaceActiveGraph(payload.pets, payload.archivedPets || []);
       const pets = getPets();
       const archivedPets = getArchivedPets();
+
+      const mergeFn =
+        root.domains.cloud &&
+        typeof root.domains.cloud.mergeLocalRxProofsInto === "function"
+          ? root.domains.cloud.mergeLocalRxProofsInto
+          : null;
+      if (mergeFn) {
+        mergeFn(pets, localPetsSnap);
+        mergeFn(archivedPets, localArchivedSnap);
+      }
 
       if (payload.ownerProfile && ownerProfileSlot?.write) {
         ownerProfileSlot.write(payload.ownerProfile);

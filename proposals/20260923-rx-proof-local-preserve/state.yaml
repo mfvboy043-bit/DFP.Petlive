@@ -1,0 +1,46 @@
+id: 20260923-rx-proof-local-preserve
+title: Preserve local Rx proof photos across Drive apply (no upload)
+version: 2
+status: adopted
+# proposed | building | reviewing | revising | candidate_ready | halted | adopted | rejected
+
+gate_a:
+  status: approved
+  approved_at: "2026-09-23"
+  note: "Victor confirmed in chat 2026-09-23 — 「確認 開始做吧」; proceed to Builder with default scope (local re-merge + optional petsGraphSlot flush toast; no Drive upload of proofs)"
+
+gate_b:
+  status: adopted
+  adopted_at: "2026-09-23"
+  note: "Victor 採用 in chat 2026-09-23"
+  # pending | adopted | rejected
+
+iteration: 1
+max_iterations: 3
+
+candidate:
+  branch: "proposal/rx-proof-local-preserve"
+  path: "proposals/20260923-rx-proof-local-preserve"
+  worktree: ""
+  note: "Iteration 1 candidate_ready; QA pass; await Gate B 採用 before merge/Pages"
+
+reviews:
+  pharmacist: skipped
+  qa: pass
+  ui: skipped
+  legal: skipped
+
+rerun: []
+blocking_issues: []
+non_blocking: []
+builder_scope:
+  - RX-01
+  - RX-02
+  - RX-03
+  - RX-04
+  - RX-05
+halt_reason: ""
+
+notes: |
+  Gate A approved verbally in chat 2026-09-23.
+  Iteration 1 built: proof-merge.js + applyCloudPayload re-merge + petsGraphSlot onFlushResult + tests.

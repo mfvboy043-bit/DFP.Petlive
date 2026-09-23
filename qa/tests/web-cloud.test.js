@@ -27,7 +27,7 @@ function loadCloud({
     },
   };
 
-  ["domains/cloud/selectors.js", "domains/cloud/controller.js"].forEach((path) => {
+  ["domains/cloud/selectors.js", "domains/cloud/proof-merge.js", "domains/cloud/controller.js"].forEach((path) => {
     vm.runInContext(readFileSync(new URL(path, WEB_ROOT), "utf8"), context, {
       filename: path,
     });
@@ -389,6 +389,64 @@ describe("CL-04 cloud selectors + controller", () => {
         },
       ],
     });
+  });
+
+  it("applyCloudPayload re-merges local Rx proofs after Drive strip", () => {
+    const env = loadCloud({ seedIds: ["p1", "p2", "p3"] });
+    const bag = "data:image/jpeg;base64,BAGLOCAL";
+    const rx = "data:image/jpeg;base64,RXLOCAL";
+    const drug = "data:image/jpeg;base64,DRUGLOCAL";
+    env.pets.push({
+      id: "real-1",
+      name: "Mochi",
+      visits: [
+        {
+          date: "2026-09-01",
+          bagPhoto: bag,
+          rxPhoto: rx,
+          drugPhoto: drug,
+          medications: [
+            {
+              id: "m-1",
+              name: "MedX",
+              bagPhoto: bag,
+              rxPhoto: rx,
+              drugPhoto: drug,
+            },
+          ],
+        },
+      ],
+    });
+
+    const payload = env.controller.buildCloudPayload();
+    assert.equal(payload.pets[0].visits[0].bagPhoto, undefined);
+    assert.equal(payload.pets[0].visits[0].rxPhoto, undefined);
+    assert.equal(payload.pets[0].visits[0].drugPhoto, undefined);
+    assert.equal(payload.pets[0].visits[0].medications[0].bagPhoto, undefined);
+
+    const ok = env.controller.applyCloudPayload(payload);
+    assert.equal(ok, true);
+    assert.equal(env.pets[0].visits[0].bagPhoto, bag);
+    assert.equal(env.pets[0].visits[0].rxPhoto, rx);
+    assert.equal(env.pets[0].visits[0].drugPhoto, drug);
+    assert.equal(env.pets[0].visits[0].medications[0].bagPhoto, bag);
+    assert.equal(env.pets[0].visits[0].medications[0].rxPhoto, rx);
+    assert.equal(env.pets[0].visits[0].medications[0].drugPhoto, drug);
+    assert.equal(env.store.petsGraph.pets[0].visits[0].bagPhoto, bag);
+  });
+
+  it("applyCloudPayload does not invent proofs for unmatched cloud pets", () => {
+    const env = loadCloud({ seedIds: ["p1", "p2", "p3"] });
+    env.pets.push({
+      id: "local-only",
+      visits: [{ date: "2026-09-01", bagPhoto: "data:image/jpeg;base64,X" }],
+    });
+    const ok = env.controller.applyCloudPayload({
+      pets: [{ id: "cloud-new", visits: [{ date: "2026-09-01" }] }],
+    });
+    assert.equal(ok, true);
+    assert.equal(env.pets[0].id, "cloud-new");
+    assert.equal(env.pets[0].visits[0].bagPhoto, undefined);
   });
 
   it("buildCloudPayload shape and applyCloudPayload guards + replace", () => {
