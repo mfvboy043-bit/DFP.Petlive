@@ -5490,14 +5490,41 @@ document.getElementById("med-proof-form").addEventListener("click", (event) => {
 
 document.getElementById("med-proof-form").addEventListener("submit", (event) => {
   event.preventDefault();
-  if (pendingProofVisitIndex == null) {
+  const pet = getCurrentPet();
+  let visitIndex =
+    pendingProofVisitIndex != null &&
+    Number.isInteger(Number(pendingProofVisitIndex))
+      ? Number(pendingProofVisitIndex)
+      : null;
+  let visit = visitIndex != null ? pet?.visits?.[visitIndex] : null;
+
+  // Recover visit if a prior failed save cleared the index but UI still shows clinic/date.
+  if (!visit && pet?.visits?.length) {
+    const date = String(
+      document.getElementById("med-proof-meta")?.textContent || ""
+    ).trim();
+    const clinic = String(
+      document.getElementById("med-proof-name")?.textContent || ""
+    ).trim();
+    if (date) {
+      const found = pet.visits.findIndex((row) => {
+        const sameDate = String(row?.date || "").slice(0, 10) === date.slice(0, 10);
+        if (!sameDate) return false;
+        if (!clinic) return true;
+        return visitClinicLabel(row) === clinic;
+      });
+      if (found >= 0) {
+        visitIndex = found;
+        visit = pet.visits[found];
+        pendingProofVisitIndex = found;
+      }
+    }
+  }
+
+  if (!visit || visitIndex == null) {
     showToast(t("toastProofMissingVisit"));
     return;
   }
-
-  const pet = getCurrentPet();
-  const visit = pet.visits[pendingProofVisitIndex];
-  if (!visit) return;
 
   // Visit-only stills (no per-med fan-out) to keep localStorage under quota.
   visitsController.setVisitProofPhotos(visit, {
@@ -5506,19 +5533,21 @@ document.getElementById("med-proof-form").addEventListener("submit", (event) => 
     drugPhoto: pendingDrugPhoto,
   });
 
+  schedulePetsGraphPersist();
+  const ok =
+    typeof petsGraphSlot.flush === "function" ? petsGraphSlot.flush() : true;
+  if (!ok) {
+    showPersistenceFailure();
+    // Keep pendingProofVisitIndex so retry Save still knows which visit.
+    return;
+  }
+
   pendingProofVisitIndex = null;
   pendingProofMed = null;
   pendingBagPhoto = null;
   pendingRxPhoto = null;
   pendingDrugPhoto = null;
 
-  schedulePetsGraphPersist();
-  const ok =
-    typeof petsGraphSlot.flush === "function" ? petsGraphSlot.flush() : true;
-  if (!ok) {
-    showPersistenceFailure();
-    return;
-  }
   showToast(t("toastProofSaved"));
   applySelectedPet();
   go("timeline");
