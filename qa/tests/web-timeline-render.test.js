@@ -204,6 +204,9 @@ describe("TL-05 timeline render builders", () => {
     assert.match(compound, /tl-compound-head/);
     assert.match(compound, /data-edit-visit-med/);
     assert.match(compound, /data-med-id="m-cmp"/);
+    assert.match(compound, /<strong>Dex<\/strong>/);
+    assert.doesNotMatch(compound, /tl-med-summary-names/);
+    assert.match(compound, /tl-med-summary-action tl-drug-notes-btn tl-visit-rx-btn/);
     assert.doesNotMatch(compound, /null 天/);
   });
 

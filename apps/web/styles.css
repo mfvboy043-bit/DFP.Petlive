@@ -2093,6 +2093,12 @@ input[type="week"] {
   border-radius: 11px;
 
   background: white;
+  cursor: pointer;
+}
+
+.pending-med-item.is-selected {
+  border-color: #b3c8ba;
+  background: var(--leaf-pale);
 }
 
 .pending-med-main {
@@ -2803,7 +2809,7 @@ input[type="week"] {
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto;
   gap: 8px;
-  align-items: start;
+  align-items: center;
 }
 
 .tl-compound-head .tl-med-summary {
@@ -2811,7 +2817,12 @@ input[type="week"] {
 }
 
 .tl-compound-head .tl-visit-med-edit-btn {
-  margin-top: 6px;
+  margin-top: 0;
+}
+
+.tl-compound-head .tl-med-summary-action {
+  padding-top: 0;
+  pointer-events: none;
 }
 
 .tl-med-summary {
@@ -2903,6 +2914,13 @@ button.tl-med-summary.is-open {
     gap: 6px 8px;
   }
 
+  .tl-compound-head .tl-med-summary:not(.is-static) {
+    grid-template-columns: auto minmax(0, 1fr) auto;
+    grid-template-areas: "badge body action";
+    align-items: center;
+    gap: 6px 8px;
+  }
+
   .tl-med-summary .tl-compound-badge {
     margin-top: 0;
   }
@@ -2913,6 +2931,12 @@ button.tl-med-summary.is-open {
     display: inline-flex;
     align-items: center;
     justify-content: flex-end;
+  }
+
+  .tl-compound-head .tl-med-summary-action {
+    min-height: 24px;
+    padding: 1px 8px;
+    justify-content: center;
   }
 
   .tl-med-summary-names {

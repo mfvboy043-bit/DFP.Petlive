@@ -127,6 +127,40 @@ describe("MD-01 / MD-02 medications controller + selectors", () => {
     assert.equal(next.length, 0);
   });
 
+  it("applyDraftToPendingMed updates the same localId", () => {
+    const { meds } = createPair();
+    const pending = [];
+    const item = meds.pushPendingMed(pending, {
+      drugName: "Drug A",
+      sourcePreset: "owner",
+      frequency: "",
+      days: null,
+      amount: null,
+      unit: "ml",
+      compoundGroup: "liquid_a",
+      compoundColor: "",
+    });
+    const result = meds.applyDraftToPendingMed(pending, item.localId, {
+      drugName: "Drug A",
+      sourcePreset: "owner",
+      frequency: "BID",
+      days: 5,
+      amount: 0.1,
+      unit: "ml",
+      compoundGroup: "liquid_a",
+      compoundColor: "",
+    });
+    assert.equal(result.ok, true);
+    assert.equal(pending.length, 1);
+    assert.equal(pending[0].localId, item.localId);
+    assert.equal(pending[0].amount, 0.1);
+    assert.equal(pending[0].frequency, "BID");
+    assert.equal(pending[0].durationDays, 5);
+    assert.equal(meds.applyDraftToPendingMed(pending, "missing", {
+      drugName: "Drug A",
+    }).ok, false);
+  });
+
   it("buildVisitMedicationsFromPending: singles, bundle, solo tag, schedule split", () => {
     const { meds } = createPair();
     const singles = meds.buildVisitMedicationsFromPending(

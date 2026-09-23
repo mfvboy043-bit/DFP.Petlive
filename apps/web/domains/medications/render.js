@@ -178,12 +178,14 @@
         };
       }
 
+      const selectedId = ctx?.selectedPendingId || "";
       const medDetailsPending = label("medDetailsPending");
       const listHtml = list
         .map((med) => {
           const dosePending = !med.dose || med.dose === medDetailsPending;
+          const selected = selectedId && selectedId === med.localId;
           return `
-      <li class="pending-med-item" data-pending-id="${med.localId}">
+      <li class="pending-med-item${selected ? " is-selected" : ""}" data-pending-id="${med.localId}">
         <div class="pending-med-main">
           <div>
             <strong>${med.name}</strong>

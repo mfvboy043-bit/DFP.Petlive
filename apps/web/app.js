@@ -402,6 +402,8 @@ let liveDrugPhoto = null;
 let completingVisitRef = null;
 /** When set, add-med is editing one saved visit drug instead of creating. */
 let editingVisitMedRef = null;
+/** When set, the med form is rewriting this pending list item instead of adding. */
+let editingPendingId = null;
 let pendingVisitRxIndex = null;
 /** Session overrides: compoundGroup → hex */
 const compoundColorByGroup = Object.create(null);
@@ -3394,6 +3396,7 @@ const petsController = PetLiveWeb.domains.pets.createController({
     pendingMeds = [];
     completingVisitRef = null;
     editingVisitMedRef = null;
+    editingPendingId = null;
     pendingImagingVisitIndex = null;
     pendingXrayPhotos = [];
     pendingUsPhotos = [];
@@ -3652,14 +3655,20 @@ const shellNavigation = PetLiveWeb.shell.createNavigation({
       clearLiveProofPhotos();
       completingVisitRef = null;
       editingVisitMedRef = null;
+      editingPendingId = null;
       clearMedDrugFields();
       renderPendingMeds();
       setMedEntryMode("photo");
       paintMedFormMode();
       primeVisitDateForNewVisit();
     }
-    if (currentScreen === "add-med" && nextScreen !== "add-med" && editingVisitMedRef) {
+    if (
+      currentScreen === "add-med" &&
+      nextScreen !== "add-med" &&
+      (editingVisitMedRef || editingPendingId)
+    ) {
       editingVisitMedRef = null;
+      editingPendingId = null;
       clearMedDrugFields();
       paintMedFormMode();
     }
@@ -3777,8 +3786,9 @@ function goBack() {
     editingPetId = null;
     paintPetFormMode();
   }
-  if (active === "add-med" && editingVisitMedRef) {
+  if (active === "add-med" && (editingVisitMedRef || editingPendingId)) {
     editingVisitMedRef = null;
+    editingPendingId = null;
     paintMedFormMode();
   }
   const changed = shellNavigation.back();
@@ -4411,6 +4421,7 @@ document.getElementById("visit-form").addEventListener("submit", (event) => {
   }
   completingVisitRef = null;
   editingVisitMedRef = null;
+  editingPendingId = null;
   paintMedFormMode();
   go("add-med");
 });
@@ -5040,7 +5051,9 @@ function renderPendingMeds() {
   const hintEl = document.getElementById("pending-compound-hint");
   if (!list || !countEl || !medicationsRenderer) return;
 
-  const built = medicationsRenderer.buildPendingMedsListHtml(pendingMeds);
+  const built = medicationsRenderer.buildPendingMedsListHtml(pendingMeds, {
+    selectedPendingId: editingPendingId,
+  });
 
   if (!pendingMeds.length) {
     list.innerHTML = built.listHtml;
@@ -5080,6 +5093,24 @@ function tryAddCurrentMedToList({ toastOnSuccess = true } = {}) {
   const form = document.getElementById("med-form");
   const draft = readMedDraftFromForm(form);
   if (!validateMedDraft(draft)) return false;
+  if (editingPendingId) {
+    const result = medicationsController.applyDraftToPendingMed(
+      pendingMeds,
+      editingPendingId,
+      draft
+    );
+    if (!result.ok) {
+      if (result.reason === "need_drug") showToast(t("toastNeedDrug"));
+      else showToast(t("toastMedMissing"));
+      return false;
+    }
+    editingPendingId = null;
+    renderPendingMeds();
+    clearMedDrugFields();
+    paintMedFormMode();
+    if (toastOnSuccess) showToast(t("toastMedUpdatedInList"));
+    return true;
+  }
   pushPendingMed(draft);
   clearMedDrugFields();
   if (toastOnSuccess) showToast(t("toastMedAddedToList"));
@@ -5170,7 +5201,12 @@ function paintMedFormMode() {
     submit.setAttribute("data-i18n", view.submitKey);
     submit.textContent = t(view.submitKey);
   }
-  if (addToList) addToList.hidden = Boolean(view.hideAddToList);
+  if (addToList) {
+    addToList.hidden = Boolean(view.hideAddToList);
+    const addKey = editingPendingId ? "updateMedInList" : "addMedToList";
+    addToList.setAttribute("data-i18n", addKey);
+    addToList.textContent = t(addKey);
+  }
   if (removeBtn) {
     removeBtn.hidden = !view.showRemove;
     removeBtn.textContent = t("removeVisitMed");
@@ -5217,6 +5253,30 @@ function fillMedFormFromDraft(draft) {
     `input[name="sourcePreset"][value="${source}"]`
   );
   if (sourceInput) sourceInput.checked = true;
+  setMedCompoundChip(draft.compoundGroup || "");
+  if (draft.compoundGroup && draft.compoundColor) {
+    setMedCompoundColor(draft.compoundColor, { persistGroup: true });
+  }
+}
+
+function selectPendingMed(localId) {
+  const med = pendingMeds.find((item) => item.localId === localId);
+  if (!med) return;
+  if (editingPendingId && editingPendingId !== localId) {
+    const form = document.getElementById("med-form");
+    const draft = readMedDraftFromForm(form);
+    if (draft.drugName && validateMedDraft(draft, { silent: true })) {
+      medicationsController.applyDraftToPendingMed(
+        pendingMeds,
+        editingPendingId,
+        draft
+      );
+    }
+  }
+  editingPendingId = localId;
+  fillMedFormFromDraft(medicationsController.draftFromSavedMed(med, med));
+  renderPendingMeds();
+  paintMedFormMode();
 }
 
 function openEditVisitMed({ visitIndex, medId, medIndex, ingredientIndex } = {}) {
@@ -5248,6 +5308,7 @@ function openEditVisitMed({ visitIndex, medId, medIndex, ingredientIndex } = {})
       kind: "compound_bundle",
     };
     pendingMeds = medicationsController.pendingFromCompoundBundle(found.med);
+    editingPendingId = null;
     renderPendingMeds();
     clearMedDrugFields();
     const form = document.getElementById("med-form");
@@ -5279,6 +5340,7 @@ function openEditVisitMed({ visitIndex, medId, medIndex, ingredientIndex } = {})
       found.ingredientIndex == null ? "" : found.ingredientIndex,
   };
   pendingMeds = [];
+  editingPendingId = null;
   renderPendingMeds();
   fillMedFormFromDraft(
     medicationsController.draftFromSavedMed(target, found.med)
@@ -5290,6 +5352,7 @@ function openEditVisitMed({ visitIndex, medId, medIndex, ingredientIndex } = {})
 function finishEditMedFlow(pet, toastKey) {
   const visitIndex = editingVisitMedRef?.visitIndex;
   editingVisitMedRef = null;
+  editingPendingId = null;
   pendingMeds = [];
   renderPendingMeds();
   clearMedDrugFields();
@@ -5374,6 +5437,7 @@ function finishMedFlowAfterSave(pet, toastKey, toastVars) {
   clearLiveProofPhotos();
   completingVisitRef = null;
   editingVisitMedRef = null;
+  editingPendingId = null;
   paintMedFormMode();
   setMedEntryMode("photo");
   setSelectedClinic(null);
@@ -5447,10 +5511,25 @@ document.getElementById("pending-med-list").addEventListener("click", (event) =>
   }
 
   const btn = event.target.closest("[data-remove-pending]");
-  if (!btn) return;
-  const id = btn.getAttribute("data-remove-pending");
-  pendingMeds = medicationsController.removePendingMed(pendingMeds, id);
-  renderPendingMeds();
+  if (btn) {
+    const id = btn.getAttribute("data-remove-pending");
+    pendingMeds = medicationsController.removePendingMed(pendingMeds, id);
+    if (editingPendingId === id) {
+      editingPendingId = null;
+      clearMedDrugFields();
+      paintMedFormMode();
+    }
+    renderPendingMeds();
+    return;
+  }
+
+  const pick = event.target.closest("[data-pending-id]");
+  if (
+    pick &&
+    !event.target.closest("[data-compound-for], [data-compound-clear]")
+  ) {
+    selectPendingMed(pick.getAttribute("data-pending-id"));
+  }
 });
 
 document.getElementById("pending-med-list").addEventListener("change", (event) => {
@@ -5499,7 +5578,8 @@ document.getElementById("med-form").addEventListener("submit", (event) => {
       return;
     }
     if (editingVisitMedRef.kind === "compound_bundle") {
-      if (hasAnyMedDraftInput(form)) {
+      const draft = readMedDraftFromForm(form);
+      if (editingPendingId || draft.drugName) {
         if (!tryAddCurrentMedToList({ toastOnSuccess: false })) return;
       }
       if (!pendingMeds.length) {
@@ -5781,6 +5861,7 @@ function openCompleteDrugs(visitIndex) {
   const visit = pet.visits[visitIndex];
   if (!visit) return;
   editingVisitMedRef = null;
+  editingPendingId = null;
   completingVisitRef = {
     date: visit.date,
     clinicId: visit.clinicId,
@@ -5823,12 +5904,18 @@ function toggleMedDetailButton(toggle) {
     panel.removeAttribute("hidden");
     toggle.setAttribute("aria-expanded", "true");
     toggle.classList.add("is-open");
-    if (action) action.textContent = t("timelineMedCollapse");
+    if (action) {
+      action.textContent = t("timelineMedCollapse");
+      action.classList.add("is-open");
+    }
   } else {
     panel.setAttribute("hidden", "");
     toggle.setAttribute("aria-expanded", "false");
     toggle.classList.remove("is-open");
-    if (action) action.textContent = t("timelineMedExpand");
+    if (action) {
+      action.textContent = t("timelineMedExpand");
+      action.classList.remove("is-open");
+    }
   }
 }
 

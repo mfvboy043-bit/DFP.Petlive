@@ -287,10 +287,6 @@
       }
 
       if (isCompound) {
-        const ingredientNames = (med.ingredients || [])
-          .map((ing) => ing.name)
-          .filter(Boolean);
-        const namesLine = ingredientNames.length ? ingredientNames.join("、") : med.name;
         const ingredients = (med.ingredients || [])
           .map((ing, ingIndex) => {
             const notesId = timelineViewHelpers.notesIdForMed({
@@ -341,10 +337,9 @@
             ${compoundFormBadge(med.compoundForm)}
           </span>
           <span class="tl-med-summary-body">
-            <span class="tl-med-summary-names">${namesLine}</span>
             <span class="dose">${displayMedDose(med.dose)}</span>
           </span>
-          <span class="tl-med-summary-action">${label("timelineMedExpand")}</span>
+          <span class="tl-med-summary-action tl-drug-notes-btn tl-visit-rx-btn">${label("timelineMedExpand")}</span>
         </button>
         ${editBtn}
         </div>

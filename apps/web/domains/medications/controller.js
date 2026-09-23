@@ -147,6 +147,20 @@
       return pendingMeds.filter((med) => med.localId !== localId);
     }
 
+    function applyDraftToPendingMed(pendingMeds, localId, draft) {
+      if (!Array.isArray(pendingMeds) || !localId) {
+        return { ok: false, reason: "missing_med" };
+      }
+      if (!draft?.drugName) return { ok: false, reason: "need_drug" };
+      const index = pendingMeds.findIndex((item) => item.localId === localId);
+      if (index < 0) return { ok: false, reason: "missing_med" };
+      pendingMeds[index] = buildPendingItem(draft, {
+        localId,
+        pendingMeds,
+      });
+      return { ok: true, item: pendingMeds[index] };
+    }
+
     function setPendingCompoundGroup(
       pendingMeds,
       localId,
@@ -499,6 +513,7 @@
       buildPendingItem,
       pushPendingMed,
       removePendingMed,
+      applyDraftToPendingMed,
       setPendingCompoundGroup,
       pendingMedScheduleKey,
       pendingMedHasCompoundTag,

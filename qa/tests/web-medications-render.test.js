@@ -82,6 +82,17 @@ describe("FO-05 medications render builders", () => {
     assert.match(built.listHtml, /pending-compound/);
     assert.match(built.listHtml, /is-pending/);
     assert.equal(built.showCompoundHint, true);
+    const selected = renderer.buildPendingMedsListHtml(
+      [
+        { localId: "pm-1", name: "Med A", dose: "1 tab", compoundGroup: "" },
+        { localId: "pm-2", name: "Med B", dose: "2 tab", compoundGroup: "" },
+      ],
+      { selectedPendingId: "pm-2" }
+    );
+    assert.match(
+      selected.listHtml,
+      /pending-med-item is-selected" data-pending-id="pm-2"/
+    );
   });
 
   it("buildMedFormModeView toggles edit chrome keys", () => {
